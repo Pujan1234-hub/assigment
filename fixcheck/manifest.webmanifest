@@ -1,0 +1,14 @@
+{
+  "name": "FixCheck — Network Health",
+  "short_name": "FixCheck",
+  "description": "No-login browser-based connection diagnosis, stability, speed estimate, DNS and service reachability.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#071012",
+  "theme_color": "#071012",
+  "orientation": "any",
+  "icons": [
+    {"src":"favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ]
+}

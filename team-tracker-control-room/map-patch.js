@@ -1,79 +1,53 @@
-/* Team Tracker Control Room — smooth satellite live map patch.
-   Auth/login remains independent. Satellite imagery from Esri World Imagery. */
+/* Team Tracker Control Room — smooth HYBRID / SATELLITE / STREET live map.
+   Hybrid = satellite imagery + detailed OpenStreetMap labels/roads/POIs. */
 (() => {
   const SITE={lat:50.72474,lon:-3.52792,label:'Princesshay'};
-  let view={lat:SITE.lat,lon:SITE.lon,zoom:17,manual:false};
-  let lastGpsKey='',renderedGpsKey='',interacting=false;
+  let view={lat:SITE.lat,lon:SITE.lon,zoom:18,manual:false};
+  let mode='hybrid', lastGpsKey='', lastSig='', drag=null;
 
   const style=document.createElement('style');
   style.textContent=`
-    #mapbox.tt-live-map{position:relative;height:360px;overflow:hidden;padding:0;background:#101820;border:1px solid #2b465d;border-radius:14px;touch-action:none;cursor:grab}
-    #mapbox.tt-live-map.dragging{cursor:grabbing}
-    .tt-map-scene{position:absolute;inset:0;will-change:transform;transform:translate3d(0,0,0)}
-    .tt-map-tiles{position:absolute;inset:0;overflow:visible;pointer-events:none}
-    .tt-map-tile{position:absolute;width:256px;height:256px;max-width:none;user-select:none;-webkit-user-drag:none;background:#111}
-    .tt-map-shade{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18),inset 0 0 45px rgba(0,0,0,.14)}
-    .tt-map-chip{position:absolute;top:10px;left:10px;z-index:45;background:rgba(5,18,30,.94);color:#fff;border:1px solid #536d80;border-radius:10px;padding:7px 9px;font:700 11px/1.25 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.3);pointer-events:none}
-    .tt-map-chip span{display:block;color:#b8c6d1;font-weight:600;margin-top:2px}
-    .tt-map-controls{position:absolute;right:10px;top:10px;z-index:55;display:grid;gap:6px}
-    .tt-map-btn{width:40px;height:40px;border-radius:10px;border:1px solid #5c7689;background:rgba(7,24,38,.95);color:#fff;font:900 21px/1 system-ui;box-shadow:0 3px 10px rgba(0,0,0,.3);cursor:pointer}
-    .tt-map-btn.home{font-size:15px}
-    .tt-map-attrib{position:absolute;right:6px;bottom:5px;z-index:45;background:rgba(255,255,255,.88);color:#263746;border-radius:5px;padding:2px 5px;font:9px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:78%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .tt-pin{position:absolute;z-index:35;transform:translate(-50%,-100%);text-decoration:none;color:#fff;filter:drop-shadow(0 3px 7px rgba(0,0,0,.65))}
-    .tt-pin-dot{width:31px;height:31px;border-radius:50% 50% 50% 8px;transform:rotate(-45deg);background:#efb632;border:3px solid #fff;display:grid;place-items:center}
-    .tt-pin-dot:after{content:'';width:8px;height:8px;border-radius:50%;background:#102235}
-    .tt-pin.site .tt-pin-dot{width:25px;height:25px;background:#48a9e6}
-    .tt-pin-label{position:absolute;left:50%;top:-35px;transform:translateX(-50%);white-space:nowrap;background:rgba(7,24,38,.94);color:#fff;border:1px solid #6d879a;border-radius:7px;padding:3px 6px;font:800 10px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.02em}
-    .tt-pin.site .tt-pin-label{top:-31px;color:#dcefff}
-    @media(max-width:700px){#mapbox.tt-live-map{height:335px}.tt-pin-label{max-width:125px;overflow:hidden;text-overflow:ellipsis}}
+  #mapbox.tt-live-map{position:relative;height:380px;overflow:hidden;padding:0;background:#111;border:1px solid #2b465d;border-radius:14px;touch-action:none;cursor:grab}
+  #mapbox.tt-live-map.dragging{cursor:grabbing}.tt-pan{position:absolute;inset:0;will-change:transform}.tt-layer{position:absolute;inset:0;pointer-events:none}.tt-tile{position:absolute;width:256px;height:256px;max-width:none;user-select:none;-webkit-user-drag:none}.tt-hybrid-detail{opacity:.56;filter:saturate(.9) contrast(1.08)}
+  .tt-chip{position:absolute;top:10px;left:10px;z-index:50;background:rgba(4,15,25,.92);color:#fff;border:1px solid #46647a;border-radius:10px;padding:7px 9px;font:800 11px/1.2 system-ui;pointer-events:none}.tt-chip span{display:block;color:#b9c7d2;font-weight:600;margin-top:2px}
+  .tt-controls{position:absolute;right:10px;top:10px;z-index:60;display:flex;flex-direction:column;gap:6px;align-items:flex-end}.tt-mode{display:flex;gap:4px;background:rgba(4,15,25,.92);padding:4px;border:1px solid #46647a;border-radius:10px}.tt-mode button,.tt-map-btn{border:1px solid #48667d;background:#0a1b29;color:#fff;border-radius:8px;font-weight:800;cursor:pointer}.tt-mode button{padding:7px 8px;font-size:10px}.tt-mode button.active{background:#efb632;color:#171105;border-color:#efb632}.tt-zoom{display:flex;gap:5px}.tt-map-btn{width:38px;height:38px;font-size:19px}
+  .tt-pin{position:absolute;z-index:40;transform:translate(-50%,-100%);text-decoration:none;color:#fff;filter:drop-shadow(0 3px 5px rgba(0,0,0,.55))}.tt-pin-dot{width:31px;height:31px;border-radius:50% 50% 50% 8px;transform:rotate(-45deg);background:#efb632;border:3px solid #fff}.tt-pin-dot:after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#102235;left:8px;top:8px}.tt-pin.site .tt-pin-dot{width:25px;height:25px;background:#48a9e6}.tt-label{position:absolute;left:50%;top:-36px;transform:translateX(-50%);white-space:nowrap;background:rgba(5,20,32,.94);color:#fff;border:1px solid #66839a;border-radius:7px;padding:3px 6px;font:800 10px system-ui}.tt-pin.site .tt-label{top:-31px}.tt-attrib{position:absolute;right:6px;bottom:5px;z-index:55;background:rgba(255,255,255,.9);color:#263844;border-radius:5px;padding:2px 5px;font:10px system-ui}.tt-attrib a{color:#245b83;text-decoration:none}
+  @media(max-width:700px){#mapbox.tt-live-map{height:350px}.tt-controls{top:8px;right:8px}.tt-mode button{padding:6px 6px;font-size:9px}.tt-label{max-width:125px;overflow:hidden;text-overflow:ellipsis}}
   `;
   document.head.appendChild(style);
 
-  const worldPoint=(lat,lon,z)=>{const size=256*Math.pow(2,z),x=(lon+180)/360*size,s=Math.sin(lat*Math.PI/180),y=(0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*size;return{x,y}};
-  const pointToLatLon=(x,y,z)=>{const size=256*Math.pow(2,z),lon=x/size*360-180,n=Math.PI-2*Math.PI*y/size,lat=180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n)));return{lat,lon}};
-  const chooseZoom=pts=>{if(!pts.length)return 17;let a=pts[0].lat,b=a,c=pts[0].lon,d=c;pts.forEach(p=>{a=Math.min(a,p.lat);b=Math.max(b,p.lat);c=Math.min(c,p.lon);d=Math.max(d,p.lon)});const s=Math.max(b-a,(d-c)*.65);if(s<.00055)return 19;if(s<.0011)return 18;if(s<.0024)return 17;if(s<.005)return 16;if(s<.011)return 15;return 14};
-  const safeNum=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
-  const getGps=()=>{const source=(typeof rows!=='undefined'&&Array.isArray(rows))?rows:[];return source.map(r=>({r,lat:safeNum(r.latitude),lon:safeNum(r.longitude)})).filter(p=>p.lat!==null&&p.lon!==null)};
-  const keyFor=gps=>gps.map(p=>`${p.r.staff_id}:${p.lat.toFixed(5)},${p.lon.toFixed(5)}`).join('|');
+  const wp=(lat,lon,z)=>{const size=256*2**z,x=(lon+180)/360*size,s=Math.sin(lat*Math.PI/180),y=(.5-Math.log((1+s)/(1-s))/(4*Math.PI))*size;return{x,y}};
+  const ll=(x,y,z)=>{const size=256*2**z,lon=x/size*360-180,n=Math.PI-2*Math.PI*y/size,lat=180/Math.PI*Math.atan(.5*(Math.exp(n)-Math.exp(-n)));return{lat,lon}};
+  const num=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
+  const gps=()=>((typeof rows!=='undefined'&&Array.isArray(rows))?rows:[]).map(r=>({r,lat:num(r.latitude),lon:num(r.longitude)})).filter(p=>p.lat!==null&&p.lon!==null);
+  const gpsKey=g=>g.map(p=>`${p.r.staff_id}:${p.lat.toFixed(5)},${p.lon.toFixed(5)}`).join('|');
+  const chooseZoom=g=>{if(!g.length)return 18;let a=g[0].lat,b=a,c=g[0].lon,d=c;g.forEach(p=>{a=Math.min(a,p.lat);b=Math.max(b,p.lat);c=Math.min(c,p.lon);d=Math.max(d,p.lon)});const s=Math.max(b-a,(d-c)*.65);return s<.00045?19:s<.001?18:s<.0024?17:s<.005?16:15};
+  function fit(g){const k=gpsKey(g);if(k!==lastGpsKey){lastGpsKey=k;if(!view.manual){if(g.length){view.lat=g.reduce((a,p)=>a+p.lat,0)/g.length;view.lon=g.reduce((a,p)=>a+p.lon,0)/g.length;view.zoom=chooseZoom(g)}else{view.lat=SITE.lat;view.lon=SITE.lon;view.zoom=18}}}}
 
-  function fitToGps(gps){
-    const key=keyFor(gps);
-    if(key!==lastGpsKey){lastGpsKey=key;if(!view.manual){if(gps.length){view.lat=gps.reduce((a,p)=>a+p.lat,0)/gps.length;view.lon=gps.reduce((a,p)=>a+p.lon,0)/gps.length;view.zoom=chooseZoom(gps)}else{view.lat=SITE.lat;view.lon=SITE.lon;view.zoom=17}}}
-  }
-
-  function draw(force=false){
-    const box=document.getElementById('mapbox');if(!box||interacting)return;
-    const gps=getGps(),gpsKey=keyFor(gps);
-    if(!force&&box.querySelector('.tt-map-scene')&&gpsKey===renderedGpsKey)return;
-    renderedGpsKey=gpsKey;
-    box.className='mapbox tt-live-map';box.innerHTML='';
-
-    const scene=document.createElement('div');scene.className='tt-map-scene';box.appendChild(scene);
-    const tiles=document.createElement('div');tiles.className='tt-map-tiles';scene.appendChild(tiles);
-    const w=Math.max(box.clientWidth||320,280),h=Math.max(box.clientHeight||335,270),z=view.zoom,c=worldPoint(view.lat,view.lon,z),left=c.x-w/2,top=c.y-h/2,n=Math.pow(2,z);
-    const minTx=Math.floor(left/256)-1,maxTx=Math.floor((left+w)/256)+1,minTy=Math.max(0,Math.floor(top/256)-1),maxTy=Math.min(n-1,Math.floor((top+h)/256)+1);
-    for(let tx=minTx;tx<=maxTx;tx++)for(let ty=minTy;ty<=maxTy;ty++){
-      const wrap=((tx%n)+n)%n,img=document.createElement('img');img.className='tt-map-tile';img.alt='';img.decoding='async';img.loading='eager';
-      img.src=`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${ty}/${wrap}`;
-      img.style.left=`${tx*256-left}px`;img.style.top=`${ty*256-top}px`;tiles.appendChild(img);
+  function tile(layer,z,x,y,src,cls=''){const im=document.createElement('img');im.className='tt-tile '+cls;im.alt='';im.decoding='async';im.loading='eager';im.src=src;im.style.left=x+'px';im.style.top=y+'px';layer.appendChild(im)}
+  function addTiles(parent,left,top,w,h,z){const n=2**z,minX=Math.floor(left/256)-1,maxX=Math.floor((left+w)/256)+1,minY=Math.max(0,Math.floor(top/256)-1),maxY=Math.min(n-1,Math.floor((top+h)/256)+1);
+    const base=document.createElement('div');base.className='tt-layer';parent.appendChild(base);
+    const detail=document.createElement('div');detail.className='tt-layer';parent.appendChild(detail);
+    for(let tx=minX;tx<=maxX;tx++)for(let ty=minY;ty<=maxY;ty++){const x=((tx%n)+n)%n,px=tx*256-left,py=ty*256-top;
+      if(mode!=='street')tile(base,z,px,py,`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${ty}/${x}`);
+      if(mode==='street')tile(base,z,px,py,`https://tile.openstreetmap.org/${z}/${x}/${ty}.png`);
+      if(mode==='hybrid')tile(detail,z,px,py,`https://tile.openstreetmap.org/${z}/${x}/${ty}.png`,'tt-hybrid-detail');
     }
-
-    const addPin=(lat,lon,label,site=false,href='')=>{const p=worldPoint(lat,lon,z),a=document.createElement(href?'a':'div');a.className='tt-pin'+(site?' site':'');a.style.left=`${p.x-left}px`;a.style.top=`${p.y-top}px`;if(href){a.href=href;a.target='_blank';a.rel='noopener';a.addEventListener('pointerdown',e=>e.stopPropagation())}a.innerHTML=`<span class="tt-pin-label">${typeof esc==='function'?esc(label):label}</span><span class="tt-pin-dot"></span>`;scene.appendChild(a)};
-    addPin(SITE.lat,SITE.lon,SITE.label,true,'https://www.google.com/maps?q=50.72474,-3.52792');
-    gps.forEach(p=>{let label='STAFF';try{label=(typeof badge==='function'?badge(p.r):'STAFF')+(p.r.real_name?` • ${p.r.real_name}`:'')}catch{}addPin(p.lat,p.lon,label,false,`https://www.google.com/maps?q=${encodeURIComponent(p.lat+','+p.lon)}`)});
-
-    const chip=document.createElement('div');chip.className='tt-map-chip';chip.innerHTML=gps.length?`SATELLITE LIVE • ${gps.length} GPS<span>Smooth drag • tap marker for exact location</span>`:`PRINCESSHAY • SATELLITE<span>No on-shift GPS coordinates yet</span>`;box.appendChild(chip);
-    const controls=document.createElement('div');controls.className='tt-map-controls';controls.innerHTML='<button class="tt-map-btn" data-a="in" aria-label="Zoom in">+</button><button class="tt-map-btn" data-a="out" aria-label="Zoom out">−</button><button class="tt-map-btn home" data-a="home" aria-label="Recenter">◎</button>';controls.addEventListener('pointerdown',e=>e.stopPropagation());controls.addEventListener('click',e=>{const a=e.target?.dataset?.a;if(!a)return;if(a==='in')view.zoom=Math.min(20,view.zoom+1);if(a==='out')view.zoom=Math.max(13,view.zoom-1);if(a==='home'){view.manual=false;const g=getGps();if(g.length){view.lat=g.reduce((x,p)=>x+p.lat,0)/g.length;view.lon=g.reduce((x,p)=>x+p.lon,0)/g.length;view.zoom=chooseZoom(g)}else{view.lat=SITE.lat;view.lon=SITE.lon;view.zoom=17}}else view.manual=true;draw(true)});box.appendChild(controls);
-    const attr=document.createElement('div');attr.className='tt-map-attrib';attr.textContent='Imagery © Esri, Maxar, Earthstar Geographics';box.appendChild(attr);
-    const shade=document.createElement('div');shade.className='tt-map-shade';box.appendChild(shade);
-
-    let drag=null;
-    box.onpointerdown=e=>{if(e.button!==undefined&&e.button!==0)return;drag={x:e.clientX,y:e.clientY,c:worldPoint(view.lat,view.lon,view.zoom),scene};interacting=true;box.classList.add('dragging');box.setPointerCapture?.(e.pointerId)};
-    box.onpointermove=e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.scene.style.transform=`translate3d(${dx}px,${dy}px,0)`};
-    const end=e=>{if(!drag)return;const dx=(e?.clientX??drag.x)-drag.x,dy=(e?.clientY??drag.y)-drag.y,ll=pointToLatLon(drag.c.x-dx,drag.c.y-dy,view.zoom);view.lat=ll.lat;view.lon=ll.lon;view.manual=true;drag=null;interacting=false;box.classList.remove('dragging');draw(true)};
-    box.onpointerup=end;box.onpointercancel=end;
   }
+  function pin(parent,lat,lon,label,left,top,z,site=false){const p=wp(lat,lon,z),a=document.createElement('div');a.className='tt-pin'+(site?' site':'');a.style.left=(p.x-left)+'px';a.style.top=(p.y-top)+'px';a.innerHTML=`<span class="tt-label">${typeof esc==='function'?esc(label):label}</span><span class="tt-pin-dot"></span>`;parent.appendChild(a)}
 
-  window.renderLocations=function(){const gps=getGps();fitToGps(gps);draw(false)};
-  try{if(document.getElementById('app')&&!document.getElementById('app').classList.contains('hidden'))window.renderLocations()}catch{}
+  function draw(force=false){if(drag&&!force)return;const box=document.getElementById('mapbox');if(!box)return;const g=gps();fit(g);const sig=`${mode}|${view.lat.toFixed(6)}|${view.lon.toFixed(6)}|${view.zoom}|${gpsKey(g)}`;if(!force&&sig===lastSig)return;lastSig=sig;
+    box.className='mapbox tt-live-map';box.innerHTML='';const pan=document.createElement('div');pan.className='tt-pan';box.appendChild(pan);
+    const w=Math.max(box.clientWidth||320,280),h=Math.max(box.clientHeight||350,280),z=view.zoom,c=wp(view.lat,view.lon,z),left=c.x-w/2,top=c.y-h/2;addTiles(pan,left,top,w,h,z);
+    pin(pan,SITE.lat,SITE.lon,SITE.label,left,top,z,true);g.forEach(p=>{let label='STAFF';try{label=(typeof badge==='function'?badge(p.r):'STAFF')+(p.r.real_name?` • ${p.r.real_name}`:'')}catch{}pin(pan,p.lat,p.lon,label,left,top,z,false)});
+    const chip=document.createElement('div');chip.className='tt-chip';chip.innerHTML=g.length?`LIVE ${mode.toUpperCase()} • ${g.length} GPS<span>Shop/road labels • drag map • zoom for detail</span>`:`PRINCESSHAY ${mode.toUpperCase()}<span>Shop/road labels visible • no on-shift GPS yet</span>`;box.appendChild(chip);
+    const controls=document.createElement('div');controls.className='tt-controls';controls.innerHTML=`<div class="tt-mode"><button data-m="hybrid" class="${mode==='hybrid'?'active':''}">HYBRID</button><button data-m="satellite" class="${mode==='satellite'?'active':''}">SATELLITE</button><button data-m="street" class="${mode==='street'?'active':''}">STREET</button></div><div class="tt-zoom"><button class="tt-map-btn" data-a="in">+</button><button class="tt-map-btn" data-a="out">−</button><button class="tt-map-btn" data-a="home">◎</button></div>`;box.appendChild(controls);
+    controls.onpointerdown=e=>e.stopPropagation();controls.onclick=e=>{const m=e.target?.dataset?.m,a=e.target?.dataset?.a;if(m){mode=m;lastSig='';draw(true);return}if(!a)return;if(a==='in')view.zoom=Math.min(20,view.zoom+1);if(a==='out')view.zoom=Math.max(13,view.zoom-1);if(a==='home'){view.manual=false;lastGpsKey='';fit(gps())}else view.manual=true;lastSig='';draw(true)};
+    const at=document.createElement('div');at.className='tt-attrib';at.innerHTML=mode==='street'?'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>':mode==='hybrid'?'Imagery © Esri • labels © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>':'Imagery © Esri';box.appendChild(at);
+    box.onpointerdown=e=>{if(e.target.closest('.tt-controls'))return;drag={x:e.clientX,y:e.clientY,c:wp(view.lat,view.lon,view.zoom),pan,pid:e.pointerId};box.classList.add('dragging');box.setPointerCapture?.(e.pointerId)};
+    box.onpointermove=e=>{if(!drag||e.pointerId!==drag.pid)return;drag.pan.style.transform=`translate(${e.clientX-drag.x}px,${e.clientY-drag.y}px)`};
+    const end=e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y,p=ll(drag.c.x-dx,drag.c.y-dy,view.zoom);view.lat=p.lat;view.lon=p.lon;view.manual=true;drag=null;box.classList.remove('dragging');lastSig='';draw(true)};box.onpointerup=end;box.onpointercancel=end;
+  }
+  window.renderLocations=()=>draw(false);
+  try{if(document.getElementById('app')&&!document.getElementById('app').classList.contains('hidden'))draw(true)}catch{}
 })();

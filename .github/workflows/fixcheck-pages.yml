@@ -1,9 +1,10 @@
-name: Deploy FixCheck to GitHub Pages
+name: Deploy Portfolio to GitHub Pages
 
 on:
   push:
     branches: ["main"]
     paths:
+      - "index.html"
       - "fixcheck/**"
       - ".github/workflows/fixcheck-pages.yml"
   workflow_dispatch:
@@ -26,14 +27,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Prepare public site
+        run: |
+          mkdir -p _site
+          cp index.html _site/index.html
+          cp -R fixcheck _site/fixcheck
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Upload FixCheck
+      - name: Upload portfolio
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./fixcheck
+          path: ./_site
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

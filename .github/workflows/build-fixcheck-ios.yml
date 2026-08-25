@@ -1,0 +1,47 @@
+name: Validate FixCheck iOS App
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'fixcheck/**'
+      - 'fixcheck-app/**'
+      - '.github/workflows/build-fixcheck-ios.yml'
+
+jobs:
+  ios-simulator:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: fixcheck-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Prepare tested FixCheck web source
+        run: npm run prepare:web
+      - name: Generate iOS project
+        run: npx cap add ios
+      - name: Sync web assets
+        run: npx cap sync ios
+      - name: Build iOS Simulator app without signing
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath ios-build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+      - name: Zip simulator app
+        run: ditto -c -k --sequesterRsrc --keepParent ios-build/Build/Products/Debug-iphonesimulator/App.app FixCheck-iOS-Simulator.zip
+      - name: Upload simulator build
+        uses: actions/upload-artifact@v4
+        with:
+          name: FixCheck-iOS-Simulator
+          path: fixcheck-app/FixCheck-iOS-Simulator.zip
+          if-no-files-found: error

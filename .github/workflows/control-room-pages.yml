@@ -28,15 +28,16 @@ jobs:
         uses: actions/checkout@v6
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Enable live map and stable task input patches
+      - name: Enable control-room patches
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('team-tracker-control-room/index.html')
           s = p.read_text()
           tags = [
-            '<script src="map-patch.js?v=01ef43d"></script>',
-            '<script src="task-input-patch.js?v=c271d34"></script>'
+            '<script src="map-patch.js?v=8548139"></script>',
+            '<script src="task-input-patch.js?v=c271d34"></script>',
+            '<script src="dashboard-fix.js?v=1f5dad5"></script>'
           ]
           for tag in tags:
             if tag not in s:

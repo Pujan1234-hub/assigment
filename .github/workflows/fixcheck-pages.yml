@@ -7,6 +7,7 @@ on:
       - "index.html"
       - "sw.js"
       - "fixcheck/**"
+      - "team-tracker/**"
       - ".github/workflows/fixcheck-pages.yml"
   workflow_dispatch:
 
@@ -34,6 +35,20 @@ jobs:
           cp index.html _site/index.html
           cp sw.js _site/sw.js
           cp -R fixcheck _site/fixcheck
+          cp -R team-tracker _site/team-tracker
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('_site/index.html')
+          s=p.read_text()
+          old='<div class="actions"><a class="btn primary" href="#teamtracker">View product details</a></div>'
+          new='<div class="actions"><a class="btn primary" href="#teamtracker">View product details</a><a class="btn" href="./team-tracker/">Open Team Tracker web app ↗</a></div>'
+          if old in s:
+              s=s.replace(old,new,1)
+          marker='<p class="lead" style="font-size:17px">A workforce coordination prototype for teams that need a simple way to see who is active, understand operational status and move assigned work from request to completion.</p>'
+          if marker in s:
+              s=s.replace(marker,marker+'<div class="actions"><a class="btn primary" href="./team-tracker/">Launch Team Tracker web app ↗</a></div>',1)
+          p.write_text(s)
+          PY
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:

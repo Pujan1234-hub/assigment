@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06101b">
+<title>Team Tracker Control Room</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#06101b;--card:#0d1d2c;--line:#263d53;--text:#f6f9fc;--muted:#93a7b9;--gold:#efb632;--green:#58d98a;--blue:#48a9e6}
+*{box-sizing:border-box}body{margin:0;background:#06101b;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+.wrap{max-width:1100px;margin:auto;padding:14px}.brand{display:flex;justify-content:space-between;align-items:center;margin:8px 0 15px}.brand b{color:var(--gold);letter-spacing:.16em}.pill{font-size:11px;border:1px solid #59461a;border-radius:99px;padding:6px 8px;color:#f6cd70}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px;margin-bottom:13px}.login{max-width:430px;margin:45px auto}.field{width:100%;padding:13px;background:#07131f;color:white;border:1px solid #38516a;border-radius:11px;margin:6px 0 11px}.btn{border:0;border-radius:11px;padding:12px 14px;font-weight:800;cursor:pointer}.full{width:100%}.gold{background:var(--gold);color:#191207}.dark{background:#13283b;color:#eef7ff;border:1px solid #38516a}.hidden{display:none!important}.muted{color:var(--muted)}.err{color:#ffb1b1;font-size:13px;margin-top:9px}
+.head{display:flex;justify-content:space-between;gap:10px;align-items:center}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 0}.stat{background:#0a1926;border:1px solid var(--line);border-radius:12px;padding:11px}.stat small{color:var(--muted)}.stat b{display:block;font-size:22px;margin-top:2px}
+#map{height:360px;border-radius:14px}.staff{margin-top:12px}.row{border:1px solid #233d54;border-radius:13px;padding:12px;margin:9px 0;background:#091724}.rowtop{display:flex;justify-content:space-between;gap:10px}.badge{font-weight:900}.live{color:var(--green);font-weight:900}.wait{color:#f0c965;font-weight:900}.sub{font-size:12px;color:var(--muted);margin-top:3px}.assign{display:grid;grid-template-columns:1fr 1.3fr .65fr auto;gap:7px;margin-top:10px}.assign input,.assign select{background:#06131f;color:white;border:1px solid #34506a;border-radius:9px;padding:9px}.assign button{background:#2b230d;border:1px solid #7c6120;color:#f5ce72;border-radius:9px;padding:9px;font-weight:900}.tasks{margin-top:14px}.task{display:grid;grid-template-columns:1fr 1.5fr auto;gap:8px;border-top:1px solid #20364a;padding:10px 0;font-size:13px}.status{font-weight:900}.ack{color:#65bfff}.done{color:#78e0a5}.skip{color:#f2a2a2}.asgn{color:#efca69}
+.toast{position:fixed;right:12px;top:12px;z-index:9999;background:#0c2234;border:1px solid #486b86;border-radius:12px;padding:12px 14px;max-width:330px;display:none}
+.label{background:#071826;color:white;border:1px solid #577792;border-radius:7px;padding:2px 6px;font-size:10px;font-weight:900}
+@media(max-width:700px){.stats{grid-template-columns:repeat(3,1fr)}#map{height:300px}.assign{grid-template-columns:1fr}.task{grid-template-columns:1fr}.head{align-items:flex-start}.wrap{padding:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><b>TEAM TRACKER | CONTROL ROOM</b><span class="pill">WEB LIVE</span></div>
+
+  <section id="login" class="card login">
+    <h2>Authorised access</h2>
+    <p class="muted">Control Room / Admin account only.</p>
+    <input id="email" class="field" type="email" placeholder="Email">
+    <input id="pass" class="field" type="password" placeholder="Password">
+    <button id="signin" class="btn gold full">SIGN IN</button>
+    <div id="msg" class="err"></div>
+  </section>
+
+  <main id="app" class="hidden">
+    <section class="card">
+      <div class="head">
+        <div><h2 style="margin:0">Live Operations</h2><div id="who" class="muted"></div></div>
+        <button id="signout" class="btn dark">SIGN OUT</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>ON SHIFT</small><b id="onCount">0</b></div>
+        <div class="stat"><small>GPS LIVE</small><b id="gpsCount">0</b></div>
+        <div class="stat"><small>WAITING</small><b id="waitCount">0</b></div>
+      </div>
+      <div id="map"></div>
+      <div id="staff" class="staff"></div>
+    </section>
+
+    <section class="card">
+      <h3 style="margin-top:0">Task Responses</h3>
+      <div id="tasks" class="tasks"></div>
+    </section>
+  </main>
+</div>
+<div id="toast" class="toast"></div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const URL="https://kkvtspbmawxhwyadafyd.supabase.co";
+const KEY="sb_publishable_v0Alfzh0oA5hfHkO7mzDZw_sEsDCQ3U";
+const sb=supabase.createClient(URL,KEY);
+const $=id=>document.getElementById(id);
+let profile=null, rows=[], taskRows=[], map=null, markers=[], chan=null;
+
+function badge(r){
+  if(r.team_code==="control_room") return "CONTROL ROOM";
+  return `${String(r.team_code||"").toUpperCase()} ${r.badge_number}`;
+}
+function role(r){
+  return r.team_code==="hotel"?"CLEANER":r.team_code==="siyara"?"SECURITY":r.team_code==="mic"?"MIC":"STAFF";
+}
+function tm(x){if(!x)return"—";return new Date(x).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+function toast(t){
+  const e=$("toast"); e.innerHTML=`<b>${badgeById(t.staff_id)} • ${(t.status||"").toUpperCase()}</b><br><span class="muted">${t.task_text||"Task"}</span>`;
+  e.style.display="block"; setTimeout(()=>e.style.display="none",4000);
+}
+function badgeById(id){const r=rows.find(x=>x.staff_id===id);return r?badge(r):"STAFF"}
+
+async function signin(){
+  $("msg").textContent="";
+  const email=$("email").value.trim();
+  const password=$("pass").value;
+  if(!email||!password){$("msg").textContent="Enter email and password.";return}
+  $("signin").disabled=true;
+  const {data:{session}}=await sb.auth.getSession();
+  if(session) await sb.auth.signOut();
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  $("signin").disabled=false;
+  if(error){$("msg").textContent=error.message;return}
+  await enter();
+}
+$("signin").onclick=signin;
+$("pass").addEventListener("keydown",e=>{if(e.key==="Enter")signin()});
+
+async function enter(){
+  $("msg").textContent="Loading Control Room…";
+  const {data:{user},error:userErr}=await sb.auth.getUser();
+  if(userErr||!user){$("msg").textContent=userErr?.message||"Signed-in user not found.";return}
+
+  const {data:p,error}=await sb.from("staff_profiles")
+    .select("id,user_id,employment_id,phone_e164,team_code,badge_number,real_name,access_level,active")
+    .eq("user_id",user.id)
+    .eq("active",true)
+    .maybeSingle();
+
+  if(error||!p){
+    $("msg").textContent=error?.message||"This account is signed in but is not linked to an active Control Room profile.";
+    return;
+  }
+  if(p.team_code!=="control_room" || !["control_room","admin"].includes(p.access_level)){
+    await sb.auth.signOut();
+    $("msg").textContent="Control Room/Admin access required.";
+    return;
+  }
+
+  profile=p; $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+  $("who").textContent=`${badge(p)} • ${p.real_name||"Control Room"} • ${p.access_level.toUpperCase()}`;
+  initMap(); await refreshAll(); listen();
+}
+$("signout").onclick=async()=>{if(chan)await sb.removeChannel(chan);await sb.auth.signOut();location.reload()};
+
+function initMap(){
+  if(map)return;
+  map=L.map("map").setView([50.7242,-3.5278],15);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+}
+async function refreshAll(){await fetchLive();await fetchTasks()}
+async function fetchLive(){
+  const {data,error}=await sb.from("manager_live_locations").select("*").order("team_code").order("badge_number");
+  if(error){console.error(error);return}
+  rows=data||[]; renderLive();
+}
+function renderLive(){
+  markers.forEach(m=>m.remove()); markers=[];
+  let gps=0,wait=0,bounds=[];
+  for(const r of rows){
+    if(r.latitude!=null&&r.longitude!=null){
+      gps++; bounds.push([r.latitude,r.longitude]);
+      const m=L.marker([r.latitude,r.longitude]).addTo(map)
+        .bindTooltip(badge(r),{permanent:true,direction:"top",className:"label"})
+        .bindPopup(`<b>${badge(r)}</b><br>${role(r)}<br>${r.area||"—"}<br>±${Math.round(r.accuracy_m||0)}m • ${tm(r.updated_at)}`);
+      markers.push(m);
+    } else wait++;
+  }
+  $("onCount").textContent=rows.length;$("gpsCount").textContent=gps;$("waitCount").textContent=wait;
+  if(bounds.length)map.fitBounds(bounds,{padding:[35,35],maxZoom:17});
+  $("staff").innerHTML=rows.length?rows.map(r=>{
+    const hasGps=r.latitude!=null&&r.longitude!=null;
+    return `<div class="row">
+      <div class="rowtop"><div><span class="badge">${badge(r)}</span><div class="sub">${role(r)} • ${r.employment_id}</div></div>
+      <div class="${hasGps?"live":"wait"}">${hasGps?"● GPS LIVE":"● GPS WAITING"}</div></div>
+      <div class="sub">${r.area||"GPS WAITING"}${hasGps?` • ±${Math.round(r.accuracy_m||0)}m • ${tm(r.updated_at)}`:""}</div>
+      <div class="assign">
+        <input id="area_${r.staff_id}" value="${r.area&&r.area!=="GPS WAITING"?r.area:""}" placeholder="Area / checkpoint">
+        <input id="task_${r.staff_id}" placeholder="Private task for ${badge(r)}">
+        <select id="pri_${r.staff_id}"><option>normal</option><option>high</option><option>urgent</option></select>
+        <button onclick="assignTask('${r.staff_id}')">ASSIGN</button>
+      </div>
+    </div>`;
+  }).join(""):`<div class="muted">No one is on shift.</div>`;
+}
+window.assignTask=async id=>{
+  const task=$("task_"+id).value.trim(); if(!task)return alert("Enter a task.");
+  const {error}=await sb.rpc("control_room_assign_task",{
+    p_staff_id:id,p_task_text:task,p_area:$("area_"+id).value.trim(),p_priority:$("pri_"+id).value
+  });
+  if(error)return alert(error.message);
+  $("task_"+id).value=""; await fetchTasks();
+};
+
+async function fetchTasks(){
+  const {data,error}=await sb.from("task_assignments").select("*").order("created_at",{ascending:false}).limit(25);
+  if(error){console.error(error);return}
+  taskRows=data||[]; renderTasks();
+}
+function renderTasks(){
+  $("tasks").innerHTML=taskRows.length?taskRows.map(t=>{
+    const s=t.status||"assigned",c=s==="acknowledged"?"ack":s==="completed"?"done":s==="declined"?"skip":"asgn";
+    const when=t.completed_at||t.declined_at||t.acknowledged_at||t.created_at;
+    return `<div class="task"><div><b>${badgeById(t.staff_id)}</b><div class="sub">${tm(t.created_at)}</div></div>
+      <div>${t.task_text||"Task"}<div class="sub">${t.area||""} • ${t.priority||"normal"}</div></div>
+      <div class="status ${c}">${s.toUpperCase()}<div class="sub">${tm(when)}</div></div></div>`;
+  }).join(""):`<div class="muted">No task responses yet.</div>`;
+}
+function listen(){
+  if(chan)return;
+  chan=sb.channel("team_tracker_control_room")
+    .on("postgres_changes",{event:"*",schema:"public",table:"current_locations"},()=>fetchLive())
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"shifts"},()=>fetchLive())
+    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"shifts"},()=>fetchLive())
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"task_assignments"},()=>fetchTasks())
+    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"task_assignments"},p=>{fetchTasks();toast(p.new)})
+    .subscribe();
+}
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)await enter();
+})();
+</script>
+</body></html>

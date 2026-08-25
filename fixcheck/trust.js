@@ -34,8 +34,7 @@
     else if(type==='cellular'){label='Mobile data';known=true}
     else if(type==='ethernet'){label='Ethernet';known=true}
     else if(type){label=type.charAt(0).toUpperCase()+type.slice(1);known=true}
-    const effective=c&&c.effectiveType?String(c.effectiveType).toUpperCase():null;
-    return{label,known,effective};
+    return{label,known};
   }
   function ensureLinkPill(){
     if($('#linkPill'))return;
@@ -48,7 +47,7 @@
     ensureLinkPill();const e=$('#linkText');if(!e)return;
     const x=connectionInfo();let text=x.label;
     if(speed!=null)text+=' · '+speed+' Mbps';
-    else if(x.effective)text+=' · '+x.effective+'-like';
+    else text+=' · speed not tested';
     e.textContent=text;
     e.title=x.known?'Connection type exposed by this browser':'Browser does not expose whether this is Wi‑Fi or mobile data; FixCheck will not guess.';
   }
@@ -60,7 +59,7 @@
     const box=document.querySelector('.metrics');
     if(box&&!$('#targetResponse')){const m=document.createElement('div');m.className='metric';m.innerHTML='<span>TARGET RESPONSE</span><b id="targetResponse">--</b><em>only when target is confirmed</em>';box.appendChild(m)}
     if(box&&!$('#connectionType')){const m=document.createElement('div');m.className='metric';m.innerHTML='<span>CURRENT LINK</span><b id="connectionType">--</b><em id="connectionTypeNote">browser-visible connection info</em>';box.appendChild(m)}
-    const ci=connectionInfo();const ct=$('#connectionType'),cn=$('#connectionTypeNote');if(ct)ct.textContent=ci.label;if(cn)cn.textContent=ci.known?(ci.effective?'Browser reports '+ci.effective+' class':'Type exposed by browser'):(ci.effective?'Wi‑Fi/mobile hidden · '+ci.effective+' class':'Wi‑Fi/mobile type hidden by browser');
+    const ci=connectionInfo();const ct=$('#connectionType'),cn=$('#connectionTypeNote');if(ct)ct.textContent=ci.label;if(cn)cn.textContent=ci.known?'Physical link type exposed by browser':'Wi‑Fi/mobile type hidden by browser — not guessed';
   }
   function updateTargetResponse(){
     const t=$('#t-target'),out=$('#targetResponse');if(!t||!out)return;

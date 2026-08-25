@@ -28,6 +28,17 @@ jobs:
         uses: actions/checkout@v6
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Enable local live map patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('team-tracker-control-room/index.html')
+          s = p.read_text()
+          tag = '<script src="map-patch.js?v=01ef43d"></script>'
+          if tag not in s:
+              s = s.replace('</body>', tag + '</body>')
+          p.write_text(s)
+          PY
       - name: Upload control room site
         uses: actions/upload-pages-artifact@v4
         with:

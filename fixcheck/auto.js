@@ -1,4 +1,15 @@
 (()=>{
+  // Hotfix loader: the installed PWA already loads auto.js, so load the
+  // trust/validation layer from here as well. The version query bypasses
+  // stale script caches without requiring the user to reinstall the app.
+  if(!document.querySelector('script[data-fixcheck-trust]')){
+    const s=document.createElement('script');
+    s.src='./trust.js?v=8';
+    s.async=false;
+    s.dataset.fixcheckTrust='1';
+    document.head.appendChild(s);
+  }
+
   let wasOffline=!navigator.onLine;
   let reconnectTimer=null;
 

@@ -35,8 +35,7 @@ jobs:
           p = Path('team-tracker-control-room/index.html')
           s = p.read_text()
           tags = [
-            '<script src="map-patch.js?v=0f04470"></script>',
-            '<script src="map-autofollow-patch.js?v=d9c02f2"></script>',
+            '<script src="map-patch.js?v=1a21411"></script>',
             '<script src="task-input-patch.js?v=c271d34"></script>',
             '<script src="dashboard-fix.js?v=1f5dad5"></script>'
           ]

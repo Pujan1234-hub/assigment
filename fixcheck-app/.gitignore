@@ -1,0 +1,11 @@
+node_modules/
+android/
+ios/
+dist/
+resources/icon.png
+www/index.html
+www/favicon.svg
+www/manifest.webmanifest
+www/ping.txt
+.DS_Store
+*.log

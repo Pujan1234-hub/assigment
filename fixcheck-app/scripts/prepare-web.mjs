@@ -7,7 +7,7 @@ const appRoot = resolve(here, '..');
 const repoRoot = resolve(appRoot, '..');
 const webAssets = resolve(repoRoot, 'fixcheck');
 const out = resolve(appRoot, 'www');
-const liveBaseline = 'https://pujan1234-hub.github.io/assigment/ping.txt';
+const liveBaseline = 'https://pujan1234-hub.github.io/assigment/fixcheck/ping.txt';
 const appSource = 'https://raw.githubusercontent.com/Pujan1234-hub/assigment/0afecb6aab4da3775ba79b4eb4a8d6dfd697ea7f/fixcheck/index.html';
 mkdirSync(out, { recursive: true });
 

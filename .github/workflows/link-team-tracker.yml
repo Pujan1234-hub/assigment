@@ -1,0 +1,41 @@
+name: Link Team Tracker Web App
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/link-team-tracker.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  update-portfolio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Team Tracker web links
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          old = '<div class="actions"><a class="btn primary" href="#teamtracker">View product details</a></div>'
+          new = '<div class="actions"><a class="btn primary" href="./team-tracker/">Open Web App ↗</a><a class="btn" href="#teamtracker">View product details</a></div>'
+          if old in s:
+              s = s.replace(old, new, 1)
+          marker = '<p class="lead" style="font-size:17px">A workforce coordination prototype for teams that need a simple way to see who is active, understand operational status and move assigned work from request to completion.</p>'
+          insert = marker + '<div class="actions"><a class="btn primary" href="./team-tracker/">Open Web App ↗</a></div>'
+          if marker in s and './team-tracker/">Open Web App' not in s[s.find(marker):s.find(marker)+600]:
+              s = s.replace(marker, insert, 1)
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No change needed"
+          else
+            git add index.html
+            git commit -m "Add Team Tracker Open Web App links"
+            git push
+          fi

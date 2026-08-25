@@ -12,8 +12,11 @@ mkdirSync(out, { recursive: true });
 
 let html = readFileSync(resolve(webSource, 'index.html'), 'utf8');
 // Native/desktop UI is bundled locally, but the comparison baseline must stay remote.
-// Otherwise a local file probe would be unrealistically fast and misleading.
-html = html.replaceAll("'./ping.txt'", `'${liveBaseline}'`)
+// The live GitHub Pages probe is cross-origin inside Electron/Capacitor, so native builds
+// time it with no-cors mode rather than accidentally measuring a bundled local file.
+html = html.replaceAll("probes('./ping.txt',6,false)", `probes('${liveBaseline}',6,true)`)
+           .replaceAll('probes("./ping.txt",6,false)', `probes("${liveBaseline}",6,true)`)
+           .replaceAll("'./ping.txt'", `'${liveBaseline}'`)
            .replaceAll('"./ping.txt"', `"${liveBaseline}"`);
 html = html.replace('</head>', '<style>#install{display:none!important}</style><script>window.FIXCHECK_NATIVE=true;</script></head>');
 writeFileSync(resolve(out, 'index.html'), html);

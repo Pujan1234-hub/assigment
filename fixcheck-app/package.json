@@ -6,11 +6,12 @@
   "main": "electron/main.cjs",
   "scripts": {
     "prepare:web": "node scripts/prepare-web.mjs",
+    "make:icons": "node scripts/make-icons.mjs",
     "mobile:sync": "npm run prepare:web && cap sync",
     "android:add": "npm run prepare:web && cap add android",
     "ios:add": "npm run prepare:web && cap add ios",
-    "desktop:start": "npm run prepare:web && electron .",
-    "desktop:dist": "npm run prepare:web && node scripts/decode-icons.mjs && electron-builder"
+    "desktop:start": "npm run prepare:web && npm run make:icons && electron .",
+    "desktop:dist": "npm run prepare:web && npm run make:icons && electron-builder"
   },
   "dependencies": {
     "@capacitor/core": "latest"
@@ -20,7 +21,8 @@
     "@capacitor/cli": "latest",
     "@capacitor/ios": "latest",
     "electron": "latest",
-    "electron-builder": "latest"
+    "electron-builder": "latest",
+    "sharp": "latest"
   },
   "build": {
     "appId": "app.fixcheck.network",
@@ -28,7 +30,7 @@
     "asar": true,
     "files": ["electron/**/*", "www/**/*", "package.json"],
     "directories": {"output": "dist", "buildResources": "resources"},
-    "win": {"target": ["portable"], "icon": "resources/icon.ico"},
+    "win": {"target": ["portable"], "icon": "resources/icon.png"},
     "mac": {"target": ["zip"], "icon": "resources/icon.png", "category": "public.app-category.utilities"},
     "linux": {"target": ["AppImage"], "icon": "resources/icon.png", "category": "Utility"}
   }

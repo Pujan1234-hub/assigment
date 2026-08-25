@@ -5,11 +5,12 @@
   "description": "FixCheck cross-platform network and service diagnostics app",
   "main": "electron/main.cjs",
   "scripts": {
-    "mobile:sync": "cap sync",
-    "android:add": "cap add android",
-    "ios:add": "cap add ios",
-    "desktop:start": "electron .",
-    "desktop:dist": "electron-builder"
+    "prepare:web": "node scripts/prepare-web.mjs",
+    "mobile:sync": "npm run prepare:web && cap sync",
+    "android:add": "npm run prepare:web && cap add android",
+    "ios:add": "npm run prepare:web && cap add ios",
+    "desktop:start": "npm run prepare:web && electron .",
+    "desktop:dist": "npm run prepare:web && node scripts/decode-icons.mjs && electron-builder"
   },
   "dependencies": {
     "@capacitor/core": "latest"

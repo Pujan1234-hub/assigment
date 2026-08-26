@@ -1,0 +1,286 @@
+v>
+          <div class="stat"><span>HOTEL</span><strong id="sHotel">0</strong><small>cleaners</small></div>
+          <div class="stat"><span>SIYARA</span><strong id="sSiyara">0</strong><small>security</small></div>
+          <div class="stat"><span>Stale > 3 min</span><strong id="sStale">0</strong><small>needs check</small></div>
+        </div>
+
+        <div class="card mapcard">
+          <div class="maphead"><b>Live Staff Map</b><span class="small muted">Team Tracker</span></div>
+          <div id="map"></div>
+          <div id="staffList" class="stafflist"></div>
+      <div id="controlTaskFeedWrap" class="response-feed hidden">
+        <h3 style="margin:0">TASK RESPONSES</h3>
+        <div class="small muted">Live private-task replies from staff</div>
+        <div id="controlTaskFeed"></div>
+      </div>
+      <div id="managerTaskInboxWrap" class="task-inbox hidden">
+        <h3 style="margin-top:18px">My private tasks</h3>
+        <div class="small muted">Optional private requests assigned to this MIC account.</div>
+        <button id="managerNotifyBtn" class="btn btn-dark" style="margin-top:10px">ENABLE TASK NOTIFICATIONS</button>
+        <div id="managerNotifyState" class="permission-note"></div>
+        <div id="managerTaskInbox"></div>
+      </div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+
+  <section id="adminView" class="hidden">
+    <div class="admin-wrap">
+      <div class="card admin-head">
+        <div>
+          <h2 style="margin-bottom:3px">Admin Access</h2>
+          <div class="small muted">Individual permissions — no shared manager password</div>
+        </div>
+        <button id="adminBackBtn" class="btn btn-dark">Back</button>
+      </div>
+      <div class="danger-note">
+        ADMIN controls system access. CONTROL_ROOM has operational live-map + task control. MIC LIVE can view live locations only. STAFF sees only their own shift/location.
+        Your own admin access is protected from accidental changes in this screen.
+      </div>
+      <div id="adminList" class="admin-grid"></div>
+    </div>
+  </section>
+
+  <div id="controlToast" class="control-toast"></div>
+  <div class="footer-note">Team Tracker • V4.8 staff PIN</div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="config.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const cfg=window.PH_CONFIG||{};
+const configured=!!(cfg.SUPABASE_URL&&cfg.SUPABASE_PUBLISHABLE_KEY);
+const sb=configured?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_PUBLISHABLE_KEY):null;
+
+
+const isPrincesshayAndroid=!!window.AndroidBridge;
+async function nativeStartTracking(){
+  if(!isPrincesshayAndroid||!activeShift||!profile||!sb)return;
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(session){
+      window.AndroidBridge.startBackgroundTracking(
+        String(profile.id),String(activeShift.id),session.access_token||"",session.refresh_token||""
+      );
+    }
+  }catch(e){console.warn("Native tracking start:",e)}
+}
+function nativeStopTracking(){
+  if(!isPrincesshayAndroid)return;
+  try{window.AndroidBridge.stopBackgroundTracking()}catch(e){}
+}
+window.syncSessionFromNative=async function(){
+  if(!isPrincesshayAndroid||!sb)return;
+  try{
+    const raw=window.AndroidBridge.getNativeSessionJson();
+    if(!raw)return;
+    const t=JSON.parse(raw);
+    if(t.access_token&&t.refresh_token){
+      const current=(await sb.auth.getSession()).data.session;
+      if(!current || current.access_token!==t.access_token){
+        await sb.auth.setSession({access_token:t.access_token,refresh_token:t.refresh_token});
+      }
+    }
+  }catch(e){console.warn("Native session sync:",e)}
+};
+if(sb){
+  sb.auth.onAuthStateChange((_event,session)=>{
+    if(isPrincesshayAndroid&&session){
+      try{window.AndroidBridge.updateAuthTokens(session.access_token||"",session.refresh_token||"")}catch(e){}
+    }
+  });
+}
+
+let pendingEmp="", pendingPhone="", profile=null, activeShift=null, watchId=null, timer=null, loginMode=null;
+let latestPos=null, map=null, mapMarkers=[], realtimeChannel=null, managerRows=[], managerTasks=[], taskPublishTimer=null, firstGpsForShift=true, taskChannel=null, currentAssignment=null, taskInboxRows=[], lastGpsPublishAt=0, lastPublishedLat=null, lastPublishedLon=null, controlToastTimer=null, managerPollTimer=null, taskStatusBroadcastChannel=null, managerSyncBusy=false, staffTaskPollTimer=null, staffTaskLoadBusy=false;
+const managerDrafts={};
+function escapeAttr(v){return String(v??"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function escapeHtml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+window.saveOpsDraft=(staffId,field,value)=>{managerDrafts[staffId]=managerDrafts[staffId]||{};managerDrafts[staffId][field]=value};
+
+const teamMeta={
+ hotel:{label:"HOTEL",role:"CLEANER"},
+ siyara:{label:"SIYARA",role:"SECURITY"},
+ mic:{label:"MIC",role:"LIVE LOCATION"},
+ control_room:{label:"CONTROL ROOM",role:"OPERATIONS"}
+};
+function badgeOf(p){
+  if(p.team_code==="control_room")return "CONTROL ROOM";
+  return `${teamMeta[p.team_code]?.label||p.team_code.toUpperCase()} ${p.badge_number}`;
+}
+function msg(el,text,ok=false){el.className=ok?"success":"error";el.textContent=text}
+function fmtTime(v){if(!v)return"—";return new Date(v).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+function show(id){["authView","staffView","managerView","adminView"].forEach(v=>$(v).classList.toggle("hidden",v!==id))}
+function normalisePhone(s){return s.replace(/[^\d+]/g,"").trim()}
+
+function distanceMeters(lat1,lon1,lat2,lon2){
+  const R=6371000, toRad=x=>x*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return 2*R*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function effectiveAreaFromPosition(p){
+  if(!p||!p.coords)return $("area").value;
+  const center=cfg.MAP_CENTER||[50.7242,-3.5278];
+  const radius=cfg.PRINCESSHAY_GEOFENCE_M||700;
+  const d=distanceMeters(p.coords.latitude,p.coords.longitude,center[0],center[1]);
+  return d>radius ? "OFF-SITE / TEST LOCATION" : $("area").value;
+}
+
+
+if(!configured){
+  $("modePill").textContent="SETUP REQUIRED";
+  msg($("staffPinLoginMsg"),"Connect Supabase first in config.js.");
+}
+
+$("managerLoginToggle").onclick=()=>{
+  $("managerLoginPanel").classList.toggle("hidden");
+};
+
+async function staffPinSignIn(){
+  if(!configured){msg($("staffPinLoginMsg"),"Connect Supabase first.");return}
+  const staffCode=$("staffCode").value.trim();
+  const pin=$("staffPin").value.trim();
+  if(!staffCode || !/^\d{4}$/.test(pin)){
+    msg($("staffPinLoginMsg"),"Enter your Staff ID and 4-digit PIN.");return;
+  }
+
+  $("staffPinLoginBtn").disabled=true;
+  msg($("staffPinLoginMsg"),"Checking staff access…",true);
+
+  // Staff PIN sessions use a low-privilege anonymous Supabase identity behind the scenes.
+  // If another account is already signed in on this browser, sign it out before claiming staff mode.
+  let {data:{session}}=await sb.auth.getSession();
+  if(session){
+    const {data:{user}}=await sb.auth.getUser();
+    if(!user?.is_anonymous){
+      await sb.auth.signOut();
+      session=null;
+    }
+  }
+
+  if(!session){
+    const {error:anonErr}=await sb.auth.signInAnonymously();
+    if(anonErr){
+      $("staffPinLoginBtn").disabled=false;
+      msg($("staffPinLoginMsg"),"Staff PIN login needs Anonymous Sign-Ins enabled in Supabase Auth.");
+      return;
+    }
+  }
+
+  const deviceName=(navigator.userAgent||"Mobile browser").slice(0,120);
+  const {error}=await sb.rpc("claim_staff_with_pin",{
+    p_staff_code:staffCode,
+    p_pin:pin,
+    p_device_name:deviceName
+  });
+
+  if(error){
+    await sb.auth.signOut();
+    $("staffPinLoginBtn").disabled=false;
+    msg($("staffPinLoginMsg"),error.message||"Staff ID or PIN not recognised.");
+    return;
+  }
+
+  $("staffPinLoginBtn").disabled=false;
+  $("staffPin").value="";
+  await loadProfile();
+}
+$("staffPinLoginBtn").onclick=staffPinSignIn;
+$("staffPin").addEventListener("keydown",e=>{if(e.key==="Enter")staffPinSignIn()});
+
+$("testLoginBtn").onclick=async()=>{
+  if(!configured){msg($("testLoginMsg"),"Connect Supabase first in config.js.");return}
+  const email=$("testEmail").value.trim();
+  const password=$("testPassword").value;
+  if(!email||!password){msg($("testLoginMsg"),"Email and password are required.");return}
+  $("testLoginBtn").disabled=true;
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)await sb.auth.signOut();
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  $("testLoginBtn").disabled=false;
+  if(error){msg($("testLoginMsg"),error.message);return}
+  await loadProfile();
+};
+
+async function loadProfile(){
+  const {data:{user}}=await sb.auth.getUser();
+  if(!user){show("authView");return}
+
+  const {data,error}=await sb.rpc("my_app_profile");
+  const row=Array.isArray(data)?data[0]:data;
+  if(error||!row){
+    show("authView");
+    if(user?.is_anonymous)msg($("staffPinLoginMsg"),"This phone is not linked to a staff badge yet.");
+    return;
+  }
+
+  profile=row;
+  loginMode=row.login_mode||"account";
+  renderProfile();
+
+  const access=profile.access_level||"staff";
+  if(profile.team_code==="control_room" && ["control_room","admin"].includes(access)){
+    $("managerTitle").textContent="Control Room Operations";
+    $("managerSubtitle").textContent="Live map, staff status and private task assignment";
+    if($("managerTaskInboxWrap"))$("managerTaskInboxWrap").classList.add("hidden");
+    show("managerView");
+    await openManager();
+    return;
+  }
+  if(profile.team_code==="mic" && access==="mic_live"){
+    $("managerTitle").textContent="MIC Live Location";
+    $("managerSubtitle").textContent="Live on-shift locations only — view only";
+    if($("managerTaskInboxWrap"))$("managerTaskInboxWrap").classList.remove("hidden");
+    show("managerView");
+    await openManager();
+    return;
+  }
+
+  show("staffView");
+  await restoreShift();
+}
+
+function renderProfile(){
+  const b=badgeOf(profile), meta=teamMeta[profile.team_code];
+  $("avatar").textContent=profile.team_code==="control_room"?"CR":((meta?.label?.[0]||"P")+profile.badge_number);
+  $("staffBadge").textContent=b;$("roleTag").textContent=meta?.role||"STAFF";
+  $("staffName").textContent="Real name: "+(profile.real_name||"Not added yet");
+  $("staffEmp").textContent="Employment ID: "+profile.employment_id;
+  $("fBadge").textContent=b;$("fName").textContent=profile.real_name||"Not added yet";$("fEmp").textContent=profile.employment_id;
+  const access=profile.access_level||"staff";
+  const staffPinMode=loginMode==="staff_pin";
+  $("managerOpenBtn").classList.toggle("hidden",staffPinMode||!["mic_live","control_room","admin"].includes(access));
+  $("managerOpenBtn").textContent=access==="mic_live"?"OPEN LIVE MAP":"OPEN CONTROL ROOM";
+  $("adminOpenBtn").classList.toggle("hidden",staffPinMode||access!=="admin");
+  startTaskListener();
+}
+
+async function restoreShift(){
+  const {data}=await sb.from("shifts").select("*").eq("staff_id",profile.id).is("ended_at",null).order("started_at",{ascending:false}).limit(1);
+  if(data&&data[0]){activeShift=data[0];setShiftUi(true);startGps();nativeStartTracking();}
+}
+
+function setShiftUi(on){
+  $("shiftStatus").className="badge-status "+(on?"on":"off");$("shiftStatus").textContent=on?"ON SHIFT":"OFF SHIFT";
+  $("gpsDot").className="dot "+(on?"live":"");$("gpsTitle").textContent=on?"GPS is on":"GPS is off";
+  $("fGps").textContent=on?"LIVE":"OFF";
+  const endBtn=$("endShift"),startBtn=$("startShift");
+  if(endBtn)endBtn.classList.toggle("hidden",!on);
+  if(startBtn){startBtn.disabled=!!on;startBtn.textContent=on?"✓ SHIFT ACTIVE":"▶ START SHIFT";}
+  if(!on)$("gpsSub").textContent="Location sharing stopped.";
+}
+
+$("area").onchange=()=>{
+  const a=latestPos?effectiveAreaFromPosition(latestPos):$("area").value;
+  $("fArea").textContent=a;
+  if(activeShift&&latestPos)publishLocation(latestPos);
+}
+$("task").oninput=()=>{
+  renderLiveStatusTask();
+  clearTimeout(taskPublishTimer);
+  taskPublishTimer=setTimeout(()=>{if(activeSh

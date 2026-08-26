@@ -37,7 +37,7 @@ jobs:
           tags = [
             '<script src="map-patch.js?v=1a21411"></script>',
             '<script src="task-input-patch.js?v=bd277b2"></script>',
-            '<script src="dashboard-fix.js?v=1f5dad5"></script>',
+            '<script src="dashboard-fix.js?v=218de3b"></script>',
             '<script src="shift-safety-patch.js?v=2d4a10b"></script>'
           ]
           for tag in tags:

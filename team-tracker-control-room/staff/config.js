@@ -1,0 +1,10 @@
+window.PH_CONFIG = {
+  SUPABASE_URL: "https://kkvtspbmawxhwyadafyd.supabase.co",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_v0Alfzh0oA5hfHkO7mzDZw_sEsDCQ3U",
+
+  LOCATION_UPDATE_MS: 1500,
+  LOCATION_HEARTBEAT_MS: 2000,
+  MAP_CENTER: [50.7242, -3.5278],
+  MAP_ZOOM: 17,
+  PRINCESSHAY_GEOFENCE_M: 700
+};

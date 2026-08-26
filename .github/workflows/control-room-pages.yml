@@ -39,7 +39,8 @@ jobs:
             '<script src="task-input-patch.js?v=bd277b2"></script>',
             '<script src="dashboard-fix.js?v=218de3b"></script>',
             '<script src="shift-safety-patch.js?v=2d4a10b"></script>',
-            '<script src="assign-button-style.js?v=77e8b1a"></script>'
+            '<script src="assign-button-style.js?v=77e8b1a"></script>',
+            '<script src="premium-control-room-ui.js?v=ef1f4fe"></script>'
           ]
           for tag in tags:
             if tag not in s:

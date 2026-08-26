@@ -1,0 +1,10 @@
+{
+  "name":"Team Tracker",
+  "short_name":"Team Tracker",
+  "start_url":"./index.html",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#06101b",
+  "theme_color":"#06101b",
+  "icons":[{"src":"app_logo.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

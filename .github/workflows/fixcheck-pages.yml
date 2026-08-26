@@ -8,6 +8,7 @@ on:
       - "sw.js"
       - "fixcheck/**"
       - "team-tracker/**"
+      - "floodsafe-nepal/**"
       - ".github/workflows/fixcheck-pages.yml"
   workflow_dispatch:
 
@@ -36,6 +37,7 @@ jobs:
           cp sw.js _site/sw.js
           cp -R fixcheck _site/fixcheck
           cp -R team-tracker _site/team-tracker
+          cp -R floodsafe-nepal _site/floodsafe-nepal
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:

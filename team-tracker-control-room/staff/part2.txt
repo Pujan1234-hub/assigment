@@ -1,0 +1,195 @@
+t:1.15}
+}
+
+.opsbox{margin:10px 0 14px;padding:13px;border:1px solid #2a4259;background:#0a1724;border-radius:14px}
+.opsgrid{display:grid;grid-template-columns:1fr 1.4fr .8fr auto;gap:8px;align-items:end}
+.opslabel{font-size:.68rem;color:#8fa3b7;margin-bottom:5px}
+.opstext{width:100%;background:#07131f;border:1px solid #31475f;color:#fff;border-radius:9px;padding:9px}
+.assign-btn{border:1px solid #7b6123;background:#2b220d;color:#f5ce72;border-radius:9px;padding:9px 12px;font-weight:900;cursor:pointer}
+.role-pill{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:.66rem;font-weight:900;border:1px solid #334c63;background:#0d2133;color:#bdd4e8}
+@media(max-width:780px){.opsgrid{grid-template-columns:1fr}.staffrow{grid-template-columns:1fr}}
+.task-inbox{margin-top:14px}
+.task-card{border:1px solid #2b435a;background:#0a1724;border-radius:14px;padding:14px;margin-top:10px}
+.task-card.high{border-color:#6a5221}.task-card.urgent{border-color:#7d2b2b}
+.task-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.task-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.task-status{font-size:.68rem;font-weight:900;padding:4px 8px;border-radius:999px;border:1px solid #355068;background:#0c2234}
+.task-btn{border:1px solid #36516b;background:#10253a;color:#eef7ff;border-radius:9px;padding:9px 11px;font-weight:900;cursor:pointer}
+.task-btn.primary{border-color:#7b6123;background:#2c220c;color:#f4cf76}
+.task-btn.done{border-color:#24583e;background:#0b2618;color:#8ce5b5}
+.task-btn.skip{border-color:#563838;background:#241313;color:#efb0b0}
+
+.task-live-row{align-items:flex-start}
+.live-task-cell{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.live-task-empty{font-weight:900;color:#eef5fb}
+.live-task-top{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;width:100%}
+.live-task-pill{font-size:.68rem;font-weight:950;padding:4px 8px;border-radius:999px;border:1px solid #735a20;background:#2a210c;color:#f2cf75;letter-spacing:.04em}
+.live-task-pill.acknowledged{border-color:#285d7d;background:#0b2434;color:#73c7ff}
+.live-task-text{font-weight:900;color:#f6f9fc;text-align:right;line-height:1.3;overflow-wrap:anywhere}
+.live-task-meta{font-size:.7rem;color:#8fa3b7;text-align:right}
+.live-task-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.live-task-actions .task-btn{padding:7px 9px;font-size:.7rem}
+@media(max-width:780px){.task-live-row{display:block}.task-live-row>span{display:block;margin-bottom:8px}.live-task-cell{align-items:stretch}.live-task-top{justify-content:space-between}.live-task-text,.live-task-meta{text-align:left}.live-task-actions{justify-content:flex-start}}
+
+.permission-note{font-size:.72rem;color:#8fa3b7;margin-top:8px}
+.control-toast{position:fixed;right:18px;top:18px;z-index:99999;max-width:390px;padding:14px 16px;border-radius:13px;background:#0d2234;border:1px solid #3b617e;box-shadow:0 14px 38px rgba(0,0,0,.35);font-weight:900;color:#eef8ff;opacity:0;transform:translateY(-12px);pointer-events:none;transition:.2s}
+.control-toast.show{opacity:1;transform:translateY(0)}
+.control-toast small{display:block;color:#9cb1c5;font-weight:600;margin-top:4px}
+.response-feed{margin-top:16px;border-top:1px solid #263c50;padding-top:14px}
+.response-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(180px,2fr) auto;gap:12px;align-items:center;padding:11px 12px;border:1px solid #243b50;background:#0a1724;border-radius:11px;margin-top:8px}
+.response-row small{display:block;color:#8ea3b6;margin-top:3px}
+.status-assigned{color:#f2cf75}.status-acknowledged{color:#73c7ff}.status-completed{color:#81e7ae}.status-declined{color:#f1a1a1}.status-cancelled{color:#aaa}
+.map-badge-label{background:#071826;color:#fff;border:1px solid #5e7e98;border-radius:8px;padding:3px 7px;font-size:11px;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,.28);white-space:nowrap}
+@media(max-width:780px){.response-row{grid-template-columns:1fr}}
+
+
+
+@media(max-width:780px){.app{padding:12px}.brand-logo{width:36px;height:36px;border-radius:10px}.wordmark-main{font-size:.92rem;letter-spacing:.08em}.wordmark-sub{display:none}.grid{grid-template-columns:1fr}.manager-shell{grid-template-columns:1fr}.sidebar{display:none}.stats{grid-template-columns:1fr 1fr}.manager-main{padding:12px}#map{height:320px}.staffrow{grid-template-columns:1fr 1fr}.auth{margin-top:15px}.manager-head{align-items:flex-start}.actionbar{grid-template-columns:1fr}}
+
+.login-switch{display:flex;gap:8px;margin:16px 0 6px}
+.login-switch .btn{flex:1}
+.pin-field{font-size:1.15rem;letter-spacing:.28em;text-align:center}
+.login-help{margin-top:12px;padding:11px 12px;border:1px solid #243b50;background:#091724;border-radius:10px;font-size:.76rem;color:#9fb2c4;line-height:1.45}
+.manager-login-box{margin-top:14px;padding-top:14px;border-top:1px solid #243b50}
+.pin-admin{display:flex;gap:7px;align-items:center}
+.pin-admin input{width:110px}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brandbar">
+    <div class="wordmark"><img src="app_logo.svg" class="brand-logo" alt="Team Tracker"><div class="wordmark-main">TEAM TRACKER</div><div class="wordmark-sub">TEAM TRACKER</div></div>
+    <div class="pilot" id="modePill">V4.9.7 ALL LIVE</div>
+  </div>
+
+  <section id="authView" class="card auth">
+    <div class="center-brand">
+      <img src="app_logo.svg" class="center-logo" alt="Team Tracker"><div class="big">TEAM TRACKER</div><div class="small">TEAM TRACKER</div><div class="gold-line"></div>
+    </div>
+
+    <h2>Staff access</h2>
+    <p class="muted">No sign-up. Use the Staff ID and PIN given by management.</p>
+
+    <label class="label">Staff ID / badge</label>
+    <input id="staffCode" class="field" autocomplete="username" autocapitalize="characters"
+      placeholder="e.g. HOTEL 19">
+
+    <label class="label">4-digit PIN</label>
+    <input id="staffPin" class="field pin-field" type="password" inputmode="numeric"
+      maxlength="4" autocomplete="current-password" placeholder="••••">
+
+    <button id="staffPinLoginBtn" class="btn btn-gold full" style="margin-top:18px">CONTINUE</button>
+    <div id="staffPinLoginMsg"></div>
+
+    <div class="login-help">
+      First time only: enter your Staff ID + PIN. This phone remembers the secure session.
+      Closing the app does not sign you out. Use SIGN OUT only when changing user/device.
+    </div>
+
+    <button id="managerLoginToggle" class="btn btn-dark full" style="margin-top:14px">CONTROL ROOM / ADMIN</button>
+
+    <div id="managerLoginPanel" class="manager-login-box hidden">
+      <div class="small muted" style="margin-bottom:10px">Authorised management account</div>
+      <label class="label">Email</label>
+      <input id="testEmail" class="field" type="email" autocomplete="username" placeholder="authorised email">
+      <label class="label">Password</label>
+      <input id="testPassword" class="field" type="password" autocomplete="current-password" placeholder="••••••••">
+      <button id="testLoginBtn" class="btn btn-blue full" style="margin-top:16px">MANAGEMENT SIGN IN</button>
+      <div id="testLoginMsg"></div>
+    </div>
+  </section>
+
+  <section id="staffView" class="hidden">
+    <div class="card top-card">
+      <div class="userline">
+        <div class="avatar" id="avatar">PH</div>
+        <div>
+          <div><b id="staffBadge">—</b><span class="tag" id="roleTag">—</span></div>
+          <div class="small muted" id="staffName">Real name: Not added yet</div>
+          <div class="small muted" id="staffEmp">Employment ID: —</div>
+        </div>
+      </div>
+      <div class="staff-shift-side">
+        <span id="shiftStatus" class="badge-status off">OFF SHIFT</span>
+        <button id="endShift" class="btn btn-red top-end-btn hidden">■ END SHIFT</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card section">
+        <h3>SHIFT & LOCATION</h3>
+        <label class="label">Area / checkpoint</label>
+        <select id="area" class="field">
+          <option>Princesshay Square</option><option>Bedford Street</option><option>Bedford Square</option>
+          <option>Eastgate</option><option>Catherine Square</option><option>Roman Walk</option>
+          <option>Car Park</option><option>Management Office</option><option>Toilet 1</option>
+          <option>Toilet 2</option><option>Stair 1</option><option>Stair 2</option><option>Bin Area</option>
+        </select>
+
+        <label class="label">Current task / Control Room</label>
+        <input id="task" class="field" placeholder="No Control Room task • optional note">
+
+        <div id="assignedTaskBox" class="task-card hidden" style="border-color:#755d24;margin-top:0">
+          <div class="task-top">
+            <div style="min-width:0;flex:1">
+              <div class="small muted" style="font-weight:900;letter-spacing:.06em">CONTROL ROOM TASK</div>
+              <div id="assignedTaskText" class="live-task-text" style="margin-top:5px">—</div>
+              <div id="assignedTaskMeta" class="small muted" style="margin-top:4px">—</div>
+            </div>
+            <span id="assignedTaskStatus" class="live-task-pill">ASSIGNED</span>
+          </div>
+          <div class="task-actions" style="margin-top:10px">
+            <button id="ackTaskBtn" class="task-btn primary">ACK</button>
+            <button id="completeTaskBtn" class="task-btn done">DONE</button>
+            <button id="skipTaskBtn" class="task-btn skip">SKIP</button>
+          </div>
+        </div>
+
+        <div class="gpsbox">
+          <div id="gpsDot" class="dot"></div>
+          <div><b id="gpsTitle">GPS is off</b><div id="gpsSub" class="small muted">Start shift to share location.</div></div>
+        </div>
+
+        <div class="actionbar">
+          <button id="startShift" class="btn btn-gold">▶ START SHIFT</button>
+        </div>
+      </div>
+
+      <div class="card section">
+        <h3>MY LIVE STATUS</h3>
+        <div class="info-row"><span>Badge</span><b id="fBadge">—</b></div>
+        <div class="info-row"><span>Real name</span><b id="fName">Not added yet</b></div>
+        <div class="info-row"><span>Employment ID</span><b id="fEmp">—</b></div>
+        <div class="info-row"><span>Area</span><b id="fArea">—</b></div>
+        <div class="info-row task-live-row"><span>Task</span><div id="fTask" class="live-task-cell"><span class="live-task-empty">—</span></div></div>
+        <div class="info-row"><span>GPS status</span><b id="fGps">OFF</b></div>
+        <div class="info-row"><span>Last update</span><b id="fTime">—</b></div>
+        <button id="managerOpenBtn" class="btn btn-blue full hidden" style="margin-top:16px">OPEN CONTROL ROOM</button>
+        <button id="adminOpenBtn" class="btn btn-dark full hidden" style="margin-top:10px">ADMIN ACCESS</button>
+        <button id="notifyBtn" class="btn btn-dark full" style="margin-top:10px">ENABLE TASK NOTIFICATIONS</button>
+        <div id="notifyState" class="permission-note"></div>
+        <button id="logoutBtn" class="btn btn-dark full" style="margin-top:10px">SIGN OUT</button>
+        <div class="task-inbox">
+          <h3 style="margin-top:18px">My private tasks</h3>
+          <div class="small muted">Optional private requests from Control Room.</div>
+          <div id="taskInbox"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="managerView" class="hidden">
+    <div class="card manager-shell">
+      <aside class="sidebar">
+        <div class="sidebrand">TEAM TRACKER<small>TEAM TRACKER • ANDROID V0.5</small></div>
+        <div class="menu"><div class="active">▣ Live Overview</div><div>● Staff</div><div>⌖ Map</div><div>▣ Shifts</div><div>✓ Tasks</div><div>△ Incidents</div><div>▤ Reports</div></div>
+      </aside>
+      <main class="manager-main">
+        <div class="manager-head">
+          <div><h2 id="managerTitle" style="margin-bottom:3px">Live Operations</h2><div id="managerSubtitle" class="small muted">Authorised live access • 1s sync</div></div>
+          <div><span class="badge-status on">● LIVE</span> <button id="managerBackBtn" class="btn btn-dark">Back</button></div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><span>On shift</span><strong id="sOn">0</strong><small>live records</small></di

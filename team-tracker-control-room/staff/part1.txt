@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06101b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="app_logo.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Team Tracker</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#06101b;--panel:#0c1825;--panel2:#111f2e;--line:#203348;--text:#f7f9fc;--muted:#94a3b8;--gold:#e0a62b;--gold2:#f2bf51;--green:#31c46c;--red:#ef5350;--blue:#3fa7e5;--shadow:0 20px 50px rgba(0,0,0,.32)}
+*{box-sizing:border-box}body{margin:0;color:var(--text);background:radial-gradient(circle at 8% 0%,rgba(30,80,120,.2),transparent 35%),radial-gradient(circle at 100% 0%,rgba(224,166,43,.09),transparent 30%),linear-gradient(180deg,#050b12,#07111d 55%,#07101a);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}.app{max-width:1220px;margin:auto;padding:18px}.brandbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.wordmark{display:flex;align-items:center;gap:10px}.brand-logo{width:42px;height:42px;border-radius:12px;object-fit:cover;box-shadow:0 8px 18px rgba(0,0,0,.28);border:1px solid #4f3b14}.wordmark-main{font-size:1.25rem;letter-spacing:.12em;color:var(--gold2);font-weight:700}.wordmark-sub{border-left:1px solid #5a6470;padding-left:12px;font-size:.76rem;color:#dce3eb;font-weight:800;letter-spacing:.06em}.pilot{font-size:.7rem;padding:7px 10px;border:1px solid #4b3a16;background:#191408;color:#f6ce75;border-radius:999px;font-weight:800}
+.card{background:linear-gradient(180deg,rgba(16,31,46,.98),rgba(10,22,35,.98));border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.hidden{display:none!important}
+.auth{max-width:470px;margin:28px auto 60px;padding:26px}.center-brand{text-align:center;margin:3px 0 24px}.center-logo{width:112px;height:112px;border-radius:26px;object-fit:cover;display:block;margin:0 auto 13px;box-shadow:0 16px 30px rgba(0,0,0,.35);border:1px solid #5b4518}.center-brand .big{font-size:1.55rem;letter-spacing:.12em;color:var(--gold2);font-weight:800}.center-brand .small{font-size:.8rem;letter-spacing:.1em;color:#dce5ef;margin-top:4px}.gold-line{width:48px;height:2px;background:var(--gold);margin:12px auto;border-radius:99px}
+h1,h2,h3,p{margin-top:0}h2{font-size:1.4rem;margin-bottom:6px}h3{font-size:1rem;margin-bottom:12px}.muted{color:var(--muted)}.small{font-size:.78rem}.label{display:block;font-size:.78rem;color:#b9c6d3;margin:14px 0 6px}.field{width:100%;background:#08131f;border:1px solid #31475f;color:#fff;border-radius:12px;padding:13px 14px;outline:none}.field:focus{border-color:#8b6b25;box-shadow:0 0 0 3px rgba(224,166,43,.1)}.btn{border:0;border-radius:12px;padding:13px 15px;font-weight:800;cursor:pointer}.btn-gold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#17120a}.btn-dark{background:#0a1521;color:#e6edf5;border:1px solid #35495f}.btn-red{background:#401c20;color:#ffc5c5;border:1px solid #743237}.btn-blue{background:#174d78;color:#e5f2ff;border:1px solid #2b6a98}.full{width:100%}.note{margin-top:15px;padding:12px 13px;background:#091522;border:1px solid #263a51;border-radius:12px;font-size:.78rem;color:#9eb1c6}.error{color:#ffb4b4;font-size:.8rem;margin-top:9px}.success{color:#83e8a9;font-size:.8rem;margin-top:9px}
+.top-card{padding:18px 20px;display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.userline{display:flex;gap:13px;align-items:center}.avatar{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#5d4a22,#1a2734);border:1px solid #74633a;color:#f3cf7a;font-weight:900}.tag{display:inline-flex;padding:4px 8px;border-radius:999px;background:#2d2511;border:1px solid #5f4c1c;color:#f2c65a;font-size:.67rem;font-weight:900;margin-left:6px}.badge-status{padding:7px 10px;border-radius:999px;font-size:.72rem;font-weight:900}.off{background:#2e1719;color:#ffb9b9}.on{background:#102b1e;color:#81e6a7}
+.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}.section{padding:18px}.info-row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid #203247}.info-row span{color:#9db0c3;font-size:.82rem}.info-row b{text-align:right;font-size:.86rem}.actionbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.gpsbox{display:flex;align-items:center;gap:10px;padding:12px;background:#081522;border:1px solid #24405b;border-radius:12px;margin-top:13px}.dot{width:9px;height:9px;border-radius:50%;background:#4b5563;box-shadow:0 0 0 4px rgba(75,85,99,.12)}.dot.live{background:var(--green);box-shadow:0 0 0 4px rgba(49,196,108,.12)}
+.manager-shell{display:grid;grid-template-columns:220px 1fr;min-height:700px;overflow:hidden}.sidebar{background:#07121e;border-right:1px solid #1d2f43;padding:18px}.sidebrand{color:var(--gold2);letter-spacing:.12em;font-size:1rem;margin-bottom:26px}.sidebrand small{display:block;color:#d7e0e8;letter-spacing:.08em;font-size:.62rem;margin-top:3px}.menu{display:grid;gap:6px}.menu div{padding:10px;border-radius:10px;color:#b6c4d3;font-size:.82rem}.menu .active{background:#132539;color:#fff;border:1px solid #243d56}.manager-main{padding:18px;background:linear-gradient(180deg,#0a1622,#0a131e)}.manager-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.stat{padding:14px;background:#0f2030;border:1px solid #22384e;border-radius:14px}.stat span{font-size:.71rem;color:#9fb0c1}.stat strong{display:block;font-size:1.55rem;margin-top:3px}.stat small{color:#72869a}.mapcard{overflow:hidden}.maphead{display:flex;justify-content:space-between;padding:13px 15px;border-bottom:1px solid #1f3348;background:#0c1926}#map{height:390px;background:#dfe5e7}.stafflist{padding:0 16px 16px}.staffrow{display:grid;grid-template-columns:1.2fr 1fr 1fr .7fr;gap:10px;padding:12px 4px;border-bottom:1px solid #1f3347;align-items:center}.staffrow b{font-size:.83rem}.staffrow small{display:block;color:#8296aa;margin-top:3px}.live-txt{color:#74e19b;font-size:.76rem;font-weight:900}.stale-txt{color:#f6c75f;font-size:.76rem;font-weight:900}.empty{padding:22px;color:#8fa0b0;text-align:center}.footer-note{margin:18px 0 5px;text-align:center;color:#617386;font-size:.72rem}
+.admin-wrap{max-width:980px;margin:0 auto}.admin-head{padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.admin-grid{display:grid;gap:10px}.admin-row{display:grid;grid-template-columns:1.2fr .9fr .8fr .8fr auto;gap:10px;align-items:center;padding:12px;border:1px solid #203348;background:#0b1926;border-radius:14px}
+.admin-row small{display:block;color:#8ea1b4;margin-top:3px}.admin-actions{display:flex;gap:8px;align-items:center}.mini-select{background:#08131f;border:1px solid #31475f;color:#fff;border-radius:9px;padding:9px}.mini-btn{border:1px solid #36516b;background:#10253a;color:#eaf3fb;border-radius:9px;padding:9px 11px;font-weight:800;cursor:pointer}.danger-note{padding:12px;border:1px solid #5a3d22;background:#21180c;border-radius:12px;color:#eacb91;font-size:.78rem;margin-bottom:12px}.zone-test{color:#f2c65a;font-weight:800}
+@media(max-width:780px){.admin-row{grid-template-columns:1fr}.admin-head{align-items:flex-start}.admin-actions{flex-wrap:wrap}}
+/* ===== STAFF WEB PREMIUM UI — visual/layout only; operational IDs + handlers preserved ===== */
+#staffView{--staff-gold:#f2bf51;--staff-green:#31c46c;--staff-red:#ff6b6b;--staff-panel:rgba(11,25,39,.96);position:relative}
+#staffView:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(circle at 12% 8%,rgba(63,167,229,.10),transparent 28%),radial-gradient(circle at 88% 16%,rgba(242,191,81,.08),transparent 26%)}
+#staffView .top-card{position:relative;overflow:hidden;border-color:rgba(242,191,81,.28);background:linear-gradient(135deg,rgba(17,38,56,.98),rgba(8,20,32,.98));box-shadow:0 18px 44px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.03)}
+#staffView .top-card:after{content:"";position:absolute;right:-55px;top:-85px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,rgba(242,191,81,.12),transparent 68%);pointer-events:none}
+#staffView .avatar{width:56px;height:56px;border-radius:17px;background:linear-gradient(145deg,#243d51,#101e2b);border:1px solid rgba(242,191,81,.48);box-shadow:0 8px 22px rgba(0,0,0,.28);font-size:.95rem}
+#staffView #staffBadge{font-size:1.02rem;letter-spacing:.02em}
+#staffView .tag{margin-left:8px;background:rgba(242,191,81,.09);border-color:rgba(242,191,81,.32);color:#ffd978}
+#staffView .staff-shift-side{position:relative;z-index:2;display:flex;align-items:flex-end;flex-direction:column;gap:8px;min-width:116px}
+#staffView #shiftStatus{min-width:94px;text-align:center;padding:8px 12px;border:1px solid transparent;box-shadow:inset 0 1px rgba(255,255,255,.05)}
+#staffView #shiftStatus.off{background:rgba(99,35,39,.28);border-color:rgba(255,117,117,.22);color:#ffc0c0}
+#staffView #shiftStatus.on{background:rgba(28,108,67,.28);border-color:rgba(79,220,135,.28);color:#91efb5;box-shadow:0 0 0 4px rgba(49,196,108,.07)}
+#staffView .top-end-btn{padding:8px 11px!important;border-radius:10px!important;font-size:.70rem;letter-spacing:.035em;background:linear-gradient(180deg,#6b2a30,#451a1f)!important;border:1px solid #9a464e!important;color:#ffd6d8!important;box-shadow:0 7px 18px rgba(0,0,0,.22)}
+#staffView .top-end-btn:hover{filter:brightness(1.08)}
+#staffView .grid{gap:16px}
+#staffView .section{border-color:rgba(70,102,129,.43);background:linear-gradient(180deg,rgba(14,31,47,.98),rgba(8,20,32,.98));box-shadow:0 18px 42px rgba(0,0,0,.25)}
+#staffView .section h3{letter-spacing:.07em;font-size:.78rem;color:#dce9f4;margin-bottom:16px}
+#staffView .label{font-size:.72rem;letter-spacing:.035em;color:#9fb2c5;margin-top:16px}
+#staffView .field{background:#071522;border-color:#2a435a;border-radius:13px;padding:14px 14px;box-shadow:inset 0 1px rgba(255,255,255,.02);transition:border-color .15s,box-shadow .15s,transform .15s}
+#staffView .field:focus{border-color:#b28a32;box-shadow:0 0 0 3px rgba(224,166,43,.11)}
+#staffView .gpsbox{margin-top:16px;padding:14px;border-radius:14px;background:linear-gradient(135deg,#081827,#0a1d2c);border-color:#294963}
+#staffView .gpsbox b{font-size:.88rem}
+#staffView .actionbar{display:block;margin-top:16px}
+#staffView #startShift{width:100%;min-height:50px;border-radius:13px;background:linear-gradient(180deg,#ffd66c,#dca126);box-shadow:0 10px 22px rgba(224,166,43,.16);letter-spacing:.025em}
+#staffView #startShift:disabled{opacity:.58;filter:saturate(.55);cursor:default;box-shadow:none}
+#staffView .info-row{padding:12px 2px;border-bottom-color:#1d3347}
+#staffView .info-row span{color:#91a7bb}
+#staffView .info-row b{color:#f5f9fc}
+#staffView #assignedTaskBox{background:linear-gradient(145deg,rgba(54,44,18,.40),rgba(10,23,36,.96));box-shadow:inset 0 1px rgba(255,255,255,.025)}
+#staffView .task-btn{min-width:74px}
+#staffView #notifyBtn,#staffView #logoutBtn,#staffView #managerOpenBtn,#staffView #adminOpenBtn{border-radius:12px;min-height:44px}
+#staffView .task-inbox{padding-top:3px}
+@media(max-width:780px){
+  #staffView .top-card{padding:15px 14px;align-items:flex-start}
+  #staffView .userline{gap:10px;min-width:0}
+  #staffView .avatar{width:48px;height:48px;border-radius:14px;flex:0 0 auto}
+  #staffView #staffBadge{font-size:.92rem}
+  #staffView .staff-shift-side{min-width:105px;gap:7px}
+  #staffView #shiftStatus{min-width:88px;padding:7px 9px;font-size:.67rem}
+  #staffView .top-end-btn{font-size:.64rem;padding:7px 9px!important}
+  #staffView .section{padding:16px}
+  #staffView .grid{gap:12px}
+}
+@media(max-width:420px){
+  #staffView .top-card{gap:8px}
+  #staffView .userline{align-items:flex-start}
+  #staffView .tag{display:table;margin:5px 0 0 0}
+  #staffView .small{font-size:.72rem}
+  #staffView .staff-shift-side{min-width:96px}
+  #staffView .top-end-btn{max-width:96px;line-heigh

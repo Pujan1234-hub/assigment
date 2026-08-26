@@ -1,0 +1,268 @@
+ift&&latestPos)publishLocation(latestPos)},700);
+}
+$("task").onblur=()=>{if(activeShift&&latestPos)publishLocation(latestPos)}
+
+$("startShift").onclick=async()=>{
+  if(!profile||activeShift)return;
+  const {data,error}=await sb.from("shifts").insert({staff_id:profile.id,start_area:$("area").value}).select().single();
+  if(error){alert(error.message);return}
+  activeShift=data;firstGpsForShift=true;setShiftUi(true);startGps();nativeStartTracking();
+};
+
+$("endShift").onclick=async()=>{
+  if(!profile||!activeShift)return;
+  const endArea=latestPos?effectiveAreaFromPosition(latestPos):$("area").value;
+  const shiftId=activeShift.id;
+  const endedAt=new Date().toISOString();
+
+  const {error:shiftError}=await sb.from("shifts")
+    .update({ended_at:endedAt,end_area:endArea})
+    .eq("id",shiftId);
+  if(shiftError){alert("Could not end shift: "+shiftError.message);return}
+
+  // Best-effort mirror for older manager clients. The manager view itself is driven
+  // by open shifts, so a successful shift end removes the staff member immediately.
+  const {error:locationError}=await sb.from("current_locations").upsert({
+    staff_id:profile.id,shift_id:shiftId,area:endArea,task:$("task").value.trim()||null,is_on_shift:false,updated_at:endedAt
+  },{onConflict:"staff_id"});
+  if(locationError)console.warn("Location end-state sync:",locationError.message);
+
+  activeShift=null;stopGps();nativeStopTracking();setShiftUi(false);
+};
+
+async function locationPermissionState(){
+  try{
+    if(navigator.permissions){
+      const s=await navigator.permissions.query({name:"geolocation"});
+      return s.state;
+    }
+  }catch(e){}
+  return "unknown";
+}
+async function startGps(){
+  if(!navigator.geolocation){gpsError("GPS not supported.");return}
+  const perm=await locationPermissionState();
+  // Important: permission is only triggered by START SHIFT. We never ask on page load.
+  watchId=navigator.geolocation.watchPosition(async p=>{
+      latestPos=p;
+      updateGpsUi(p);
+      if(!activeShift)return;
+      const now=Date.now();
+      const moved=(lastPublishedLat==null)?99999:distanceMeters(
+        lastPublishedLat,lastPublishedLon,p.coords.latitude,p.coords.longitude
+      );
+      // Fast when moving, calm when stationary.
+      if(moved>=2 || now-lastGpsPublishAt >= (cfg.LOCATION_UPDATE_MS||1500)){
+        await publishLocation(p);
+        lastGpsPublishAt=Date.now();
+        lastPublishedLat=p.coords.latitude;
+        lastPublishedLon=p.coords.longitude;
+      }
+    }, e=>gpsError(e.message),
+    {enableHighAccuracy:true,maximumAge:0,timeout:10000}
+  );
+  timer=setInterval(()=>{
+    if(latestPos&&activeShift&&Date.now()-lastGpsPublishAt >= (cfg.LOCATION_HEARTBEAT_MS||2000)){
+      publishLocation(latestPos);
+      lastGpsPublishAt=Date.now();
+    }
+  },1000);
+}
+function stopGps(){
+  if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null}
+  if(timer){clearInterval(timer);timer=null}
+  latestPos=null;
+}
+function updateGpsUi(p){
+  const acc=Math.round(p.coords.accuracy||0);
+  $("gpsSub").textContent=`Location active • accuracy ±${acc} m`;
+  $("fTime").textContent=fmtTime(new Date().toISOString());
+  const effectiveArea=effectiveAreaFromPosition(p);
+  $("fArea").textContent=effectiveArea;renderLiveStatusTask();
+}
+async function publishLocation(p){
+  if(!activeShift||!profile)return;
+  const now=new Date().toISOString();
+  const payload={
+    staff_id:profile.id,shift_id:activeShift.id,
+    latitude:p.coords.latitude,longitude:p.coords.longitude,
+    accuracy_m:Math.round(p.coords.accuracy||0),
+    area:effectiveAreaFromPosition(p),task:$("task").value.trim()||null,is_on_shift:true,updated_at:now
+  };
+  const {error}=await sb.from("current_locations").upsert(payload,{onConflict:"staff_id"});
+  if(!error){
+    $("fTime").textContent=fmtTime(now);
+    if(firstGpsForShift){
+      firstGpsForShift=false;
+      sb.from("shifts").update({start_area:effectiveAreaFromPosition(p)}).eq("id",activeShift.id);
+    }
+  }
+}
+
+$("logoutBtn").onclick=async()=>{stopGps();nativeStopTracking();stopManagerFastSync();if(taskChannel){sb.removeChannel(taskChannel);taskChannel=null}if(sb)await sb.auth.signOut();profile=null;activeShift=null;loginMode=null;show("authView")};
+
+$("managerOpenBtn").onclick=async()=>{
+  const access=profile.access_level||"staff";
+  $("managerTitle").textContent=access==="mic_live"?"MIC Live Location":"Control Room Operations";
+  $("managerSubtitle").textContent=access==="mic_live"
+    ?"Live on-shift locations only — view only"
+    :"Live map, status monitoring and private task assignment";
+  if($("managerTaskInboxWrap"))$("managerTaskInboxWrap").classList.toggle("hidden",access!=="mic_live");
+  show("managerView");await openManager()
+};
+$("managerBackBtn").onclick=()=>{stopManagerFastSync();show("staffView")};
+
+$("adminOpenBtn").onclick=async()=>{show("adminView");await loadAdminAccess()};
+$("adminBackBtn").onclick=()=>{show("staffView")};
+
+async function loadAdminAccess(){
+  if(!profile||profile.access_level!=="admin"){show("staffView");return}
+  const {data,error}=await sb.from("staff_profiles")
+    .select("id,employment_id,team_code,badge_number,real_name,access_level,active,user_id")
+    .order("team_code").order("badge_number");
+  if(error){$("adminList").innerHTML=`<div class="empty">${error.message}</div>`;return}
+  $("adminList").innerHTML=(data||[]).map(r=>{
+    const self=r.id===profile.id;
+    const options=["staff","mic_live","control_room","admin"].map(x=>`<option value="${x}" ${r.access_level===x?"selected":""}>${x==="mic_live"?"MIC LIVE":x.toUpperCase()}</option>`).join("");
+    return `<div class="admin-row">
+      <div><b>${badgeOf(r)}</b><small>${r.real_name||"Name not added"} • ${r.employment_id}${self?" • YOU":""}</small></div>
+      <div><b>${teamMeta[r.team_code]?.role||r.team_code}</b><small>Operational badge</small></div>
+      <div><select class="mini-select" id="access_${r.id}" ${self?"disabled":""}>${options}</select></div>
+      <div><select class="mini-select" id="active_${r.id}" ${self?"disabled":""}>
+        <option value="true" ${r.active?"selected":""}>ACTIVE</option>
+        <option value="false" ${!r.active?"selected":""}>DISABLED</option>
+      </select></div>
+      <div class="admin-actions">
+        ${self?'<span class="small muted">Access protected</span>':`<button class="mini-btn" onclick="saveAccess('${r.id}')">SAVE ACCESS</button>`}
+        ${r.team_code!=="control_room"?`<div class="pin-admin" style="margin-top:7px">
+          <input id="pin_${r.id}" class="mini-select" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN">
+          <button class="mini-btn" onclick="setStaffPin('${r.id}')">SET PIN</button>
+        </div>`:""}
+      </div>
+    </div>`;
+  }).join("")||'<div class="empty">No staff profiles.</div>';
+}
+window.saveAccess=async(staffId)=>{
+  if(!profile||profile.access_level!=="admin")return;
+  const access=$("access_"+staffId).value;
+  const active=$("active_"+staffId).value==="true";
+  const {error}=await sb.rpc("admin_set_staff_access",{p_staff_id:staffId,p_access_level:access,p_active:active});
+  if(error){alert(error.message);return}
+  await loadAdminAccess();
+};
+window.setStaffPin=async(staffId)=>{
+  if(!profile||profile.access_level!=="admin")return;
+  const el=$("pin_"+staffId);
+  const pin=(el?.value||"").trim();
+  if(!/^\d{4}$/.test(pin)){alert("Enter exactly 4 digits.");return}
+  const {error}=await sb.rpc("admin_set_staff_pin",{p_staff_id:staffId,p_pin:pin});
+  if(error){alert(error.message);return}
+  el.value="";
+  alert("Staff PIN updated.");
+};
+
+
+async function loadTaskInbox(){
+  if(!profile||staffTaskLoadBusy)return;
+  staffTaskLoadBusy=true;
+  const {data,error}=await sb.from("task_assignments")
+    .select("*")
+    .eq("staff_id",profile.id)
+    .in("status",["assigned","acknowledged"])
+    .order("created_at",{ascending:false})
+    .limit(20);
+  if(error){staffTaskLoadBusy=false;return;}
+  taskInboxRows=data||[];
+  currentAssignment=taskInboxRows[0]||null;
+  renderTaskInbox();
+  renderCurrentAssignment();
+  staffTaskLoadBusy=false;
+}
+function renderLiveStatusTask(){
+  const el=$("fTask");
+  if(!el)return;
+  const t=currentAssignment;
+  if(!t){
+    const manual=($("task")?.value||"").trim();
+    el.innerHTML=manual?`<div class="live-task-text">${escapeHtml(manual)}</div>`:`<span class="live-task-empty">—</span>`;
+    return;
+  }
+  const status=(t.status||"assigned").toLowerCase();
+  const ack=status==="assigned"?`<button class="task-btn primary" onclick="setTaskState('${escapeAttr(t.id)}','acknowledged')">ACK</button>`:"";
+  el.innerHTML=`
+    <div class="live-task-top">
+      <span class="live-task-pill ${status}">${escapeHtml(status.toUpperCase())}</span>
+      <div class="live-task-text">${escapeHtml(t.task_text||"Task")}</div>
+    </div>
+    <div class="live-task-meta">${escapeHtml(t.area||"Control Room")} • ${escapeHtml((t.priority||"normal").toUpperCase())}</div>
+    <div class="live-task-actions">
+      ${ack}
+      <button class="task-btn done" onclick="setTaskState('${escapeAttr(t.id)}','completed')">DONE</button>
+      <button class="task-btn skip" onclick="setTaskState('${escapeAttr(t.id)}','declined')">SKIP</button>
+    </div>`;
+}
+function renderCurrentAssignment(){
+  const box=$("assignedTaskBox");
+  const manualInput=$("task");
+  renderLiveStatusTask();
+  if(!box)return;
+  if(!currentAssignment){
+    box.classList.add("hidden");
+    if(manualInput)manualInput.classList.remove("hidden");
+    return;
+  }
+  if(manualInput)manualInput.classList.add("hidden");
+  box.classList.remove("hidden");
+  const status=(currentAssignment.status||"assigned").toLowerCase();
+  $("assignedTaskText").textContent=currentAssignment.task_text||"—";
+  $("assignedTaskMeta").textContent=`${currentAssignment.area||"Control Room"} • ${(currentAssignment.priority||"normal").toUpperCase()}`;
+  const statusEl=$("assignedTaskStatus");
+  if(statusEl){statusEl.textContent=status.toUpperCase();statusEl.className=`live-task-pill ${status}`}
+  $("ackTaskBtn").classList.toggle("hidden",status!=="assigned");
+}
+function taskCardHtml(t){
+  const pri=(t.priority||"normal").toLowerCase();
+  return `<div class="task-card ${pri}">
+    <div class="task-top">
+      <div>
+        <b>${t.task_text||"Task"}</b>
+        <div class="small muted" style="margin-top:4px">${t.area||"Private task"} • ${new Date(t.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</div>
+      </div>
+      <span class="task-status">${(t.status||"assigned").toUpperCase()}</span>
+    </div>
+    <div class="task-actions">
+      ${t.status==="assigned"?`<button class="task-btn primary" onclick="setTaskState('${t.id}','acknowledged')">ACKNOWLEDGE</button>`:""}
+      <button class="task-btn done" onclick="setTaskState('${t.id}','completed')">DONE</button>
+      <button class="task-btn skip" onclick="setTaskState('${t.id}','declined')">SKIP</button>
+    </div>
+  </div>`;
+}
+function renderTaskInbox(){
+  const rows=taskInboxRows.length?taskInboxRows.map(taskCardHtml).join(""):`<div class="empty">No private tasks.</div>`;
+  if($("taskInbox"))$("taskInbox").innerHTML=rows;
+  if($("managerTaskInbox"))$("managerTaskInbox").innerHTML=rows;
+}
+function taskNotificationSupported(){
+  return "Notification" in window && window.isSecureContext;
+}
+function updateNotificationUi(){
+  let text;
+  if(isPrincesshayAndroid){
+    text="Android task alerts are automatic while your shift is active. Tap the button if Android notification permission was not granted.";
+    if($("notifyBtn"))$("notifyBtn").textContent="ENABLE ANDROID TASK ALERTS";
+  }else{
+    text=taskNotificationSupported()?`Notification permission: ${Notification.permission}`:"Full notifications need the HTTPS/PWA version.";
+  }
+  if($("notifyState"))$("notifyState").textContent=text;
+  if($("managerNotifyState"))$("managerNotifyState").textContent=text;
+}
+async function enableTaskNotifications(){
+  if(isPrincesshayAndroid&&window.AndroidBridge){
+    try{window.AndroidBridge.requestNotificationPermission();}catch(e){}
+    updateNotificationUi();return;
+  }
+  if(!taskNotificationSupported()){
+    alert("Browser notifications need the HTTPS/PWA version. In-app private tasks still work now.");
+    updateNotificationUi();return;
+  }
+  if(Notification.permission

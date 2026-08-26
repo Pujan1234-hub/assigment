@@ -37,7 +37,8 @@ jobs:
           tags = [
             '<script src="map-patch.js?v=1a21411"></script>',
             '<script src="task-input-patch.js?v=c271d34"></script>',
-            '<script src="dashboard-fix.js?v=1f5dad5"></script>'
+            '<script src="dashboard-fix.js?v=1f5dad5"></script>',
+            '<script src="shift-safety-patch.js?v=d8e9830"></script>'
           ]
           for tag in tags:
             if tag not in s:

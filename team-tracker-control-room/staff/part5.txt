@@ -1,0 +1,242 @@
+==="default")await Notification.requestPermission();
+  updateNotificationUi();
+}
+function notifyTask(t){
+  if(!t)return;
+  if(taskNotificationSupported() && Notification.permission==="granted"){
+    try{
+      new Notification(`Team Tracker task • ${(t.priority||"normal").toUpperCase()}`,{
+        body:`${t.task_text||"New task"}${t.area?" • "+t.area:""}`,
+        icon:"app_logo.svg",
+        tag:"task-"+t.id
+      });
+    }catch(e){}
+  }
+}
+async function startTaskListener(){
+  await loadTaskInbox();
+  updateNotificationUi();
+  if(!taskChannel&&profile){
+    taskChannel=sb.channel("my_tasks_"+profile.id)
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"task_assignments",filter:`staff_id=eq.${profile.id}`},payload=>{notifyTask(payload.new);loadTaskInbox();})
+      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"task_assignments",filter:`staff_id=eq.${profile.id}`},()=>loadTaskInbox())
+      .subscribe();
+  }
+  if(!staffTaskPollTimer){
+    staffTaskPollTimer=setInterval(()=>{if(profile&&!document.hidden)loadTaskInbox()},750);
+  }
+}
+window.setTaskState=async(id,status)=>{
+  const {error}=await sb.rpc("staff_set_task_status",{p_assignment_id:id,p_status:status});
+  if(error){alert(error.message);return}
+  await loadTaskInbox();
+};
+$("ackTaskBtn").onclick=async()=>{if(currentAssignment)await setTaskState(currentAssignment.id,"acknowledged")};
+$("completeTaskBtn").onclick=async()=>{if(currentAssignment)await setTaskState(currentAssignment.id,"completed")};
+$("skipTaskBtn").onclick=async()=>{if(currentAssignment)await setTaskState(currentAssignment.id,"declined")};
+if($("notifyBtn"))$("notifyBtn").onclick=enableTaskNotifications;
+if($("managerNotifyBtn"))$("managerNotifyBtn").onclick=enableTaskNotifications;
+
+
+
+function taskStaffBadge(staffId){
+  const r=managerRows.find(x=>x.staff_id===staffId);
+  return r?badgeOf(r):"STAFF";
+}
+function taskStatusTime(t){
+  if(t.status==="completed"&&t.completed_at)return t.completed_at;
+  if(t.status==="declined"&&t.declined_at)return t.declined_at;
+  if(t.status==="acknowledged"&&t.acknowledged_at)return t.acknowledged_at;
+  return t.created_at;
+}
+function showControlToast(t){
+  if(!t || !["control_room","admin"].includes(profile?.access_level||"staff"))return;
+  const el=$("controlToast"); if(!el)return;
+  const status=(t.status||"assigned").toUpperCase();
+  el.innerHTML=`${taskStaffBadge(t.staff_id)} • ${status}<small>${t.task_text||"Private task"}</small>`;
+  el.classList.add("show");
+  clearTimeout(controlToastTimer);
+  controlToastTimer=setTimeout(()=>el.classList.remove("show"),4500);
+}
+async function fetchManagerTasks(){
+  if(!profile || !["control_room","admin"].includes(profile.access_level||"staff")){
+    managerTasks=[];
+    renderControlTaskFeed();
+    return;
+  }
+  const {data,error}=await sb.from("task_assignments")
+    .select("*")
+    .order("created_at",{ascending:false})
+    .limit(30);
+  if(error){console.warn("Task feed:",error.message);return}
+  managerTasks=data||[];
+  renderControlTaskFeed();
+}
+function renderControlTaskFeed(){
+  const wrap=$("controlTaskFeedWrap"), feed=$("controlTaskFeed");
+  if(!wrap||!feed)return;
+  const canControl=profile&&["control_room","admin"].includes(profile.access_level||"staff");
+  wrap.classList.toggle("hidden",!canControl);
+  if(!canControl)return;
+  const recent=managerTasks.slice(0,15);
+  feed.innerHTML=recent.length?recent.map(t=>{
+    const s=t.status||"assigned";
+    const when=taskStatusTime(t);
+    const area=t.area?` • ${t.area}`:"";
+    return `<div class="response-row">
+      <div><b>${taskStaffBadge(t.staff_id)}</b><small>${fmtTime(t.created_at)}</small></div>
+      <div><b>${t.task_text||"Task"}</b><small>${t.priority||"normal"}${area}</small></div>
+      <div><b class="status-${s}">${s.toUpperCase()}</b><small>${fmtTime(when)}</small></div>
+    </div>`;
+  }).join(""):`<div class="empty">No private task responses yet.</div>`;
+}
+
+function ensureMap(){
+  if(map)return;
+  map=L.map("map").setView(cfg.MAP_CENTER||[50.7242,-3.5278],cfg.MAP_ZOOM||17);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}).addTo(map);
+}
+function startManagerFastSync(){
+  if(managerPollTimer)return;
+  const tick=async()=>{
+    const view=$("managerView");
+    if(!view||view.classList.contains("hidden")||managerSyncBusy)return;
+    managerSyncBusy=true;
+    try{await Promise.all([fetchManagerTasks(),fetchManager()]);}finally{managerSyncBusy=false;}
+  };
+  tick();
+  managerPollTimer=setInterval(tick,500);
+}
+function stopManagerFastSync(){
+  if(managerPollTimer){clearInterval(managerPollTimer);managerPollTimer=null}
+}
+
+function applyTaskStatusBroadcast(payload){
+  if(!payload || !payload.id)return;
+  const i=managerTasks.findIndex(t=>t.id===payload.id);
+  if(i>=0){
+    managerTasks[i]={...managerTasks[i],status:payload.status||managerTasks[i].status};
+    if(payload.status==="acknowledged")managerTasks[i].acknowledged_at=payload.at||new Date().toISOString();
+    if(payload.status==="completed")managerTasks[i].completed_at=payload.at||new Date().toISOString();
+    if(payload.status==="declined")managerTasks[i].declined_at=payload.at||new Date().toISOString();
+    renderControlTaskFeed();
+    renderManager();
+  }
+  // Immediately reconcile with the database as the source of truth.
+  fetchManagerTasks().then(()=>fetchManager());
+}
+
+async function openManager(){
+  ensureMap();
+  setTimeout(()=>map.invalidateSize(),80);
+  await fetchManager();
+  await fetchManagerTasks();
+  startManagerFastSync();
+  if(!taskStatusBroadcastChannel){
+    taskStatusBroadcastChannel=sb.channel("ops_task_status_live")
+      .on("broadcast",{event:"task_status"},({payload})=>applyTaskStatusBroadcast(payload))
+      .subscribe();
+  }
+  if(!realtimeChannel){
+    realtimeChannel=sb.channel("manager_live_ops")
+      .on("postgres_changes",{event:"*",schema:"public",table:"current_locations"},async()=>{
+        await fetchManager();
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"shifts"},async()=>{
+        await fetchManager();
+      })
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"task_assignments"},async payload=>{
+        await fetchManagerTasks();
+      })
+      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"task_assignments"},async payload=>{
+        await fetchManagerTasks();
+        showControlToast(payload.new);
+      })
+      .subscribe();
+  }
+}
+async function fetchManager(){
+  const {data,error}=await sb.from("manager_live_locations").select("*").eq("is_on_shift",true).order("updated_at",{ascending:false});
+  if(error){$("staffList").innerHTML=`<div class="empty">${error.message}</div>`;return}
+  managerRows=data||[];renderManager();
+}
+function renderManager(){
+  const now=Date.now();
+  $("sOn").textContent=managerRows.length;
+  $("sHotel").textContent=managerRows.filter(x=>x.team_code==="hotel").length;
+  $("sSiyara").textContent=managerRows.filter(x=>x.team_code==="siyara").length;
+  $("sStale").textContent=managerRows.filter(x=>now-new Date(x.updated_at).getTime()>180000).length;
+  mapMarkers.forEach(m=>map.removeLayer(m));mapMarkers=[];
+  const pts=[];
+  managerRows.forEach(r=>{
+    if(r.latitude==null||r.longitude==null)return;
+    const marker=L.marker([r.latitude,r.longitude]).addTo(map)
+      .bindTooltip(badgeOf(r),{permanent:true,direction:"top",offset:[0,-14],className:"map-badge-label"})
+      .bindPopup(`<b>${badgeOf(r)}</b><br>${r.real_name||"Name not added"}<br>${r.area||"—"}<br>${r.task||"—"}<br>${fmtTime(r.updated_at)}`);
+    mapMarkers.push(marker);pts.push([r.latitude,r.longitude]);
+  });
+  if(pts.length>1)map.fitBounds(pts,{padding:[30,30],maxZoom:18});
+  else if(pts.length===1)map.setView(pts[0],18);
+
+  const canControl=["control_room","admin"].includes(profile.access_level||"staff");
+  // Keep the task/area field stable while Control Room is typing.
+  // Counts + map still refresh every second; the list catches up as soon as the field loses focus.
+  const activeEl=document.activeElement;
+  if(activeEl && activeEl.closest && activeEl.closest("#staffList") && activeEl.matches("input,select,textarea")) return;
+  $("staffList").innerHTML=managerRows.length?managerRows.map(r=>{
+    const stale=now-new Date(r.updated_at).getTime()>180000;
+    const latestTask=managerTasks.find(t=>t.staff_id===r.staff_id);
+    const draft=managerDrafts[r.staff_id]||{};
+    const taskState=canControl&&latestTask?`<div style="margin:8px 0 0;padding:8px 10px;border:1px solid #284158;border-radius:9px;background:#091724">
+      <b class="status-${latestTask.status||"assigned"}">${(latestTask.status||"assigned").toUpperCase()}</b>
+      <span class="small muted"> • ${latestTask.task_text||"Task"} • ${fmtTime(taskStatusTime(latestTask))}</span>
+    </div>`:"";
+    const controls=canControl?`<div class="opsbox">
+      ${taskState}
+      <div class="opsgrid">
+        <div><div class="opslabel">AREA / CHECKPOINT</div><input id="op_area_${r.staff_id}" class="opstext" value="${escapeAttr(draft.area ?? r.area ?? "")}" oninput="saveOpsDraft('${r.staff_id}','area',this.value)"></div>
+        <div><div class="opslabel">TASK</div><input id="op_task_${r.staff_id}" class="opstext" value="${escapeAttr(draft.task ?? "")}" placeholder="Assign task to ${badgeOf(r)}" oninput="saveOpsDraft('${r.staff_id}','task',this.value)"></div>
+        <div><div class="opslabel">PRIORITY</div><select id="op_priority_${r.staff_id}" class="opstext" onchange="saveOpsDraft('${r.staff_id}','priority',this.value)"><option ${(!draft.priority||draft.priority==='normal')?'selected':''}>normal</option><option ${draft.priority==='high'?'selected':''}>high</option><option ${draft.priority==='urgent'?'selected':''}>urgent</option></select></div>
+        <div><button class="assign-btn" onclick="assignTask('${r.staff_id}')">ASSIGN</button></div>
+      </div>
+    </div>`:"";
+    return `<div class="staffrow">
+      <div><b>${badgeOf(r)}</b><small>${r.real_name||"Name not added"} • ${r.employment_id}</small></div>
+      <div><b>${teamMeta[r.team_code]?.role||r.team_code}</b><small>${r.area||"No area"}</small></div>
+      <div><b>${r.task||"No task"}</b><small>±${r.accuracy_m??"?"}m • ${fmtTime(r.updated_at)}</small></div>
+      <div><span class="role-pill">${(profile.access_level||"staff")==="mic_live"?"VIEW ONLY":"OPS"}</span><div class="${stale?"stale-txt":"live-txt"}" style="margin-top:5px">${stale?"⚠ STALE":"● LIVE"}</div></div>
+    </div>${controls}`
+  }).join(""):`<div class="empty">No staff currently on shift.</div>`;
+}
+
+
+window.assignTask=async(staffId)=>{
+  if(!["control_room","admin"].includes(profile.access_level||"staff"))return;
+  const d=managerDrafts[staffId]||{};
+  const task=(d.task ?? $("op_task_"+staffId)?.value ?? "").trim();
+  const area=(d.area ?? $("op_area_"+staffId)?.value ?? "").trim();
+  const priority=d.priority ?? $("op_priority_"+staffId)?.value ?? "normal";
+  if(!task){alert("Enter a task first.");return}
+  const {error}=await sb.rpc("control_room_assign_task",{
+    p_staff_id:staffId,p_task_text:task,p_area:area||null,p_priority:priority
+  });
+  if(error){alert(error.message);return}
+  managerDrafts[staffId]={area,task:"",priority};
+  const taskEl=$("op_task_"+staffId);if(taskEl)taskEl.value="";
+  await fetchManagerTasks();
+  await fetchManager();
+};
+
+window.addEventListener("focus",()=>{if(profile){loadTaskInbox();const mv=$("managerView");if(mv&&!mv.classList.contains("hidden")){fetchManagerTasks();fetchManager();}}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){syncSessionFromNative();}if(!document.hidden&&profile){loadTaskInbox();const mv=$("managerView");if(mv&&!mv.classList.contains("hidden")){fetchManagerTasks();fetchManager();}}});
+(async()=>{
+  if(isPrincesshayAndroid){$("modePill").textContent=((window.TeamTrackerPlatform||"NATIVE APP")+" • V1").toUpperCase();$("managerLoginPanel").classList.add("hidden");}
+  if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  if(!configured)return;
+  await syncSessionFromNative();
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)await loadProfile();
+})();
+</script>
+</body>
+</html>

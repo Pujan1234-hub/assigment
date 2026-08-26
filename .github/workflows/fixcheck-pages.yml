@@ -49,3 +49,32 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Smoke test FloodSafe Nepal
+        run: |
+          set -e
+          URL="https://pujan1234-hub.github.io/assigment/floodsafe-nepal/"
+          ok=0
+          for i in $(seq 1 15); do
+            if curl -fsSL "$URL" -o /tmp/floodsafe.html && grep -q "बाढी सुरक्षा नेपाल" /tmp/floodsafe.html; then
+              ok=1
+              break
+            fi
+            sleep 3
+          done
+          test "$ok" = "1"
+          grep -q "leaflet@1.9.4" /tmp/floodsafe.html
+          curl -fsSL "https://raw.githubusercontent.com/l3lackcurtains/nepali-geo-pro-max/117fd0f3d2dabae3bd86bfe9e4c57098ffe56669/src/geo/districts.geo.ts" -o /tmp/nepal-boundary.ts
+          grep -q "NEPAL_DISTRICTS_GEO" /tmp/nepal-boundary.ts
+          curl -fsSL -D /tmp/bipad.headers -H "Origin: https://pujan1234-hub.github.io" "https://bipadportal.gov.np/api/v1/river/?limit=1" -o /tmp/bipad.json
+          python - <<'PY'
+          import json
+          json.load(open('/tmp/bipad.json'))
+          print('BIPAD JSON valid')
+          PY
+          if ! grep -qi '^access-control-allow-origin:' /tmp/bipad.headers; then
+            echo 'BIPAD API missing Access-Control-Allow-Origin header'
+            exit 2
+          fi
+          curl -fsSL "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" -o /tmp/leaflet.js
+          test -s /tmp/leaflet.js
+          echo "FloodSafe smoke test passed"

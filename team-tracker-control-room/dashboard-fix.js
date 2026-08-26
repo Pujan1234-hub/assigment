@@ -1,7 +1,13 @@
-/* Dashboard correctness patch: WAITING counts only pending tasks for staff currently on shift. */
+/* Dashboard correctness patch: PENDING TASKS counts only pending tasks for staff currently on shift. */
 (() => {
   const oldRender = window.render;
   if (typeof oldRender !== 'function') return;
+
+  function relabel(){
+    const el = document.getElementById('waitCount');
+    const small = el?.parentElement?.querySelector('small');
+    if (small) small.textContent = 'PENDING TASKS';
+  }
 
   window.render = function correctedRender(){
     oldRender();
@@ -12,10 +18,11 @@
       ).length;
       const el = document.getElementById('waitCount');
       if (el) el.textContent = waitingNow;
+      relabel();
     } catch {}
   };
 
-  // Correct immediately if the page was already rendered before this patch loaded.
+  relabel();
   try {
     if (document.getElementById('app') && !document.getElementById('app').classList.contains('hidden')) {
       window.render();

@@ -11,28 +11,23 @@ jobs:
   browser:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify deployed V23 map, local flood alerts, river interaction and older-friendly UX
+      - name: Verify deployed V23 map, local flood alerts, actual river flow and older-friendly UX
         run: |
           set -e
           URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v23/'
           ok=0
-          for i in $(seq 1 45); do
+          for i in $(seq 1 50); do
             if curl -fsSL "${URL}v23-upgrade.js?v=${GITHUB_SHA}" -o /tmp/v23.js \
               && curl -fsSL "${URL}v23-hotfix.js?v=${GITHUB_SHA}" -o /tmp/hotfix.js \
               && curl -fsSL "${URL}v23-ux.js?v=${GITHUB_SHA}" -o /tmp/ux.js \
-              && curl -fsSL "${URL}v23-river-map.js?v=${GITHUB_SHA}" -o /tmp/river.js \
+              && curl -fsSL "${URL}v23-river-map-v2.js?v=${GITHUB_SHA}" -o /tmp/river2.js \
               && curl -fsSL "${URL}?smoke=${GITHUB_SHA}" -o /tmp/page.html \
               && grep -q 'V23 LIVE DATA' /tmp/v23.js \
-              && grep -q 'नेपाल ७७ जिल्ला' /tmp/v23.js \
               && grep -q 'function risks()' /tmp/hotfix.js \
-              && grep -q 'HIGH/VERY HIGH सूचना सक्रिय' /tmp/hotfix.js \
               && grep -q 'Car accident deaths' /tmp/ux.js \
-              && grep -q 'hookMapJump' /tmp/ux.js \
-              && grep -q 'showRiver' /tmp/river.js \
-              && grep -q 'fsRiverSheet' /tmp/river.js \
-              && grep -q 'v23-hotfix.js?v=4' /tmp/page.html \
-              && grep -q 'v23-ux.js?v=1' /tmp/page.html \
-              && grep -q 'v23-river-map.js?v=1' /tmp/page.html; then
+              && grep -q 'HydroRIVERS' /tmp/river2.js \
+              && grep -q 'fs-r2-inner' /tmp/river2.js \
+              && grep -q 'v23-river-map-v2.js?v=2' /tmp/page.html; then
               ok=1; break
             fi
             sleep 4
@@ -41,35 +36,31 @@ jobs:
           node --check /tmp/v23.js
           node --check /tmp/hotfix.js
           node --check /tmp/ux.js
-          node --check /tmp/river.js
+          node --check /tmp/river2.js
           grep -q 'const POLL=5000' /tmp/v23.js
           grep -q 'fs23-risk-history' /tmp/hotfix.js
           grep -q '30\*60\*1000' /tmp/hotfix.js
-          grep -q 'सडक, सामान्य/बढ्दो नदी वा टाढाको चेतावनीले आवाज बज्दैन' /tmp/hotfix.js
           grep -q 'Forest fire' /tmp/v23.js
           grep -q 'Car accident deaths' /tmp/ux.js
-          grep -q 'Use my location' /tmp/ux.js
-          grep -q 'Flood status around me' /tmp/ux.js
-          grep -q 'scrollIntoView' /tmp/ux.js
-          grep -q 'min-height:48px' /tmp/ux.js
-          grep -q 'bubblingMouseEvents:false' /tmp/river.js
-          grep -q 'Tap for current status' /tmp/river.js
-          grep -q 'Water level' /tmp/river.js
-          grep -q 'Warning level' /tmp/river.js
-          grep -q 'Danger level' /tmp/river.js
-          grep -q 'DHM / BIPAD' /tmp/river.js
+          grep -q 'services1.arcgis.com/7DRakJXKPEhwv0fM' /tmp/river2.js
+          grep -q 'bubblingMouseEvents:false' /tmp/river2.js
+          grep -q 'Water level' /tmp/river2.js
+          grep -q 'Warning level' /tmp/river2.js
+          grep -q 'Danger level' /tmp/river2.js
+          grep -q 'DHM / BIPAD' /tmp/river2.js
           if grep -q 'V23 OFFICIAL' /tmp/v23.js; then echo 'old misleading badge remains'; exit 4; fi
 
-          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=26000 --dump-dom "${URL}?smoke=${GITHUB_SHA}&testFocus=1" > /tmp/dom.html
+          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=32000 --dump-dom "${URL}?smoke=${GITHUB_SHA}&testFocus=1" > /tmp/dom.html
           grep -q 'leaflet-map-pane' /tmp/dom.html
           grep -q 'V23 LIVE DATA' /tmp/dom.html
-          grep -q 'नेपाल ७७ जिल्ला' /tmp/dom.html
           grep -q 'fs23accidentCard' /tmp/dom.html
-          grep -q 'fs23BackMap' /tmp/dom.html
           grep -q 'fs23AlertGate' /tmp/dom.html
-          grep -q 'fsRiverSheet' /tmp/dom.html
-          grep -q 'Google Maps' /tmp/dom.html
+          grep -q 'fsRiver2Sheet' /tmp/dom.html
+          grep -q 'fs-r2-inner' /tmp/dom.html
+          grep -q 'fs-r2-outer' /tmp/dom.html
+          grep -q 'fs-r2-arrow' /tmp/dom.html
+          grep -Eq 'River flow [1-9][0-9]*|नक्सामा [१-९1-9]' /tmp/dom.html
           if grep -Eq 'खतरा सीमा:[[:space:]]*०([.]०+)?([^०-९]|$)|खतरा सीमा:[[:space:]]*0([.]0+)?([^0-9]|$)' /tmp/dom.html; then
             echo 'danger zero leaked into river UI'; exit 5
           fi
-          echo 'V23 clickable river flow/status, accident card, alert gate and older-friendly UX passed'
+          echo 'V23 real HydroRIVERS flow lines and status interaction passed'

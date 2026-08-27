@@ -1,10 +1,22 @@
 (()=>{
 'use strict';
+const FS_MAP_ONLY=new URLSearchParams(location.search).get('mapOnly')==='1';
 function loadDirectAuthority(){
-  if(window.__fsAuthorityWatchV1||document.getElementById('fsAuthorityWatchScript'))return;
+  if(FS_MAP_ONLY||window.__fsAuthorityWatchV1||document.getElementById('fsAuthorityWatchScript'))return;
   const s=document.createElement('script');s.id='fsAuthorityWatchScript';s.src='./v24-authority-watch.js?v=2';s.async=true;document.head.appendChild(s);
 }
-loadDirectAuthority();
+function applyMapOnly(){
+  if(!FS_MAP_ONLY)return;
+  const run=()=>{
+    document.documentElement.classList.add('fs-map-only');
+    const st=document.createElement('style');st.id='fsMapOnlyCss';st.textContent=`html.fs-map-only,html.fs-map-only body{overflow:hidden!important}html.fs-map-only .side{display:none!important}html.fs-map-only .app{grid-template-columns:1fr!important;height:100vh!important;min-height:100vh!important}html.fs-map-only .mapWrap{height:100vh!important;min-height:100vh!important}html.fs-map-only .mapTop{left:112px!important}.fsMapBack{position:fixed;z-index:5000;left:10px;top:12px;padding:9px 11px;border-radius:11px;border:1px solid #f0b64b;background:#17100fee;color:#fff8e8;text-decoration:none;font-size:11px;font-weight:950;box-shadow:0 8px 22px #0008;backdrop-filter:blur(7px)}@media(max-width:600px){html.fs-map-only .mapTop{left:98px!important}.fsMapBack{left:8px;top:9px;padding:8px 9px;font-size:10px}}`;
+    document.head.appendChild(st);
+    const back=document.createElement('a');back.className='fsMapBack';back.href='../v25/';back.textContent='‹ Home';back.setAttribute('aria-label','Back to FloodSafe Nepal home');document.body.appendChild(back);
+    setTimeout(()=>{try{window.__fs?.map?.invalidateSize?.()}catch{}},300);
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
+}
+loadDirectAuthority();applyMapOnly();
 const $=id=>document.getElementById(id);
 let selectedRiver=null;
 

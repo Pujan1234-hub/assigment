@@ -1,6 +1,10 @@
 name: FloodSafe Nepal Police Sync
 
 on:
+  push:
+    paths:
+      - 'scripts/update_floodsafe_police.py'
+      - '.github/workflows/floodsafe-police-sync.yml'
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:

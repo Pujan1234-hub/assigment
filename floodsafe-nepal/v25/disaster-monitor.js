@@ -1,1 +1,1 @@
-(()=>{'use strict';if(window.__floodsafeDisasterLoader)return;window.__floodsafeDisasterLoader=true;const s=document.createElement('script');s.src='./disaster-monitor-v2.js?v=2';s.async=false;document.head.appendChild(s)})();
+(()=>{'use strict';if(window.__floodsafeDisasterLoader)return;window.__floodsafeDisasterLoader=true;const s=document.createElement('script');s.src='./today-monitor-v3.js?v=3';s.async=false;document.head.appendChild(s)})();

@@ -1,0 +1,55 @@
+name: Build FloodSafe V23
+on:
+  push:
+    paths:
+      - "floodsafe-nepal/v23-upgrade.js"
+      - ".github/workflows/build-v23.yml"
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate V23 without touching V2 V21 V22
+        run: |
+          rm -rf floodsafe-nepal/v23
+          cp -R floodsafe-nepal/v2 floodsafe-nepal/v23
+          rm -f floodsafe-nepal/v23/pro-upgrade.js
+          cp floodsafe-nepal/v23-upgrade.js floodsafe-nepal/v23/v23-upgrade.js
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-nepal/v23/index.html')
+          s=p.read_text()
+          s=s.replace('<title>बाढी सुरक्षा नेपाल • V2</title>','<title>बाढी सुरक्षा नेपाल • V23</title>')
+          s=s.replace('const $=id=>document.getElementById(id),FAST=20,SLOW=60;','const $=id=>document.getElementById(id),FAST=5,SLOW=5;')
+          old="const URL={river:'river/?limit=1800',rain:'rain/?limit=1800',alert:'alert/?limit=500',highway:'highway/?limit=1800',riverStations:'river-stations/?limit=1800',rainStations:'rain-stations/?limit=1800',weather:'weather/?limit=1200',incident:'incident/?limit=600',lossPeople:'loss-people/?limit=1200',bulletin:'bipad-bulletin/?limit=80'};"
+          new="const URL={river:'river/?limit=650',rain:'rain-stations/?limit=650',alert:'alert/?limit=250&ordering=-createdOn',highway:'highway/?limit=500',riverStations:'river-stations/?limit=650',rainStations:'rain-stations/?limit=650',weather:'weather/?limit=100',incident:'incident/?limit=200',lossPeople:'loss-people/?limit=400',bulletin:'bipad-bulletin/?limit=5&ordering=-createdOn'};"
+          s=s.replace(old,new)
+          s=s.replace('Web/PWA खुला हुँदा polling सक्रिय रहन्छ; पूर्ण background 24/7 alert native app चरणमा हुनेछ।','')
+          s=s.replace('नयाँ नजिकको आधिकारिक चेतावनी/सडक बन्द भेटिएपछि नरम तर चिनिने ध्वनि बज्छ।','नजिकको आधिकारिक चेतावनी, सडक अवरोध वा नदी जोखिम भेटिँदा चिनिने नरम चेतावनी ध्वनि आउँछ।')
+          s=s.replace("async function boot(){try{await initMap();", "window.__fs={get map(){return map},getFocus:()=>focus,setFocus,insideNepal,districtFor};\nasync function boot(){try{await initMap();")
+          oldsaved="const saved=localStorage.getItem('floodsafe-focus');if(saved){try{const c=JSON.parse(saved);if(Array.isArray(c)&&insideNepal(c))setFocus(c,'saved',false)}catch{}}else{renderOfficial();renderDistricts()}"
+          s=s.replace(oldsaved,"localStorage.removeItem('floodsafe-focus');renderOfficial();renderDistricts()")
+          s=s.replace("setBase('street');districtLayer=", "setBase('sat');districtLayer=")
+          s=s.replace('.slice(0,800)}draw.forEach','.slice(0,280)}draw.forEach')
+          s=s.replace('<span>• अर्को स्टेशन जाँच <b id="countdown">20</b> से.</span>','<span>• अर्को आधिकारिक जाँच <b id="countdown">5</b> से.</span>')
+          tag='<script src="./v23-upgrade.js?v=1"></script>'
+          if tag not in s:s=s.replace('</body>',tag+'\n</body>')
+          p.write_text(s)
+          PY
+          node --check floodsafe-nepal/v23/v23-upgrade.js
+          grep -q 'FAST=5,SLOW=5' floodsafe-nepal/v23/index.html
+          grep -q 'v23-upgrade.js?v=1' floodsafe-nepal/v23/index.html
+          grep -q "setBase('sat')" floodsafe-nepal/v23/index.html
+          if grep -q 'native app चरण' floodsafe-nepal/v23/index.html; then exit 3; fi
+      - name: Commit generated V23
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add floodsafe-nepal/v23
+          if git diff --cached --quiet; then echo 'No V23 changes'; exit 0; fi
+          git commit -m 'Build FloodSafe V23 official 5-second version'
+          git push

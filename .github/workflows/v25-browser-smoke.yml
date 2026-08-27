@@ -8,6 +8,7 @@ on:
       - "data/floodsafe-police.json"
       - "data/floodsafe-people-status.json"
       - "data/rasuwa-crossborder.json"
+      - "data/national-news.json"
       - ".github/workflows/v25-browser-smoke.yml"
 permissions:
   contents: read
@@ -21,23 +22,24 @@ jobs:
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
           for i in $(seq 1 50); do
             ok=1
-            for f in index.html alerts.html people.html weather.html news.html sources.html shell.css app.js ui-cleanup.js sw.js; do curl -fsSL "${BASE}${f}" -o "/tmp/${f//\//_}" || ok=0; done
+            for f in index.html alerts.html people.html weather.html news.html sources.html shell.css app.js ui-cleanup.js national-news.js sw.js; do curl -fsSL "${BASE}${f}" -o "/tmp/${f//\//_}" || ok=0; done
             grep -q '<h2>मुख्य जानकारी</h2>' /tmp/index.html || ok=0
-            grep -q '<h3>News</h3>' /tmp/index.html || ok=0
-            grep -q '<h3>Human Status</h3>' /tmp/index.html || ok=0
+            grep -q 'id="nationalHomeNews"' /tmp/index.html || ok=0
+            grep -q 'data-page="nationalnews"' /tmp/news.html || ok=0
             if [ "$ok" = 1 ]; then break; fi
             sleep 3
           done
           test "$ok" = 1
           node --check /tmp/app.js
           node --check /tmp/ui-cleanup.js
+          node --check /tmp/national-news.js
           node --check /tmp/sw.js
           grep -q "Content-Security-Policy" /tmp/index.html
           grep -q "Content-Security-Policy" /tmp/alerts.html
           grep -q "Content-Security-Policy" /tmp/people.html
           ! grep -Rqi 'waze' /tmp/index.html /tmp/alerts.html /tmp/people.html /tmp/weather.html /tmp/news.html /tmp/sources.html /tmp/app.js
           ! grep -Eqi 'सबै कुरा एउटै लामो page मा छैन|Breaking / Hot|HOT ONLY|UNCONSOLIDATED|final consolidated|minimum confirmed categories|App security hardening' /tmp/index.html /tmp/people.html /tmp/news.html /tmp/sources.html
-          echo 'PASS: clean pages, CSP, syntax and no Waze'
+          echo 'PASS: clean pages and scripts'
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
           test -n "$CHROME"
           mkdir -p /tmp/v25-smoke && cd /tmp/v25-smoke
@@ -47,32 +49,31 @@ jobs:
           const puppeteer=require('puppeteer-core');
           (async()=>{
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
-            const page=await browser.newPage();
-            page.setDefaultTimeout(35000);
-            const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+            const page=await browser.newPage();page.setDefaultTimeout(35000);
             await page.goto(process.env.BASE,{waitUntil:'domcontentloaded'});
             await page.waitForSelector('.navCard');
-            await page.waitForFunction(()=>/359|—/.test(document.getElementById('homeDeaths')?.textContent||''));
-            const home=await page.evaluate(()=>({cards:document.querySelectorAll('.navCard').length,text:document.body.innerText,waze:/waze/i.test(document.body.innerText),csp:!!document.querySelector('meta[http-equiv="Content-Security-Policy"]')}));
-            if(home.cards<6||home.waze||!home.csp||/सबै कुरा एउटै लामो page मा छैन|Breaking \/ Hot|final consolidated|minimum confirmed/i.test(home.text))throw Error('home assertion');
+            await page.waitForSelector('#nationalHomeNews .item',{timeout:30000});
+            const home=await page.evaluate(()=>({cards:document.querySelectorAll('.navCard').length,national:document.querySelectorAll('#nationalHomeNews .item').length,waze:/waze/i.test(document.body.innerText)}));
+            if(home.cards<6||home.national<1||home.waze)throw Error('home assertion '+JSON.stringify(home));
             await page.goto(process.env.BASE+'people.html',{waitUntil:'domcontentloaded'});
-            await page.waitForSelector('#peopleBodies');
             await page.waitForFunction(()=>document.getElementById('peopleBodies')?.textContent==='359',{timeout:30000});
             await new Promise(r=>setTimeout(r,500));
             const people=await page.evaluate(()=>({b:document.getElementById('peopleBodies')?.textContent,m:document.getElementById('peopleMissing')?.textContent,r:document.getElementById('peopleRescued')?.textContent,h:document.querySelector('h1')?.textContent,text:document.body.innerText}));
             if(people.b!=='359'||people.m!=='664'||people.r!=='123'||people.h!=='Human Status'||/final consolidated|minimum confirmed|UNCONSOLIDATED|≥/.test(people.text))throw Error('people assertion '+JSON.stringify(people));
+            const bipad=[];const req=r=>{if(r.url().includes('bipadportal.gov.np'))bipad.push(r.url())};page.on('request',req);
             await page.goto(process.env.BASE+'news.html',{waitUntil:'domcontentloaded'});
-            await page.waitForSelector('#newsList');
-            await page.waitForFunction(()=>document.querySelectorAll('#newsList .item').length>0,{timeout:30000});
-            const news=await page.evaluate(()=>({items:document.querySelectorAll('#newsList .item').length,h:document.querySelector('h1')?.textContent,text:document.body.innerText}));
-            if(news.items<1||news.h!=='News'||/Breaking \/ Hot|HOT ONLY|NO NORMAL NEWS/.test(news.text))throw Error('news assertion');
+            await page.waitForSelector('#newsList .item',{timeout:30000});
+            await new Promise(r=>setTimeout(r,1200));
+            page.off('request',req);
+            const news=await page.evaluate(()=>({items:document.querySelectorAll('#newsList .item').length,h:document.querySelector('h1')?.textContent,mode:document.body.dataset.page,sources:[...document.querySelectorAll('#newsList .item .meta')].map(x=>x.textContent).join(' ')}));
+            if(news.items<1||news.h!=='News'||news.mode!=='nationalnews'||bipad.length)throw Error('national news assertion '+JSON.stringify({news,bipad}));
             await page.goto('https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/?mapOnly=1',{waitUntil:'domcontentloaded'});
             await page.waitForSelector('.leaflet-container',{timeout:30000});
             await page.waitForFunction(()=>document.documentElement.classList.contains('fs-map-only'),{timeout:20000});
             const map=await page.evaluate(()=>({side:getComputedStyle(document.querySelector('.side')).display,back:!!document.querySelector('.fsMapBack')}));
             if(map.side!=='none'||!map.back)throw Error('map-only assertion '+JSON.stringify(map));
-            console.log('PASS',JSON.stringify({people,news:{items:news.items,h:news.h},map,errors:errors.slice(0,5)}));
+            console.log('PASS',JSON.stringify({home,people,news,bipadRequests:bipad.length,map}));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS
-          echo 'V25 clean multi-page browser smoke passed'
+          echo 'V25 national-news browser smoke passed'

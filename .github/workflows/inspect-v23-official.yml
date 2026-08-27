@@ -1,0 +1,35 @@
+name: Inspect V23 official sources
+on:
+  push:
+    paths:
+      - ".github/workflows/inspect-v23-official.yml"
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect official BIPAD/DHM realtime schemas
+        run: |
+          python - <<'PY'
+          import json, urllib.request
+          base='https://bipadportal.gov.np/api/v1/'
+          eps=[
+            'weather/?limit=5',
+            'rain/?limit=5',
+            'river-stations/?limit=5',
+            'alert/?limit=10&ordering=-createdOn',
+            'highway/?limit=10',
+            'incident/?limit=10&ordering=-incidentOn',
+            'bipad-bulletin/?limit=5&ordering=-createdOn'
+          ]
+          for ep in eps:
+            print('\n###',ep)
+            try:
+              req=urllib.request.Request(base+ep,headers={'User-Agent':'FloodSafe-Nepal-V23'})
+              with urllib.request.urlopen(req,timeout=25) as r:j=json.load(r)
+              rows=j if isinstance(j,list) else j.get('results') or j.get('data') or []
+              print('count',len(rows))
+              for x in rows[:3]: print(json.dumps(x,ensure_ascii=False,default=str)[:6000])
+            except Exception as e: print('ERR',repr(e))
+          PY

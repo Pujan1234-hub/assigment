@@ -42,7 +42,8 @@ jobs:
           node --check /tmp/v24.js
           echo 'PASS: upgrade JS syntax'
           mustgrep "fetchJSON('./nepal-districts.geojson'" /tmp/v24.html
-          mustgrep 'renderDistricts();setInterval' /tmp/v24.html
+          mustgrep 'renderDistricts()' /tmp/v24.html
+          mustgrep 'setInterval(refreshSlow' /tmp/v24.html
           mustgrep 'showRiverStatus' /tmp/v24.html
           mustgrep 'const POLL=5000' /tmp/v23copy.js
           mustgrep 'FS24_API_CACHE_MS=30000' /tmp/v24.js

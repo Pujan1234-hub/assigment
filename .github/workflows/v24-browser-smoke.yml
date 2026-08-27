@@ -1,0 +1,51 @@
+name: V24 Map Browser Smoke
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "floodsafe-nepal/v24/**"
+      - ".github/workflows/v24-browser-smoke.yml"
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify V24 real map runtime
+        run: |
+          set -e
+          URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/'
+          ok=0
+          for i in $(seq 1 40); do
+            if curl -fsSL "$URL" -o /tmp/v24.html && grep -q 'बाढी सुरक्षा नेपाल • V24' /tmp/v24.html && curl -fsSL "${URL}nepal-districts.geojson" -o /tmp/nepal.json; then ok=1; break; fi
+            sleep 3
+          done
+          test "$ok" = 1
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          j=json.load(open('/tmp/nepal.json'))
+          assert j['type']=='FeatureCollection' and len(j['features'])>=77, len(j.get('features',[]))
+          s=Path('/tmp/v24.html').read_text()
+          blocks=re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>',s,re.S)
+          assert blocks
+          for i,b in enumerate(blocks):Path(f'/tmp/inline-{i}.js').write_text(b)
+          print('districts',len(j['features']),'inline',len(blocks))
+          PY
+          for f in /tmp/inline-*.js; do node --check "$f"; done
+          curl -fsSL "${URL}v23-upgrade.js?v=1" -o /tmp/v23copy.js
+          curl -fsSL "${URL}v24-upgrade.js?v=1" -o /tmp/v24.js
+          node --check /tmp/v23copy.js
+          node --check /tmp/v24.js
+          grep -q "fetchJSON('./nepal-districts.geojson'" /tmp/v24.html
+          grep -q 'renderDistricts();setInterval' /tmp/v24.html
+          grep -q 'showRiverStatus' /tmp/v24.html
+          grep -q 'const POLL=5000' /tmp/v23copy.js
+          grep -q 'V24 LIVE' /tmp/v23copy.js
+          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=18000 --dump-dom "$URL" > /tmp/dom.html
+          grep -q 'leaflet-container' /tmp/dom.html
+          grep -Eq 'id="loading"[^>]*display:[[:space:]]*none|style="display: none;"[^>]*id="loading"' /tmp/dom.html
+          grep -q 'id="fs24riverFloat"' /tmp/dom.html
+          grep -q 'V24 LIVE' /tmp/dom.html
+          if grep -q 'नक्सा लोड असफल' /tmp/dom.html; then echo 'Map reported failure'; exit 5; fi
+          echo 'V24 real map browser smoke passed'

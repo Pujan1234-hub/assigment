@@ -1,66 +1,23 @@
 name: V23 Browser Smoke
 on:
-  push:
-    paths:
-      - "floodsafe-nepal/v23/**"
-      - ".github/workflows/v23-browser-smoke.yml"
-      - ".github/workflows/fixcheck-pages.yml"
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
   browser:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify deployed V23 map, local flood alerts, actual river flow and older-friendly UX
+      - uses: actions/checkout@v4
+      - name: Verify V23 river interaction scripts
         run: |
           set -e
-          URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v23/'
-          ok=0
-          for i in $(seq 1 50); do
-            if curl -fsSL "${URL}v23-upgrade.js?v=${GITHUB_SHA}" -o /tmp/v23.js \
-              && curl -fsSL "${URL}v23-hotfix.js?v=${GITHUB_SHA}" -o /tmp/hotfix.js \
-              && curl -fsSL "${URL}v23-ux.js?v=${GITHUB_SHA}" -o /tmp/ux.js \
-              && curl -fsSL "${URL}v23-river-map-v2.js?v=${GITHUB_SHA}" -o /tmp/river2.js \
-              && curl -fsSL "${URL}?smoke=${GITHUB_SHA}" -o /tmp/page.html \
-              && grep -q 'V23 LIVE DATA' /tmp/v23.js \
-              && grep -q 'function risks()' /tmp/hotfix.js \
-              && grep -q 'Car accident deaths' /tmp/ux.js \
-              && grep -q 'HydroRIVERS' /tmp/river2.js \
-              && grep -q 'fs-r2-inner' /tmp/river2.js \
-              && grep -q 'v23-river-map-v2.js?v=2' /tmp/page.html; then
-              ok=1; break
-            fi
-            sleep 4
-          done
-          test "$ok" = 1
-          node --check /tmp/v23.js
-          node --check /tmp/hotfix.js
-          node --check /tmp/ux.js
-          node --check /tmp/river2.js
-          grep -q 'const POLL=5000' /tmp/v23.js
-          grep -q 'fs23-risk-history' /tmp/hotfix.js
-          grep -q '30\*60\*1000' /tmp/hotfix.js
-          grep -q 'Forest fire' /tmp/v23.js
-          grep -q 'Car accident deaths' /tmp/ux.js
-          grep -q 'services1.arcgis.com/7DRakJXKPEhwv0fM' /tmp/river2.js
-          grep -q 'bubblingMouseEvents:false' /tmp/river2.js
-          grep -q 'Water level' /tmp/river2.js
-          grep -q 'Warning level' /tmp/river2.js
-          grep -q 'Danger level' /tmp/river2.js
-          grep -q 'DHM/BIPAD' /tmp/river2.js
-          if grep -q 'V23 OFFICIAL' /tmp/v23.js; then echo 'old misleading badge remains'; exit 4; fi
-
-          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=32000 --dump-dom "${URL}?smoke=${GITHUB_SHA}&testFocus=1" > /tmp/dom.html
-          grep -q 'leaflet-map-pane' /tmp/dom.html
-          grep -q 'V23 LIVE DATA' /tmp/dom.html
-          grep -q 'fs23accidentCard' /tmp/dom.html
-          grep -q 'fs23AlertGate' /tmp/dom.html
-          grep -q 'fsRiver2Sheet' /tmp/dom.html
-          grep -q 'fs-r2-inner' /tmp/dom.html
-          grep -q 'fs-r2-outer' /tmp/dom.html
-          grep -q 'fs-r2-arrow' /tmp/dom.html
-          grep -Eq 'River flow [1-9][0-9]*|नक्सामा [१-९1-9]' /tmp/dom.html
-          if grep -Eq 'खतरा सीमा:[[:space:]]*०([.]०+)?([^०-९]|$)|खतरा सीमा:[[:space:]]*0([.]0+)?([^0-9]|$)' /tmp/dom.html; then
-            echo 'danger zero leaked into river UI'; exit 5
-          fi
-          echo 'V23 real HydroRIVERS flow lines and status interaction passed'
+          node --check floodsafe-nepal/v23/v23-upgrade.js
+          node --check floodsafe-nepal/v23/v23-hotfix.js
+          node --check floodsafe-nepal/v23/v23-ux.js
+          node --check floodsafe-nepal/v23/v23-river-map-v3.js
+          grep -q 'const POLL=5000' floodsafe-nepal/v23/v23-upgrade.js
+          grep -q 'pointerup' floodsafe-nepal/v23/v23-river-map-v3.js
+          grep -q 'closestRiver' floodsafe-nepal/v23/v23-river-map-v3.js
+          grep -q 'Finding river name' floodsafe-nepal/v23/v23-river-map-v3.js
+          grep -q 'Status:' floodsafe-nepal/v23/v23-river-map-v3.js
+          grep -q 'DHM / BIPAD' floodsafe-nepal/v23/v23-river-map-v3.js

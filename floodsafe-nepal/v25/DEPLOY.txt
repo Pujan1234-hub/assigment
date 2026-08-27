@@ -1,0 +1,2 @@
+FloodSafe Nepal V25 multi-page stable candidate.
+Verified after publishing shared data/ to GitHub Pages.

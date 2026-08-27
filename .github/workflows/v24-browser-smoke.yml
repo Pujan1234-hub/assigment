@@ -16,14 +16,20 @@ jobs:
         run: |
           set -e
           URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/'
+          DATAURL='https://pujan1234-hub.github.io/assigment/data/floodsafe-people-status.json'
           mustgrep(){ grep -q "$1" "$2" || { echo "ASSERT FAIL: $1 in $2"; exit 20; }; echo "PASS: $1"; }
           ok=0
-          for i in $(seq 1 40); do
-            if curl -fsSL "$URL" -o /tmp/v24.html && grep -q 'बाढी सुरक्षा नेपाल • V24' /tmp/v24.html && curl -fsSL "${URL}nepal-districts.geojson" -o /tmp/nepal.json; then ok=1; break; fi
+          for i in $(seq 1 60); do
+            if curl -fsSL "$URL" -o /tmp/v24.html \
+              && grep -q 'बाढी सुरक्षा नेपाल • V24' /tmp/v24.html \
+              && curl -fsSL "${URL}nepal-districts.geojson" -o /tmp/nepal.json \
+              && curl -fsSL "${URL}v24-people-status.js?v=1" -o /tmp/people.js \
+              && curl -fsSL "$DATAURL" -o /tmp/people.json; then ok=1; break; fi
+            echo "Waiting for Pages propagation: attempt $i"
             sleep 3
           done
           test "$ok" = 1
-          echo 'PASS: public V24 and Nepal GeoJSON reachable'
+          echo 'PASS: public V24, Nepal GeoJSON and people-status assets reachable'
           python - <<'PY'
           import json,re
           from pathlib import Path
@@ -40,8 +46,6 @@ jobs:
           curl -fsSL "${URL}v23-upgrade.js?v=1" -o /tmp/v23copy.js
           curl -fsSL "${URL}v24-upgrade.js?v=1" -o /tmp/v24.js
           curl -fsSL "${URL}v24-authority-watch.js?v=3" -o /tmp/authority.js
-          curl -fsSL "${URL}v24-people-status.js?v=1" -o /tmp/people.js
-          curl -fsSL 'https://pujan1234-hub.github.io/assigment/data/floodsafe-people-status.json' -o /tmp/people.json
           node --check /tmp/v23copy.js
           node --check /tmp/v24.js
           node --check /tmp/authority.js
@@ -92,6 +96,7 @@ jobs:
               await page.waitForSelector('#fs24riverFloat',{timeout:20000});
               await page.waitForSelector('#fsRasuwaWatch',{timeout:20000});
               await page.waitForSelector('#fsPeopleStatus',{timeout:20000});
+              await page.waitForFunction(()=>{const t=document.getElementById('fsPeopleStatus')?.innerText||'';return /359/.test(t)&&/664/.test(t)&&/123/.test(t)},{timeout:20000});
               const state=await page.evaluate(()=>({title:document.title,loading:getComputedStyle(document.getElementById('loading')).display,map:!!document.querySelector('.leaflet-container'),riverPanel:!!document.getElementById('fs24riverFloat'),authorityWatch:!!document.getElementById('fsRasuwaWatch'),peopleStatus:!!document.getElementById('fsPeopleStatus'),peopleText:document.getElementById('fsPeopleStatus')?.innerText||'',authorityScript:!!document.getElementById('fsAuthorityWatchScript')||!!window.__fsAuthorityWatchV1,reportedFailure:document.body.innerText.includes('नक्सा लोड असफल'),scale:!!window.__floodsafeScaleBridge,leaflet:typeof window.L,feed:document.getElementById('feedState')?.textContent||''}));
               console.log('BROWSER STATE',JSON.stringify(state));
               passed=state.map&&state.loading==='none'&&state.riverPanel&&state.authorityWatch&&state.peopleStatus&&/359/.test(state.peopleText)&&/664/.test(state.peopleText)&&/123/.test(state.peopleText)&&state.authorityScript&&!state.reportedFailure&&state.scale&&state.leaflet==='object';

@@ -1,0 +1,29 @@
+name: Inspect BIPAD flood schemas
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/inspect-bipad-flood.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect public flood endpoints
+        run: |
+          python - <<'PY'
+          import json, urllib.request
+          base='https://bipadportal.gov.np/api/v1/'
+          for ep in ['streamflow/?limit=3','flood-station/?limit=3','station-location/?limit=3','river/?limit=3','river-stations/?limit=3']:
+              print('\n###', ep)
+              req=urllib.request.Request(base+ep, headers={'User-Agent':'FloodSafe-Nepal-schema-check'})
+              with urllib.request.urlopen(req, timeout=20) as r:
+                  j=json.load(r)
+              rows=j if isinstance(j,list) else j.get('results') or j.get('data') or []
+              print('count', len(rows))
+              for x in rows[:2]:
+                  if isinstance(x,dict):
+                      print(json.dumps(x, ensure_ascii=False, default=str)[:5000])
+          PY

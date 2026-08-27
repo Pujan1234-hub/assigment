@@ -1,0 +1,55 @@
+name: FloodSafe V2 Checks
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "floodsafe-nepal/v2/**"
+      - ".github/workflows/floodsafe-v2-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate HTML and JavaScript syntax
+        run: |
+          set -e
+          grep -q "बाढी सुरक्षा नेपाल" floodsafe-nepal/v2/index.html
+          grep -q "IMERG_Precipitation_Rate" floodsafe-nepal/v2/index.html
+          python - <<'PY'
+          import re, pathlib
+          s=pathlib.Path('floodsafe-nepal/v2/index.html').read_text()
+          scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>',s,re.I)
+          inline='\n'.join(x for x in scripts if x.strip())
+          pathlib.Path('/tmp/floodsafe-v2.js').write_text(inline)
+          print('inline js bytes',len(inline))
+          PY
+          node --check /tmp/floodsafe-v2.js
+      - name: Check data sources
+        run: |
+          set -e
+          for path in 'river/?limit=1' 'rain/?limit=1' 'alert/?limit=1' 'highway/?limit=1' 'weather/?limit=1' 'incident/?limit=1' 'loss-people/?limit=1' 'river-stations/?limit=1' 'rain-stations/?limit=1'; do
+            curl -fsSL --max-time 15 -H 'Origin: https://pujan1234-hub.github.io' "https://bipadportal.gov.np/api/v1/$path" >/tmp/source.json
+            python -m json.tool /tmp/source.json >/dev/null
+          done
+          curl -fsSL --max-time 20 'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetCapabilities' | grep -q 'IMERG_Precipitation_Rate'
+          curl -fsSL --max-time 15 'https://api.open-meteo.com/v1/forecast?latitude=27.7&longitude=85.3&current=temperature_2m,precipitation,wind_speed_10m&timezone=Asia%2FKathmandu' >/tmp/weather.json
+          python -m json.tool /tmp/weather.json >/dev/null
+          curl -fsSL --max-time 20 --get --data-urlencode 'data=[out:json][timeout:8];way["waterway"="river"](27.6,85.2,27.8,85.4);out tags geom 1;' 'https://overpass-api.de/api/interpreter' >/tmp/osm.json
+          python -m json.tool /tmp/osm.json >/dev/null
+      - name: Check live V2 after Pages publish
+        run: |
+          set -e
+          URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v2/'
+          ok=0
+          for i in $(seq 1 25); do
+            if curl -fsSL --max-time 15 "$URL" -o /tmp/live.html && grep -q 'बाढी सुरक्षा नेपाल • V2' /tmp/live.html && grep -q 'आजको बाढी प्रभाव' /tmp/live.html; then ok=1; break; fi
+            sleep 4
+          done
+          test "$ok" = "1"
+          echo 'FloodSafe V2 live smoke test passed'

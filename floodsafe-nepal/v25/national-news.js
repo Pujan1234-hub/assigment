@@ -1,36 +1,21 @@
 (()=>{
 'use strict';
-const DATA='../../data/national-news.json';
-const PAGE=document.body.dataset.page||'home';
-const $=id=>document.getElementById(id);
-const safeText=v=>String(v??'').trim();
-const fmt=t=>{try{return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kathmandu',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(t))+' NPT'}catch{return''}};
-function clear(el){if(el)while(el.firstChild)el.removeChild(el.firstChild)}
-function make(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el}
-function storyCard(item){
- const box=make('article','item');
- box.appendChild(make('span','tag red',item.flash?'FLASH':'LATEST'));
- box.appendChild(make('h4','',safeText(item.title)));
- box.appendChild(make('div','meta',safeText(item.source)));
- if(item.url){const row=make('div','meta');const a=make('a','','समाचार खोल्नुहोस्');a.href=item.url;a.target='_blank';a.rel='noopener noreferrer';a.referrerPolicy='no-referrer';row.appendChild(a);box.appendChild(row)}
- return box;
-}
-function render(data){
- const items=Array.isArray(data?.items)?data.items:[];
- if(PAGE==='nationalnews'){
-   const list=$('newsList');if(list){clear(list);items.slice(0,30).forEach(x=>list.appendChild(storyCard(x)));if(!items.length)list.appendChild(make('div','empty','अहिले नयाँ राष्ट्रिय समाचार उपलब्ध छैन।'))}
-   if($('newsCount'))$('newsCount').textContent=items.length;
-   if($('appStatus'))$('appStatus').textContent='समाचार अपडेट • '+(data?.updated_at_npt||fmt(data?.generated_at));
- }
- if(PAGE==='home'){
-   const list=$('nationalHomeNews');if(list){clear(list);items.slice(0,4).forEach(x=>list.appendChild(storyCard(x)));if(!items.length)list.appendChild(make('div','empty','अहिले नयाँ राष्ट्रिय समाचार उपलब्ध छैन।'))}
- }
-}
-async function load(){
- try{const r=await fetch(DATA+'?t='+Date.now(),{cache:'no-store',credentials:'omit'});if(!r.ok)throw Error('HTTP '+r.status);render(await r.json())}catch(e){if(PAGE==='nationalnews'&&$('appStatus'))$('appStatus').textContent='समाचार स्रोत फेरि जाँच हुँदैछ…'}
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
-setInterval(load,60000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
-window.addEventListener('online',load);
+const PAGE=document.body.dataset.page||'home',$=id=>document.getElementById(id),KCHA='https://kchakhabar.com/api/v1/today.json?limit=80',FALLBACK='../../data/national-news.json';
+let items=[],cursor=0,lastTop='',sourceOk=false,nextRotate=10,lastKcha=0;
+const norm=s=>String(s||'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+const age=t=>{const x=+new Date(t||0);if(!x)return Infinity;return Math.max(0,Date.now()-x)};
+function make(tag,cls,t){const e=document.createElement(tag);if(cls)e.className=cls;if(t!==undefined)e.textContent=t;return e}
+function clear(e){if(e)while(e.firstChild)e.removeChild(e.firstChild)}
+function fmt(t){try{return new Intl.DateTimeFormat('ne-NP',{timeZone:'Asia/Kathmandu',hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'}).format(new Date(t))}catch{return''}}
+function dedup(list){const out=[],seen=[];for(const x of list){const k=norm(x.title);if(!k||seen.some(s=>(k.includes(s)||s.includes(k))&&Math.min(k.length,s.length)>24))continue;seen.push(k);out.push(x)}return out}
+function fromKcha(j){const raw=Array.isArray(j?.stories)?j.stories:[],fresh=raw.filter(s=>age(s.updated_at||s.first_reported)<=8*3600e3),use=fresh.length>=8?fresh:raw.filter(s=>age(s.updated_at||s.first_reported)<=24*3600e3);return dedup(use.map(s=>{const src=s.sources?.[0];return{title:s.topic_ne||s.topic_en||'',source:src?.publisher||'Nepal media',url:src?.url||s.url,updated:s.updated_at||s.first_reported,flash:age(s.updated_at||s.first_reported)<=90*60000}}))}
+function fromFallback(j){return dedup((j?.items||[]).map(x=>({title:x.title,source:x.source,url:x.url,updated:j.generated_at,flash:!!x.flash}))) }
+function storyCard(x){const box=make('article','item');box.appendChild(make('span','tag '+(x.flash?'red':''),x.flash?'FLASH':'LATEST'));box.appendChild(make('h4','',x.title));box.appendChild(make('div','meta',x.source+(x.updated?' • '+fmt(x.updated):'')));if(x.url){const r=make('div','meta'),a=make('a','','समाचार खोल्नुहोस्');a.href=x.url;a.target='_blank';a.rel='noopener noreferrer';a.referrerPolicy='no-referrer';r.appendChild(a);box.appendChild(r)}return box}
+function render(){const list=PAGE==='nationalnews'?$('newsList'):$('nationalHomeNews');if(!list)return;clear(list);if(!items.length){list.appendChild(make('div','empty','नयाँ राष्ट्रिय समाचार खोजिँदैछ…'));return}const n=PAGE==='nationalnews'?6:3,batch=[];for(let i=0;i<Math.min(n,items.length);i++)batch.push(items[(cursor+i)%items.length]);if(batch[0]?.title===lastTop&&items.length>1){cursor=(cursor+1)%items.length;return render()}lastTop=batch[0]?.title||'';batch.forEach(x=>list.appendChild(storyCard(x)));if($('newsCount'))$('newsCount').textContent=items.length;const status=sourceOk?'Live national feed • अर्को headline '+nextRotate+' sec':'Media feed फेरि जाँच हुँदैछ…';if($('appStatus'))$('appStatus').textContent=status;if($('homeNewsFresh'))$('homeNewsFresh').textContent=status;if($('healthNews'))$('healthNews').textContent=sourceOk?'Media feed ✓':'Media feed • फेरि जाँच हुँदैछ'}
+async function get(url,ms=7000){const c=new AbortController(),to=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer',signal:c.signal,headers:{accept:'application/json'}});if(!r.ok)throw Error(r.status);return await r.json()}finally{clearTimeout(to)}}
+async function loadKcha(){if(Date.now()-lastKcha<55000)return;lastKcha=Date.now();try{const j=await get(KCHA),next=fromKcha(j);if(next.length){items=next;sourceOk=true;cursor=0;render();return}}catch{}sourceOk=false}
+async function loadFallback(){try{const j=await get(FALLBACK+'?t='+Date.now(),5000);if(!items.length){items=fromFallback(j);render()}}catch{} }
+function rotate(){if(items.length){cursor=(cursor+(PAGE==='nationalnews'?6:3))%items.length;nextRotate=10;render()}else{nextRotate=10;loadKcha();loadFallback()}}
+async function boot(){await Promise.all([loadKcha(),loadFallback()]);render();setInterval(()=>{nextRotate--;if(nextRotate<=0)rotate();else{if($('appStatus')&&sourceOk)$('appStatus').textContent='Live national feed • अर्को headline '+nextRotate+' sec';if($('homeNewsFresh')&&sourceOk)$('homeNewsFresh').textContent='Live national feed • अर्को headline '+nextRotate+' sec'}},1000);setInterval(loadFallback,10000);setInterval(loadKcha,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadKcha();loadFallback();render()}});window.addEventListener('online',()=>{loadKcha();loadFallback()})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

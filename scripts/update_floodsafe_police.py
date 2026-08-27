@@ -115,27 +115,44 @@ def parse_bulletin(url: str, raw: str) -> dict:
     if "रसुवा बाढी" not in text or "जनाको मृत्यु" not in text:
         raise RuntimeError("Candidate page is not a Rasuwa flood fatality bulletin")
 
-    dm = re.search(r"(२०\d{2}-\d{2}-\d{2})", text)
-    tm = re.search(r"([०-९0-9]{1,2})\s*:\s*([०-९0-9]{2})\s*बजे", text)
-    total_m = re.search(r"सम्म\s+([०-९0-9\sसयहजार]+?)\s+जनाको मृत्यु", text)
-    if not (dm and tm and total_m):
+    # Keep extraction inside the current article's district paragraph. Nepal Police
+    # pages can contain older/related headlines elsewhere in the same HTML.
+    body_m = re.search(
+        r"जसमध्ये\s+(.*?)\s+गरी\s+[०-९0-9\sसयहजार]+?\s+जनाको शव फेला परेको छ",
+        text,
+    )
+    if not body_m:
+        raise RuntimeError("Could not isolate current bulletin district paragraph")
+    district_text = body_m.group(1)
+
+    # Date/time/total are read from the text immediately before that district paragraph.
+    prefix = text[: body_m.start()]
+    date_hits = re.findall(r"(२०[०-९0-9]{2}-[०-९0-9]{2}-[०-९0-9]{2})", prefix)
+    time_hits = re.findall(r"([०-९0-9]{1,2})\s*:\s*([०-९0-9]{2})\s*बजे", prefix)
+    total_hits = re.findall(r"सम्म\s+([०-९0-9\sसयहजार]+?)\s+जनाको मृत्यु", prefix)
+    if not (date_hits and time_hits and total_hits):
         raise RuntimeError("Could not parse bulletin date/time/total")
 
-    bs = dm.group(1).translate(DIGITS)
-    hh = int(tm.group(1).translate(DIGITS))
-    mm = int(tm.group(2).translate(DIGITS))
-    total = np_num(total_m.group(1))
+    bs = date_hits[-1].translate(DIGITS)
+    hh = int(time_hits[-1][0].translate(DIGITS))
+    mm = int(time_hits[-1][1].translate(DIGITS))
+    total = np_num(total_hits[-1])
 
     districts = []
     for en, ne, label in DISTRICTS:
-        m = re.search(label + r"\s+([०-९0-9\sसयहजार]+?)\s+जना", text)
+        m = re.search(
+            label + r"\s+([०-९0-9\sसयहजार]+?)(?=\s*(?:जना)?\s*(?:,|र\s+|$))",
+            district_text,
+        )
         if not m:
-            raise RuntimeError(f"Could not parse district count: {ne}")
+            raise RuntimeError(f"Could not parse district count: {ne}; paragraph={district_text}")
         districts.append({"name": en, "name_ne": ne, "deaths": np_num(m.group(1))})
 
     district_sum = sum(x["deaths"] for x in districts)
     if district_sum != total:
-        raise RuntimeError(f"Safety validation failed: district sum {district_sum} != published total {total}")
+        raise RuntimeError(
+            f"Safety validation failed: district sum {district_sum} != published total {total}; parsed={districts}"
+        )
 
     now_np = datetime.now(ZoneInfo("Asia/Kathmandu"))
     iso = now_np.replace(hour=hh, minute=mm, second=0, microsecond=0).isoformat()

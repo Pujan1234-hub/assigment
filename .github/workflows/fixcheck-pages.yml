@@ -12,6 +12,7 @@ on:
       - fixcheck/**
       - team-tracker/**
       - floodsafe-nepal/**
+      - data/**
       - .github/workflows/fixcheck-pages.yml
   workflow_dispatch:
 
@@ -46,6 +47,7 @@ jobs:
           cp -R fixcheck _site/fixcheck
           cp -R team-tracker _site/team-tracker
           cp -R floodsafe-nepal _site/floodsafe-nepal
+          if [ -d data ]; then cp -R data _site/data; fi
           printf '%s' "$GITHUB_SHA" > _site/build-version.txt
           python - <<'PY'
           from pathlib import Path
@@ -73,8 +75,6 @@ jobs:
                       s=s.replace('</body>',f'<script src="./{fn}?v={vernum}"></script></body>')
               p.write_text(s)
           PY
-          LATEST_FLOOD=$(find floodsafe-nepal -maxdepth 1 -mindepth 1 -type d -name 'v[0-9]*' -printf '%f\n' | sort -V | tail -1)
-          if [ -n "$LATEST_FLOOD" ] && [ -f "floodsafe-nepal/$LATEST_FLOOD/index.html" ]; then cp -R "_site/floodsafe-nepal/$LATEST_FLOOD/." _site/floodsafe-nepal/; fi
           if grep -Eqi '\bAI\b|AI-assisted|artificial intelligence' _site/index.html; then exit 2; fi
       - name: Setup Pages
         uses: actions/configure-pages@v5

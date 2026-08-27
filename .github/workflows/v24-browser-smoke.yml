@@ -15,12 +15,14 @@ jobs:
         run: |
           set -e
           URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/'
+          mustgrep(){ grep -q "$1" "$2" || { echo "ASSERT FAIL: $1 in $2"; exit 20; }; echo "PASS: $1"; }
           ok=0
           for i in $(seq 1 40); do
             if curl -fsSL "$URL" -o /tmp/v24.html && grep -q 'बाढी सुरक्षा नेपाल • V24' /tmp/v24.html && curl -fsSL "${URL}nepal-districts.geojson" -o /tmp/nepal.json; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
+          echo 'PASS: public V24 and Nepal GeoJSON reachable'
           python - <<'PY'
           import json,re
           from pathlib import Path
@@ -30,22 +32,26 @@ jobs:
           blocks=re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>',s,re.S)
           assert blocks
           for i,b in enumerate(blocks):Path(f'/tmp/inline-{i}.js').write_text(b)
-          print('districts',len(j['features']),'inline',len(blocks))
+          print('PASS: districts',len(j['features']),'inline scripts',len(blocks))
           PY
           for f in /tmp/inline-*.js; do node --check "$f"; done
+          echo 'PASS: inline JS syntax'
           curl -fsSL "${URL}v23-upgrade.js?v=1" -o /tmp/v23copy.js
           curl -fsSL "${URL}v24-upgrade.js?v=1" -o /tmp/v24.js
           node --check /tmp/v23copy.js
           node --check /tmp/v24.js
-          grep -q "fetchJSON('./nepal-districts.geojson'" /tmp/v24.html
-          grep -q 'renderDistricts();setInterval' /tmp/v24.html
-          grep -q 'showRiverStatus' /tmp/v24.html
-          grep -q 'const POLL=5000' /tmp/v23copy.js
-          grep -q 'FS24_API_CACHE_MS=30000' /tmp/v24.js
-          grep -q '__floodsafeScaleBridge' /tmp/v24.js
-          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=18000 --dump-dom "$URL" > /tmp/dom.html
-          grep -q 'leaflet-container' /tmp/dom.html
-          grep -Eq 'id="loading"[^>]*display:[[:space:]]*none|style="display: none;"[^>]*id="loading"' /tmp/dom.html
-          grep -q 'id="fs24riverFloat"' /tmp/dom.html
+          echo 'PASS: upgrade JS syntax'
+          mustgrep "fetchJSON('./nepal-districts.geojson'" /tmp/v24.html
+          mustgrep 'renderDistricts();setInterval' /tmp/v24.html
+          mustgrep 'showRiverStatus' /tmp/v24.html
+          mustgrep 'const POLL=5000' /tmp/v23copy.js
+          mustgrep 'FS24_API_CACHE_MS=30000' /tmp/v24.js
+          mustgrep '__floodsafeScaleBridge' /tmp/v24.js
+          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=18000 --dump-dom "$URL" > /tmp/dom.html 2>/tmp/chromium.err || { echo 'CHROMIUM FAILED'; cat /tmp/chromium.err; exit 30; }
+          echo 'PASS: Chromium rendered page'
+          mustgrep 'leaflet-container' /tmp/dom.html
+          if ! grep -Eq 'id="loading"[^>]*display:[[:space:]]*none|style="display: none;"[^>]*id="loading"' /tmp/dom.html; then echo 'ASSERT FAIL: loading overlay still visible'; grep -o 'id="loading"[^>]*' /tmp/dom.html | head -1 || true; exit 21; fi
+          echo 'PASS: loading overlay hidden'
+          mustgrep 'id="fs24riverFloat"' /tmp/dom.html
           if grep -q 'नक्सा लोड असफल' /tmp/dom.html; then echo 'Map reported failure'; exit 5; fi
           echo 'V24 real map browser smoke passed'

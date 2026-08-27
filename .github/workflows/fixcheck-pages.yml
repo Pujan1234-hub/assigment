@@ -65,7 +65,7 @@ jobs:
               p=Path('_site/floodsafe-nepal')/ver/'index.html'
               if not p.exists(): continue
               s=p.read_text()
-              for fn,vernum in [('v23-hotfix.js','4'),('v23-ux.js','1'),('v23-river-map-v2.js','2'),('v23-map-guard.js','1')]:
+              for fn,vernum in [('v23-hotfix.js','4'),('v23-ux.js','1'),('v23-river-map-v2.js','2'),('v23-river-name.js','2'),('v23-map-guard.js','1')]:
                   f=p.parent/fn
                   if f.exists():
                       tag=f'<script src="./{fn}?v={vernum}"></script>'
@@ -91,7 +91,7 @@ jobs:
           BASE=https://pujan1234-hub.github.io/assigment
           for i in $(seq 1 25); do
             if curl -fsSL "$BASE/?t=$RANDOM" -o /tmp/home.html && curl -fsSL "$BASE/build-version.txt?t=$RANDOM" -o /tmp/version.txt && curl -fsSL "$BASE/floodsafe-nepal/v23/?t=$RANDOM" -o /tmp/v23.html; then
-              if grep -q 'v23-hotfix.js?v=4' /tmp/v23.html && grep -q 'v23-ux.js?v=1' /tmp/v23.html && grep -q 'v23-river-map-v2.js?v=2' /tmp/v23.html && grep -q 'v23-map-guard.js?v=1' /tmp/v23.html && test -s /tmp/version.txt; then exit 0; fi
+              if grep -q 'v23-hotfix.js?v=4' /tmp/v23.html && grep -q 'v23-ux.js?v=1' /tmp/v23.html && grep -q 'v23-river-map-v2.js?v=2' /tmp/v23.html && grep -q 'v23-river-name.js?v=2' /tmp/v23.html && grep -q 'v23-map-guard.js?v=1' /tmp/v23.html && test -s /tmp/version.txt; then exit 0; fi
             fi
             sleep 3
           done

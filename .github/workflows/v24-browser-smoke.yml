@@ -41,11 +41,11 @@ jobs:
           grep -q 'renderDistricts();setInterval' /tmp/v24.html
           grep -q 'showRiverStatus' /tmp/v24.html
           grep -q 'const POLL=5000' /tmp/v23copy.js
-          grep -q 'V24 LIVE' /tmp/v23copy.js
+          grep -q 'FS24_API_CACHE_MS=30000' /tmp/v24.js
+          grep -q '__floodsafeScaleBridge' /tmp/v24.js
           chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=18000 --dump-dom "$URL" > /tmp/dom.html
           grep -q 'leaflet-container' /tmp/dom.html
           grep -Eq 'id="loading"[^>]*display:[[:space:]]*none|style="display: none;"[^>]*id="loading"' /tmp/dom.html
           grep -q 'id="fs24riverFloat"' /tmp/dom.html
-          grep -q 'V24 LIVE' /tmp/dom.html
           if grep -q 'नक्सा लोड असफल' /tmp/dom.html; then echo 'Map reported failure'; exit 5; fi
           echo 'V24 real map browser smoke passed'

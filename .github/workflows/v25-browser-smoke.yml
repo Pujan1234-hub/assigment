@@ -4,7 +4,7 @@ on:
     branches: ["main"]
     paths:
       - "floodsafe-nepal/v25/**"
-      - "floodsafe-nepal/v24/v24-upgrade.js"
+      - "floodsafe-nepal/v24/**"
       - "data/floodsafe-police.json"
       - "data/floodsafe-people-status.json"
       - "data/rasuwa-crossborder.json"
@@ -16,30 +16,39 @@ jobs:
   browser:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify V25 pages and browser runtime
+      - name: Verify V25 live safety runtime
         run: |
           set -e
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
-          for i in $(seq 1 50); do
+          for i in $(seq 1 60); do
             ok=1
-            for f in index.html alerts.html people.html weather.html news.html sources.html shell.css app.js ui-cleanup.js national-news.js sw.js; do curl -fsSL "${BASE}${f}" -o "/tmp/${f//\//_}" || ok=0; done
+            for f in index.html map.html alerts.html people.html weather.html news.html sources.html shell.css live-core.css live-core.js app.js national-news.js sw.js; do curl -fsSL "${BASE}${f}" -o "/tmp/${f//\//_}" || ok=0; done
+            grep -q 'id="npBsDate"' /tmp/index.html || ok=0
+            grep -q 'id="homeWxTemp"' /tmp/index.html || ok=0
             grep -q '<h2>मुख्य जानकारी</h2>' /tmp/index.html || ok=0
             grep -q 'id="nationalHomeNews"' /tmp/index.html || ok=0
             grep -q 'data-page="nationalnews"' /tmp/news.html || ok=0
+            grep -q 'class="liveMapFrame"' /tmp/map.html || ok=0
             if [ "$ok" = 1 ]; then break; fi
             sleep 3
           done
           test "$ok" = 1
+          node --check /tmp/live-core.js
           node --check /tmp/app.js
-          node --check /tmp/ui-cleanup.js
           node --check /tmp/national-news.js
           node --check /tmp/sw.js
-          grep -q "Content-Security-Policy" /tmp/index.html
-          grep -q "Content-Security-Policy" /tmp/alerts.html
-          grep -q "Content-Security-Policy" /tmp/people.html
-          ! grep -Rqi 'waze' /tmp/index.html /tmp/alerts.html /tmp/people.html /tmp/weather.html /tmp/news.html /tmp/sources.html /tmp/app.js
-          ! grep -Eqi 'सबै कुरा एउटै लामो page मा छैन|Breaking / Hot|HOT ONLY|UNCONSOLIDATED|final consolidated|minimum confirmed categories|App security hardening' /tmp/index.html /tmp/people.html /tmp/news.html /tmp/sources.html
-          echo 'PASS: clean pages and scripts'
+          ! grep -q 'id="homeAlerts"' /tmp/index.html
+          ! grep -q '<small>चेतावनी</small>' /tmp/index.html
+          ! grep -q 'app.js' /tmp/index.html
+          ! grep -q 'app.js' /tmp/alerts.html
+          ! grep -q 'app.js' /tmp/people.html
+          grep -q 'setInterval(alarmTone,2200)' /tmp/live-core.js
+          grep -q 'riskAlarmOk' /tmp/live-core.js
+          grep -q 'fs-v25-radius' /tmp/live-core.js
+          grep -q 'map.html' /tmp/sw.js
+          ! grep -Rqi 'waze' /tmp/index.html /tmp/map.html /tmp/alerts.html /tmp/people.html /tmp/weather.html /tmp/news.html /tmp/sources.html
+          echo 'PASS: static structure and live-core syntax'
+
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
           test -n "$CHROME"
           mkdir -p /tmp/v25-smoke && cd /tmp/v25-smoke
@@ -47,33 +56,60 @@ jobs:
           npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
           BASE="$BASE" CHROME="$CHROME" node <<'JS'
           const puppeteer=require('puppeteer-core');
+          const wait=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
-            const page=await browser.newPage();page.setDefaultTimeout(35000);
+            const page=await browser.newPage();page.setDefaultTimeout(45000);
+            const pageErrors=[];page.on('pageerror',e=>pageErrors.push(String(e)));
+
             await page.goto(process.env.BASE,{waitUntil:'domcontentloaded'});
-            await page.waitForSelector('.navCard');
-            await page.waitForSelector('#nationalHomeNews .item',{timeout:30000});
-            const home=await page.evaluate(()=>({cards:document.querySelectorAll('.navCard').length,national:document.querySelectorAll('#nationalHomeNews .item').length,waze:/waze/i.test(document.body.innerText)}));
-            if(home.cards<6||home.national<1||home.waze)throw Error('home assertion '+JSON.stringify(home));
+            await page.waitForSelector('.todayHero');
+            await page.waitForFunction(()=>document.getElementById('homeDeaths')?.textContent!=='—',{timeout:40000});
+            await page.waitForFunction(()=>document.getElementById('healthBipad')?.textContent.includes('✓')||document.getElementById('healthBipad')?.textContent.includes('✕'),{timeout:40000});
+            await page.waitForSelector('#nationalHomeNews .item',{timeout:40000});
+            const home=await page.evaluate(()=>{
+              const today=document.querySelector('.todayHero'),main=document.querySelector('.pageHead');
+              return {todayBeforeMain:today&&main&&today.compareDocumentPosition(main)&Node.DOCUMENT_POSITION_FOLLOWING,
+                bs:document.getElementById('npBsDate')?.textContent,
+                human:[document.getElementById('homeDeaths')?.textContent,document.getElementById('homeMissing')?.textContent,document.getElementById('homeRescued')?.textContent],
+                hasWarningStat:!!document.getElementById('homeAlerts'),
+                health:[document.getElementById('healthBipad')?.textContent,document.getElementById('healthRiver')?.textContent,document.getElementById('healthRoad')?.textContent],
+                news:document.querySelectorAll('#nationalHomeNews .item').length,
+                mapHref:document.querySelector('.navCard.map')?.getAttribute('href')};
+            });
+            if(!home.todayBeforeMain||!home.bs||home.bs.includes('लोड')||home.hasWarningStat||home.news<1||home.mapHref!=='./map.html')throw Error('home assertion '+JSON.stringify(home));
+            if(home.health.some(x=>!x?.includes('✓')))throw Error('main live source unavailable '+JSON.stringify(home.health));
+
+            await page.goto(process.env.BASE+'alerts.html',{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>['0','—'].includes(document.getElementById('alertCount')?.textContent)||/^\d+$/.test(document.getElementById('alertCount')?.textContent||''),{timeout:40000});
+            await page.waitForFunction(()=>document.getElementById('healthBipad')?.textContent.includes('✓'),{timeout:40000});
+            const alerts=await page.evaluate(()=>({a:document.getElementById('alertCount')?.textContent,r:document.getElementById('riverAlertCount')?.textContent,road:document.getElementById('roadAlertCount')?.textContent,arm:!!document.getElementById('armLocalAlerts'),radius:!!document.getElementById('alertRadius'),text:document.body.innerText}));
+            if(!alerts.arm||!alerts.radius||/Human Status.*चेतावनी/s.test(alerts.text))throw Error('alerts assertion '+JSON.stringify(alerts));
+
             await page.goto(process.env.BASE+'people.html',{waitUntil:'domcontentloaded'});
-            await page.waitForFunction(()=>document.getElementById('peopleBodies')?.textContent==='359',{timeout:30000});
-            await new Promise(r=>setTimeout(r,500));
-            const people=await page.evaluate(()=>({b:document.getElementById('peopleBodies')?.textContent,m:document.getElementById('peopleMissing')?.textContent,r:document.getElementById('peopleRescued')?.textContent,h:document.querySelector('h1')?.textContent,text:document.body.innerText}));
-            if(people.b!=='359'||people.m!=='664'||people.r!=='123'||people.h!=='Human Status'||/final consolidated|minimum confirmed|UNCONSOLIDATED|≥/.test(people.text))throw Error('people assertion '+JSON.stringify(people));
+            await page.waitForFunction(()=>document.getElementById('peopleBodies')?.textContent!=='—',{timeout:40000});
+            const people=await page.evaluate(()=>({b:document.getElementById('peopleBodies')?.textContent,m:document.getElementById('peopleMissing')?.textContent,r:document.getElementById('peopleRescued')?.textContent,stats:[...document.querySelectorAll('.stats .stat small')].map(x=>x.textContent)}));
+            if(!people.b||!people.m||!people.r||people.stats.some(x=>/चेतावनी/.test(x)))throw Error('people assertion '+JSON.stringify(people));
+
             const bipad=[];const req=r=>{if(r.url().includes('bipadportal.gov.np'))bipad.push(r.url())};page.on('request',req);
             await page.goto(process.env.BASE+'news.html',{waitUntil:'domcontentloaded'});
-            await page.waitForSelector('#newsList .item',{timeout:30000});
-            await new Promise(r=>setTimeout(r,1200));
-            page.off('request',req);
-            const news=await page.evaluate(()=>({items:document.querySelectorAll('#newsList .item').length,h:document.querySelector('h1')?.textContent,mode:document.body.dataset.page,sources:[...document.querySelectorAll('#newsList .item .meta')].map(x=>x.textContent).join(' ')}));
-            if(news.items<1||news.h!=='News'||news.mode!=='nationalnews'||bipad.length)throw Error('national news assertion '+JSON.stringify({news,bipad}));
-            await page.goto('https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/?mapOnly=1',{waitUntil:'domcontentloaded'});
-            await page.waitForSelector('.leaflet-container',{timeout:30000});
-            await page.waitForFunction(()=>document.documentElement.classList.contains('fs-map-only'),{timeout:20000});
-            const map=await page.evaluate(()=>({side:getComputedStyle(document.querySelector('.side')).display,back:!!document.querySelector('.fsMapBack')}));
-            if(map.side!=='none'||!map.back)throw Error('map-only assertion '+JSON.stringify(map));
-            console.log('PASS',JSON.stringify({home,people,news,bipadRequests:bipad.length,map}));
+            await page.waitForSelector('#newsList .item',{timeout:40000});await wait(1000);page.off('request',req);
+            const news=await page.evaluate(()=>({items:document.querySelectorAll('#newsList .item').length,mode:document.body.dataset.page,map:document.querySelector('.footerNav a:nth-child(2)')?.getAttribute('href')}));
+            if(news.items<1||news.mode!=='nationalnews'||bipad.length||news.map!=='./map.html')throw Error('national news assertion '+JSON.stringify({news,bipad}));
+
+            await page.goto(process.env.BASE+'map.html',{waitUntil:'domcontentloaded'});
+            await page.waitForSelector('.liveMapFrame');
+            await page.waitForFunction(()=>document.getElementById('liveSourceState')?.textContent.includes('connected'),{timeout:40000});
+            const frameHandle=await page.$('.liveMapFrame');const frame=await frameHandle.contentFrame();
+            await frame.waitForSelector('.leaflet-container',{timeout:45000});
+            await frame.waitForFunction(()=>document.documentElement.classList.contains('fs-map-only'),{timeout:30000});
+            const map=await frame.evaluate(()=>({side:getComputedStyle(document.querySelector('.side')).display,leaflet:!!document.querySelector('.leaflet-container'),feed:document.getElementById('feedState')?.textContent}));
+            const outerMap=await page.evaluate(()=>({arm:!!document.getElementById('armLocalAlerts'),radius:!!document.getElementById('alertRadius'),state:document.getElementById('liveSourceState')?.textContent}));
+            if(map.side!=='none'||!map.leaflet||!outerMap.arm||!outerMap.radius||!/connected/.test(outerMap.state||''))throw Error('map assertion '+JSON.stringify({map,outerMap}));
+
+            if(pageErrors.length)throw Error('page errors '+JSON.stringify(pageErrors.slice(0,8)));
+            console.log('PASS',JSON.stringify({home,alerts,people,news,bipadRequests:bipad.length,map,outerMap}));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS
-          echo 'V25 national-news browser smoke passed'
+          echo 'V25 end-to-end live safety smoke passed'

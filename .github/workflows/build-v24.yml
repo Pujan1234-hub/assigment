@@ -1,0 +1,112 @@
+name: Build FloodSafe V24
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "floodsafe-nepal/v23/**"
+      - "floodsafe-nepal/v24-upgrade.js"
+      - ".github/workflows/build-v24.yml"
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build V24 from tested V23 without changing V23
+        run: |
+          set -e
+          rm -rf floodsafe-nepal/v24
+          cp -R floodsafe-nepal/v23 floodsafe-nepal/v24
+          cp floodsafe-nepal/v24-upgrade.js floodsafe-nepal/v24/v24-upgrade.js
+          python - <<'PY'
+          from pathlib import Path
+          import json,re,urllib.request
+          root=Path('floodsafe-nepal/v24')
+          # Bundle Nepal district geometry locally so map startup never depends on a runtime GitHub fetch.
+          u='https://raw.githubusercontent.com/l3lackcurtains/nepali-geo-pro-max/117fd0f3d2dabae3bd86bfe9e4c57098ffe56669/src/geo/districts.geo.ts'
+          t=urllib.request.urlopen(u,timeout=30).read().decode()
+          marker='export const NEPAL_DISTRICTS_GEO'
+          p=t.index(marker); a=t.index('{',p); b=t.rindex('};')
+          geo=json.loads(t[a:b+1])
+          assert geo.get('type')=='FeatureCollection' and len(geo.get('features',[]))>=77
+          (root/'nepal-districts.geojson').write_text(json.dumps(geo,ensure_ascii=False,separators=(',',':')))
+
+          pth=root/'index.html'; s=pth.read_text()
+          s=s.replace('<title>बाढी सुरक्षा नेपाल • V23</title>','<title>बाढी सुरक्षा नेपाल • V24</title>')
+          # Fix V23 syntax typo that prevented the core boot/map from running.
+          s=s.replace("renderOfficial();renderDistricts()setInterval", "renderOfficial();renderDistricts();setInterval")
+          # Use the bundled Nepal boundary instead of an external runtime fetch.
+          s=re.sub(r"async function loadBoundary\(\)\{.*?\}\nfunction setBase", "async function loadBoundary(){return await fetchJSON('./nepal-districts.geojson',12000)}\nfunction setBase", s, flags=re.S)
+          # Expose only the read helpers required by the river-click status layer.
+          old="window.__fs={get map(){return map},getFocus:()=>focus,setFocus,insideNepal,districtFor};"
+          new="window.__fs={get map(){return map},getFocus:()=>focus,setFocus,insideNepal,districtFor,get waterways(){return waterways},get feeds(){return feeds},nearestGauge,name,status,waterLevel,warningLevel,dangerLevel,recordAge,distance};"
+          if old not in s: raise SystemExit('window.__fs hook not found')
+          s=s.replace(old,new)
+
+          # Replace waterway loader with multi-source fallback + clickable river lines.
+          a=s.index('async function loadWaterways(){')
+          b=s.index('function nearestGauge',a)
+          replacement=r'''async function loadWaterways(){
+            waterways=[];if(waterwayLayer)waterwayLayer.clearLayers();if(!focus)return;
+            const rad=Math.min(25,+$('radius').value),dlat=rad/111,dlon=rad/(111*Math.cos(focus[0]*Math.PI/180)),south=focus[0]-dlat,west=focus[1]-dlon,north=focus[0]+dlat,east=focus[1]+dlon;
+            const q='[out:json][timeout:12];(way["waterway"~"river|stream|canal"]('+south+','+west+','+north+','+east+'););out tags geom;';
+            const eps=['https://overpass-api.de/api/interpreter?data=','https://overpass.kumi.systems/api/interpreter?data='];
+            let j=null,lastErr=null;
+            for(const ep of eps){try{j=await fetchJSON(ep+encodeURIComponent(q),14000);if(j&&Array.isArray(j.elements))break}catch(e){lastErr=e}}
+            if(!j||!Array.isArray(j.elements)){ $('waterwayList').innerHTML='<div class="item"><small>वरिपरिका खोला geometry अहिले लोड हुन सकेन। Official DHM/BIPAD स्टेशन data भने चलिरहन्छ।</small></div>';return; }
+            for(const el of j.elements.slice(0,420)){
+              if(!el.geometry||el.geometry.length<2)continue;
+              const pts=el.geometry.map(g=>[g.lat,g.lon]).filter(insideNepal);if(pts.length<2)continue;
+              const nm=(el.tags&&((el.tags['name:ne'])||el.tags.name))||'नाम नखुलेको खोला';
+              const type=el.tags&&el.tags.waterway||'stream';const d=Math.min(...pts.map(p=>distance(focus,p)));
+              const wobj={name:nm,type,pts,d};waterways.push(wobj);
+              const g=nearestGauge(wobj),col=g&&g.k==='red'?'#ff3f5d':g&&g.k==='orange'?'#ff9f43':'#52c7e8';
+              const line=L.polyline(pts,{color:col,weight:type==='river'?4:2.4,opacity:.92,className:'flowDash'}).addTo(waterwayLayer);
+              line.bindTooltip(nm+' • क्लिक गरी अवस्था हेर्नुहोस्',{sticky:true});
+              line.on('click',ev=>{if(ev.originalEvent)L.DomEvent.stopPropagation(ev.originalEvent);window.__fs?.showRiverStatus?.(wobj)});
+            }
+            renderWaterwayList();
+          }
+          '''
+          s=s[:a]+replacement+s[b:]
+          tag='<script src="./v24-upgrade.js?v=1"></script>'
+          if tag not in s:s=s.replace('</body>',tag+'\n</body>')
+          pth.write_text(s)
+
+          # Keep the V23 enhancement features but identify this copy as V24.
+          up=root/'v23-upgrade.js'
+          if up.exists():
+            x=up.read_text().replace('V23 OFFICIAL','V24 LIVE').replace('🇳🇵 V23 OFFICIAL','🇳🇵 V24 LIVE')
+            up.write_text(x)
+          sw=root/'sw.js'
+          if sw.exists():
+            x=sw.read_text().replace("floodsafe-nepal-v2-shell-1","floodsafe-nepal-v24-shell-1").replace("startsWith('floodsafe-nepal-v2-shell-')","startsWith('floodsafe-nepal-v24-shell-')")
+            sw.write_text(x)
+          PY
+          # Syntax-check every inline script and both enhancement scripts before committing.
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('floodsafe-nepal/v24/index.html').read_text()
+          blocks=re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>',s,re.S)
+          for i,b in enumerate(blocks):Path(f'/tmp/v24-inline-{i}.js').write_text(b)
+          print('inline scripts',len(blocks))
+          PY
+          for f in /tmp/v24-inline-*.js; do node --check "$f"; done
+          node --check floodsafe-nepal/v24/v23-upgrade.js
+          node --check floodsafe-nepal/v24/v24-upgrade.js
+          python - <<'PY'
+          import json
+          j=json.load(open('floodsafe-nepal/v24/nepal-districts.geojson'))
+          assert len(j['features'])>=77
+          print('Nepal district bundle:',len(j['features']))
+          PY
+      - name: Commit V24
+        run: |
+          git config user.name "Pujan1234-hub"
+          git config user.email "chapagainpujan058@gmail.com"
+          git add floodsafe-nepal/v24
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Build FloodSafe V24 map-first river status"
+          git push

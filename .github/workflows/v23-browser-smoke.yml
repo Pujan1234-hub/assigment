@@ -11,7 +11,7 @@ jobs:
   browser:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify deployed V23 map, Nepali date, hazards and mobile hotfix
+      - name: Verify deployed V23 map, local flood alert gate and mobile hotfix
         run: |
           set -e
           URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v23/'
@@ -23,8 +23,10 @@ jobs:
               && grep -q 'V23 LIVE DATA' /tmp/v23.js \
               && grep -q 'नेपाल ७७ जिल्ला' /tmp/v23.js \
               && grep -q 'const threshold=' /tmp/v23.js \
-              && grep -q 'playStrongChime' /tmp/hotfix.js \
-              && grep -q 'fs23roadTools' /tmp/hotfix.js \
+              && grep -q 'function risks()' /tmp/hotfix.js \
+              && grep -q 'HIGH/VERY HIGH सूचना सक्रिय' /tmp/hotfix.js \
+              && grep -q 'function corridor' /tmp/hotfix.js \
+              && grep -q "fallback=sev==='very'?1.5:.75" /tmp/hotfix.js \
               && grep -q 'v23-hotfix.js?v=3' /tmp/page.html; then
               ok=1; break
             fi
@@ -39,7 +41,9 @@ jobs:
           grep -q 'leaflet-top.leaflet-left' /tmp/hotfix.js
           grep -q 'Google Maps' /tmp/hotfix.js
           grep -q 'Waze Live Map' /tmp/hotfix.js
-          grep -q '९५' /tmp/hotfix.js
+          grep -q 'fs23-risk-history' /tmp/hotfix.js
+          grep -q '30\*60\*1000' /tmp/hotfix.js
+          grep -q 'सडक, सामान्य/बढ्दो नदी वा टाढाको चेतावनीले आवाज बज्दैन' /tmp/hotfix.js
           if grep -q 'V23 OFFICIAL' /tmp/v23.js; then echo 'old misleading badge remains'; exit 4; fi
 
           chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=24000 --dump-dom "${URL}?smoke=${GITHUB_SHA}" > /tmp/dom.html
@@ -53,8 +57,10 @@ jobs:
           grep -q '२०८३' /tmp/dom.html
           grep -q 'भाद्र' /tmp/dom.html
           grep -q 'fs23roadTools' /tmp/dom.html
+          grep -q 'fs23AlertGate' /tmp/dom.html
+          grep -q 'HIGH' /tmp/dom.html
           grep -q 'Google Maps' /tmp/dom.html
           if grep -Eq 'खतरा सीमा:[[:space:]]*०([.]०+)?([^०-९]|$)|खतरा सीमा:[[:space:]]*0([.]0+)?([^0-9]|$)' /tmp/dom.html; then
             echo 'danger zero leaked into river UI'; exit 5
           fi
-          echo 'V23 map, Nepali date, hazard board and mobile hotfix smoke passed'
+          echo 'V23 local HIGH/VERY HIGH flood alert gate and mobile smoke passed'

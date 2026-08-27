@@ -1,4 +1,4 @@
-const CACHE='floodsafe-nepal-v24-shell-11';
+const CACHE='floodsafe-nepal-v24-shell-12';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icon.svg','./v23-hotfix.js','./v23-lang-police.js','./v23-river-map-v3.js','./v24-river-display.js','./v24-my-area-weather.js','./v24-authority-watch.js','./v24-safety-guard.js','./v24-upgrade.js'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('floodsafe-nepal-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()).then(()=>self.clients.matchAll({type:'window',includeUncontrolled:true})).then(ws=>Promise.all(ws.map(w=>{try{return w.navigate(w.url)}catch{return null}})))));
@@ -14,7 +14,7 @@ self.addEventListener('fetch',e=>{
       fetch('./v23-lang-police.js?v=5',{cache:'no-store'}),
       fetch('./v24-river-display.js?v=2',{cache:'no-store'}),
       fetch('./v24-my-area-weather.js?v=1',{cache:'no-store'}),
-      fetch('./v24-authority-watch.js?v=1',{cache:'no-store'})
+      fetch('./v24-authority-watch.js?v=2',{cache:'no-store'})
     ]).then(async([base,hot,guard,live,riverDisplay,myWeather,authorityWatch])=>{
       if(!base.ok)throw Error('base '+base.status);
       const a=await base.text(),b=hot.ok?await hot.text():'',c=guard.ok?await guard.text():'',d=live.ok?await live.text():'',e=riverDisplay.ok?await riverDisplay.text():'',f=myWeather.ok?await myWeather.text():'',g=authorityWatch.ok?await authorityWatch.text():'';

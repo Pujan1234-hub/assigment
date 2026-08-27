@@ -1,0 +1,39 @@
+name: Debug FloodSafe V23 map
+on:
+  push:
+    paths:
+      - ".github/workflows/debug-v23-map.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect live map in Chromium
+        run: |
+          set +e
+          URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v23/?mapdebug=1'
+          chromium --headless --no-sandbox --disable-gpu --enable-logging=stderr --v=0 --virtual-time-budget=20000 --dump-dom "$URL" > /tmp/dom.html 2>/tmp/chrome.err
+          echo '--- loading element ---'
+          grep -o '<div class="loading"[^>]*>[^<]*' /tmp/dom.html | head -3
+          echo '--- leaflet containers ---'
+          grep -o 'leaflet-[a-zA-Z0-9_-]*' /tmp/dom.html | sort | uniq -c | head -30
+          echo '--- tiles ---'
+          grep -o 'leaflet-tile[^" ]*' /tmp/dom.html | sort | uniq -c | head -20
+          echo '--- map state text ---'
+          grep -o 'नेपाल नक्सा तयार[^<]*\|नक्सा तयार हुँदैछ[^<]*\|DHM/BIPAD[^<]*' /tmp/dom.html | head -20
+          echo '--- chrome errors ---'
+          grep -Ei 'ERROR|Uncaught|TypeError|ReferenceError|SyntaxError|Failed|net::ERR' /tmp/chrome.err | tail -60
+          echo '--- loading hidden? ---'
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('/tmp/dom.html').read_text(errors='ignore')
+          m=re.search(r'<div class="loading"[^>]*id="loading"[^>]*>',s)
+          print(m.group(0) if m else 'NO_LOADING_NODE')
+          print('leaflet-map-pane', 'leaflet-map-pane' in s)
+          print('leaflet-tile-pane', 'leaflet-tile-pane' in s)
+          print('loading_display_none', bool(m and 'display: none' in m.group(0)))
+          PY
+          exit 0

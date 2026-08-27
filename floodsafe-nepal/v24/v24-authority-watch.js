@@ -1,6 +1,8 @@
 (()=>{
 'use strict';
 if(window.__fsAuthorityWatchV1)return;window.__fsAuthorityWatchV1=true;
+function loadPeopleStatus(){if(window.__fsPeopleStatusV1||document.getElementById('fsPeopleStatusScript'))return;const s=document.createElement('script');s.id='fsPeopleStatusScript';s.src='./v24-people-status.js?v=1';s.async=true;document.head.appendChild(s)}
+loadPeopleStatus();
 const $=id=>document.getElementById(id),lang=()=>localStorage.getItem('fs23-lang')==='en'?'en':'ne',T=(ne,en)=>lang()==='en'?en:ne;
 const API='https://bipadportal.gov.np/api/v1/';
 const CTX='../../data/rasuwa-crossborder.json';

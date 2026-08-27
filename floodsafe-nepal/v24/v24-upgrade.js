@@ -1,5 +1,10 @@
 (()=>{
 'use strict';
+function loadDirectAuthority(){
+  if(window.__fsAuthorityWatchV1||document.getElementById('fsAuthorityWatchScript'))return;
+  const s=document.createElement('script');s.id='fsAuthorityWatchScript';s.src='./v24-authority-watch.js?v=2';s.async=true;document.head.appendChild(s);
+}
+loadDirectAuthority();
 const $=id=>document.getElementById(id);
 let selectedRiver=null;
 

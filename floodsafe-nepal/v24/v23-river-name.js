@@ -1,0 +1,17 @@
+(()=>{
+'use strict';
+const OVERPASS=['https://overpass-api.de/api/interpreter?data=','https://overpass.kumi.systems/api/interpreter?data='];
+const cache=new Map();
+const lang=()=>localStorage.getItem('fs23-lang')==='en'?'en':'ne';
+const t=(ne,en)=>lang()==='en'?en:ne;
+const km=(a,b)=>{const R=6371,p=Math.PI/180,d1=(b[0]-a[0])*p,d2=(b[1]-a[1])*p,s=Math.sin(d1/2)**2+Math.cos(a[0]*p)*Math.cos(b[0]*p)*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(s))};
+function generic(s){return /^(river segment|नदी\/खोला खण्ड|river\/stream|unnamed)/i.test(String(s||'').trim())}
+function cleanGaugeName(s){return String(s||'').replace(/^DHM\/BIPAD gauge:\s*/i,'').replace(/^DHM\/BIPAD स्टेशन:\s*/,'').replace(/\s+at\s+.+$/i,'').replace(/\s+station.*$/i,'').trim()}
+function nearestCenter(el,p){const c=el.center;if(c&&Number.isFinite(+c.lat)&&Number.isFinite(+c.lon))return km(p,[+c.lat,+c.lon]);return 999}
+async function lookup(latlng){const key=`${latlng.lat.toFixed(3)},${latlng.lng.toFixed(3)},${lang()}`;if(cache.has(key))return cache.get(key);const q=`[out:json][timeout:8];nwr(around:1200,${latlng.lat},${latlng.lng})["waterway"~"river|stream|canal"]["name"];out tags center 30;`;let best=null;for(const base of OVERPASS){try{const c=new AbortController(),to=setTimeout(()=>c.abort(),9000);const r=await fetch(base+encodeURIComponent(q),{cache:'no-store',signal:c.signal});clearTimeout(to);if(!r.ok)throw Error(r.status);const j=await r.json();const list=(j.elements||[]).filter(x=>x.tags?.name||x.tags?.['name:ne']||x.tags?.['name:en']);list.sort((a,b)=>nearestCenter(a,[latlng.lat,latlng.lng])-nearestCenter(b,[latlng.lat,latlng.lng]));if(list.length){const x=list[0],ne=x.tags?.['name:ne']||x.tags?.name||x.tags?.['name:en'],en=x.tags?.['name:en']||x.tags?.name||x.tags?.['name:ne'];best=lang()==='en'?en:ne;break}}catch(e){console.warn('river name lookup',e)}}cache.set(key,best);return best}
+function gaugeFallback(){const body=document.getElementById('r2Body');if(!body)return null;const text=body.innerText||'';const m=text.match(/(?:DHM\/BIPAD gauge|DHM\/BIPAD स्टेशन):\s*([^\n]+)/i);return m?cleanGaugeName(m[1]):null}
+async function rename(ev){const title=document.getElementById('r2Name');if(!title)return;const old=title.textContent||'';if(generic(old))title.textContent=t('नदीको नाम खोजिँदैछ…','Finding river name…');const osm=await lookup(ev.latlng);const fallback=gaugeFallback();const name=osm||fallback||old;if(name&&title)title.textContent=name}
+function attach(layer){if(!layer||layer.__fsRiverNameHook||layer?.options?.pane!=='riverHitPane')return;layer.__fsRiverNameHook=true;layer.on('click',ev=>setTimeout(()=>rename(ev),60))}
+function hook(){let tries=0;const iv=setInterval(()=>{const map=window.__fs?.map;if(!map){if(++tries>120)clearInterval(iv);return}clearInterval(iv);map.eachLayer(attach);map.on('layeradd',e=>attach(e.layer));},180)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook);else hook();
+})();

@@ -20,11 +20,10 @@ loadDirectAuthority();applyMapOnly();
 const $=id=>document.getElementById(id);
 let selectedRiver=null;
 
-// V25 scale bridge: collapse repeated official API reads on each device.
-// It also exposes endpoint health so the V25 map shell can reuse these reads
-// instead of creating a second competing BIPAD/DHM/DoR receiver.
+// Collapse duplicate reads only inside the same five-second receiver window.
+// This keeps the live map responsive to upstream changes on the next poll.
 const fs24PreviousFetch=window.fetch.bind(window);
-const FS24_API_CACHE_MS=30000;
+const FS24_API_CACHE_MS=5000;
 const fs24ApiCache=new Map();
 const fs24Pending=new Map();
 const fs24Health=new Map();

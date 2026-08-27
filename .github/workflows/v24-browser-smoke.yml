@@ -4,7 +4,6 @@ on:
     branches: ["main"]
     paths:
       - "floodsafe-nepal/v24/**"
-      - "data/floodsafe-people-status.json"
       - ".github/workflows/v24-browser-smoke.yml"
 permissions:
   contents: read
@@ -16,20 +15,21 @@ jobs:
         run: |
           set -e
           URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/'
-          DATAURL='https://pujan1234-hub.github.io/assigment/data/floodsafe-people-status.json'
           mustgrep(){ grep -q "$1" "$2" || { echo "ASSERT FAIL: $1 in $2"; exit 20; }; echo "PASS: $1"; }
           ok=0
-          for i in $(seq 1 60); do
+          for i in $(seq 1 70); do
             if curl -fsSL "$URL" -o /tmp/v24.html \
               && grep -q 'बाढी सुरक्षा नेपाल • V24' /tmp/v24.html \
               && curl -fsSL "${URL}nepal-districts.geojson" -o /tmp/nepal.json \
-              && curl -fsSL "${URL}v24-people-status.js?v=1" -o /tmp/people.js \
-              && curl -fsSL "$DATAURL" -o /tmp/people.json; then ok=1; break; fi
+              && curl -fsSL "${URL}v23-upgrade.js?v=1" -o /tmp/v23copy.js \
+              && curl -fsSL "${URL}v24-upgrade.js?v=1" -o /tmp/v24.js \
+              && curl -fsSL "${URL}v24-authority-watch.js?v=4" -o /tmp/authority.js \
+              && grep -q 'fsNationalWatch' /tmp/authority.js \
+              && grep -q 'FS24_API_CACHE_MS=5000' /tmp/v24.js; then ok=1; break; fi
             echo "Waiting for Pages propagation: attempt $i"
             sleep 3
           done
           test "$ok" = 1
-          echo 'PASS: public V24, Nepal GeoJSON and people-status assets reachable'
           python - <<'PY'
           import json,re
           from pathlib import Path
@@ -42,76 +42,51 @@ jobs:
           print('PASS: districts',len(j['features']),'inline scripts',len(blocks))
           PY
           for f in /tmp/inline-*.js; do node --check "$f"; done
-          echo 'PASS: inline JS syntax'
-          curl -fsSL "${URL}v23-upgrade.js?v=1" -o /tmp/v23copy.js
-          curl -fsSL "${URL}v24-upgrade.js?v=1" -o /tmp/v24.js
-          curl -fsSL "${URL}v24-authority-watch.js?v=3" -o /tmp/authority.js
           node --check /tmp/v23copy.js
           node --check /tmp/v24.js
           node --check /tmp/authority.js
-          node --check /tmp/people.js
-          python - <<'PY'
-          import json
-          d=json.load(open('/tmp/people.json'))
-          assert d['recovered_bodies']>=1
-          assert d['missing_minimum']>=1
-          assert d['rescued_alive']>=1
-          print('PASS: people status JSON',d['recovered_bodies'],d['missing_minimum'],d['rescued_alive'])
-          PY
-          echo 'PASS: upgrade/authority/people JS syntax'
           mustgrep "fetchJSON('./nepal-districts.geojson'" /tmp/v24.html
           mustgrep 'renderDistricts()' /tmp/v24.html
           mustgrep 'setInterval(refreshSlow' /tmp/v24.html
           mustgrep 'showRiverStatus' /tmp/v24.html
           mustgrep 'const POLL=5000' /tmp/v23copy.js
-          mustgrep 'FS24_API_CACHE_MS=30000' /tmp/v24.js
+          mustgrep 'FS24_API_CACHE_MS=5000' /tmp/v24.js
           mustgrep '__floodsafeScaleBridge' /tmp/v24.js
-          mustgrep 'v24-authority-watch.js?v=2' /tmp/v24.js
-          mustgrep 'fsRasuwaWatch' /tmp/authority.js
-          mustgrep 'v24-people-status.js?v=1' /tmp/authority.js
-          mustgrep 'fsPeopleStatus' /tmp/people.js
+          mustgrep 'fsNationalWatch' /tmp/authority.js
+          mustgrep "flood:400,landslide:300,quake:250,air:200" /tmp/authority.js
+          mustgrep 'm>=6.5' /tmp/authority.js
+          ! grep -q 'rasuwa-crossborder' /tmp/authority.js
+          ! grep -q 'DAO Rasuwa' /tmp/authority.js
+          ! grep -q 'v24-people-status.js' /tmp/authority.js
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
           test -n "$CHROME" || { echo 'No Chrome executable found'; exit 31; }
-          echo "Browser executable: $CHROME"
-          "$CHROME" --version || true
           mkdir -p /tmp/v24-smoke && cd /tmp/v24-smoke
           npm init -y >/dev/null 2>&1
           npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
           URL="$URL" CHROME="$CHROME" node <<'JS'
           const puppeteer=require('puppeteer-core');
+          const wait=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
-            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
-            const page=await browser.newPage();
-            page.setDefaultTimeout(30000);
-            const pageErrors=[],requestFailures=[],badResponses=[],consoleErrors=[];
-            page.on('pageerror',e=>pageErrors.push(String(e)));
-            page.on('requestfailed',r=>requestFailures.push({url:r.url(),error:r.failure()?.errorText||''}));
-            page.on('response',r=>{if(r.status()>=400)badResponses.push({status:r.status(),url:r.url()})});
-            page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
-            let passed=false;
-            try{
-              await page.goto(process.env.URL,{waitUntil:'domcontentloaded',timeout:30000});
-              await page.waitForSelector('.leaflet-container',{timeout:20000});
-              await page.waitForFunction(()=>{const x=document.getElementById('loading');return x&&getComputedStyle(x).display==='none'},{timeout:20000});
-              await page.waitForSelector('#fs24riverFloat',{timeout:20000});
-              await page.waitForSelector('#fsRasuwaWatch',{timeout:20000});
-              await page.waitForSelector('#fsPeopleStatus',{timeout:20000});
-              await page.waitForFunction(()=>{const t=document.getElementById('fsPeopleStatus')?.innerText||'';return /359/.test(t)&&/664/.test(t)&&/123/.test(t)},{timeout:20000});
-              const state=await page.evaluate(()=>({title:document.title,loading:getComputedStyle(document.getElementById('loading')).display,map:!!document.querySelector('.leaflet-container'),riverPanel:!!document.getElementById('fs24riverFloat'),authorityWatch:!!document.getElementById('fsRasuwaWatch'),peopleStatus:!!document.getElementById('fsPeopleStatus'),peopleText:document.getElementById('fsPeopleStatus')?.innerText||'',authorityScript:!!document.getElementById('fsAuthorityWatchScript')||!!window.__fsAuthorityWatchV1,reportedFailure:document.body.innerText.includes('नक्सा लोड असफल'),scale:!!window.__floodsafeScaleBridge,leaflet:typeof window.L,feed:document.getElementById('feedState')?.textContent||''}));
-              console.log('BROWSER STATE',JSON.stringify(state));
-              passed=state.map&&state.loading==='none'&&state.riverPanel&&state.authorityWatch&&state.peopleStatus&&/359/.test(state.peopleText)&&/664/.test(state.peopleText)&&/123/.test(state.peopleText)&&state.authorityScript&&!state.reportedFailure&&state.scale&&state.leaflet==='object';
-            }catch(e){
-              console.error('BROWSER CHECK FAILED',String(e));
-              const diag=await page.evaluate(()=>({title:document.title,url:location.href,leaflet:typeof window.L,loading:document.getElementById('loading')?.outerHTML||null,authority:!!document.getElementById('fsRasuwaWatch'),people:document.getElementById('fsPeopleStatus')?.innerText||'',body:document.body?.innerText?.slice(0,1200)||''})).catch(()=>({}));
-              console.log('BROWSER DIAG',JSON.stringify(diag));
-            }finally{
-              console.log('REQUEST FAILURES',JSON.stringify(requestFailures.slice(0,20)));
-              console.log('BAD RESPONSES',JSON.stringify(badResponses.slice(0,20)));
-              console.log('PAGE ERRORS',JSON.stringify(pageErrors.slice(0,20)));
-              console.log('CONSOLE ERRORS',JSON.stringify(consoleErrors.slice(0,20)));
-              await browser.close();
-            }
-            if(!passed)process.exit(3);
-          })().catch(e=>{console.error(e);process.exit(4)});
+            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,protocolTimeout:90000,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
+            const page=await browser.newPage();page.setDefaultTimeout(45000);
+            const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto(process.env.URL,{waitUntil:'domcontentloaded',timeout:45000});
+            console.log('stage: loaded');
+            await page.waitForSelector('.leaflet-container',{timeout:30000});
+            await page.waitForFunction(()=>{const x=document.getElementById('loading');return x&&getComputedStyle(x).display==='none'},{timeout:30000});
+            await page.waitForSelector('#fs24riverFloat',{timeout:30000});
+            await page.waitForSelector('#fsNationalWatch',{timeout:30000});
+            console.log('stage: map and national watch ready');
+            const state=await page.evaluate(()=>{const el=document.querySelector('.leaflet-container'),r=el.getBoundingClientRect(),legacy=['fs23PoliceDeaths','fsPeopleStatus','fsRasuwaWatch'].map(id=>{const x=document.getElementById(id);return{x:!!x,display:x?getComputedStyle(x).display:null}});return{map:!!el,w:r.width,h:r.height,pointer:getComputedStyle(el).pointerEvents,river:!!document.getElementById('fs24riverFloat'),national:!!document.getElementById('fsNationalWatch'),legacy,scale:!!window.__floodsafeScaleBridge,leaflet:typeof window.L,failed:document.body.innerText.includes('नक्सा लोड असफल')}});
+            console.log('STATE',JSON.stringify(state));
+            if(!state.map||state.w<200||state.h<200||state.pointer==='none'||!state.river||!state.national||!state.scale||state.leaflet!=='object'||state.failed)throw Error('invalid runtime '+JSON.stringify(state));
+            if(state.legacy.some(x=>x.x&&x.display!=='none'))throw Error('legacy Rasuwa panel visible '+JSON.stringify(state.legacy));
+            const box=await page.$('.leaflet-container'),b=await box.boundingBox();
+            await page.mouse.click(b.x+b.width*.52,b.y+b.height*.52);await wait(600);
+            const alive=await page.evaluate(()=>({url:location.href,map:!!document.querySelector('.leaflet-container'),homeClickable:document.elementFromPoint(30,30)?.tagName||'',bodyPointer:getComputedStyle(document.body).pointerEvents}));
+            console.log('AFTER CLICK',JSON.stringify(alive));
+            if(!alive.map||alive.bodyPointer==='none')throw Error('map froze after click '+JSON.stringify(alive));
+            if(errors.some(e=>/Maximum call stack|MutationObserver|out of memory/i.test(e)))throw Error('runtime loop '+JSON.stringify(errors));
+            console.log('PASS Nepal-wide V24 map smoke');await browser.close();
+          })().catch(e=>{console.error(e);process.exit(3)});
           JS
-          echo 'V24 real map + authority + people status browser smoke passed'

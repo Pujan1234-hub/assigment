@@ -76,10 +76,25 @@ jobs:
           sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
           sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=2"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
 
+          # FloodSafe hotfix must be present on first page load; do not wait for a service-worker update cycle.
+          python - <<'PY'
+          from pathlib import Path
+          for ver in ('v23','v24'):
+              p=Path('_site/floodsafe-nepal')/ver/'index.html'
+              h=p.parent/'v23-hotfix.js'
+              if not p.exists() or not h.exists():
+                  continue
+              s=p.read_text()
+              tag='<script src="./v23-hotfix.js?v=3"></script>'
+              if tag not in s:
+                  s=s.replace('</body>',tag+'</body>')
+                  p.write_text(s)
+          PY
+
           # Stable FloodSafe URL automatically serves the highest numbered version folder.
           LATEST_FLOOD=$(find floodsafe-nepal -maxdepth 1 -mindepth 1 -type d -name 'v[0-9]*' -printf '%f\n' | sort -V | tail -1)
           if [ -n "$LATEST_FLOOD" ] && [ -f "floodsafe-nepal/$LATEST_FLOOD/index.html" ]; then
-            cp -R "floodsafe-nepal/$LATEST_FLOOD/." _site/floodsafe-nepal/
+            cp -R "_site/floodsafe-nepal/$LATEST_FLOOD/." _site/floodsafe-nepal/
             echo "Stable FloodSafe URL now serves $LATEST_FLOOD"
           fi
 
@@ -108,13 +123,13 @@ jobs:
           set -euo pipefail
           BASE=https://pujan1234-hub.github.io/assigment
           for i in $(seq 1 20); do
-            if curl -fsSL "$BASE/?t=$RANDOM" -o /tmp/home.html && curl -fsSL "$BASE/build-version.txt?t=$RANDOM" -o /tmp/version.txt && curl -fsSL "$BASE/floodsafe-nepal/?t=$RANDOM" -o /tmp/flood.html; then
-              if grep -q 'portfolio-floodsafe.js?v=2' /tmp/home.html && grep -q 'auto-update.js?v=2' /tmp/home.html && grep -q 'बाढी सुरक्षा नेपाल' /tmp/flood.html && test -s /tmp/version.txt; then
+            if curl -fsSL "$BASE/?t=$RANDOM" -o /tmp/home.html && curl -fsSL "$BASE/build-version.txt?t=$RANDOM" -o /tmp/version.txt && curl -fsSL "$BASE/floodsafe-nepal/?t=$RANDOM" -o /tmp/flood.html && curl -fsSL "$BASE/floodsafe-nepal/v23/?t=$RANDOM" -o /tmp/v23.html; then
+              if grep -q 'portfolio-floodsafe.js?v=2' /tmp/home.html && grep -q 'auto-update.js?v=2' /tmp/home.html && grep -q 'बाढी सुरक्षा नेपाल' /tmp/flood.html && grep -q 'v23-hotfix.js?v=3' /tmp/v23.html && test -s /tmp/version.txt; then
                 if grep -Eqi '\bAI\b|AI-assisted|artificial intelligence' /tmp/home.html; then
                   echo 'AI attribution leaked into live portfolio'
                   exit 2
                 fi
-                echo 'Stable links, automatic updater and portfolio wording verified'
+                echo 'Stable links, FloodSafe hotfix, automatic updater and portfolio wording verified'
                 exit 0
               fi
             fi

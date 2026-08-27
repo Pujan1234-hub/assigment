@@ -38,6 +38,21 @@ jobs:
           cp -R fixcheck _site/fixcheck
           cp -R team-tracker _site/team-tracker
           cp -R floodsafe-nepal _site/floodsafe-nepal
+          # Safe enhanced test build: exact V2 copy + additive PRO layer.
+          # The existing /v2/ files are not modified.
+          if [ -d "floodsafe-nepal/v2" ] && [ -f "floodsafe-nepal/v2/pro-upgrade.js" ]; then
+            rm -rf _site/floodsafe-nepal/v21
+            cp -R floodsafe-nepal/v2 _site/floodsafe-nepal/v21
+            python - <<'PY'
+          from pathlib import Path
+          p=Path('_site/floodsafe-nepal/v21/index.html')
+          s=p.read_text()
+          tag='<script src="./pro-upgrade.js?v=1"></script>'
+          if tag not in s:
+              s=s.replace('</body>',tag+'\n</body>')
+          p.write_text(s)
+          PY
+          fi
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
@@ -78,3 +93,23 @@ jobs:
           curl -fsSL "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" -o /tmp/leaflet.js
           test -s /tmp/leaflet.js
           echo "FloodSafe smoke test passed"
+      - name: Smoke test FloodSafe V21 PRO
+        run: |
+          set -e
+          URL="https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v21/"
+          ok=0
+          for i in $(seq 1 20); do
+            if curl -fsSL "$URL" -o /tmp/v21.html && grep -q 'pro-upgrade.js?v=1' /tmp/v21.html && curl -fsSL "${URL}pro-upgrade.js?v=1" -o /tmp/pro.js; then
+              ok=1
+              break
+            fi
+            sleep 3
+          done
+          test "$ok" = "1"
+          node --check /tmp/pro.js
+          grep -q 'POLL_STATION=10000' /tmp/pro.js
+          grep -q 'river-stations/?limit=1800' /tmp/pro.js
+          grep -q 'Open-Meteo' /tmp/pro.js || true
+          curl -fsSL --max-time 20 'https://bipadportal.gov.np/api/v1/river-stations/?limit=1' -o /tmp/riverstation.json
+          python -m json.tool /tmp/riverstation.json >/dev/null
+          echo "FloodSafe V21 PRO smoke test passed"

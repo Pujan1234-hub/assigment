@@ -7,6 +7,7 @@ on:
     paths:
       - index.html
       - sw.js
+      - auto-update.js
       - portfolio-floodsafe.js
       - fixcheck/**
       - team-tracker/**
@@ -42,13 +43,19 @@ jobs:
 
           cp index.html _site/index.html
           cp sw.js _site/sw.js
+          cp auto-update.js _site/auto-update.js
           cp portfolio-floodsafe.js _site/portfolio-floodsafe.js
           cp -R fixcheck _site/fixcheck
           cp -R team-tracker _site/team-tracker
           cp -R floodsafe-nepal _site/floodsafe-nepal
 
-          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=1"></script></body>#' _site/index.html
+          printf '%s' "$GITHUB_SHA" > _site/build-version.txt
 
+          # Main portfolio always loads the latest product module and checks for new deployments.
+          sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
+          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=2"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
+
+          # Stable FloodSafe URL automatically serves the highest numbered version folder.
           LATEST_FLOOD=$(find floodsafe-nepal -maxdepth 1 -mindepth 1 -type d -name 'v[0-9]*' -printf '%f\n' | sort -V | tail -1)
           if [ -n "$LATEST_FLOOD" ] && [ -f "floodsafe-nepal/$LATEST_FLOOD/index.html" ]; then
             cp -R "floodsafe-nepal/$LATEST_FLOOD/." _site/floodsafe-nepal/
@@ -69,15 +76,15 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Verify stable links
+      - name: Verify stable links and auto updater
         shell: bash
         run: |
           set -euo pipefail
           BASE=https://pujan1234-hub.github.io/assigment
           for i in $(seq 1 20); do
-            if curl -fsSL "$BASE/" -o /tmp/home.html && curl -fsSL "$BASE/floodsafe-nepal/" -o /tmp/flood.html; then
-              if grep -q 'portfolio-floodsafe.js' /tmp/home.html && grep -q 'बाढी सुरक्षा नेपाल' /tmp/flood.html; then
-                echo 'Stable public links verified'
+            if curl -fsSL "$BASE/?t=$RANDOM" -o /tmp/home.html && curl -fsSL "$BASE/build-version.txt?t=$RANDOM" -o /tmp/version.txt && curl -fsSL "$BASE/floodsafe-nepal/?t=$RANDOM" -o /tmp/flood.html; then
+              if grep -q 'portfolio-floodsafe.js?v=2' /tmp/home.html && grep -q 'auto-update.js?v=2' /tmp/home.html && grep -q 'बाढी सुरक्षा नेपाल' /tmp/flood.html && test -s /tmp/version.txt; then
+                echo 'Stable links and automatic updater verified'
                 exit 0
               fi
             fi

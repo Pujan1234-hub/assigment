@@ -1,0 +1,14 @@
+{
+  "name": "बाढी सुरक्षा नेपाल",
+  "short_name": "बाढी सुरक्षा",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#06111f",
+  "theme_color": "#003893",
+  "lang": "ne",
+  "description": "नेपालका लागि स्थानीय बाढी, नदी, वर्षा, सडक र आधिकारिक चेतावनी जानकारी",
+  "icons": [
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

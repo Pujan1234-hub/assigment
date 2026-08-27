@@ -1,0 +1,73 @@
+name: V25 Multi-page Smoke
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "floodsafe-nepal/v25/**"
+      - "floodsafe-nepal/v24/v24-upgrade.js"
+      - "data/floodsafe-police.json"
+      - "data/floodsafe-people-status.json"
+      - "data/rasuwa-crossborder.json"
+      - ".github/workflows/v25-browser-smoke.yml"
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify V25 pages and browser runtime
+        run: |
+          set -e
+          BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
+          for i in $(seq 1 50); do
+            ok=1
+            for f in index.html alerts.html people.html weather.html news.html sources.html shell.css app.js sw.js; do curl -fsSL "${BASE}${f}" -o "/tmp/${f//\//_}" || ok=0; done
+            grep -q 'सबै कुरा एउटै लामो page मा छैन' /tmp/index.html || ok=0
+            if [ "$ok" = 1 ]; then break; fi
+            sleep 3
+          done
+          test "$ok" = 1
+          node --check /tmp/app.js
+          node --check /tmp/sw.js
+          grep -q "Content-Security-Policy" /tmp/index.html
+          grep -q "Content-Security-Policy" /tmp/alerts.html
+          grep -q "Content-Security-Policy" /tmp/people.html
+          ! grep -Rqi 'waze' /tmp/index.html /tmp/alerts.html /tmp/people.html /tmp/weather.html /tmp/news.html /tmp/sources.html /tmp/app.js
+          echo 'PASS: pages, CSP, syntax and no Waze'
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$CHROME"
+          mkdir -p /tmp/v25-smoke && cd /tmp/v25-smoke
+          npm init -y >/dev/null 2>&1
+          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          BASE="$BASE" CHROME="$CHROME" node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          (async()=>{
+            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
+            const page=await browser.newPage();
+            page.setDefaultTimeout(35000);
+            const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto(process.env.BASE,{waitUntil:'domcontentloaded'});
+            await page.waitForSelector('.navCard');
+            await page.waitForFunction(()=>/359|—/.test(document.getElementById('homeDeaths')?.textContent||''));
+            const home=await page.evaluate(()=>({cards:document.querySelectorAll('.navCard').length,waze:/waze/i.test(document.body.innerText),csp:!!document.querySelector('meta[http-equiv="Content-Security-Policy"]')}));
+            if(home.cards<6||home.waze||!home.csp)throw Error('home assertion '+JSON.stringify(home));
+            await page.goto(process.env.BASE+'people.html',{waitUntil:'domcontentloaded'});
+            await page.waitForSelector('#peopleBodies');
+            await page.waitForFunction(()=>document.getElementById('peopleBodies')?.textContent==='359',{timeout:30000});
+            const people=await page.evaluate(()=>({b:document.getElementById('peopleBodies')?.textContent,m:document.getElementById('peopleMissing')?.textContent,r:document.getElementById('peopleRescued')?.textContent}));
+            if(people.b!=='359'||!/664/.test(people.m)||people.r!=='123')throw Error('people assertion '+JSON.stringify(people));
+            await page.goto(process.env.BASE+'news.html',{waitUntil:'domcontentloaded'});
+            await page.waitForSelector('#newsList');
+            await page.waitForFunction(()=>document.querySelectorAll('#newsList .item').length>0,{timeout:30000});
+            const news=await page.evaluate(()=>({items:document.querySelectorAll('#newsList .item').length,normal:/normal news/i.test(document.querySelector('#newsList')?.innerText||'')}));
+            if(news.items<1)throw Error('news empty');
+            await page.goto('https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/?mapOnly=1',{waitUntil:'domcontentloaded'});
+            await page.waitForSelector('.leaflet-container',{timeout:30000});
+            await page.waitForFunction(()=>document.documentElement.classList.contains('fs-map-only'),{timeout:20000});
+            const map=await page.evaluate(()=>({side:getComputedStyle(document.querySelector('.side')).display,back:!!document.querySelector('.fsMapBack')}));
+            if(map.side!=='none'||!map.back)throw Error('map-only assertion '+JSON.stringify(map));
+            console.log('PASS',JSON.stringify({home,people,news,map,errors:errors.slice(0,5)}));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(3)});
+          JS
+          echo 'V25 multi-page browser smoke passed'

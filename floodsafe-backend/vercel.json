@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "functions": {
+    "api/live.js": { "maxDuration": 10 }
+  },
+  "headers": [
+    {
+      "source": "/api/live",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, s-maxage=2, stale-while-revalidate=30" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}

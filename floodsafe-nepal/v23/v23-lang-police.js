@@ -2,7 +2,6 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const lang=()=>localStorage.getItem('fs23-lang')==='en'?'en':'ne';
-const t=(ne,en)=>lang()==='en'?en:ne;
 let policeData=null,obs=null,applying=false;
 
 function css(){if($('fs23LangPoliceCss'))return;const s=document.createElement('style');s.id='fs23LangPoliceCss';s.textContent=`
@@ -31,23 +30,37 @@ function fixDynamic(){
     const radius=$('radius');if(radius){[...radius.options].forEach(o=>{const n=parseInt(o.value,10);if(Number.isFinite(n))o.textContent=en?`${n} km`:`${n} किमि`})}
     const loc=$('locState');if(loc){const s=loc.textContent||'';if(en){
       if(/नक्साबाट छानिएको/.test(s))loc.textContent=s.replace(/नक्साबाट छानिएको/g,'Selected from map').replace(/किमि/g,'km');
-      else if(/GPS|स्थान/.test(s)&&!/Selected|GPS location|No location/i.test(s))loc.textContent='GPS location selected';
+      else if(/GPS स्थान|स्थान छानिएको/.test(s))loc.textContent='GPS location selected';
+      else if(/स्थान छानिएको छैन/.test(s))loc.textContent='No location selected';
     }else{
       if(/Selected from map/i.test(s))loc.textContent=s.replace(/Selected from map/ig,'नक्साबाट छानिएको').replace(/km/g,'किमि');
       else if(/GPS location selected/i.test(s))loc.textContent='GPS स्थान छानिएको';
+      else if(/No location selected/i.test(s))loc.textContent='स्थान छानिएको छैन';
     }}
     const gate=$('fs23AlertGate');if(gate&&en){const s=gate.textContent||'';
-      if(/आवाज|बाढी जोखिम|सडक|टाढाको चेतावनी/.test(s))gate.innerHTML='🔕 Sound plays only for a <b>local HIGH ⚠️ / VERY HIGH 🔴 flood risk</b>. Roads, normal/rising rivers and distant warnings do not trigger sound.';
       if(/GPS\/स्थान छानेपछि/.test(s))gate.innerHTML='🔕 Sound checks start only <b>after GPS/location is selected</b>.';
+      else if(/आवाज|बाढी जोखिम|सडक|टाढाको चेतावनी/.test(s))gate.innerHTML='🔕 Sound plays only for a <b>local HIGH ⚠️ / VERY HIGH 🔴 flood risk</b>. Roads, normal/rising rivers and distant warnings do not trigger sound.';
       gate.innerHTML=gate.innerHTML.replace(/नदी\/खोला safety distance/g,'river/stream safety distance').replace(/किमि/g,'km');
     }
     const alerts=$('alertsBtn'),sound=$('soundBtn');
     if(alerts){const on=localStorage.getItem('fs23-audio-enabled')==='1';setText(alerts,en?(on?'🔔 HIGH/VERY HIGH alerts enabled':'🔔 Enable HIGH/VERY HIGH alerts'):(on?'🔔 HIGH/VERY HIGH सूचना सक्रिय':'🔔 सूचना सक्रिय'))}
     if(sound)setText(sound,en?'♪ Test sound':'♪ ध्वनि परीक्षण');
     const back=$('fs23BackMap');if(back)setText(back,en?'🗺️ Back to map':'🗺️ नक्सामा फर्कनुहोस्');
-    document.querySelectorAll('.side [data-ux-ne]').forEach(()=>{});
     document.documentElement.lang=en?'en':'ne';
   }finally{applying=false}
+}
+
+function syncOldImpact(){
+  if(!policeData)return;
+  const dead=$('deadV'),note=$('impactNote');if(!dead||!note)return;
+  const s=(note.textContent||'')+' '+(dead.textContent||'');
+  if(/Nepal Police|नेपाल प्रहरी|९५|95|100|१००/.test(s)){
+    dead.textContent=String(policeData.total_deaths);
+    const en=lang()==='en';
+    note.innerHTML=en
+      ?`BIPAD's aggregated loss total may sync later. Nepal Police confirms <b>${policeData.total_deaths} deaths</b> in the ${policeData.event} as of ${policeData.official_update_time}. <a href="${policeData.source_url}" target="_blank" rel="noopener" style="color:#9fe6c4">Nepal Police source</a>`
+      :`BIPAD को aggregated loss total ढिलो sync हुन सक्छ। नेपाल प्रहरीले ${policeData.official_update_bs}, ${policeData.official_update_time} सम्म ${policeData.event_ne}मा <b>${policeData.total_deaths} मृत्यु</b> पुष्टि गरेको छ। <a href="${policeData.source_url}" target="_blank" rel="noopener" style="color:#9fe6c4">नेपाल प्रहरी स्रोत</a>`;
+  }
 }
 
 function policePanel(){
@@ -59,15 +72,16 @@ function policePanel(){
   p.innerHTML=`<div class="pdHead"><h3>${en?'Nepal Police • verified fatalities':'नेपाल प्रहरी • पुष्टि मृत्यु'}</h3><span class="pdBadge">${en?'VERIFIED':'पुष्टि'}</span></div>
   <div class="pdCause"><small>${en?'Cause / event':'कारण / घटना'}</small><b>${en?d.event:d.event_ne} — ${d.total_deaths} ${en?'deaths':'मृत्यु'}</b></div>
   <div class="pdDistricts">${districts}</div>
-  <div class="pdMeta">${en?'Official update':'आधिकारिक अपडेट'}: ${d.official_update_bs||'—'} • ${d.official_update_time||'—'}<br>${en?'Source':'स्रोत'}: <a href="${d.source_url}" target="_blank" rel="noopener">Nepal Police</a><br>${en?'This panel shows only figures explicitly confirmed in the cited Nepal Police bulletin; it does not invent totals for causes not published there.':'यो कार्डमा नेपाल प्रहरीले स्रोतमा स्पष्ट पुष्टि गरेको संख्या मात्र देखाइन्छ; नछापिएको कारणको संख्या बनावटी रूपमा देखाइँदैन।'}</div>`;
+  <div class="pdMeta">${en?'Official update':'आधिकारिक अपडेट'}: ${d.official_update_bs||'—'} • ${d.official_update_time||'—'}<br>${en?'Source':'स्रोत'}: <a href="${d.source_url}" target="_blank" rel="noopener">Nepal Police</a><br>${en?'Only figures explicitly confirmed in the cited Nepal Police bulletin are shown. Unpublished cause totals are not invented.':'नेपाल प्रहरीले स्रोतमा स्पष्ट पुष्टि गरेको संख्या मात्र देखाइन्छ; नछापिएको कारणको संख्या बनावटी रूपमा देखाइँदैन।'}</div>`;
+  syncOldImpact();
 }
-async function fetchPolice(){try{const u='https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/floodsafe-police.json?t='+Date.now();const r=await fetch(u,{cache:'no-store'});if(r.ok){policeData=await r.json();policePanel()}}catch(e){console.warn('police data',e)}}
+async function fetchPolice(){try{const u='https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/floodsafe-police.json?t='+Date.now();const r=await fetch(u,{cache:'no-store'});if(r.ok){policeData=await r.json();policePanel();syncOldImpact()}}catch(e){console.warn('police data',e)}}
 
 function hook(){
   css();fixDynamic();policePanel();fetchPolice();
-  document.addEventListener('click',e=>{if(e.target.closest?.('.fs23lang'))setTimeout(()=>{fixDynamic();policePanel()},80)});
-  if(!obs){obs=new MutationObserver(()=>{requestAnimationFrame(()=>{fixDynamic();policePanel()})});obs.observe(document.body,{childList:true,subtree:true,characterData:true})}
-  setInterval(()=>{fixDynamic();policePanel()},700);
+  document.addEventListener('click',e=>{if(e.target.closest?.('.fs23lang'))setTimeout(()=>{fixDynamic();policePanel();syncOldImpact()},80)});
+  if(!obs){obs=new MutationObserver(()=>{requestAnimationFrame(()=>{fixDynamic();policePanel();syncOldImpact()})});obs.observe(document.body,{childList:true,subtree:true,characterData:true})}
+  setInterval(()=>{fixDynamic();policePanel();syncOldImpact()},700);
   setInterval(fetchPolice,5000);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(hook,600));else setTimeout(hook,600);

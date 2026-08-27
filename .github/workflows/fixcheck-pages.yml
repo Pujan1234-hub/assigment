@@ -65,9 +65,9 @@ jobs:
               p=Path('_site/floodsafe-nepal')/ver/'index.html'
               if not p.exists(): continue
               s=p.read_text()
-              for old in ('v23-upgrade.js','v23-hotfix.js','v23-ux.js','v23-river-map-v2.js','v23-river-name.js','v23-river-map.js','v23-river-map-v3.js','v23-location.js','v23-lang-police.js','v23-live-2s.js','v23-map-guard.js'):
+              for old in ('v23-upgrade.js','v23-hotfix.js','v23-ux.js','v23-river-map-v2.js','v23-river-name.js','v23-river-map.js','v23-river-map-v3.js','v23-location.js','v23-lang-police.js','v23-live-2s.js','v23-active-hazards.js','v23-map-guard.js'):
                   s=re.sub(rf'<script[^>]+{re.escape(old)}[^>]*></script>','',s)
-              for fn,vernum in [('v23-upgrade.js','5'),('v23-hotfix.js','4'),('v23-ux.js','2'),('v23-river-map-v3.js','3'),('v23-location.js','1'),('v23-lang-police.js','1'),('v23-live-2s.js','1'),('v23-map-guard.js','1')]:
+              for fn,vernum in [('v23-upgrade.js','5'),('v23-hotfix.js','4'),('v23-ux.js','2'),('v23-river-map-v3.js','3'),('v23-location.js','1'),('v23-lang-police.js','1'),('v23-live-2s.js','1'),('v23-active-hazards.js','1'),('v23-map-guard.js','1')]:
                   f=p.parent/fn
                   if f.exists():
                       s=s.replace('</body>',f'<script src="./{fn}?v={vernum}"></script></body>')
@@ -92,7 +92,7 @@ jobs:
           BASE=https://pujan1234-hub.github.io/assigment
           for i in $(seq 1 25); do
             if curl -fsSL "$BASE/floodsafe-nepal/v23/?t=$RANDOM" -o /tmp/v23.html; then
-              if grep -q 'v23-upgrade.js?v=5' /tmp/v23.html && grep -q 'v23-hotfix.js?v=4' /tmp/v23.html && grep -q 'v23-ux.js?v=2' /tmp/v23.html && grep -q 'v23-river-map-v3.js?v=3' /tmp/v23.html && grep -q 'v23-location.js?v=1' /tmp/v23.html && grep -q 'v23-lang-police.js?v=1' /tmp/v23.html && grep -q 'v23-live-2s.js?v=1' /tmp/v23.html && grep -q 'v23-map-guard.js?v=1' /tmp/v23.html && ! grep -q 'v23-river-map-v2.js' /tmp/v23.html; then exit 0; fi
+              if grep -q 'v23-upgrade.js?v=5' /tmp/v23.html && grep -q 'v23-hotfix.js?v=4' /tmp/v23.html && grep -q 'v23-ux.js?v=2' /tmp/v23.html && grep -q 'v23-river-map-v3.js?v=3' /tmp/v23.html && grep -q 'v23-location.js?v=1' /tmp/v23.html && grep -q 'v23-lang-police.js?v=1' /tmp/v23.html && grep -q 'v23-live-2s.js?v=1' /tmp/v23.html && grep -q 'v23-active-hazards.js?v=1' /tmp/v23.html && grep -q 'v23-map-guard.js?v=1' /tmp/v23.html && ! grep -q 'v23-river-map-v2.js' /tmp/v23.html; then exit 0; fi
             fi
             sleep 3
           done

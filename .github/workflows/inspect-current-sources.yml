@@ -1,0 +1,33 @@
+name: Inspect current FloodSafe sources
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/inspect-current-sources.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect BIPAD current incident sources and DHM snow page
+        run: |
+          python - <<'PY'
+          import json, urllib.request
+          base='https://bipadportal.gov.np/api/v1/'
+          for ep in ['incident/?limit=12','loss-people/?limit=20','situation-report/?limit=10','bipad-bulletin/?limit=10','notification/?limit=10','alert/?limit=10']:
+              print('\n###',ep)
+              req=urllib.request.Request(base+ep,headers={'User-Agent':'FloodSafe-Nepal-inspect'})
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as r:j=json.load(r)
+                  rows=j if isinstance(j,list) else j.get('results') or j.get('data') or []
+                  print('count',len(rows))
+                  for x in rows[:4]:print(json.dumps(x,ensure_ascii=False,default=str)[:3500])
+              except Exception as e:print('ERR',repr(e))
+          PY
+          echo '### DHM snow headers'
+          curl -sSIL --max-time 20 'https://dhm.gov.np/hydrology/snow-monitoring' | sed -n '1,30p'
+          echo '### DHM snow table sample'
+          curl -fsSL --max-time 20 'https://dhm.gov.np/hydrology/snow-monitoring' -o /tmp/snow.html
+          grep -o -E 'Beding|DanpheLek|Hurikot|Kyangjing|Panchamukhi|Pangboche|Tashi Gaun|Tilicho|Tsho Rolpa Lake' /tmp/snow.html | head -20

@@ -2,14 +2,16 @@ name: Deploy Portfolio to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
     paths:
-      - "index.html"
-      - "sw.js"
-      - "fixcheck/**"
-      - "team-tracker/**"
-      - "floodsafe-nepal/**"
-      - ".github/workflows/fixcheck-pages.yml"
+      - index.html
+      - sw.js
+      - portfolio-floodsafe.js
+      - fixcheck/**
+      - team-tracker/**
+      - floodsafe-nepal/**
+      - .github/workflows/fixcheck-pages.yml
   workflow_dispatch:
 
 permissions:
@@ -18,105 +20,39 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Prepare public site
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
           rm -rf _site
           mkdir -p _site
+
           cp index.html _site/index.html
           cp sw.js _site/sw.js
+          cp portfolio-floodsafe.js _site/portfolio-floodsafe.js
           cp -R fixcheck _site/fixcheck
           cp -R team-tracker _site/team-tracker
           cp -R floodsafe-nepal _site/floodsafe-nepal
 
-          # Stable FloodSafe URL: automatically publish the highest version folder
-          # (v23 now, v24/v25 later) at /floodsafe-nepal/ so the public link never changes.
+          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=1"></script></body>#' _site/index.html
+
           LATEST_FLOOD=$(find floodsafe-nepal -maxdepth 1 -mindepth 1 -type d -name 'v[0-9]*' -printf '%f\n' | sort -V | tail -1)
           if [ -n "$LATEST_FLOOD" ] && [ -f "floodsafe-nepal/$LATEST_FLOOD/index.html" ]; then
             cp -R "floodsafe-nepal/$LATEST_FLOOD/." _site/floodsafe-nepal/
-            echo "Published $LATEST_FLOOD to stable /floodsafe-nepal/ URL"
-          fi
-
-          # Inject/update FloodSafe Nepal as Product 03 in the deployed portfolio.
-          # Source portfolio remains clean; every deployment recreates the latest public version.
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('_site/index.html')
-          s=p.read_text()
-
-          s=s.replace('<a href="#fixcheck">FixCheck</a><a href="#platforms">Platforms</a>', '<a href="#fixcheck">FixCheck</a><a href="#floodsafe">FloodSafe Nepal</a><a href="#platforms">Platforms</a>', 1)
-          s=s.replace('<strong>02</strong><span>Active products</span>', '<strong>03</strong><span>Active products</span>', 1)
-          s=s.replace('Both projects start from practical everyday problems. One focuses on team coordination; the other helps ordinary users understand connectivity problems.', 'These projects start from practical everyday problems — team coordination, connectivity diagnosis and local flood-risk awareness for Nepal.', 1)
-
-          extra_css='\n.cards{grid-template-columns:repeat(3,1fr)}\n@media(max-width:850px){.cards{grid-template-columns:1fr}}\n'
-          if extra_css.strip() not in s:
-              s=s.replace('</style>', extra_css+'</style>', 1)
-
-          flood_card='''<article class="card"><div class="cardhead"><div class="icon">🌊</div><span class="status amber">Active Development</span></div><h3>FloodSafe Nepal</h3><div class="sub">नेपालका लागि local flood & river alert platform</div><p>A Nepal-focused safety app built around local-area flood awareness, live river-station updates and map-first risk context.</p><ul class="features"><li>Nepal-only detailed map experience</li><li>Local-area alerts for the place that matters to the user</li><li>Official river-station and warning data with frequent refresh</li><li>Current update time and visible data freshness</li><li>Nepali-first interface and recognisable alert experience</li></ul><div class="miniui"><div class="mocktop"><span class="pill">FloodSafe Nepal</span><span class="ok">Latest live build</span></div><div class="rows"><div class="row"><span>Nearby river stations</span><b class="ok">Refreshing</b></div><div class="row"><span>Local risk</span><b>Area based</b></div><div class="row"><span>Map</span><b>Nepal only</b></div></div></div><div class="actions"><a class="btn primary" href="./floodsafe-nepal/">Open web app ↗</a><a class="btn" href="#floodsafe">Product details</a></div></article>'''
-          marker='</article></div></div></section>\n<section id="teamtracker">'
-          if 'href="#floodsafe">Product details</a>' not in s and marker in s:
-              s=s.replace(marker, '</article>'+flood_card+'</div></div></section>\n<section id="teamtracker">', 1)
-
-          flood_section='''
-<section id="floodsafe"><div class="wrap"><div class="productHead"><div><div class="k">Product 03 · Active Development</div><h2 class="productTitle">FloodSafe Nepal</h2><p class="lead" style="font-size:17px">A Nepal-first flood and river-awareness platform designed to make nearby risk easier to understand through a detailed Nepal map, local-area alerts, live station updates and clear data freshness.</p><div class="actions"><a class="btn primary" href="./floodsafe-nepal/">Launch latest web app ↗</a></div></div><div class="summary"><div class="sitem"><strong>Product type</strong><span>Public safety / flood awareness web app and PWA direction</span></div><div class="sitem"><strong>Main focus</strong><span>Nearby river conditions, local-area warnings and map-based situational awareness</span></div><div class="sitem"><strong>Geographic focus</strong><span>Nepal only — detailed national map rather than a world map</span></div><div class="sitem"><strong>Current status</strong><span>Active development · working web build</span></div></div></div><div class="three"><div class="box"><h3>The problem</h3><p>Broad national warnings can be less useful when someone mainly needs to know what is happening around their own home, route or current area.</p></div><div class="box"><h3>How it works</h3><p>The app combines a Nepal-focused map with frequently refreshed river/station information, local-area context and visible update timing.</p></div><div class="box"><h3>Product direction</h3><p>Keep the interface Nepali-first, make station refresh obvious and surface meaningful nearby risk without unrelated alert noise.</p></div></div><div class="flow"><div class="step"><b>1. Choose or use an area</b><span>The user focuses the map on the place that matters to them.</span></div><div class="step"><b>2. See live context</b><span>Nearby stations and warning information refresh against the Nepal map.</span></div><div class="step"><b>3. Get a local alert</b><span>The app surfaces meaningful risk for that area instead of unrelated national noise.</span></div></div><div class="note">FloodSafe Nepal is an active safety-oriented prototype. Public warnings should always be cross-checked with official emergency information.</div></div></section>
-'''
-          if 'id="floodsafe"' not in s:
-              s=s.replace('<section id="platforms">', flood_section+'<section id="platforms">', 1)
-
-          s=s.replace('<a href="#teamtracker">Team Tracker</a><a href="./fixcheck/">FixCheck Web</a>', '<a href="#teamtracker">Team Tracker</a><a href="./fixcheck/">FixCheck Web</a><a href="./floodsafe-nepal/">FloodSafe Nepal</a>', 1)
-          p.write_text(s)
-          PY
-
-          # V21 remains exactly as before: V2 core + existing pro-upgrade.js.
-          if [ -d "floodsafe-nepal/v2" ] && [ -f "floodsafe-nepal/v2/pro-upgrade.js" ]; then
-            rm -rf _site/floodsafe-nepal/v21
-            cp -R floodsafe-nepal/v2 _site/floodsafe-nepal/v21
-            python - <<'PY'
-          from pathlib import Path
-          p=Path('_site/floodsafe-nepal/v21/index.html')
-          s=p.read_text()
-          tag='<script src="./pro-upgrade.js?v=1"></script>'
-          if tag not in s:
-              s=s.replace('</body>',tag+'\n</body>')
-          p.write_text(s)
-          PY
-          fi
-
-          # V22 stays available as its own archived build.
-          if [ -d "floodsafe-nepal/v2" ] && [ -f "floodsafe-nepal/v22-upgrade.js" ]; then
-            rm -rf _site/floodsafe-nepal/v22
-            cp -R floodsafe-nepal/v2 _site/floodsafe-nepal/v22
-            cp floodsafe-nepal/v22-upgrade.js _site/floodsafe-nepal/v22/v22-upgrade.js
-            rm -f _site/floodsafe-nepal/v22/pro-upgrade.js
-            python - <<'PY'
-          from pathlib import Path
-          p=Path('_site/floodsafe-nepal/v22/index.html')
-          s=p.read_text()
-          s=s.replace('<title>बाढी सुरक्षा नेपाल • V2</title>','<title>बाढी सुरक्षा नेपाल • V22</title>')
-          s=s.replace('Web/PWA खुला हुँदा polling सक्रिय रहन्छ; पूर्ण background 24/7 alert native app चरणमा हुनेछ।','')
-          s=s.replace('नयाँ नजिकको आधिकारिक चेतावनी/सडक बन्द भेटिएपछि नरम तर चिनिने ध्वनि बज्छ।  alert','नजिकको आधिकारिक चेतावनी वा बढ्दो नदी जोखिम भेटिँदा सूचना र चिनिने नरम ध्वनि आउँछ।')
-          s=s.replace("async function boot(){try{await initMap();", "window.__fs={get map(){return map},getFocus:()=>focus,setFocus,insideNepal,districtFor};\nasync function boot(){try{await initMap();")
-          old="const saved=localStorage.getItem('floodsafe-focus');if(saved){try{const c=JSON.parse(saved);if(Array.isArray(c)&&insideNepal(c))setFocus(c,'saved',false)}catch{}}else{renderOfficial();renderDistricts()}"
-          s=s.replace(old,"localStorage.removeItem('floodsafe-focus');renderOfficial();renderDistricts()")
-          s=s.replace(".slice(0,800)}draw.forEach", ".slice(0,300)}draw.forEach")
-          tag='<script src="./v22-upgrade.js?v=1"></script>'
-          if tag not in s:
-              s=s.replace('</body>',tag+'\n</body>')
-          p.write_text(s)
-          PY
+            echo "Stable FloodSafe URL now serves $LATEST_FLOOD"
           fi
 
       - name: Setup Pages
@@ -124,7 +60,7 @@ jobs:
         with:
           enablement: true
 
-      - name: Upload portfolio
+      - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./_site
@@ -133,17 +69,19 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Smoke test stable public links
+      - name: Verify stable links
+        shell: bash
         run: |
-          set -e
-          BASE="https://pujan1234-hub.github.io/assigment"
+          set -euo pipefail
+          BASE=https://pujan1234-hub.github.io/assigment
           for i in $(seq 1 20); do
-            if curl -fsSL "$BASE/" -o /tmp/portfolio.html && curl -fsSL "$BASE/floodsafe-nepal/" -o /tmp/floodsafe.html; then
-              break
+            if curl -fsSL "$BASE/" -o /tmp/home.html && curl -fsSL "$BASE/floodsafe-nepal/" -o /tmp/flood.html; then
+              if grep -q 'portfolio-floodsafe.js' /tmp/home.html && grep -q 'बाढी सुरक्षा नेपाल' /tmp/flood.html; then
+                echo 'Stable public links verified'
+                exit 0
+              fi
             fi
             sleep 3
           done
-          grep -q "FloodSafe Nepal" /tmp/portfolio.html
-          grep -q "बाढी सुरक्षा नेपाल" /tmp/floodsafe.html
-          grep -q "leaflet@1.9.4" /tmp/floodsafe.html
-          echo "Stable portfolio and FloodSafe links passed"
+          echo 'Stable link verification failed'
+          exit 1

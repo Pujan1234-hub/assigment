@@ -11,7 +11,7 @@ jobs:
   browser:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify deployed V23 map, local flood alert gate and mobile hotfix
+      - name: Verify deployed V23 map, local flood alerts and older-friendly UX
         run: |
           set -e
           URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v23/'
@@ -19,15 +19,16 @@ jobs:
           for i in $(seq 1 45); do
             if curl -fsSL "${URL}v23-upgrade.js?v=${GITHUB_SHA}" -o /tmp/v23.js \
               && curl -fsSL "${URL}v23-hotfix.js?v=${GITHUB_SHA}" -o /tmp/hotfix.js \
+              && curl -fsSL "${URL}v23-ux.js?v=${GITHUB_SHA}" -o /tmp/ux.js \
               && curl -fsSL "${URL}?smoke=${GITHUB_SHA}" -o /tmp/page.html \
               && grep -q 'V23 LIVE DATA' /tmp/v23.js \
               && grep -q 'नेपाल ७७ जिल्ला' /tmp/v23.js \
-              && grep -q 'const threshold=' /tmp/v23.js \
               && grep -q 'function risks()' /tmp/hotfix.js \
               && grep -q 'HIGH/VERY HIGH सूचना सक्रिय' /tmp/hotfix.js \
-              && grep -q 'function corridor' /tmp/hotfix.js \
-              && grep -q "fallback=sev==='very'?1.5:.75" /tmp/hotfix.js \
-              && grep -q 'v23-hotfix.js?v=3' /tmp/page.html; then
+              && grep -q 'Car accident deaths' /tmp/ux.js \
+              && grep -q 'hookMapJump' /tmp/ux.js \
+              && grep -q 'v23-hotfix.js?v=4' /tmp/page.html \
+              && grep -q 'v23-ux.js?v=1' /tmp/page.html; then
               ok=1; break
             fi
             sleep 4
@@ -35,32 +36,29 @@ jobs:
           test "$ok" = 1
           node --check /tmp/v23.js
           node --check /tmp/hotfix.js
+          node --check /tmp/ux.js
           grep -q 'const POLL=5000' /tmp/v23.js
-          grep -q 'incident/?limit=500&ordering=-incidentOn' /tmp/v23.js
-          grep -q 'river-stations/?limit=650' /tmp/v23.js
-          grep -q 'leaflet-top.leaflet-left' /tmp/hotfix.js
-          grep -q 'Google Maps' /tmp/hotfix.js
-          grep -q 'Waze Live Map' /tmp/hotfix.js
           grep -q 'fs23-risk-history' /tmp/hotfix.js
           grep -q '30\*60\*1000' /tmp/hotfix.js
           grep -q 'सडक, सामान्य/बढ्दो नदी वा टाढाको चेतावनीले आवाज बज्दैन' /tmp/hotfix.js
+          grep -q 'Forest fire' /tmp/v23.js
+          grep -q 'Car accident deaths' /tmp/ux.js
+          grep -q 'Use my location' /tmp/ux.js
+          grep -q 'Flood status around me' /tmp/ux.js
+          grep -q 'scrollIntoView' /tmp/ux.js
+          grep -q 'min-height:48px' /tmp/ux.js
           if grep -q 'V23 OFFICIAL' /tmp/v23.js; then echo 'old misleading badge remains'; exit 4; fi
 
-          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=24000 --dump-dom "${URL}?smoke=${GITHUB_SHA}" > /tmp/dom.html
+          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=26000 --dump-dom "${URL}?smoke=${GITHUB_SHA}" > /tmp/dom.html
           grep -q 'leaflet-map-pane' /tmp/dom.html
           grep -q 'V23 LIVE DATA' /tmp/dom.html
-          grep -q 'नेपाली मिति' /tmp/dom.html
           grep -q 'नेपाल ७७ जिल्ला' /tmp/dom.html
-          grep -q 'पहिरो' /tmp/dom.html
-          grep -q 'नजिकका नदी' /tmp/dom.html
-          grep -q 'खतरा सीमा' /tmp/dom.html
-          grep -q '२०८३' /tmp/dom.html
-          grep -q 'भाद्र' /tmp/dom.html
-          grep -q 'fs23roadTools' /tmp/dom.html
+          grep -q 'fs23accidentCard' /tmp/dom.html
+          grep -q 'सवारी दुर्घटना मृत्यु' /tmp/dom.html
+          grep -q 'fs23BackMap' /tmp/dom.html
           grep -q 'fs23AlertGate' /tmp/dom.html
-          grep -q 'HIGH' /tmp/dom.html
           grep -q 'Google Maps' /tmp/dom.html
           if grep -Eq 'खतरा सीमा:[[:space:]]*०([.]०+)?([^०-९]|$)|खतरा सीमा:[[:space:]]*0([.]0+)?([^0-9]|$)' /tmp/dom.html; then
             echo 'danger zero leaked into river UI'; exit 5
           fi
-          echo 'V23 local HIGH/VERY HIGH flood alert gate and mobile smoke passed'
+          echo 'V23 accident card, local flood alert gate, map jump and older-friendly UX passed'

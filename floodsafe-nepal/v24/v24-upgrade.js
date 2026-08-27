@@ -2,6 +2,33 @@
 'use strict';
 const $=id=>document.getElementById(id);
 let selectedRiver=null;
+
+// V25 scale bridge: collapse repeated official API reads on each device.
+// The UI may refresh frequently, but identical upstream BIPAD/DHM/DoR reads are reused for 30s.
+const fs24PreviousFetch=window.fetch.bind(window);
+const FS24_API_CACHE_MS=30000;
+const fs24ApiCache=new Map();
+const fs24Pending=new Map();
+window.fetch=async function(input,init){
+  const url=String(input?.url||input||'');
+  if(!/https:\/\/bipadportal\.gov\.np\/api\/v1\//i.test(url)||String(init?.method||input?.method||'GET').toUpperCase()!=='GET')return fs24PreviousFetch(input,init);
+  const hit=fs24ApiCache.get(url);
+  if(hit&&Date.now()-hit.at<FS24_API_CACHE_MS){
+    return new Response(hit.body,{status:hit.status,headers:{...hit.headers,'X-FloodSafe-Device-Cache':'HIT'}});
+  }
+  if(fs24Pending.has(url)){
+    const p=await fs24Pending.get(url);
+    return new Response(p.body,{status:p.status,headers:{...p.headers,'X-FloodSafe-Device-Cache':'COLLAPSED'}});
+  }
+  const pending=(async()=>{
+    const r=await fs24PreviousFetch(input,init);const body=await r.clone().text();const headers={'Content-Type':r.headers.get('content-type')||'application/json'};
+    const entry={at:Date.now(),body,status:r.status,headers};if(r.ok)fs24ApiCache.set(url,entry);return entry;
+  })().finally(()=>fs24Pending.delete(url));
+  fs24Pending.set(url,pending);
+  const out=await pending;return new Response(out.body,{status:out.status,headers:out.headers});
+};
+window.__floodsafeScaleBridge={mode:'device-collapse',ttl_ms:FS24_API_CACHE_MS,cache:fs24ApiCache};
+
 const tr={
  ne:{title:'🌊 छानिएको खोला / नदीको अवस्था',choose:'नक्सामा नीलो खोला/नदीमा क्लिक गर्नुहोस्।',river:'खोला / नदी',type:'प्रकार',distance:'तपाईंको स्थानबाट',station:'नजिकको आधिकारिक DHM स्टेशन',level:'पानी सतह',warning:'चेतावनी सीमा',danger:'खतरा सीमा',trend:'बहाव प्रवृत्ति',measured:'अन्तिम मापन',source:'स्रोत',normal:'सामान्य / चेतावनी सीमाभन्दा तल',watch:'निगरानी आवश्यक',warn:'चेतावनी',dangerous:'खतरा',stale:'पुरानो मापन — अहिलेको अवस्था पुष्टि छैन',unknown:'Official gauge भेटिएन — अहिलेको अवस्था पुष्टि गर्न सकिँदैन',nearest:'नजिकको स्टेशन; यही खोलाको station हो भन्ने पुष्टि छैन',same:'नाम मिलेको/सम्बन्धित नजिकको स्टेशन',auto:'स्थान अनुमति पाएपछि वरिपरिका खोला/नदी स्वतः देखाइन्छन्।',partial:'आंशिक लाइभ डेटा — अवस्था पुष्टि गर्नुहोस्',offline:'लाइभ डेटा उपलब्ध छैन — अवस्था पुष्टि भएको छैन'},
  en:{title:'🌊 Selected river / stream status',choose:'Click a blue river or stream on the map.',river:'River / stream',type:'Type',distance:'From your location',station:'Nearest official DHM station',level:'Water level',warning:'Warning level',danger:'Danger level',trend:'Trend',measured:'Last measured',source:'Source',normal:'Normal / below warning level',watch:'Watch closely',warn:'Warning',dangerous:'Danger',stale:'Stale measurement — current status not confirmed',unknown:'No official gauge found — current status cannot be confirmed',nearest:'Nearest station; not confirmed to be on the same river',same:'Name-matched/related nearby station',auto:'Allow location to show nearby rivers and streams automatically.',partial:'Partial live data — verify current conditions',offline:'Live data unavailable — current conditions unconfirmed'}

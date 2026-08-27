@@ -94,6 +94,11 @@ jobs:
                   tag='<script src="./v23-ux.js?v=1"></script>'
                   if tag not in s:
                       s=s.replace('</body>',tag+'</body>')
+              river=p.parent/'v23-river-map.js'
+              if river.exists():
+                  tag='<script src="./v23-river-map.js?v=1"></script>'
+                  if tag not in s:
+                      s=s.replace('</body>',tag+'</body>')
               p.write_text(s)
           PY
 
@@ -130,12 +135,12 @@ jobs:
           BASE=https://pujan1234-hub.github.io/assigment
           for i in $(seq 1 25); do
             if curl -fsSL "$BASE/?t=$RANDOM" -o /tmp/home.html && curl -fsSL "$BASE/build-version.txt?t=$RANDOM" -o /tmp/version.txt && curl -fsSL "$BASE/floodsafe-nepal/?t=$RANDOM" -o /tmp/flood.html && curl -fsSL "$BASE/floodsafe-nepal/v23/?t=$RANDOM" -o /tmp/v23.html; then
-              if grep -q 'portfolio-floodsafe.js?v=2' /tmp/home.html && grep -q 'auto-update.js?v=2' /tmp/home.html && grep -q 'बाढी सुरक्षा नेपाल' /tmp/flood.html && grep -q 'v23-hotfix.js?v=4' /tmp/v23.html && grep -q 'v23-ux.js?v=1' /tmp/v23.html && test -s /tmp/version.txt; then
+              if grep -q 'portfolio-floodsafe.js?v=2' /tmp/home.html && grep -q 'auto-update.js?v=2' /tmp/home.html && grep -q 'बाढी सुरक्षा नेपाल' /tmp/flood.html && grep -q 'v23-hotfix.js?v=4' /tmp/v23.html && grep -q 'v23-ux.js?v=1' /tmp/v23.html && grep -q 'v23-river-map.js?v=1' /tmp/v23.html && test -s /tmp/version.txt; then
                 if grep -Eqi '\bAI\b|AI-assisted|artificial intelligence' /tmp/home.html; then
                   echo 'AI attribution leaked into live portfolio'
                   exit 2
                 fi
-                echo 'Stable links, FloodSafe hotfix/UX, automatic updater and portfolio wording verified'
+                echo 'Stable links, FloodSafe hotfix/UX/river map, automatic updater and portfolio wording verified'
                 exit 0
               fi
             fi

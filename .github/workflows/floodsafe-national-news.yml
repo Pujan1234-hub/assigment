@@ -1,0 +1,128 @@
+name: FloodSafe National News Sync
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/floodsafe-national-news.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: floodsafe-national-news
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet requests beautifulsoup4
+      - name: Collect national flash headlines
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,re,html
+          from datetime import datetime, timezone, timedelta
+          from urllib.parse import urljoin,urlparse
+          import requests
+          from bs4 import BeautifulSoup
+
+          NPT=timezone(timedelta(hours=5,minutes=45))
+          now=datetime.now(NPT)
+          sources=[
+            ('OnlineKhabar','https://www.onlinekhabar.com/latest'),
+            ('Setopati','https://www.setopati.com/'),
+            ('Kathmandu Post','https://kathmandupost.com/'),
+            ('Nepal News','https://english.nepalnews.com/'),
+            ('Ratopati','https://www.ratopati.com/'),
+          ]
+          priority=[
+            'बाढी','पहिरो','भूकम्प','दुर्घटना','मृत्यु','उद्धार','सम्पर्कविहीन','बेपत्ता','घाइते','सडक','राजमार्ग','बन्द','अवरुद्ध','आगलागी','चेतावनी','सतर्क','आपतकाल','वर्षा','मौसम','सरकार','मन्त्रिपरिषद','प्रधानमन्त्री','राष्ट्रपति','सर्वोच्च','संसद','पक्राउ','सेना','प्रहरी','सुरक्षा','सीमा','विमान','एयरपोर्ट','हड्ताल','आन्दोलन','निर्देशन','निर्णय','राहत','खोजी','स्वास्थ्य जोखिम','विद्युत','पुल',
+            'flood','landslide','earthquake','accident','death','dead','rescue','missing','injured','road','highway','closed','blocked','fire','warning','alert','emergency','rain','weather','government','cabinet','prime minister','president','supreme court','parliament','arrest','army','police','security','border','airport','strike','protest','evacuation','relief','outbreak'
+          ]
+          exclude=['खेलकुद','मनोरञ्जन','राशिफल','जीवनशैली','फिल्म','सिनेमा','गीत','क्रिकेट','football','sports','entertainment','lifestyle','horoscope','opinion','विचार','ब्लग','साहित्य','beauty','fashion']
+          nav={'गृहपृष्ठ','समाचार','राजनीति','समाज','बिजनेस','खेलकुद','अन्तर्राष्ट्रिय','English','Home','News','Politics','Sports','Business','Lifestyle','Opinion','More','Latest','Trending'}
+          headers={'User-Agent':'Mozilla/5.0 (compatible; FloodSafeNepal/1.0; +https://pujan1234-hub.github.io/assigment/floodsafe-nepal/)','Accept-Language':'ne,en;q=0.8'}
+          items=[];source_status={}
+          def norm(s):
+            return re.sub(r'[^\w\u0900-\u097f]+',' ',s.lower()).strip()
+          def score_title(t,pos):
+            low=t.lower();score=max(0,8-pos//6)
+            for k in priority:
+              if k in low: score+=4
+            if any(k in low for k in ['breaking','ब्रेकिङ','ताजा','just in','अहिले','चेतावनी','evacuation','आपतकाल']): score+=5
+            return score
+          for source,url in sources:
+            try:
+              r=requests.get(url,headers=headers,timeout=15)
+              r.raise_for_status()
+              soup=BeautifulSoup(r.text,'html.parser')
+              host=urlparse(url).netloc.replace('www.','')
+              seen_local=set();added=0
+              for pos,a in enumerate(soup.find_all('a',href=True)):
+                text=' '.join(a.stripped_strings)
+                text=html.unescape(re.sub(r'\s+',' ',text)).strip(' -|•')
+                if not (18<=len(text)<=190) or text in nav: continue
+                low=text.lower()
+                if any(x.lower() in low for x in exclude): continue
+                href=urljoin(url,a.get('href',''))
+                pu=urlparse(href)
+                if pu.scheme not in ('http','https') or host not in pu.netloc.replace('www.',''): continue
+                key=norm(text)
+                if len(key)<12 or key in seen_local: continue
+                seen_local.add(key)
+                sc=score_title(text,pos)
+                if sc<5: continue
+                items.append({'title':text,'source':source,'url':href.split('#')[0],'score':sc,'flash':sc>=13,'source_order':pos})
+                added+=1
+                if added>=18: break
+              source_status[source]={'ok':True,'items':added}
+            except Exception as e:
+              source_status[source]={'ok':False,'error':str(e)[:120]}
+          dedup=[];seen=[]
+          for x in sorted(items,key=lambda v:(-v['score'],v['source_order'])):
+            k=norm(x['title'])
+            if any((k in old or old in k) and min(len(k),len(old))>22 for old in seen): continue
+            seen.append(k)
+            x.pop('source_order',None);x.pop('score',None)
+            dedup.append(x)
+            if len(dedup)>=30: break
+          if len(dedup)<3:
+            raise SystemExit('Too few headlines; keeping previous feed')
+          out={'generated_at':now.isoformat(),'updated_at_npt':now.strftime('%d %b %H:%M NPT'),'items':dedup,'sources':source_status}
+          path='data/national-news.json'
+          try:
+            old=json.load(open(path,encoding='utf-8'))
+          except Exception:
+            old={}
+          old_sig=[(x.get('title'),x.get('url')) for x in old.get('items',[])]
+          new_sig=[(x.get('title'),x.get('url')) for x in dedup]
+          if old_sig==new_sig:
+            print('No headline change')
+          else:
+            with open(path,'w',encoding='utf-8') as f: json.dump(out,f,ensure_ascii=False,indent=2)
+            print('Updated',len(dedup),'headlines')
+          PY
+      - name: Commit changed feed
+        shell: bash
+        run: |
+          if git diff --quiet -- data/national-news.json; then
+            echo 'No news change'
+            exit 0
+          fi
+          git config user.name 'FloodSafe News Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add data/national-news.json
+          git commit -m 'Update national flash news feed'
+          git pull --rebase origin main
+          git push origin HEAD:main

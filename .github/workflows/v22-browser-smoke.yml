@@ -1,0 +1,28 @@
+name: V22 Browser Smoke
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/v22-browser-smoke.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run FloodSafe V22 in headless Chrome
+        run: |
+          set -e
+          URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v22/'
+          command -v google-chrome || command -v google-chrome-stable || true
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable)
+          test -n "$CHROME"
+          "$CHROME" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=15000 --dump-dom "$URL" > /tmp/dom.html 2>/tmp/chrome.err
+          grep -q 'V22 LIVE' /tmp/dom.html
+          grep -q 'fs22stationCount' /tmp/dom.html
+          grep -q 'Tsho Rolpa' /tmp/dom.html
+          grep -q 'रसुवा बाढी' /tmp/dom.html
+          if grep -qiE 'Aw, Snap|Page Unresponsive' /tmp/dom.html; then exit 4; fi
+          echo 'V22 Chrome runtime smoke passed'
+          tail -50 /tmp/chrome.err || true

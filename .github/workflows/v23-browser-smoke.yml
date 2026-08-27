@@ -1,0 +1,38 @@
+name: V23 Browser Smoke
+on:
+  push:
+    paths:
+      - "floodsafe-nepal/v23/**"
+      - ".github/workflows/v23-browser-smoke.yml"
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for deployed V23 and run Chrome
+        run: |
+          set -e
+          URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v23/'
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -fsSL "$URL" -o /tmp/v23.html && grep -q 'बाढी सुरक्षा नेपाल • V23' /tmp/v23.html && grep -q 'v23-upgrade.js?v=1' /tmp/v23.html; then ok=1; break; fi
+            sleep 4
+          done
+          test "$ok" = 1
+          curl -fsSL "${URL}v23-upgrade.js?v=1" -o /tmp/v23.js
+          node --check /tmp/v23.js
+          grep -q 'const POLL=5000' /tmp/v23.js
+          grep -q 'V23 OFFICIAL' /tmp/v23.js
+          grep -q 'river-stations/?limit=650' /tmp/v23.js
+          grep -q 'rain-stations/?limit=650' /tmp/v23.js
+          grep -q "setBase('sat')" /tmp/v23.html
+          grep -q 'FAST=5,SLOW=5' /tmp/v23.html
+          if grep -q 'native app चरण' /tmp/v23.html; then echo 'developer note leaked'; exit 4; fi
+          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=15000 --dump-dom "$URL" > /tmp/dom.html
+          grep -q 'V23 OFFICIAL' /tmp/dom.html
+          grep -q 'आजको मौसम' /tmp/dom.html
+          grep -q 'नजिकका DHM नदी स्टेशन' /tmp/dom.html
+          grep -q 'आधिकारिक चेतावनी र सडक' /tmp/dom.html
+          grep -q 'हिमाल' /tmp/dom.html
+          echo 'V23 real Chrome runtime smoke passed'

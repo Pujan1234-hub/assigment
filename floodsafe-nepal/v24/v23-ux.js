@@ -89,87 +89,21 @@ function renderAccident(){
 }
 
 const exactEn=new Map([
-  ['मेरो वरिपरि बाढीको अवस्था','Flood status around me'],
-  ['मेरो स्थान प्रयोग','Use my location'],
-  ['नक्साका बीच छान्नुहोस्','Choose location on map'],
-  ['वरिपरि','Radius'],
-  ['नक्साबाट छानिएको','Selected from map'],
-  ['स्थानीय जोखिम','Local risk'],
-  ['ठूलो चेतावनी भेटिएन','No major warning'],
-  ['नजिकका नदी स्टेशन','Nearby river stations'],
-  ['सडक समस्या','Road issues'],
-  ['वर्षा स्टेशन','Rain stations'],
-  ['नजिकको सडक अवस्था','Nearby road status'],
-  ['अहिलेको जानकारी','Latest information'],
-  ['लाइभ सूचना','Live information'],
-  ['७७ जिल्ला स्थिति','77 district status'],
-  ['जिल्ला छान्नुहोस्','Choose district'],
-  ['बाढी चेतावनी ध्वनि','Flood alert sound'],
-  ['सूचना सक्रिय','Enable alerts'],
-  ['ध्वनि परीक्षण','Test sound'],
-  ['उपग्रह','Satellite'],
-  ['सडक','Street'],
-  ['NASA वर्षा','NASA rain'],
-  ['लाइभ','Live'],
-  ['१ घण्टा','1 hour'],
-  ['६ घण्टा','6 hours'],
-  ['२४ घण्टा','24 hours']
+  ['मेरो वरिपरि बाढीको अवस्था','Flood status around me'],['मेरो स्थान प्रयोग','Use my location'],['नक्साका बीच छान्नुहोस्','Choose location on map'],['वरिपरि','Radius'],['नक्साबाट छानिएको','Selected from map'],['स्थानीय जोखिम','Local risk'],['ठूलो चेतावनी भेटिएन','No major warning'],['नजिकका नदी स्टेशन','Nearby river stations'],['सडक समस्या','Road issues'],['वर्षा स्टेशन','Rain stations'],['नजिकको सडक अवस्था','Nearby road status'],['अहिलेको जानकारी','Latest information'],['लाइभ सूचना','Live information'],['७७ जिल्ला स्थिति','77 district status'],['जिल्ला छान्नुहोस्','Choose district'],['बाढी चेतावनी ध्वनि','Flood alert sound'],['सूचना सक्रिय','Enable alerts'],['ध्वनि परीक्षण','Test sound'],['उपग्रह','Satellite'],['सडक','Street'],['NASA वर्षा','NASA rain'],['लाइभ','Live'],['१ घण्टा','1 hour'],['६ घण्टा','6 hours'],['२४ घण्टा','24 hours']
 ]);
 const startsEn=[
-  ['GPS प्रयोग गर्दा','With GPS, nearby rivers, official gauges, rainfall, alerts and roads are prioritised for your location.'],
-  ['आवाज केवल HIGH','Sound plays only for a local HIGH or VERY HIGH flood risk.'],
-  ['नक्सामा स्थान छानेपछि','After choosing a location on the map, nearby official data is shown.'],
-  ['छानिएको दूरीभित्र','No closed or partially-open DoR/BIPAD road record was found inside the selected radius.'],
-  ['नजिकको आधिकारिक चेतावनी','Nearby official alerts and road disruptions'],
-  ['सार्वजनिक live numerical','No fabricated value is shown where a public live numerical reading is unavailable.']
+  ['GPS प्रयोग गर्दा','With GPS, nearby rivers, official gauges, rainfall, alerts and roads are prioritised for your location.'],['आवाज केवल HIGH','Sound plays only for a local HIGH or VERY HIGH flood risk.'],['नक्सामा स्थान छानेपछि','After choosing a location on the map, nearby official data is shown.'],['छानिएको दूरीभित्र','No closed or partially-open DoR/BIPAD road record was found inside the selected radius.'],['नजिकको आधिकारिक चेतावनी','Nearby official alerts and road disruptions'],['सार्वजनिक live numerical','No fabricated value is shown where a public live numerical reading is unavailable.']
 ];
-function translateLeaf(el){
-  if(el.children.length)return;
-  const t=(el.textContent||'').trim();if(!t)return;
-  if(lang()==='ne'){
-    if(el.dataset.uxNe!==undefined){el.textContent=el.dataset.uxNe;delete el.dataset.uxNe}
-    return;
-  }
-  let out=exactEn.get(t)||null;
-  if(!out){for(const [a,b] of startsEn)if(t.startsWith(a)){out=b;break}}
-  if(out){if(el.dataset.uxNe===undefined)el.dataset.uxNe=t;el.textContent=out}
-}
-function translateKnown(){
-  const en=lang()==='en';
-  document.documentElement.lang=en?'en':'ne';
-  const h1=document.querySelector('.brand h1');if(h1){if(en){if(!h1.dataset.uxNe)h1.dataset.uxNe=h1.textContent;h1.textContent='FloodSafe Nepal'}else if(h1.dataset.uxNe){h1.textContent=h1.dataset.uxNe;delete h1.dataset.uxNe}}
-  document.querySelectorAll('.side button,.side label,.side small,.side p,.side h1,.side h2,.side h3,.side h4,.side span,.side option,.mapBtns button').forEach(translateLeaf);
-  const one=$('fs23r1')?.previousElementSibling,six=$('fs23r6')?.previousElementSibling,day=$('fs23r24')?.previousElementSibling;
-  if(one)one.textContent=en?'1 hour':'१ घण्टा';if(six)six.textContent=en?'6 hours':'६ घण्टा';if(day)day.textContent=en?'24 hours':'२४ घण्टा';
-  renderAccident();
-}
-function langHooks(){
-  document.addEventListener('click',e=>{
-    const b=e.target.closest?.('.fs23lang');if(!b)return;
-    setTimeout(translateKnown,80);setTimeout(translateKnown,400);setTimeout(translateKnown,1200);
-  });
-  setInterval(()=>{if(lang()==='en')translateKnown();renderAccident()},1500);
-}
+function translateLeaf(el){if(el.children.length)return;const t=(el.textContent||'').trim();if(!t)return;if(lang()==='ne'){if(el.dataset.uxNe!==undefined){el.textContent=el.dataset.uxNe;delete el.dataset.uxNe}return}let out=exactEn.get(t)||null;if(!out){for(const [a,b] of startsEn)if(t.startsWith(a)){out=b;break}}if(out){if(el.dataset.uxNe===undefined)el.dataset.uxNe=t;el.textContent=out}}
+function translateKnown(){const en=lang()==='en';document.documentElement.lang=en?'en':'ne';const h1=document.querySelector('.brand h1');if(h1){if(en){if(!h1.dataset.uxNe)h1.dataset.uxNe=h1.textContent;h1.textContent='FloodSafe Nepal'}else if(h1.dataset.uxNe){h1.textContent=h1.dataset.uxNe;delete h1.dataset.uxNe}}document.querySelectorAll('.side button,.side label,.side small,.side p,.side h1,.side h2,.side h3,.side h4,.side span,.side option,.mapBtns button').forEach(translateLeaf);const one=$('fs23r1')?.previousElementSibling,six=$('fs23r6')?.previousElementSibling,day=$('fs23r24')?.previousElementSibling;if(one)one.textContent=en?'1 hour':'१ घण्टा';if(six)six.textContent=en?'6 hours':'६ घण्टा';if(day)day.textContent=en?'24 hours':'२४ घण्टा';const back=$('fs23BackMap');if(back)back.textContent=en?'🗺️ Back to map':'🗺️ नक्सामा फर्कनुहोस्';renderAccident()}
+function langHooks(){document.addEventListener('click',e=>{const b=e.target.closest?.('.fs23lang');if(!b)return;setTimeout(translateKnown,80);setTimeout(translateKnown,400);setTimeout(translateKnown,1200)});setInterval(()=>{if(lang()==='en')translateKnown();renderAccident()},1500)}
 
-function addBackToMap(){
-  const hero=document.querySelector('.hero');if(!hero||$('fs23BackMap'))return;
-  const b=document.createElement('button');b.id='fs23BackMap';b.type='button';b.textContent=lang()==='en'?'🗺️ Back to map':'🗺️ नक्सामा फर्कनुहोस्';
-  b.onclick=()=>document.querySelector('.mapWrap')?.scrollIntoView({behavior:'smooth',block:'start'});
-  hero.appendChild(b);
-}
-function jumpToDetails(){
-  const t=document.querySelector('.hero')||$('fs23weather');if(!t)return;
-  t.scrollIntoView({behavior:'smooth',block:'start'});t.classList.add('fs23Jump');setTimeout(()=>t.classList.remove('fs23Jump'),1800);
-  addBackToMap();
-}
-function hookMapJump(){
-  let tries=0;const t=setInterval(()=>{
-    const m=window.__fs?.map;if(!m){if(++tries>100)clearInterval(t);return}
-    clearInterval(t);if(mapHooked)return;mapHooked=true;
-    m.on('click',()=>setTimeout(jumpToDetails,350));
-    const gps=[...document.querySelectorAll('button')].find(b=>/मेरो स्थान प्रयोग|use my location/i.test(b.textContent||''));if(gps)gps.addEventListener('click',()=>setTimeout(jumpToDetails,1500));
-  },200);
-}
+function scrollSideTo(target){const side=document.querySelector('.side');if(!target)return;if(side&&side.contains(target)&&side.scrollHeight>side.clientHeight+20){side.scrollTo({top:Math.max(0,target.offsetTop-12),behavior:'smooth'})}try{target.scrollIntoView({behavior:'smooth',block:'start'})}catch{}}
+function goMap(){const wrap=document.querySelector('.mapWrap');if(!wrap)return;const side=document.querySelector('.side');if(side)side.scrollTop=0;try{wrap.scrollIntoView({behavior:'smooth',block:'start'})}catch{};const top=wrap.getBoundingClientRect().top+(window.scrollY||document.documentElement.scrollTop||0)-6;try{window.scrollTo({top,behavior:'smooth'})}catch{window.scrollTo(0,top)}setTimeout(()=>window.__fs?.map?.invalidateSize?.({pan:false}),250);setTimeout(()=>window.__fs?.map?.invalidateSize?.({pan:false}),750);wrap.classList.add('fs23Jump');setTimeout(()=>wrap.classList.remove('fs23Jump'),1200)}
+function weatherTarget(){return $('fs23weather')||document.querySelector('.fs23weatherHero')||document.querySelector('.weather')}
+function addBackToMap(){const host=weatherTarget()||document.querySelector('.hero');if(!host||$('fs23BackMap'))return;const b=document.createElement('button');b.id='fs23BackMap';b.type='button';b.textContent=lang()==='en'?'🗺️ Back to map':'🗺️ नक्सामा फर्कनुहोस्';b.onclick=goMap;host.appendChild(b)}
+function jumpToDetails(){const t=weatherTarget()||document.querySelector('.hero');if(!t)return;scrollSideTo(t);t.classList.add('fs23Jump');setTimeout(()=>t.classList.remove('fs23Jump'),1800);addBackToMap()}
+function hookMapJump(){let tries=0;const t=setInterval(()=>{const m=window.__fs?.map;if(!m){if(++tries>100)clearInterval(t);return}clearInterval(t);if(mapHooked)return;mapHooked=true;m.on('click',()=>setTimeout(jumpToDetails,350));const gps=[...document.querySelectorAll('button')].find(b=>/मेरो स्थान प्रयोग|use my location/i.test(b.textContent||''));if(gps)gps.addEventListener('click',()=>setTimeout(jumpToDetails,1500))},200)}
 
 function init(){css();captureIncidents();seedIncidents();ensureAccidentCard();langHooks();translateKnown();hookMapJump();addBackToMap();setInterval(ensureAccidentCard,5000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,500));else setTimeout(init,500);

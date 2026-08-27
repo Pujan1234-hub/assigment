@@ -1,0 +1,22 @@
+{
+  "source": "Nepal Police",
+  "source_url": "https://www.nepalpolice.gov.np/news/10245/",
+  "event": "Rasuwa flood",
+  "event_ne": "रसुवा बाढी",
+  "cause": "Flood",
+  "cause_ne": "बाढी",
+  "total_deaths": 100,
+  "official_update_bs": "2083-05-10",
+  "official_update_time": "20:30",
+  "districts": [
+    {"name": "Rasuwa", "name_ne": "रसुवा", "deaths": 1},
+    {"name": "Nuwakot", "name_ne": "नुवाकोट", "deaths": 11},
+    {"name": "Dhading", "name_ne": "धादिङ", "deaths": 18},
+    {"name": "Chitwan", "name_ne": "चितवन", "deaths": 33},
+    {"name": "Gorkha", "name_ne": "गोरखा", "deaths": 19},
+    {"name": "Tanahun", "name_ne": "तनहुँ", "deaths": 7},
+    {"name": "Nawalparasi East", "name_ne": "नवलपरासी पूर्व", "deaths": 11}
+  ],
+  "status": "verified",
+  "note": "Latest verified Nepal Police update available to FloodSafe."
+}

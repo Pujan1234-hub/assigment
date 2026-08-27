@@ -48,13 +48,17 @@ jobs:
           mustgrep 'const POLL=5000' /tmp/v23copy.js
           mustgrep 'FS24_API_CACHE_MS=30000' /tmp/v24.js
           mustgrep '__floodsafeScaleBridge' /tmp/v24.js
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$CHROME" || { echo 'No Chrome executable found'; exit 31; }
+          echo "Browser executable: $CHROME"
+          "$CHROME" --version || true
           mkdir -p /tmp/v24-smoke && cd /tmp/v24-smoke
           npm init -y >/dev/null 2>&1
           npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
-          URL="$URL" node <<'JS'
+          URL="$URL" CHROME="$CHROME" node <<'JS'
           const puppeteer=require('puppeteer-core');
           (async()=>{
-            const browser=await puppeteer.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
+            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
             const page=await browser.newPage();
             page.setDefaultTimeout(30000);
             const pageErrors=[],requestFailures=[],badResponses=[],consoleErrors=[];

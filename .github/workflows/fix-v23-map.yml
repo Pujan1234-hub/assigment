@@ -1,0 +1,87 @@
+name: Fix FloodSafe V23 map
+on:
+  push:
+    paths:
+      - ".github/workflows/fix-v23-map.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make Nepal boundary local and patch V23
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import urllib.request, json, re
+
+          p=Path('floodsafe-nepal/v23/index.html')
+          s=p.read_text()
+
+          # Store Nepal district geometry locally so runtime does not depend on raw.githubusercontent.com.
+          u='https://raw.githubusercontent.com/l3lackcurtains/nepali-geo-pro-max/117fd0f3d2dabae3bd86bfe9e4c57098ffe56669/src/geo/districts.geo.ts'
+          req=urllib.request.Request(u,headers={'User-Agent':'FloodSafe-Nepal-V23-Build'})
+          t=urllib.request.urlopen(req,timeout=30).read().decode('utf-8')
+          marker='export const NEPAL_DISTRICTS_GEO'
+          pos=t.index(marker); start=t.index('{',pos); end=t.rindex('};')+1
+          geo=json.loads(t[start:end])
+          Path('floodsafe-nepal/v23/nepal-districts.json').write_text(json.dumps(geo,ensure_ascii=False,separators=(',',':')))
+
+          old="async function loadBoundary(){const u='https://raw.githubusercontent.com/l3lackcurtains/nepali-geo-pro-max/117fd0f3d2dabae3bd86bfe9e4c57098ffe56669/src/geo/districts.geo.ts';const r=await fetch(u,{cache:'force-cache'});if(!r.ok)throw Error('boundary');const t=await r.text(),m='export const NEPAL_DISTRICTS_GEO',p=t.indexOf(m),s=t.indexOf('{',p),e=t.lastIndexOf('};');if(p<0||s<0||e<s)throw Error('boundary-parse');return JSON.parse(t.slice(s,e+1))}"
+          new="async function loadBoundary(){return await fetchJSON('./nepal-districts.json',12000)}"
+          if old not in s: raise SystemExit('loadBoundary pattern not found')
+          s=s.replace(old,new)
+
+          # Fatal syntax typo that kept the map loading overlay on screen.
+          if 'renderDistricts()setInterval' not in s: raise SystemExit('syntax typo pattern not found')
+          s=s.replace('renderDistricts()setInterval','renderDistricts();setInterval')
+
+          # Use official measurement timestamps first.
+          old_stamp="function stamp(o){return val(o,['updated_at','updatedAt','timestamp','datetime','date','created_at','createdAt','incidentOn','incident_on'])||val(o.properties||{},['updated_at','timestamp','date','created_at'])}"
+          new_stamp="function stamp(o){return val(o,['waterLevelOn','measuredOn','recordedDate','modifiedOn','updated_at','updatedAt','timestamp','datetime','date','created_at','createdAt','incidentOn','incident_on'])||val(o.properties||{},['waterLevelOn','measuredOn','recordedDate','modifiedOn','updated_at','timestamp','date','created_at'])}"
+          if old_stamp not in s: raise SystemExit('stamp pattern not found')
+          s=s.replace(old_stamp,new_stamp)
+
+          # Correct status logic: BELOW WARNING LEVEL must never become an orange warning just because it contains the word warning.
+          old_kind="function kind(o,t){const s=(name(o)+' '+status(o)+' '+JSON.stringify(o.properties||{})).toLowerCase();if(/above danger|danger|red|closed|बन्द|खतरा|evacuate/.test(s))return'red';if(/above warning|warning|alert|watch|partial|partially|सतर्क|orange|yellow|rising/.test(s))return'orange';if(t==='highway')return'green';return'blue'}"
+          new_kind="function kind(o,t){const s=(name(o)+' '+status(o)+' '+JSON.stringify(o.properties||{})).toLowerCase(),wl=waterLevel(o),w=warningLevel(o),d=dangerLevel(o);if(wl!==null&&d!==null&&wl>=d)return'red';if(wl!==null&&w!==null&&wl>=w)return'orange';if(/above danger|danger level exceeded|red alert|closed|बन्द|खतरा|evacuate/.test(s))return'red';if(/below warning|below danger|normal|steady|safe/.test(s))return t==='highway'?'green':'blue';if(/above warning|warning level exceeded|alert|watch|partial|partially|सतर्क|orange|yellow|rising/.test(s))return'orange';if(t==='highway')return'green';return'blue'}"
+          if old_kind not in s: raise SystemExit('kind pattern not found')
+          s=s.replace(old_kind,new_kind)
+
+          # Clicking anywhere inside Nepal selects that point and refreshes nearby rivers/status.
+          hook="$('centerBtn').onclick=()=>setFocus([map.getCenter().lat,map.getCenter().lng],'map');"
+          repl=hook+"map.on('click',e=>setFocus([e.latlng.lat,e.latlng.lng],'map'));"
+          if hook not in s: raise SystemExit('map click hook pattern not found')
+          s=s.replace(hook,repl,1)
+
+          # Add test-focus support for browser QA and auto-use GPS only when already granted.
+          tail="localStorage.removeItem('floodsafe-focus');renderOfficial();renderDistricts();setInterval"
+          add="localStorage.removeItem('floodsafe-focus');renderOfficial();renderDistricts();try{const q=new URLSearchParams(location.search);if(q.get('testFocus')==='1')setTimeout(()=>setFocus([27.7172,85.3240],'map'),250);else if(navigator.permissions)navigator.permissions.query({name:'geolocation'}).then(x=>{if(x.state==='granted')gps()}).catch(()=>{})}catch{};setInterval"
+          if tail not in s: raise SystemExit('boot tail pattern not found')
+          s=s.replace(tail,add,1)
+
+          p.write_text(s)
+          print('patched V23 index and wrote local Nepal boundary', len(geo.get('features',[])))
+          PY
+
+          # Extract and syntax-check the main inline JS, not just upgrade JS.
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('floodsafe-nepal/v23/index.html').read_text()
+          blocks=re.findall(r'<script>([\s\S]*?)</script>',s)
+          assert blocks, 'no inline JS blocks'
+          Path('/tmp/v23-inline.js').write_text('\n'.join(blocks))
+          PY
+          node --check /tmp/v23-inline.js
+          test -s floodsafe-nepal/v23/nepal-districts.json
+          python -m json.tool floodsafe-nepal/v23/nepal-districts.json >/dev/null
+      - name: Commit fix
+        run: |
+          git config user.name 'Pujan1234-hub'
+          git config user.email 'chapagainpujan058@gmail.com'
+          git add floodsafe-nepal/v23/index.html floodsafe-nepal/v23/nepal-districts.json
+          git commit -m 'Fix FloodSafe V23 map and local river selection' || exit 0
+          git push

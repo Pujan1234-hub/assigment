@@ -4,35 +4,45 @@ on:
     paths:
       - "floodsafe-nepal/v23/**"
       - ".github/workflows/v23-browser-smoke.yml"
+      - ".github/workflows/fixcheck-pages.yml"
 permissions:
   contents: read
 jobs:
   browser:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify deployed V23 map, Nepali date and hazards
+      - name: Verify deployed V23 map, Nepali date, hazards and mobile hotfix
         run: |
           set -e
           URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v23/'
           ok=0
           for i in $(seq 1 45); do
             if curl -fsSL "${URL}v23-upgrade.js?v=${GITHUB_SHA}" -o /tmp/v23.js \
+              && curl -fsSL "${URL}v23-hotfix.js?v=${GITHUB_SHA}" -o /tmp/hotfix.js \
+              && curl -fsSL "${URL}?smoke=${GITHUB_SHA}" -o /tmp/page.html \
               && grep -q 'V23 LIVE DATA' /tmp/v23.js \
               && grep -q 'नेपाल ७७ जिल्ला' /tmp/v23.js \
-              && grep -q 'const threshold=' /tmp/v23.js; then
+              && grep -q 'const threshold=' /tmp/v23.js \
+              && grep -q 'playStrongChime' /tmp/hotfix.js \
+              && grep -q 'fs23roadTools' /tmp/hotfix.js \
+              && grep -q 'v23-hotfix.js?v=3' /tmp/page.html; then
               ok=1; break
             fi
             sleep 4
           done
           test "$ok" = 1
           node --check /tmp/v23.js
+          node --check /tmp/hotfix.js
           grep -q 'const POLL=5000' /tmp/v23.js
           grep -q 'incident/?limit=500&ordering=-incidentOn' /tmp/v23.js
           grep -q 'river-stations/?limit=650' /tmp/v23.js
-          grep -q "v23-upgrade.js?v=1" <(curl -fsSL "$URL")
+          grep -q 'leaflet-top.leaflet-left' /tmp/hotfix.js
+          grep -q 'Google Maps' /tmp/hotfix.js
+          grep -q 'Waze Live Map' /tmp/hotfix.js
+          grep -q '९५' /tmp/hotfix.js
           if grep -q 'V23 OFFICIAL' /tmp/v23.js; then echo 'old misleading badge remains'; exit 4; fi
 
-          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=22000 --dump-dom "${URL}?smoke=${GITHUB_SHA}" > /tmp/dom.html
+          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=24000 --dump-dom "${URL}?smoke=${GITHUB_SHA}" > /tmp/dom.html
           grep -q 'leaflet-map-pane' /tmp/dom.html
           grep -q 'V23 LIVE DATA' /tmp/dom.html
           grep -q 'नेपाली मिति' /tmp/dom.html
@@ -42,7 +52,9 @@ jobs:
           grep -q 'खतरा सीमा' /tmp/dom.html
           grep -q '२०८३' /tmp/dom.html
           grep -q 'भाद्र' /tmp/dom.html
+          grep -q 'fs23roadTools' /tmp/dom.html
+          grep -q 'Google Maps' /tmp/dom.html
           if grep -Eq 'खतरा सीमा:[[:space:]]*०([.]०+)?([^०-९]|$)|खतरा सीमा:[[:space:]]*0([.]0+)?([^0-9]|$)' /tmp/dom.html; then
             echo 'danger zero leaked into river UI'; exit 5
           fi
-          echo 'V23 enhanced browser smoke passed'
+          echo 'V23 map, Nepali date, hazard board and mobile hotfix smoke passed'

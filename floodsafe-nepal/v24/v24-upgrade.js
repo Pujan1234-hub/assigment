@@ -21,30 +21,36 @@ const $=id=>document.getElementById(id);
 let selectedRiver=null;
 
 // V25 scale bridge: collapse repeated official API reads on each device.
-// The UI may refresh frequently, but identical upstream BIPAD/DHM/DoR reads are reused for 30s.
+// It also exposes endpoint health so the V25 map shell can reuse these reads
+// instead of creating a second competing BIPAD/DHM/DoR receiver.
 const fs24PreviousFetch=window.fetch.bind(window);
 const FS24_API_CACHE_MS=30000;
 const fs24ApiCache=new Map();
 const fs24Pending=new Map();
+const fs24Health=new Map();
+function markHealth(url,ok,status,error){fs24Health.set(url,{ok:!!ok,status:Number(status)||0,at:Date.now(),error:error?String(error):''})}
 window.fetch=async function(input,init){
   const url=String(input?.url||input||'');
   if(!/https:\/\/bipadportal\.gov\.np\/api\/v1\//i.test(url)||String(init?.method||input?.method||'GET').toUpperCase()!=='GET')return fs24PreviousFetch(input,init);
   const hit=fs24ApiCache.get(url);
   if(hit&&Date.now()-hit.at<FS24_API_CACHE_MS){
+    markHealth(url,true,hit.status,'');
     return new Response(hit.body,{status:hit.status,headers:{...hit.headers,'X-FloodSafe-Device-Cache':'HIT'}});
   }
   if(fs24Pending.has(url)){
-    const p=await fs24Pending.get(url);
+    const p=await fs24Pending.get(url);markHealth(url,p.status>=200&&p.status<300,p.status,'');
     return new Response(p.body,{status:p.status,headers:{...p.headers,'X-FloodSafe-Device-Cache':'COLLAPSED'}});
   }
   const pending=(async()=>{
-    const r=await fs24PreviousFetch(input,init);const body=await r.clone().text();const headers={'Content-Type':r.headers.get('content-type')||'application/json'};
-    const entry={at:Date.now(),body,status:r.status,headers};if(r.ok)fs24ApiCache.set(url,entry);return entry;
+    try{
+      const r=await fs24PreviousFetch(input,init);const body=await r.clone().text();const headers={'Content-Type':r.headers.get('content-type')||'application/json'};
+      const entry={at:Date.now(),body,status:r.status,headers};markHealth(url,r.ok,r.status,'');if(r.ok)fs24ApiCache.set(url,entry);return entry;
+    }catch(e){markHealth(url,false,0,e);throw e}
   })().finally(()=>fs24Pending.delete(url));
   fs24Pending.set(url,pending);
   const out=await pending;return new Response(out.body,{status:out.status,headers:out.headers});
 };
-window.__floodsafeScaleBridge={mode:'device-collapse',ttl_ms:FS24_API_CACHE_MS,cache:fs24ApiCache};
+window.__floodsafeScaleBridge={mode:'device-collapse',ttl_ms:FS24_API_CACHE_MS,cache:fs24ApiCache,health:fs24Health};
 
 const tr={
  ne:{title:'🌊 छानिएको खोला / नदीको अवस्था',choose:'नक्सामा नीलो खोला/नदीमा क्लिक गर्नुहोस्।',river:'खोला / नदी',type:'प्रकार',distance:'तपाईंको स्थानबाट',station:'नजिकको आधिकारिक DHM स्टेशन',level:'पानी सतह',warning:'चेतावनी सीमा',danger:'खतरा सीमा',trend:'बहाव प्रवृत्ति',measured:'अन्तिम मापन',source:'स्रोत',normal:'सामान्य / चेतावनी सीमाभन्दा तल',watch:'निगरानी आवश्यक',warn:'चेतावनी',dangerous:'खतरा',stale:'पुरानो मापन — अहिलेको अवस्था पुष्टि छैन',unknown:'Official gauge भेटिएन — अहिलेको अवस्था पुष्टि गर्न सकिँदैन',nearest:'नजिकको स्टेशन; यही खोलाको station हो भन्ने पुष्टि छैन',same:'नाम मिलेको/सम्बन्धित नजिकको स्टेशन',auto:'स्थान अनुमति पाएपछि वरिपरिका खोला/नदी स्वतः देखाइन्छन्।',partial:'आंशिक लाइभ डेटा — अवस्था पुष्टि गर्नुहोस्',offline:'लाइभ डेटा उपलब्ध छैन — अवस्था पुष्टि भएको छैन'},
@@ -52,7 +58,7 @@ const tr={
 };
 function lang(){return document.documentElement.lang==='en'?'en':'ne'}
 function T(k){return tr[lang()][k]}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]))}
 function n(v){const x=Number(v);return Number.isFinite(x)?x:null}
 function when(o){return o?.waterLevelOn||o?.measuredOn||o?.modifiedOn||o?.createdOn||null}
 function ageHours(d){if(!d)return Infinity;const x=+new Date(d);return Number.isFinite(x)?Math.max(0,(Date.now()-x)/36e5):Infinity}

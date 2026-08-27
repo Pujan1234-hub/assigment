@@ -1,0 +1,2 @@
+FloodSafe Nepal V23 map runtime fix deployment marker.
+Includes local Nepal boundary, inline JS syntax fix, map click location selection, corrected river warning classification, and official measurement timestamps.

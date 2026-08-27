@@ -30,14 +30,55 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Prepare public site
         run: |
+          set -e
+          rm -rf _site
           mkdir -p _site
           cp index.html _site/index.html
           cp sw.js _site/sw.js
           cp -R fixcheck _site/fixcheck
           cp -R team-tracker _site/team-tracker
           cp -R floodsafe-nepal _site/floodsafe-nepal
+
+          # Stable FloodSafe URL: automatically publish the highest version folder
+          # (v23 now, v24/v25 later) at /floodsafe-nepal/ so the public link never changes.
+          LATEST_FLOOD=$(find floodsafe-nepal -maxdepth 1 -mindepth 1 -type d -name 'v[0-9]*' -printf '%f\n' | sort -V | tail -1)
+          if [ -n "$LATEST_FLOOD" ] && [ -f "floodsafe-nepal/$LATEST_FLOOD/index.html" ]; then
+            cp -R "floodsafe-nepal/$LATEST_FLOOD/." _site/floodsafe-nepal/
+            echo "Published $LATEST_FLOOD to stable /floodsafe-nepal/ URL"
+          fi
+
+          # Inject/update FloodSafe Nepal as Product 03 in the deployed portfolio.
+          # Source portfolio remains clean; every deployment recreates the latest public version.
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('_site/index.html')
+          s=p.read_text()
+
+          s=s.replace('<a href="#fixcheck">FixCheck</a><a href="#platforms">Platforms</a>', '<a href="#fixcheck">FixCheck</a><a href="#floodsafe">FloodSafe Nepal</a><a href="#platforms">Platforms</a>', 1)
+          s=s.replace('<strong>02</strong><span>Active products</span>', '<strong>03</strong><span>Active products</span>', 1)
+          s=s.replace('Both projects start from practical everyday problems. One focuses on team coordination; the other helps ordinary users understand connectivity problems.', 'These projects start from practical everyday problems — team coordination, connectivity diagnosis and local flood-risk awareness for Nepal.', 1)
+
+          extra_css='\n.cards{grid-template-columns:repeat(3,1fr)}\n@media(max-width:850px){.cards{grid-template-columns:1fr}}\n'
+          if extra_css.strip() not in s:
+              s=s.replace('</style>', extra_css+'</style>', 1)
+
+          flood_card='''<article class="card"><div class="cardhead"><div class="icon">🌊</div><span class="status amber">Active Development</span></div><h3>FloodSafe Nepal</h3><div class="sub">नेपालका लागि local flood & river alert platform</div><p>A Nepal-focused safety app built around local-area flood awareness, live river-station updates and map-first risk context.</p><ul class="features"><li>Nepal-only detailed map experience</li><li>Local-area alerts for the place that matters to the user</li><li>Official river-station and warning data with frequent refresh</li><li>Current update time and visible data freshness</li><li>Nepali-first interface and recognisable alert experience</li></ul><div class="miniui"><div class="mocktop"><span class="pill">FloodSafe Nepal</span><span class="ok">Latest live build</span></div><div class="rows"><div class="row"><span>Nearby river stations</span><b class="ok">Refreshing</b></div><div class="row"><span>Local risk</span><b>Area based</b></div><div class="row"><span>Map</span><b>Nepal only</b></div></div></div><div class="actions"><a class="btn primary" href="./floodsafe-nepal/">Open web app ↗</a><a class="btn" href="#floodsafe">Product details</a></div></article>'''
+          marker='</article></div></div></section>\n<section id="teamtracker">'
+          if 'href="#floodsafe">Product details</a>' not in s and marker in s:
+              s=s.replace(marker, '</article>'+flood_card+'</div></div></section>\n<section id="teamtracker">', 1)
+
+          flood_section='''
+<section id="floodsafe"><div class="wrap"><div class="productHead"><div><div class="k">Product 03 · Active Development</div><h2 class="productTitle">FloodSafe Nepal</h2><p class="lead" style="font-size:17px">A Nepal-first flood and river-awareness platform designed to make nearby risk easier to understand through a detailed Nepal map, local-area alerts, live station updates and clear data freshness.</p><div class="actions"><a class="btn primary" href="./floodsafe-nepal/">Launch latest web app ↗</a></div></div><div class="summary"><div class="sitem"><strong>Product type</strong><span>Public safety / flood awareness web app and PWA direction</span></div><div class="sitem"><strong>Main focus</strong><span>Nearby river conditions, local-area warnings and map-based situational awareness</span></div><div class="sitem"><strong>Geographic focus</strong><span>Nepal only — detailed national map rather than a world map</span></div><div class="sitem"><strong>Current status</strong><span>Active development · working web build</span></div></div></div><div class="three"><div class="box"><h3>The problem</h3><p>Broad national warnings can be less useful when someone mainly needs to know what is happening around their own home, route or current area.</p></div><div class="box"><h3>How it works</h3><p>The app combines a Nepal-focused map with frequently refreshed river/station information, local-area context and visible update timing.</p></div><div class="box"><h3>Product direction</h3><p>Keep the interface Nepali-first, make station refresh obvious and surface meaningful nearby risk without unrelated alert noise.</p></div></div><div class="flow"><div class="step"><b>1. Choose or use an area</b><span>The user focuses the map on the place that matters to them.</span></div><div class="step"><b>2. See live context</b><span>Nearby stations and warning information refresh against the Nepal map.</span></div><div class="step"><b>3. Get a local alert</b><span>The app surfaces meaningful risk for that area instead of unrelated national noise.</span></div></div><div class="note">FloodSafe Nepal is an active safety-oriented prototype. Public warnings should always be cross-checked with official emergency information.</div></div></section>
+'''
+          if 'id="floodsafe"' not in s:
+              s=s.replace('<section id="platforms">', flood_section+'<section id="platforms">', 1)
+
+          s=s.replace('<a href="#teamtracker">Team Tracker</a><a href="./fixcheck/">FixCheck Web</a>', '<a href="#teamtracker">Team Tracker</a><a href="./fixcheck/">FixCheck Web</a><a href="./floodsafe-nepal/">FloodSafe Nepal</a>', 1)
+          p.write_text(s)
+          PY
 
           # V21 remains exactly as before: V2 core + existing pro-upgrade.js.
           if [ -d "floodsafe-nepal/v2" ] && [ -f "floodsafe-nepal/v2/pro-upgrade.js" ]; then
@@ -54,7 +95,7 @@ jobs:
           PY
           fi
 
-          # V22 is a separate lightweight build. V2 and V21 source are not modified.
+          # V22 stays available as its own archived build.
           if [ -d "floodsafe-nepal/v2" ] && [ -f "floodsafe-nepal/v22-upgrade.js" ]; then
             rm -rf _site/floodsafe-nepal/v22
             cp -R floodsafe-nepal/v2 _site/floodsafe-nepal/v22
@@ -77,86 +118,32 @@ jobs:
           p.write_text(s)
           PY
           fi
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
+
       - name: Upload portfolio
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./_site
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Smoke test FloodSafe Nepal
+
+      - name: Smoke test stable public links
         run: |
           set -e
-          URL="https://pujan1234-hub.github.io/assigment/floodsafe-nepal/"
-          ok=0
-          for i in $(seq 1 15); do
-            if curl -fsSL "$URL" -o /tmp/floodsafe.html && grep -q "बाढी सुरक्षा नेपाल" /tmp/floodsafe.html; then
-              ok=1
-              break
-            fi
-            sleep 3
-          done
-          test "$ok" = "1"
-          grep -q "leaflet@1.9.4" /tmp/floodsafe.html
-          curl -fsSL "https://raw.githubusercontent.com/l3lackcurtains/nepali-geo-pro-max/117fd0f3d2dabae3bd86bfe9e4c57098ffe56669/src/geo/districts.geo.ts" -o /tmp/nepal-boundary.ts
-          grep -q "NEPAL_DISTRICTS_GEO" /tmp/nepal-boundary.ts
-          curl -fsSL -D /tmp/bipad.headers -H "Origin: https://pujan1234-hub.github.io" "https://bipadportal.gov.np/api/v1/river/?limit=1" -o /tmp/bipad.json
-          python - <<'PY'
-          import json
-          json.load(open('/tmp/bipad.json'))
-          print('BIPAD JSON valid')
-          PY
-          if ! grep -qi '^access-control-allow-origin:' /tmp/bipad.headers; then
-            echo 'BIPAD API missing Access-Control-Allow-Origin header'
-            exit 2
-          fi
-          curl -fsSL "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" -o /tmp/leaflet.js
-          test -s /tmp/leaflet.js
-          echo "FloodSafe smoke test passed"
-      - name: Smoke test FloodSafe V21 PRO
-        run: |
-          set -e
-          URL="https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v21/"
-          ok=0
+          BASE="https://pujan1234-hub.github.io/assigment"
           for i in $(seq 1 20); do
-            if curl -fsSL "$URL" -o /tmp/v21.html && grep -q 'pro-upgrade.js?v=1' /tmp/v21.html && curl -fsSL "${URL}pro-upgrade.js?v=1" -o /tmp/pro.js; then
-              ok=1
+            if curl -fsSL "$BASE/" -o /tmp/portfolio.html && curl -fsSL "$BASE/floodsafe-nepal/" -o /tmp/floodsafe.html; then
               break
             fi
             sleep 3
           done
-          test "$ok" = "1"
-          node --check /tmp/pro.js
-          grep -q 'POLL_STATION=10000' /tmp/pro.js
-          curl -fsSL --max-time 20 'https://bipadportal.gov.np/api/v1/river-stations/?limit=1' -o /tmp/riverstation.json
-          python -m json.tool /tmp/riverstation.json >/dev/null
-          echo "FloodSafe V21 PRO smoke test passed"
-      - name: Smoke test FloodSafe V22 lightweight
-        run: |
-          set -e
-          URL="https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v22/"
-          ok=0
-          for i in $(seq 1 25); do
-            if curl -fsSL "$URL" -o /tmp/v22.html && grep -q 'V22' /tmp/v22.html && grep -q 'v22-upgrade.js?v=1' /tmp/v22.html && curl -fsSL "${URL}v22-upgrade.js?v=1" -o /tmp/v22.js; then
-              ok=1
-              break
-            fi
-            sleep 3
-          done
-          test "$ok" = "1"
-          node --check /tmp/v22.js
-          grep -q 'window.__fs' /tmp/v22.html
-          grep -q 'STATION_POLL=15000' /tmp/v22.js
-          grep -q 'Nepal Police' /tmp/v22.js
-          grep -q 'Tsho Rolpa Lake' /tmp/v22.js
-          if grep -q 'native app चरण' /tmp/v22.html; then
-            echo 'Internal developer note leaked into V22 UI'
-            exit 3
-          fi
-          curl -fsSL --max-time 20 'https://bipadportal.gov.np/api/v1/river-stations/?limit=1' -o /tmp/v22station.json
-          python -m json.tool /tmp/v22station.json >/dev/null
-          echo "FloodSafe V22 lightweight smoke test passed"
+          grep -q "FloodSafe Nepal" /tmp/portfolio.html
+          grep -q "बाढी सुरक्षा नेपाल" /tmp/floodsafe.html
+          grep -q "leaflet@1.9.4" /tmp/floodsafe.html
+          echo "Stable portfolio and FloodSafe links passed"

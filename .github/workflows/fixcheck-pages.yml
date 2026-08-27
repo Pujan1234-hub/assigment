@@ -51,6 +51,27 @@ jobs:
 
           printf '%s' "$GITHUB_SHA" > _site/build-version.txt
 
+          # Public portfolio wording should reflect hands-on product work, not attribute the work to AI.
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('_site/index.html')
+          s=p.read_text()
+          s=s.replace(
+              'AI-assisted development helps move from idea to prototype quickly, but product quality still depends on the problem definition, user flow, testing and honest limitations.',
+              'I develop each product through hands-on design, building, testing and repeated refinement, with the focus on solving the problem clearly and making each version more useful.'
+          )
+          s=s.replace(
+              'I use modern web tools and AI-assisted workflows to move from idea to testable prototype quickly.',
+              'I turn ideas into testable prototypes through hands-on design, building, testing and iteration.'
+          )
+          s=s.replace('AI-assisted development','hands-on development')
+          s=s.replace('AI-assisted workflows','hands-on development workflows')
+          s=s.replace('AI-assisted','hands-on')
+          s=re.sub(r'\bAI\b','software',s)
+          p.write_text(s)
+          PY
+
           # Main portfolio always loads the latest product module and checks for new deployments.
           sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
           sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=2"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
@@ -60,6 +81,11 @@ jobs:
           if [ -n "$LATEST_FLOOD" ] && [ -f "floodsafe-nepal/$LATEST_FLOOD/index.html" ]; then
             cp -R "floodsafe-nepal/$LATEST_FLOOD/." _site/floodsafe-nepal/
             echo "Stable FloodSafe URL now serves $LATEST_FLOOD"
+          fi
+
+          if grep -Eqi '\bAI\b|AI-assisted|artificial intelligence' _site/index.html; then
+            echo 'AI attribution still present in public portfolio'
+            exit 2
           fi
 
       - name: Setup Pages
@@ -84,7 +110,11 @@ jobs:
           for i in $(seq 1 20); do
             if curl -fsSL "$BASE/?t=$RANDOM" -o /tmp/home.html && curl -fsSL "$BASE/build-version.txt?t=$RANDOM" -o /tmp/version.txt && curl -fsSL "$BASE/floodsafe-nepal/?t=$RANDOM" -o /tmp/flood.html; then
               if grep -q 'portfolio-floodsafe.js?v=2' /tmp/home.html && grep -q 'auto-update.js?v=2' /tmp/home.html && grep -q 'बाढी सुरक्षा नेपाल' /tmp/flood.html && test -s /tmp/version.txt; then
-                echo 'Stable links and automatic updater verified'
+                if grep -Eqi '\bAI\b|AI-assisted|artificial intelligence' /tmp/home.html; then
+                  echo 'AI attribution leaked into live portfolio'
+                  exit 2
+                fi
+                echo 'Stable links, automatic updater and portfolio wording verified'
                 exit 0
               fi
             fi

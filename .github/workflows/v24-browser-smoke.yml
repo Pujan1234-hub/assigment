@@ -4,6 +4,7 @@ on:
     branches: ["main"]
     paths:
       - "floodsafe-nepal/v24/**"
+      - "data/floodsafe-people-status.json"
       - ".github/workflows/v24-browser-smoke.yml"
 permissions:
   contents: read
@@ -38,11 +39,22 @@ jobs:
           echo 'PASS: inline JS syntax'
           curl -fsSL "${URL}v23-upgrade.js?v=1" -o /tmp/v23copy.js
           curl -fsSL "${URL}v24-upgrade.js?v=1" -o /tmp/v24.js
-          curl -fsSL "${URL}v24-authority-watch.js?v=2" -o /tmp/authority.js
+          curl -fsSL "${URL}v24-authority-watch.js?v=3" -o /tmp/authority.js
+          curl -fsSL "${URL}v24-people-status.js?v=1" -o /tmp/people.js
+          curl -fsSL 'https://pujan1234-hub.github.io/assigment/data/floodsafe-people-status.json' -o /tmp/people.json
           node --check /tmp/v23copy.js
           node --check /tmp/v24.js
           node --check /tmp/authority.js
-          echo 'PASS: upgrade/authority JS syntax'
+          node --check /tmp/people.js
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/people.json'))
+          assert d['recovered_bodies']>=1
+          assert d['missing_minimum']>=1
+          assert d['rescued_alive']>=1
+          print('PASS: people status JSON',d['recovered_bodies'],d['missing_minimum'],d['rescued_alive'])
+          PY
+          echo 'PASS: upgrade/authority/people JS syntax'
           mustgrep "fetchJSON('./nepal-districts.geojson'" /tmp/v24.html
           mustgrep 'renderDistricts()' /tmp/v24.html
           mustgrep 'setInterval(refreshSlow' /tmp/v24.html
@@ -52,6 +64,8 @@ jobs:
           mustgrep '__floodsafeScaleBridge' /tmp/v24.js
           mustgrep 'v24-authority-watch.js?v=2' /tmp/v24.js
           mustgrep 'fsRasuwaWatch' /tmp/authority.js
+          mustgrep 'v24-people-status.js?v=1' /tmp/authority.js
+          mustgrep 'fsPeopleStatus' /tmp/people.js
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
           test -n "$CHROME" || { echo 'No Chrome executable found'; exit 31; }
           echo "Browser executable: $CHROME"
@@ -77,12 +91,13 @@ jobs:
               await page.waitForFunction(()=>{const x=document.getElementById('loading');return x&&getComputedStyle(x).display==='none'},{timeout:20000});
               await page.waitForSelector('#fs24riverFloat',{timeout:20000});
               await page.waitForSelector('#fsRasuwaWatch',{timeout:20000});
-              const state=await page.evaluate(()=>({title:document.title,loading:getComputedStyle(document.getElementById('loading')).display,map:!!document.querySelector('.leaflet-container'),riverPanel:!!document.getElementById('fs24riverFloat'),authorityWatch:!!document.getElementById('fsRasuwaWatch'),authorityScript:!!document.getElementById('fsAuthorityWatchScript')||!!window.__fsAuthorityWatchV1,reportedFailure:document.body.innerText.includes('नक्सा लोड असफल'),scale:!!window.__floodsafeScaleBridge,leaflet:typeof window.L,feed:document.getElementById('feedState')?.textContent||''}));
+              await page.waitForSelector('#fsPeopleStatus',{timeout:20000});
+              const state=await page.evaluate(()=>({title:document.title,loading:getComputedStyle(document.getElementById('loading')).display,map:!!document.querySelector('.leaflet-container'),riverPanel:!!document.getElementById('fs24riverFloat'),authorityWatch:!!document.getElementById('fsRasuwaWatch'),peopleStatus:!!document.getElementById('fsPeopleStatus'),peopleText:document.getElementById('fsPeopleStatus')?.innerText||'',authorityScript:!!document.getElementById('fsAuthorityWatchScript')||!!window.__fsAuthorityWatchV1,reportedFailure:document.body.innerText.includes('नक्सा लोड असफल'),scale:!!window.__floodsafeScaleBridge,leaflet:typeof window.L,feed:document.getElementById('feedState')?.textContent||''}));
               console.log('BROWSER STATE',JSON.stringify(state));
-              passed=state.map&&state.loading==='none'&&state.riverPanel&&state.authorityWatch&&state.authorityScript&&!state.reportedFailure&&state.scale&&state.leaflet==='object';
+              passed=state.map&&state.loading==='none'&&state.riverPanel&&state.authorityWatch&&state.peopleStatus&&/359/.test(state.peopleText)&&/664/.test(state.peopleText)&&/123/.test(state.peopleText)&&state.authorityScript&&!state.reportedFailure&&state.scale&&state.leaflet==='object';
             }catch(e){
               console.error('BROWSER CHECK FAILED',String(e));
-              const diag=await page.evaluate(()=>({title:document.title,url:location.href,leaflet:typeof window.L,loading:document.getElementById('loading')?.outerHTML||null,authority:!!document.getElementById('fsRasuwaWatch'),body:document.body?.innerText?.slice(0,900)||''})).catch(()=>({}));
+              const diag=await page.evaluate(()=>({title:document.title,url:location.href,leaflet:typeof window.L,loading:document.getElementById('loading')?.outerHTML||null,authority:!!document.getElementById('fsRasuwaWatch'),people:document.getElementById('fsPeopleStatus')?.innerText||'',body:document.body?.innerText?.slice(0,1200)||''})).catch(()=>({}));
               console.log('BROWSER DIAG',JSON.stringify(diag));
             }finally{
               console.log('REQUEST FAILURES',JSON.stringify(requestFailures.slice(0,20)));
@@ -94,4 +109,4 @@ jobs:
             if(!passed)process.exit(3);
           })().catch(e=>{console.error(e);process.exit(4)});
           JS
-          echo 'V24 real map + authority browser smoke passed'
+          echo 'V24 real map + authority + people status browser smoke passed'

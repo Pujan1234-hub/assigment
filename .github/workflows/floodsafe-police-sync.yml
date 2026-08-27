@@ -10,94 +10,32 @@ permissions:
 
 concurrency:
   group: floodsafe-police-sync
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 4
     steps:
-      - uses: actions/checkout@v4
-      - name: Fetch latest verified Nepal Police flood bulletin
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch and verify latest Nepal Police bulletin
+        run: python3 scripts/update_floodsafe_police.py
+
+      - name: Commit verified update if changed
         shell: bash
         run: |
-          set -euo pipefail
-          python - <<'PY'
-          from urllib.request import Request, urlopen
-          from urllib.parse import urljoin
-          from html import unescape
-          from pathlib import Path
-          import json, re
-
-          BASE='https://nepalpolice.gov.np'
-          ARCHIVE=BASE+'/news/archive-news/?filter=Bhadau+2083'
-          UA={'User-Agent':'Mozilla/5.0 FloodSafeNepal/1.0'}
-          DEV=str.maketrans('०१२३४५६७८९','0123456789')
-
-          def get(u):
-              req=Request(u,headers=UA)
-              with urlopen(req,timeout=25) as r:
-                  return r.read().decode('utf-8','ignore')
-
-          def clean(s):
-              s=re.sub(r'<script[\s\S]*?</script>',' ',s,flags=re.I)
-              s=re.sub(r'<style[\s\S]*?</style>',' ',s,flags=re.I)
-              s=re.sub(r'<[^>]+>',' ',s)
-              return re.sub(r'\s+',' ',unescape(s)).strip()
-
-          def nnum(s):
-              s=clean(s).translate(DEV)
-              m=re.search(r'(\d+)\s*सय(?:\s*(\d+))?',s)
-              if m:return int(m.group(1))*100+int(m.group(2) or 0)
-              m=re.search(r'(\d+)',s)
-              return int(m.group(1)) if m else None
-
-          archive=get(ARCHIVE)
-          candidates=[]
-          for href,title in re.findall(r'<a[^>]+href=["\']([^"\']+)["\'][^>]*>([\s\S]*?)</a>',archive,re.I):
-              t=clean(title)
-              if 'रसुवा बाढी' in t and 'मृत्यु' in t and '/news/' in href:
-                  total=nnum(t)
-                  if total is not None:candidates.append((total,urljoin(BASE,href),t))
-          if not candidates:
-              raise SystemExit('No Rasuwa flood casualty bulletin found')
-          total,url,title=max(candidates,key=lambda x:x[0])
-          page=get(url);text=clean(page)
-
-          date_m=re.search(r'(२०८३[-।/]०५[-।/]\d+)',text)
-          time_m=re.search(r'([०-९0-9]{1,2})\s*[:：]\s*([०-९0-9]{2})\s*बजे',text)
-          bs=(date_m.group(1).replace('।','-').replace('/','-') if date_m else '2083-05-11').translate(DEV)
-          tm=((time_m.group(1)+':'+time_m.group(2)).translate(DEV) if time_m else '—')
-
-          districts=[
-              ('Rasuwa','रसुवा','रसुवामा'),('Nuwakot','नुवाकोट','नुवाकोटमा'),('Dhading','धादिङ','धादिङमा'),
-              ('Chitwan','चितवन','चितवनमा'),('Gorkha','गोरखा','गोरखामा'),('Tanahun','तनहुँ','तनहुँमा'),
-              ('Nawalparasi East','नवलपरासी पूर्व','नवलपरासी पूर्वमा'),('Nawalparasi West','नवलपरासी पश्चिम','नवलपरासी पश्‍चिम')]
-          out=[]
-          for en,ne,key in districts:
-              m=re.search(re.escape(key)+r'\s+([^,।]+?)\s*(?:जना|र|गरी|शव)',text)
-              val=nnum(m.group(1)) if m else None
-              if val is not None:out.append({'name':en,'name_ne':ne,'deaths':val})
-          if out and sum(x['deaths'] for x in out)!=total:out=[]
-
-          obj={
-              'source':'Nepal Police','source_url':url,'event':'Rasuwa flood','event_ne':'रसुवा बाढी',
-              'cause':'Flood','cause_ne':'बाढी','total_deaths':total,'official_update_bs':bs,
-              'official_update_time':tm,'districts':out,'status':'verified',
-              'note':'Automatically synced from the latest verified Nepal Police Rasuwa flood casualty bulletin.'
-          }
-          p=Path('data/floodsafe-police.json')
-          old=json.loads(p.read_text()) if p.exists() else {}
-          if old.get('total_deaths')==obj['total_deaths'] and old.get('source_url')==obj['source_url']:
-              print('No new official casualty bulletin');raise SystemExit(0)
-          p.write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
-          print('Updated official deaths to',total,url)
-          PY
-      - name: Commit verified update
-        shell: bash
-        run: |
-          if git diff --quiet -- data/floodsafe-police.json; then exit 0; fi
-          git config user.name "FloodSafe data sync"
-          git config user.email "actions@users.noreply.github.com"
+          set -e
+          if git diff --quiet -- data/floodsafe-police.json; then
+            echo 'No verified bulletin change.'
+            exit 0
+          fi
+          git config user.name 'FloodSafe data sync'
+          git config user.email 'actions@users.noreply.github.com'
           git add data/floodsafe-police.json
-          git commit -m "Update verified Nepal Police flood figures"
-          git push
+          git commit -m 'Auto-sync verified Nepal Police flood bulletin'
+          git pull --rebase origin main
+          git push origin HEAD:main

@@ -1,0 +1,42 @@
+name: V23 Final Map Smoke
+on:
+  push:
+    paths:
+      - ".github/workflows/v23-final-map-smoke.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify live Nepal map and location selection
+        run: |
+          set -e
+          URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v23/?testFocus=1&qa=map'
+          for i in $(seq 1 20); do
+            if curl -fsSL "$URL" -o /tmp/pre.html && grep -q 'बाढी सुरक्षा नेपाल' /tmp/pre.html; then break; fi
+            sleep 3
+          done
+          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=22000 --dump-dom "$URL" > /tmp/dom.html 2>/tmp/chrome.err
+          python - <<'PY'
+          from pathlib import Path
+          import re,sys
+          s=Path('/tmp/dom.html').read_text(errors='ignore')
+          checks={
+            'leaflet_map': 'leaflet-map-pane' in s,
+            'tile_pane': 'leaflet-tile-pane' in s,
+            'map_ready_text': 'नेपाल नक्सा तयार • आधिकारिक फिड जाँच हुँदैछ' in s or 'DHM/BIPAD/DoR लाइभ डेटा' in s,
+            'test_focus_selected': 'स्थान छानिएको छैन' not in s,
+            'fatal_typo_gone': 'renderDistricts()setInterval' not in s,
+          }
+          m=re.search(r'<div class="loading"[^>]*id="loading"[^>]*>',s)
+          checks['loading_hidden']= bool(m and ('display: none' in m.group(0) or 'display:none' in m.group(0)))
+          for k,v in checks.items(): print(k,v)
+          bad=[k for k,v in checks.items() if not v]
+          if bad:
+            print('FAILED',bad)
+            print(Path('/tmp/chrome.err').read_text(errors='ignore')[-12000:])
+            sys.exit(1)
+          print('V23 live map runtime PASS')
+          PY

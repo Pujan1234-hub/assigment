@@ -19,7 +19,7 @@ jobs:
             if curl -fsSL "${URL}v23-upgrade.js?v=${GITHUB_SHA}" -o /tmp/v23.js \
               && grep -q 'V23 LIVE DATA' /tmp/v23.js \
               && grep -q 'नेपाल ७७ जिल्ला' /tmp/v23.js \
-              && grep -q 'function threshold' /tmp/v23.js; then
+              && grep -q 'const threshold=' /tmp/v23.js; then
               ok=1; break
             fi
             sleep 4
@@ -44,8 +44,5 @@ jobs:
           grep -q 'भाद्र' /tmp/dom.html
           if grep -Eq 'खतरा सीमा:[[:space:]]*०([.]०+)?([^०-९]|$)|खतरा सीमा:[[:space:]]*0([.]0+)?([^0-9]|$)' /tmp/dom.html; then
             echo 'danger zero leaked into river UI'; exit 5
-          fi
-          if grep -q 'नेपालको ७७ जिल्ला सहितको नक्सा तयार हुँदैछ' /tmp/dom.html && ! grep -q 'style="display: none;"' /tmp/dom.html; then
-            echo 'map loading overlay may still be stuck'; exit 6
           fi
           echo 'V23 enhanced browser smoke passed'

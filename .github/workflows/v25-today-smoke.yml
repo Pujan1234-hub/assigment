@@ -1,0 +1,60 @@
+name: V25 Today Safety Smoke
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "floodsafe-nepal/v25/**"
+      - "data/**"
+      - ".github/workflows/v25-today-smoke.yml"
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify V25 today safety layer
+        run: |
+          set -e
+          BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
+          for i in $(seq 1 80); do
+            ok=1
+            for f in today-monitor-v3.js human-current-guard.js disaster-monitor.js sw.js index.html alerts.html people.html; do curl -fsSL "${BASE}${f}" -o "/tmp/${f}" || ok=0; done
+            grep -q 'today-monitor-v3.js' /tmp/disaster-monitor.js || ok=0
+            grep -q 'human-current-guard.js' /tmp/disaster-monitor.js || ok=0
+            grep -q 'shell-15' /tmp/sw.js || ok=0
+            if [ "$ok" = 1 ]; then break; fi
+            sleep 3
+          done
+          test "$ok" = 1
+          node --check /tmp/today-monitor-v3.js
+          node --check /tmp/human-current-guard.js
+          node --check /tmp/disaster-monitor.js
+          node --check /tmp/sw.js
+          grep -q 'setInterval(poll,5000)' /tmp/today-monitor-v3.js
+          grep -q 'Earthquake Today' /tmp/today-monitor-v3.js
+          grep -q 'Landslide Today' /tmp/today-monitor-v3.js
+          grep -q 'वैकल्पिक मार्ग' /tmp/today-monitor-v3.js
+
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$CHROME"
+          mkdir -p /tmp/v25today && cd /tmp/v25today
+          npm init -y >/dev/null 2>&1
+          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          BASE="$BASE" CHROME="$CHROME" node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          const wait=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
+            const page=await browser.newPage();page.setDefaultTimeout(60000);
+            const errs=[];page.on('pageerror',e=>errs.push(String(e)));
+            await page.goto(process.env.BASE,{waitUntil:'domcontentloaded'});
+            await page.waitForSelector('#todayHazards',{timeout:30000});await wait(6500);
+            const home=await page.evaluate(async()=>{const p=await fetch('../../data/floodsafe-police.json?t='+Date.now()).then(r=>r.json());const fresh=Date.now()-new Date(p.official_update_iso).getTime()<86400000;return{eq:document.getElementById('todayEq')?.textContent,ls:document.getElementById('todayLs')?.textContent,hid:document.getElementById('humanStatsSection')?.hidden,death:document.getElementById('homeDeaths')?.textContent,fresh}});
+            if(home.eq==null||home.ls==null)throw Error('today cards missing '+JSON.stringify(home));
+            if(home.fresh&&(home.hid||!/^\d+$/.test(home.death||'')))throw Error('fresh human status hidden '+JSON.stringify(home));
+            await page.goto(process.env.BASE+'alerts.html',{waitUntil:'domcontentloaded'});await page.waitForSelector('#closedRoadSection',{timeout:30000});await wait(6500);
+            const road=await page.evaluate(()=>({section:!!document.getElementById('closedRoadSection'),cards:[...document.querySelectorAll('#closedRoadList .item')].map(x=>x.textContent)}));if(!road.section)throw Error('closed road section missing');if(road.cards.some(x=>/CLOSED/.test(x)&&!/वैकल्पिक मार्ग/.test(x)))throw Error('closed road missing alternative-route line '+JSON.stringify(road.cards));
+            await page.goto(process.env.BASE+'people.html',{waitUntil:'domcontentloaded'});await wait(6500);const human=await page.evaluate(()=>({hidden:document.getElementById('peopleStatsSection')?.hidden,labels:[...document.querySelectorAll('#peopleStatsSection small')].map(x=>x.textContent)}));if(human.labels.some(x=>/चेतावनी/.test(x)))throw Error('warning leaked into human status');
+            if(errs.length)throw Error('page errors '+JSON.stringify(errs.slice(0,5)));console.log('PASS V25 today safety layer',home,road.cards.length);await browser.close();
+          })().catch(e=>{console.error(e);process.exit(3)});
+          JS

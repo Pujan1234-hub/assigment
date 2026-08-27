@@ -3,8 +3,8 @@
 const $=id=>document.getElementById(id);
 let selectedRiver=null;
 const tr={
- ne:{title:'🌊 छानिएको खोला / नदीको अवस्था',choose:'नक्सामा नीलो खोला/नदीमा क्लिक गर्नुहोस्।',river:'खोला / नदी',type:'प्रकार',distance:'तपाईंको स्थानबाट',station:'नजिकको आधिकारिक DHM स्टेशन',level:'पानी सतह',warning:'चेतावनी सीमा',danger:'खतरा सीमा',trend:'बहाव प्रवृत्ति',measured:'अन्तिम मापन',source:'स्रोत',normal:'सामान्य / चेतावनी सीमाभन्दा तल',watch:'निगरानी आवश्यक',warn:'चेतावनी',dangerous:'खतरा',stale:'पुरानो मापन — अहिलेको अवस्था पुष्टि छैन',unknown:'Official gauge भेटिएन — अहिलेको अवस्था पुष्टि गर्न सकिँदैन',nearest:'नजिकको स्टेशन; यही खोलाको station हो भन्ने पुष्टि छैन',same:'नाम मिलेको/सम्बन्धित नजिकको स्टेशन',auto:'स्थान अनुमति पाएपछि वरिपरिका खोला/नदी स्वतः देखाइन्छन्।'},
- en:{title:'🌊 Selected river / stream status',choose:'Click a blue river or stream on the map.',river:'River / stream',type:'Type',distance:'From your location',station:'Nearest official DHM station',level:'Water level',warning:'Warning level',danger:'Danger level',trend:'Trend',measured:'Last measured',source:'Source',normal:'Normal / below warning level',watch:'Watch closely',warn:'Warning',dangerous:'Danger',stale:'Stale measurement — current status not confirmed',unknown:'No official gauge found — current status cannot be confirmed',nearest:'Nearest station; not confirmed to be on the same river',same:'Name-matched/related nearby station',auto:'Allow location to show nearby rivers and streams automatically.'}
+ ne:{title:'🌊 छानिएको खोला / नदीको अवस्था',choose:'नक्सामा नीलो खोला/नदीमा क्लिक गर्नुहोस्।',river:'खोला / नदी',type:'प्रकार',distance:'तपाईंको स्थानबाट',station:'नजिकको आधिकारिक DHM स्टेशन',level:'पानी सतह',warning:'चेतावनी सीमा',danger:'खतरा सीमा',trend:'बहाव प्रवृत्ति',measured:'अन्तिम मापन',source:'स्रोत',normal:'सामान्य / चेतावनी सीमाभन्दा तल',watch:'निगरानी आवश्यक',warn:'चेतावनी',dangerous:'खतरा',stale:'पुरानो मापन — अहिलेको अवस्था पुष्टि छैन',unknown:'Official gauge भेटिएन — अहिलेको अवस्था पुष्टि गर्न सकिँदैन',nearest:'नजिकको स्टेशन; यही खोलाको station हो भन्ने पुष्टि छैन',same:'नाम मिलेको/सम्बन्धित नजिकको स्टेशन',auto:'स्थान अनुमति पाएपछि वरिपरिका खोला/नदी स्वतः देखाइन्छन्।',partial:'आंशिक लाइभ डेटा — अवस्था पुष्टि गर्नुहोस्',offline:'लाइभ डेटा उपलब्ध छैन — अवस्था पुष्टि भएको छैन'},
+ en:{title:'🌊 Selected river / stream status',choose:'Click a blue river or stream on the map.',river:'River / stream',type:'Type',distance:'From your location',station:'Nearest official DHM station',level:'Water level',warning:'Warning level',danger:'Danger level',trend:'Trend',measured:'Last measured',source:'Source',normal:'Normal / below warning level',watch:'Watch closely',warn:'Warning',dangerous:'Danger',stale:'Stale measurement — current status not confirmed',unknown:'No official gauge found — current status cannot be confirmed',nearest:'Nearest station; not confirmed to be on the same river',same:'Name-matched/related nearby station',auto:'Allow location to show nearby rivers and streams automatically.',partial:'Partial live data — verify current conditions',offline:'Live data unavailable — current conditions unconfirmed'}
 };
 function lang(){return document.documentElement.lang==='en'?'en':'ne'}
 function T(k){return tr[lang()][k]}
@@ -35,19 +35,28 @@ function inject(){
  const hint=document.createElement('div');hint.id='fs24hint';hint.className='fs24hint';hint.textContent=T('auto');wrap.appendChild(hint);setTimeout(()=>{if(hint)hint.style.display='none'},10000);
 }
 function render(w=selectedRiver){
- selectedRiver=w;if(!w)return;
- inject();const box=$('fs24riverFloat'),body=$('fs24riverBody'),fs=window.__fs;box.style.display='block';
- const f=fs?.getFocus?.();const dist=Number.isFinite(w.d)?w.d:null;const g=fs?.nearestGauge?.(w);
+ selectedRiver=w;if(!w)return;inject();const box=$('fs24riverFloat'),body=$('fs24riverBody'),fs=window.__fs;if(!box||!body)return;box.style.display='block';
+ const dist=Number.isFinite(w.d)?w.d:null,g=fs?.nearestGauge?.(w);
  let html='<div class="fs24grid"><div class="fs24cell"><small>'+T('river')+'</small><b>'+esc(w.name)+'</b></div><div class="fs24cell"><small>'+T('type')+'</small><b>'+esc(w.type||'—')+'</b></div><div class="fs24cell"><small>'+T('distance')+'</small><b>'+(dist!==null?dist.toFixed(1)+' km':'—')+'</b></div><div class="fs24cell"><small>'+T('source')+'</small><b>OpenStreetMap geometry</b></div></div>';
  if(!g||!g.o){body.innerHTML='<span class="fs24status stale">'+T('unknown')+'</span>'+html+'<div class="fs24note">'+T('unknown')+'</div>';return;}
  const o=g.o,[cl,label]=classify(o),wl=n(o.waterLevel),warn=n(o.warningLevel),danger=n(o.dangerLevel),nm=String(fs?.name?.(o)||o.title||'DHM station'),rn=norm(w.name),gn=norm(nm),same=rn&&gn&&(rn.includes(gn)||gn.includes(rn));
- html='<span class="fs24status '+cl+'">'+esc(label)+'</span>'+html+'<div class="fs24grid"><div class="fs24cell"><small>'+T('station')+'</small><b>'+esc(nm)+'</b></div><div class="fs24cell"><small>'+T('distance')+'</small><b>'+((g.d??Infinity)<Infinity?Number(g.d).toFixed(1)+' km':'—')+'</b></div><div class="fs24cell"><small>'+T('level')+'</small><b>'+(wl!==null?wl+' m':'—')+'</b></div><div class="fs24cell"><small>'+T('trend')+'</small><b>'+esc(o.steady||o.status||'—')+'</b></div><div class="fs24cell"><small>'+T('warning')+'</small><b>'+(warn!==null?warn+' m':'—')+'</b></div><div class="fs24cell"><small>'+T('danger')+'</small><b>'+(danger!==null?danger+' m':'—')+'</b></div><div class="fs24cell"><small>'+T('measured')+'</small><b>'+fmt(when(o))+'</b></div><div class="fs24cell"><small>'+T('source')+'</small><b>DHM via BIPAD</b></div></div><div class="fs24note">'+(same?T('same'):T('nearest'))+'. '+(ageHours(when(o))>6?T('stale'):'')+'</div>';
+ html='<span class="fs24status '+cl+'">'+esc(label)+'</span>'+html+'<div class="fs24grid"><div class="fs24cell"><small>'+T('station')+'</small><b>'+esc(nm)+'</b></div><div class="fs24cell"><small>'+T('distance')+'</small><b>'+((g.d??Infinity)<Infinity?Number(g.d).toFixed(1)+' km':'—')+'</b></div><div class="fs24cell"><small>'+T('level')+'</small><b>'+(wl!==null?wl+' m':'—')+'</b></div><div class="fs24cell"><small>'+T('trend')+'</small><b>'+esc(o.steady||o.status||'—')+'</b></div><div class="fs24cell"><small>'+T('warning')+'</small><b>'+(warn!==null?warn+' m':'—')+'</b></div><div class="fs24cell"><small>'+T('danger')+'</small><b>'+(danger!==null?danger+' m':'—')+'</b></div><div class="fs24cell"><small>'+T('measured')+'</small><b>'+fmt(when(o))+'</b></div><div class="fs24cell"><small>'+T('source')+'</small><b>DHM via BIPAD</b></div></div><div class="fs24note">'+(same?T('same'):T('nearest'))+(ageHours(when(o))>6?'. '+T('stale'):'')+'</div>';
  body.innerHTML=html;
 }
+function applyFeedSafety(){
+ const feed=$('feedState'),risk=$('riskV');if(!feed||!risk)return;
+ const m=String(feed.textContent||'').match(/(\d+)\s*\/\s*(\d+)/);if(!m)return;
+ const ok=Number(m[1]),total=Number(m[2]);if(!Number.isFinite(ok)||!Number.isFinite(total)||ok>=total)return;
+ const current=String(risk.textContent||'').trim();
+ const noWarning=/ठूलो चेतावनी भेटिएन|no major warning|no major alert/i.test(current);
+ if(noWarning||!current||current==='—'){
+   risk.textContent=ok===0?T('offline'):T('partial');risk.className='warn';
+ }
+ if(ok===0){['riverV','roadV','rainV'].forEach(id=>{const el=$(id);if(el)el.textContent='—'});}
+}
 function expose(){let tries=0;const t=setInterval(()=>{const fs=window.__fs;if(!fs?.map||!fs?.setFocus){if(++tries>80)clearInterval(t);return}clearInterval(t);fs.showRiverStatus=render;inject();
-  // Ask for location once so nearby rivers can appear automatically after permission.
   if(!fs.getFocus?.()&&navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{const c=[p.coords.latitude,p.coords.longitude];if(fs.insideNepal?.(c)){fs.setFocus(c,'gps');setTimeout(()=>{const w=fs.waterways?.slice?.().sort((a,b)=>a.d-b.d)?.[0];if(w)render(w)},1800)}},()=>{}, {enableHighAccuracy:true,timeout:12000,maximumAge:5000})}
 },250)}
-setInterval(()=>{if(selectedRiver)render(selectedRiver)},5000);
+setInterval(()=>{if(selectedRiver)render(selectedRiver);applyFeedSafety()},1000);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',expose);else expose();
 })();

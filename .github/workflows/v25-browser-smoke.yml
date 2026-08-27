@@ -19,8 +19,10 @@ jobs:
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
           for i in $(seq 1 70); do
             ok=1
-            for f in index.html alerts.html people.html weather.html news.html sources.html live-core.js national-news.js weather-live.js sw.js; do curl -fsSL "${BASE}${f}" -o "/tmp/${f//\//_}" || ok=0; done
-            grep -q 'npBsDate' /tmp/index.html || ok=0
+            for f in index.html alerts.html people.html weather.html news.html sources.html live-core.js national-news.js disaster-monitor.js disaster-monitor-v2.js weather-live.js sw.js; do curl -fsSL "${BASE}${f}" -o "/tmp/${f//\//_}" || ok=0; done
+            grep -q 'disasterSpotlightList' /tmp/index.html || ok=0
+            grep -q 'rapidSignalList' /tmp/alerts.html || ok=0
+            grep -q 'peopleStatsSection' /tmp/people.html || ok=0
             grep -q 'roadEarlyList' /tmp/alerts.html || ok=0
             grep -q '../v24/?mapOnly=1&v25=1' /tmp/index.html || ok=0
             grep -q 'kchakhabar.com' /tmp/news.html || ok=0
@@ -31,11 +33,16 @@ jobs:
           test "$ok" = 1
           node --check /tmp/live-core.js
           node --check /tmp/national-news.js
+          node --check /tmp/disaster-monitor.js
+          node --check /tmp/disaster-monitor-v2.js
           node --check /tmp/weather-live.js
           node --check /tmp/sw.js
           grep -q 'setInterval(()=>poll(false),5000)' /tmp/live-core.js
           grep -q 'setInterval(tone,2200)' /tmp/live-core.js
           grep -q 'nextRotate=10' /tmp/national-news.js
+          grep -q "m>=6.5" /tmp/disaster-monitor-v2.js
+          grep -q "flood:400,landslide:300,quake:250,air:200" /tmp/disaster-monitor-v2.js
+          grep -q "snapshotMatches" /tmp/disaster-monitor-v2.js
           ! grep -q 'app.js' /tmp/weather.html
           ! grep -Rqi 'waze' /tmp/index.html /tmp/alerts.html /tmp/people.html /tmp/weather.html /tmp/news.html /tmp/sources.html
 
@@ -51,12 +58,12 @@ jobs:
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
             const page=await browser.newPage();page.setDefaultTimeout(60000);
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));
-            await page.goto(process.env.BASE,{waitUntil:'domcontentloaded'});await page.waitForSelector('.todayHero');await page.waitForFunction(()=>!document.getElementById('npBsDate')?.textContent.includes('लोड'),{timeout:20000});const home=await page.evaluate(()=>({warning:!!document.getElementById('homeAlerts'),map:document.querySelector('.navCard.map')?.href,human:[...document.querySelectorAll('.section .stat small')].map(x=>x.textContent)}));if(home.warning||!home.map?.includes('/v24/?mapOnly=1&v25=1')||home.human.some(x=>x==='चेतावनी'))throw Error('home '+JSON.stringify(home));
+            await page.goto(process.env.BASE,{waitUntil:'domcontentloaded'});await page.waitForSelector('.todayHero');await page.waitForFunction(()=>!document.getElementById('npBsDate')?.textContent.includes('लोड'),{timeout:20000});await page.waitForSelector('#disasterSpotlightList');await wait(2500);const home=await page.evaluate(()=>({warning:!!document.getElementById('homeAlerts'),map:document.querySelector('.navCard.map')?.href,human:[...document.querySelectorAll('.section .stat small')].map(x=>x.textContent),spot:!!document.getElementById('disasterSpotlightList'),monitor:!!window.__floodsafeDisasterState}));if(home.warning||!home.map?.includes('/v24/?mapOnly=1&v25=1')||home.human.some(x=>x==='चेतावनी')||!home.spot)throw Error('home '+JSON.stringify(home));
             const bipad=[];const req=r=>{if(r.url().includes('bipadportal.gov.np'))bipad.push(r.url())};page.on('request',req);await page.goto(process.env.BASE+'news.html',{waitUntil:'domcontentloaded'});await page.waitForSelector('#newsList .item h4',{timeout:30000});const before=await page.$$eval('#newsList .item h4',els=>els.map(x=>x.textContent));await wait(11200);const after=await page.$$eval('#newsList .item h4',els=>els.map(x=>x.textContent));page.off('request',req);if(new Set(after).size!==after.length)throw Error('duplicate news '+JSON.stringify(after));if(before[0]===after[0]&&Math.max(before.length,after.length)>1)throw Error('news did not rotate '+before[0]);if(bipad.length)throw Error('News requested BIPAD '+bipad[0]);
-            await page.goto(process.env.BASE+'alerts.html',{waitUntil:'domcontentloaded'});await page.waitForSelector('#roadEarlyList');const alerts=await page.evaluate(()=>({arm:!!document.getElementById('armLocalAlerts'),radius:!!document.getElementById('alertRadius'),road:!!document.getElementById('roadEarlyList'),map:document.querySelector('.footerNav a:nth-child(2)')?.href}));if(!alerts.arm||!alerts.radius||!alerts.road||!alerts.map?.includes('/v24/?mapOnly=1&v25=1'))throw Error('alerts '+JSON.stringify(alerts));
-            await page.goto(process.env.BASE+'people.html',{waitUntil:'domcontentloaded'});const people=await page.evaluate(()=>[...document.querySelectorAll('.stats small')].map(x=>x.textContent));if(people.some(x=>/चेतावनी/.test(x)))throw Error('People contains warning stat');
+            await page.goto(process.env.BASE+'alerts.html',{waitUntil:'domcontentloaded'});await page.waitForSelector('#roadEarlyList');await page.waitForSelector('#rapidSignalList');const alerts=await page.evaluate(()=>({arm:!!document.getElementById('armLocalAlerts'),radius:!!document.getElementById('alertRadius'),road:!!document.getElementById('roadEarlyList'),rapid:!!document.getElementById('rapidSignalList'),map:document.querySelector('.footerNav a:nth-child(2)')?.href}));if(!alerts.arm||!alerts.radius||!alerts.road||!alerts.rapid||!alerts.map?.includes('/v24/?mapOnly=1&v25=1'))throw Error('alerts '+JSON.stringify(alerts));
+            await page.goto(process.env.BASE+'people.html',{waitUntil:'domcontentloaded'});await page.waitForSelector('#disasterSpotlightList');await wait(2000);const people=await page.evaluate(()=>({stats:[...document.querySelectorAll('.stats small')].map(x=>x.textContent),spot:!!document.getElementById('disasterSpotlightList'),sectionHidden:document.getElementById('peopleStatsSection')?.hidden}));if(people.stats.some(x=>/चेतावनी/.test(x))||!people.spot)throw Error('People invalid '+JSON.stringify(people));
             await page.goto(process.env.BASE+'weather.html',{waitUntil:'domcontentloaded'});await page.waitForSelector('#gpsWeatherBtn');if(!(await page.$('#wxTemp')))throw Error('weather UI missing');
             await page.goto('https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/?mapOnly=1&v25=1',{waitUntil:'domcontentloaded'});await page.waitForSelector('.leaflet-container',{timeout:60000});await page.waitForFunction(()=>document.documentElement.classList.contains('fs-map-only'),{timeout:30000});const map=await page.evaluate(()=>{const el=document.querySelector('.leaflet-container'),r=el.getBoundingClientRect();return{pointer:getComputedStyle(el).pointerEvents,w:r.width,h:r.height,back:!!document.querySelector('.fsMapBack')}});if(map.pointer==='none'||map.w<200||map.h<200||!map.back)throw Error('map not interactive '+JSON.stringify(map));const box=await page.$('.leaflet-container'),b=await box.boundingBox();await page.mouse.click(b.x+b.width*.55,b.y+b.height*.55);await wait(500);await page.click('.fsMapBack');await page.waitForFunction(()=>location.pathname.includes('/v25/'),{timeout:20000});
-            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,8)));console.log('PASS realtime V25 smoke');await browser.close();
+            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,8)));console.log('PASS realtime V25 Nepal-wide smoke');await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

@@ -10,29 +10,42 @@ jobs:
   browser:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for deployed V23 and run Chrome
+      - name: Verify deployed V23 map, Nepali date and hazards
         run: |
           set -e
           URL='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v23/'
           ok=0
-          for i in $(seq 1 30); do
-            if curl -fsSL "$URL" -o /tmp/v23.html && grep -q 'बाढी सुरक्षा नेपाल • V23' /tmp/v23.html && grep -q 'v23-upgrade.js?v=1' /tmp/v23.html; then ok=1; break; fi
+          for i in $(seq 1 45); do
+            if curl -fsSL "${URL}v23-upgrade.js?v=${GITHUB_SHA}" -o /tmp/v23.js \
+              && grep -q 'V23 LIVE DATA' /tmp/v23.js \
+              && grep -q 'नेपाल ७७ जिल्ला' /tmp/v23.js \
+              && grep -q 'function threshold' /tmp/v23.js; then
+              ok=1; break
+            fi
             sleep 4
           done
           test "$ok" = 1
-          curl -fsSL "${URL}v23-upgrade.js?v=1" -o /tmp/v23.js
           node --check /tmp/v23.js
           grep -q 'const POLL=5000' /tmp/v23.js
-          grep -q 'V23 OFFICIAL' /tmp/v23.js
+          grep -q 'incident/?limit=500&ordering=-incidentOn' /tmp/v23.js
           grep -q 'river-stations/?limit=650' /tmp/v23.js
-          grep -q 'rain-stations/?limit=650' /tmp/v23.js
-          grep -q "setBase('sat')" /tmp/v23.html
-          grep -q 'FAST=5,SLOW=5' /tmp/v23.html
-          if grep -q 'native app चरण' /tmp/v23.html; then echo 'developer note leaked'; exit 4; fi
-          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=15000 --dump-dom "$URL" > /tmp/dom.html
-          grep -q 'V23 OFFICIAL' /tmp/dom.html
-          grep -q 'आजको मौसम' /tmp/dom.html
-          grep -q 'नजिकका DHM नदी स्टेशन' /tmp/dom.html
-          grep -q 'आधिकारिक चेतावनी र सडक' /tmp/dom.html
-          grep -q 'हिमाल' /tmp/dom.html
-          echo 'V23 real Chrome runtime smoke passed'
+          grep -q "v23-upgrade.js?v=1" <(curl -fsSL "$URL")
+          if grep -q 'V23 OFFICIAL' /tmp/v23.js; then echo 'old misleading badge remains'; exit 4; fi
+
+          chromium --headless --no-sandbox --disable-gpu --virtual-time-budget=22000 --dump-dom "${URL}?smoke=${GITHUB_SHA}" > /tmp/dom.html
+          grep -q 'leaflet-map-pane' /tmp/dom.html
+          grep -q 'V23 LIVE DATA' /tmp/dom.html
+          grep -q 'नेपाली मिति' /tmp/dom.html
+          grep -q 'नेपाल ७७ जिल्ला' /tmp/dom.html
+          grep -q 'पहिरो' /tmp/dom.html
+          grep -q 'नजिकका नदी' /tmp/dom.html
+          grep -q 'खतरा सीमा' /tmp/dom.html
+          grep -q '२०८३' /tmp/dom.html
+          grep -q 'भाद्र' /tmp/dom.html
+          if grep -Eq 'खतरा सीमा:[[:space:]]*०([.]०+)?([^०-९]|$)|खतरा सीमा:[[:space:]]*0([.]0+)?([^0-9]|$)' /tmp/dom.html; then
+            echo 'danger zero leaked into river UI'; exit 5
+          fi
+          if grep -q 'नेपालको ७७ जिल्ला सहितको नक्सा तयार हुँदैछ' /tmp/dom.html && ! grep -q 'style="display: none;"' /tmp/dom.html; then
+            echo 'map loading overlay may still be stuck'; exit 6
+          fi
+          echo 'V23 enhanced browser smoke passed'

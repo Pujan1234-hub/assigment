@@ -1,22 +1,24 @@
 {
   "source": "Nepal Police",
-  "source_url": "https://www.nepalpolice.gov.np/news/10245/",
+  "source_url": "https://nepalpolice.gov.np/news/10252/",
   "event": "Rasuwa flood",
   "event_ne": "रसुवा बाढी",
   "cause": "Flood",
   "cause_ne": "बाढी",
-  "total_deaths": 100,
-  "official_update_bs": "2083-05-10",
-  "official_update_time": "20:30",
+  "total_deaths": 289,
+  "official_update_bs": "2083-05-11",
+  "official_update_time": "14:30",
+  "official_update_iso": "2026-08-27T14:30:00+05:45",
   "districts": [
-    {"name": "Rasuwa", "name_ne": "रसुवा", "deaths": 1},
-    {"name": "Nuwakot", "name_ne": "नुवाकोट", "deaths": 11},
-    {"name": "Dhading", "name_ne": "धादिङ", "deaths": 18},
-    {"name": "Chitwan", "name_ne": "चितवन", "deaths": 33},
-    {"name": "Gorkha", "name_ne": "गोरखा", "deaths": 19},
-    {"name": "Tanahun", "name_ne": "तनहुँ", "deaths": 7},
-    {"name": "Nawalparasi East", "name_ne": "नवलपरासी पूर्व", "deaths": 11}
+    {"name": "Rasuwa", "name_ne": "रसुवा", "deaths": 17},
+    {"name": "Nuwakot", "name_ne": "नुवाकोट", "deaths": 12},
+    {"name": "Dhading", "name_ne": "धादिङ", "deaths": 27},
+    {"name": "Chitwan", "name_ne": "चितवन", "deaths": 108},
+    {"name": "Gorkha", "name_ne": "गोरखा", "deaths": 20},
+    {"name": "Tanahun", "name_ne": "तनहुँ", "deaths": 16},
+    {"name": "Nawalparasi East", "name_ne": "नवलपरासी पूर्व", "deaths": 74},
+    {"name": "Nawalparasi West", "name_ne": "नवलपरासी पश्चिम", "deaths": 15}
   ],
   "status": "verified",
-  "note": "Latest verified Nepal Police update available to FloodSafe."
+  "note": "Latest verified Nepal Police update available to FloodSafe as of 14:30 Nepal time. The app checks for newer data separately; the displayed total changes only when a source publishes a new verified figure."
 }

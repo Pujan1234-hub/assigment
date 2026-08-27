@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "event": "Rasuwa–Gyirong cross-border secondary flood watch",
+  "event_ne": "रसुवा–जिलुङ सीमापार दोस्रो बाढी जोखिम निगरानी",
+  "severity": "HIGH_ATTENTION",
+  "verified_date": "2026-08-27",
+  "official_authority": "China Ministry of Water Resources",
+  "official_authority_ne": "चीनको जलस्रोत मन्त्रालय",
+  "source_relay": "Xinhua / Ministry of Water Resources website",
+  "source_url": "https://www.news.cn/politics/20260827/92aa91c98e464f0d938d4343999cb815/c.html",
+  "nepal_local_authority_url": "https://daorasuwa.moha.gov.np/page/bha-ta-ka-sha-b-dha-bha-tha-ra",
+  "dhm_url": "https://www.dhm.gov.np/hydrology/floodMonitoring",
+  "bipad_url": "https://bipadportal.gov.np/",
+  "lake_storage_m3": 2000000,
+  "forecast_3day_inflow_m3": 3000000,
+  "breach_risk": "high",
+  "summary": "China's Ministry of Water Resources reported that a barrier lake near the Gyirong border corridor held about 2 million cubic metres of water on the morning of 27 Aug 2026. Forecast rainfall could add about 3 million cubic metres over the next three days, and the ministry assessed the breach risk as high. China activated a Level IV flood-defence emergency response and deployed hydrological monitoring and expert teams.",
+  "summary_ne": "चीनको जलस्रोत मन्त्रालयका अनुसार २७ अगस्ट २०२६ बिहान जिलुङ सीमा क्षेत्र नजिक बनेको बाँधिएको तालमा करिब २० लाख घनमिटर पानी थियो। वर्षाका कारण आगामी तीन दिनमा करिब ३० लाख घनमिटर थप पानी जम्मा हुन सक्ने र बाँध फुट्ने जोखिम उच्च रहेको आकलन गरिएको छ। चीनले बाढी प्रतिरक्षा Level IV आपतकालीन प्रतिक्रिया सक्रिय गरी जलमापन तथा विशेषज्ञ टोली परिचालन गरेको छ।",
+  "nepal_note": "This is a cross-border secondary-hazard watch, not a prediction that flooding will definitely reach Rasuwa. Nepal-side evacuation and local danger decisions must follow DHM, BIPAD/NDRRMA and DAO Rasuwa/DEOC alerts.",
+  "nepal_note_ne": "यो सीमापार दोस्रो जोखिमको निगरानी हो; रसुवामा बाढी पक्कै आउँछ भन्ने भविष्यवाणी होइन। नेपालतर्फको वास्तविक खतरा, खाली गर्ने निर्णय र स्थानीय निर्देशन DHM, BIPAD/NDRRMA तथा जिल्ला प्रशासन कार्यालय रसुवा/DEOC को सूचनाबाट पुष्टि गर्नुपर्छ।"
+}

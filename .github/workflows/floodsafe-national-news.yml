@@ -42,24 +42,34 @@ jobs:
           sources=[
             ('OnlineKhabar','https://www.onlinekhabar.com/latest'),
             ('Setopati','https://www.setopati.com/'),
-            ('Kathmandu Post','https://kathmandupost.com/'),
-            ('Nepal News','https://english.nepalnews.com/'),
             ('Ratopati','https://www.ratopati.com/'),
+            ('Kathmandu Post','https://kathmandupost.com/'),
           ]
           priority=[
-            'बाढी','पहिरो','भूकम्प','दुर्घटना','मृत्यु','उद्धार','सम्पर्कविहीन','बेपत्ता','घाइते','सडक','राजमार्ग','बन्द','अवरुद्ध','आगलागी','चेतावनी','सतर्क','आपतकाल','वर्षा','मौसम','सरकार','मन्त्रिपरिषद','प्रधानमन्त्री','राष्ट्रपति','सर्वोच्च','संसद','पक्राउ','सेना','प्रहरी','सुरक्षा','सीमा','विमान','एयरपोर्ट','हड्ताल','आन्दोलन','निर्देशन','निर्णय','राहत','खोजी','स्वास्थ्य जोखिम','विद्युत','पुल',
-            'flood','landslide','earthquake','accident','death','dead','rescue','missing','injured','road','highway','closed','blocked','fire','warning','alert','emergency','rain','weather','government','cabinet','prime minister','president','supreme court','parliament','arrest','army','police','security','border','airport','strike','protest','evacuation','relief','outbreak'
+            'बाढी','पहिरो','भूकम्प','दुर्घटना','मृत्यु','उद्धार','सम्पर्कविहीन','बेपत्ता','घाइते','सडक','राजमार्ग','बन्द','अवरुद्ध','आगलागी','चेतावनी','सतर्क','आपतकाल','वर्षा','मौसम','सरकार','मन्त्रिपरिषद','प्रधानमन्त्री','राष्ट्रपति','सर्वोच्च','संसद','पक्राउ','सेना','प्रहरी','सुरक्षा','सीमा','विमान','एयरपोर्ट','हड्ताल','आन्दोलन','निर्देशन','निर्णय','राहत','खोजी','विद्युत','पुल','चुनाव','अदालत','मन्त्रालय','राष्ट्रिय','देशभर','नेपाल',
+            'flood','landslide','earthquake','accident','death','dead','rescue','missing','injured','road','highway','closed','blocked','fire','warning','alert','emergency','rain','weather','government','cabinet','prime minister','president','supreme court','parliament','arrest','army','police','security','border','airport','strike','protest','evacuation','relief','outbreak','election','court','ministry','national','nepal'
           ]
           exclude=['खेलकुद','मनोरञ्जन','राशिफल','जीवनशैली','फिल्म','सिनेमा','गीत','क्रिकेट','football','sports','entertainment','lifestyle','horoscope','opinion','विचार','ब्लग','साहित्य','beauty','fashion']
-          nav={'गृहपृष्ठ','समाचार','राजनीति','समाज','बिजनेस','खेलकुद','अन्तर्राष्ट्रिय','English','Home','News','Politics','Sports','Business','Lifestyle','Opinion','More','Latest','Trending'}
+          generic={
+            'गृहपृष्ठ','समाचार','राजनीति','समाज','बिजनेस','खेलकुद','अन्तर्राष्ट्रिय','english','home','news','politics','sports','business','lifestyle','opinion','more','latest','trending',
+            'एक्सक्लुसिभ स्टोरी','exclusive stories','थप समाचार','ताजा समाचार','मुख्य समाचार','लोकप्रिय','सम्पादकीय','फोटो फिचर','भिडियो'
+          }
           headers={'User-Agent':'Mozilla/5.0 (compatible; FloodSafeNepal/1.0; +https://pujan1234-hub.github.io/assigment/floodsafe-nepal/)','Accept-Language':'ne,en;q=0.8'}
           items=[];source_status={}
           def norm(s):
             return re.sub(r'[^\w\u0900-\u097f]+',' ',s.lower()).strip()
+          def clean_title(source,text):
+            text=html.unescape(re.sub(r'\s+',' ',text)).strip(' -|•')
+            if source=='Setopati':
+              text=re.split(r'\s+-\s+सेतोपाटी संवाददाता\b',text,maxsplit=1)[0].strip()
+              text=re.sub(r'\s*विस्तृतमा\s*$','',text).strip()
+            if source=='OnlineKhabar':
+              text=re.sub(r'\s+२०८[०-९].*?अगाडि\s*$','',text).strip()
+            return text
           def score_title(t,pos):
-            low=t.lower();score=max(0,8-pos//6)
+            low=t.lower();score=max(0,12-pos//5)
             for k in priority:
-              if k in low: score+=4
+              if k in low: score+=3
             if any(k in low for k in ['breaking','ब्रेकिङ','ताजा','just in','अहिले','चेतावनी','evacuation','आपतकाल']): score+=5
             return score
           for source,url in sources:
@@ -70,10 +80,9 @@ jobs:
               host=urlparse(url).netloc.replace('www.','')
               seen_local=set();added=0
               for pos,a in enumerate(soup.find_all('a',href=True)):
-                text=' '.join(a.stripped_strings)
-                text=html.unescape(re.sub(r'\s+',' ',text)).strip(' -|•')
-                if not (18<=len(text)<=190) or text in nav: continue
-                low=text.lower()
+                text=clean_title(source,' '.join(a.stripped_strings))
+                low=text.lower().strip()
+                if not (18<=len(text)<=160) or low in generic: continue
                 if any(x.lower() in low for x in exclude): continue
                 href=urljoin(url,a.get('href',''))
                 pu=urlparse(href)
@@ -82,16 +91,17 @@ jobs:
                 if len(key)<12 or key in seen_local: continue
                 seen_local.add(key)
                 sc=score_title(text,pos)
-                if sc<5: continue
-                items.append({'title':text,'source':source,'url':href.split('#')[0],'score':sc,'flash':sc>=13,'source_order':pos})
+                if sc<7: continue
+                items.append({'title':text,'source':source,'url':href.split('#')[0],'score':sc,'flash':sc>=16,'source_order':pos})
                 added+=1
-                if added>=18: break
+                if added>=20: break
               source_status[source]={'ok':True,'items':added}
             except Exception as e:
               source_status[source]={'ok':False,'error':str(e)[:120]}
           dedup=[];seen=[]
           for x in sorted(items,key=lambda v:(-v['score'],v['source_order'])):
             k=norm(x['title'])
+            if k in generic: continue
             if any((k in old or old in k) and min(len(k),len(old))>22 for old in seen): continue
             seen.append(k)
             x.pop('source_order',None);x.pop('score',None)

@@ -1,0 +1,80 @@
+name: FloodSafe 1s Realtime Smoke
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "floodsafe-nepal/v25/realtime-1s.js"
+      - "floodsafe-nepal/v25/national-news.js"
+      - "floodsafe-nepal/v25/weather-live.js"
+      - "floodsafe-nepal/v25/disaster-monitor.js"
+      - "floodsafe-nepal/v25/sw.js"
+      - "floodsafe-nepal/v24/v24-realtime-1s.js"
+      - "floodsafe-nepal/v24/sw.js"
+      - ".github/workflows/floodsafe-realtime-1s-smoke.yml"
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify one-second receivers
+        run: |
+          set -e
+          V25='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
+          V24='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/'
+          for i in $(seq 1 80); do
+            ok=1
+            curl -fsSL "${V25}realtime-1s.js" -o /tmp/realtime.js || ok=0
+            curl -fsSL "${V25}national-news.js" -o /tmp/news.js || ok=0
+            curl -fsSL "${V25}weather-live.js" -o /tmp/weather.js || ok=0
+            curl -fsSL "${V25}disaster-monitor.js" -o /tmp/loader.js || ok=0
+            curl -fsSL "${V25}sw.js" -o /tmp/sw25.js || ok=0
+            curl -fsSL "${V24}v24-realtime-1s.js" -o /tmp/maprt.js || ok=0
+            curl -fsSL "${V24}sw.js" -o /tmp/sw24.js || ok=0
+            grep -q 'setInterval(tick,1000)' /tmp/realtime.js || ok=0
+            grep -q 'setInterval(()=>loadKcha(false),1000)' /tmp/news.js || ok=0
+            grep -q 'setInterval(load,1000)' /tmp/weather.js || ok=0
+            grep -q 'realtime-1s.js?v=1' /tmp/loader.js || ok=0
+            grep -q 'shell-17' /tmp/sw25.js || ok=0
+            grep -q 'setInterval(tick,1000)' /tmp/maprt.js || ok=0
+            grep -q 'shell-20' /tmp/sw24.js || ok=0
+            if [ "$ok" = 1 ]; then break; fi
+            sleep 3
+          done
+          test "$ok" = 1
+          node --check /tmp/realtime.js
+          node --check /tmp/news.js
+          node --check /tmp/weather.js
+          node --check /tmp/maprt.js
+          node --check /tmp/sw25.js
+          node --check /tmp/sw24.js
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$CHROME"
+          mkdir -p /tmp/fsrt && cd /tmp/fsrt
+          npm init -y >/dev/null 2>&1
+          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          V25="$V25" V24="$V24" CHROME="$CHROME" node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          const wait=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
+            const page=await browser.newPage();page.setDefaultTimeout(60000);
+            const req=[];page.on('request',r=>req.push({u:r.url(),t:Date.now()}));
+            await page.goto(process.env.V25,{waitUntil:'domcontentloaded'});
+            await page.waitForFunction(()=>window.__fsRealtime1s===true,{timeout:30000});
+            const start=Date.now();await wait(3400);
+            const bipad=req.filter(x=>x.t>=start&&x.u.includes('bipadportal.gov.np/api/v1/'));
+            if(bipad.length<3)throw Error('V25 realtime BIPAD receiver too slow '+bipad.length);
+            req.length=0;
+            await page.goto(process.env.V25+'news.html',{waitUntil:'domcontentloaded'});const ns=Date.now();await wait(3400);
+            const media=req.filter(x=>x.t>=ns&&x.u.includes('kchakhabar.com/api/v1/today.json'));
+            if(media.length<2)throw Error('news source did not repeat within 1s cadence '+media.length);
+            req.length=0;
+            await page.goto(process.env.V25+'weather.html',{waitUntil:'domcontentloaded'});await page.evaluate(()=>localStorage.setItem('fs-v25-location',JSON.stringify([27.7172,85.3240])));await page.reload({waitUntil:'domcontentloaded'});const ws=Date.now();await wait(3400);
+            const wx=req.filter(x=>x.t>=ws&&x.u.includes('api.open-meteo.com/v1/forecast'));
+            if(wx.length<2)throw Error('weather source did not repeat '+wx.length);
+            req.length=0;
+            await page.goto(process.env.V24+'?mapOnly=1&v25=1',{waitUntil:'domcontentloaded'});await navigator.serviceWorker?.ready?.catch?.(()=>{});await wait(2500);await page.reload({waitUntil:'domcontentloaded'});await page.waitForSelector('.leaflet-container',{timeout:60000});await page.waitForFunction(()=>window.__fsV24Realtime1s===true,{timeout:30000});await wait(2500);const mapState=await page.evaluate(()=>({receiver:document.getElementById('feedState')?.dataset.receiver,countdown:document.getElementById('countdown')?.textContent,pointer:getComputedStyle(document.querySelector('.leaflet-container')).pointerEvents}));if(mapState.receiver!=='1-sec'||mapState.pointer==='none')throw Error('map realtime state '+JSON.stringify(mapState));
+            console.log('PASS FloodSafe one-second realtime receivers');await browser.close();
+          })().catch(e=>{console.error(e);process.exit(3)});
+          JS

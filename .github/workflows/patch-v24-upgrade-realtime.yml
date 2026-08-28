@@ -1,0 +1,39 @@
+name: Patch V24 Direct Realtime Loader
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/patch-v24-upgrade-realtime.yml"
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch V24 upgrade
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-nepal/v24/v24-upgrade.js')
+          s=p.read_text()
+          if 'fsRealtimeDirectScript' not in s:
+              needle="const FS_MAP_ONLY=new URLSearchParams(location.search).get('mapOnly')==='1';"
+              insert="""function loadDirectRealtime(){
+  if(window.__fsV24Realtime1s||document.getElementById('fsRealtimeDirectScript'))return;
+  const s=document.createElement('script');s.id='fsRealtimeDirectScript';s.src='./v24-realtime-1s.js?v=3';s.defer=true;document.head.appendChild(s);
+}
+loadDirectRealtime();
+"""
+              s=s.replace(needle,insert+needle,1)
+          s=s.replace('same five-second receiver window','same one-second receiver window')
+          s=s.replace('const FS24_API_CACHE_MS=5000;','const FS24_API_CACHE_MS=1000;')
+          p.write_text(s)
+          PY
+          git config user.name 'FloodSafe Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add floodsafe-nepal/v24/v24-upgrade.js
+          if ! git diff --cached --quiet; then
+            git commit -m 'Load V24 one-second realtime receiver directly'
+            git push
+          fi

@@ -1,0 +1,42 @@
+name: FloodSafe DoR Road Sync
+
+on:
+  push:
+    paths:
+      - 'scripts/update_dor_road_summary.py'
+      - '.github/workflows/floodsafe-dor-road-sync.yml'
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: floodsafe-dor-road-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch DoR NAVIGATE summary
+        run: python3 scripts/update_dor_road_summary.py
+      - name: Commit update if changed
+        shell: bash
+        run: |
+          set -e
+          if git diff --quiet -- data/dor-road-summary.json; then
+            echo 'No DoR change.'
+            exit 0
+          fi
+          git config user.name 'FloodSafe road sync'
+          git config user.email 'actions@users.noreply.github.com'
+          git add data/dor-road-summary.json
+          git commit -m 'Auto-sync DoR road summary'
+          git pull --rebase origin main
+          git push origin HEAD:main

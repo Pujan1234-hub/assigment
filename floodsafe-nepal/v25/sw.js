@@ -1,4 +1,4 @@
-const CACHE='floodsafe-nepal-v25-shell-18';
+const CACHE='floodsafe-nepal-v25-shell-19';
 const SHELL=['./','./index.html','./map.html','./alerts.html','./people.html','./weather.html','./news.html','./sources.html','./shell.css','./live-core.css','./live-core.js','./national-news.js','./disaster-monitor.js','./today-monitor-v3.js','./human-current-guard.js','./realtime-1s.js','./weather-live.js','./manifest.webmanifest','../v24/icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('floodsafe-nepal-v25-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

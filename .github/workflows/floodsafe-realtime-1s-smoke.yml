@@ -74,7 +74,15 @@ jobs:
             const wx=req.filter(x=>x.t>=ws&&x.u.includes('api.open-meteo.com/v1/forecast'));
             if(wx.length<2)throw Error('weather source did not repeat '+wx.length);
             req.length=0;
-            await page.goto(process.env.V24+'?mapOnly=1&v25=1',{waitUntil:'domcontentloaded'});await navigator.serviceWorker?.ready?.catch?.(()=>{});await wait(2500);await page.reload({waitUntil:'domcontentloaded'});await page.waitForSelector('.leaflet-container',{timeout:60000});await page.waitForFunction(()=>window.__fsV24Realtime1s===true,{timeout:30000});await wait(2500);const mapState=await page.evaluate(()=>({receiver:document.getElementById('feedState')?.dataset.receiver,countdown:document.getElementById('countdown')?.textContent,pointer:getComputedStyle(document.querySelector('.leaflet-container')).pointerEvents}));if(mapState.receiver!=='1-sec'||mapState.pointer==='none')throw Error('map realtime state '+JSON.stringify(mapState));
+            await page.goto(process.env.V24+'?mapOnly=1&v25=1',{waitUntil:'domcontentloaded'});
+            await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
+            await wait(1200);
+            await page.reload({waitUntil:'domcontentloaded'});
+            await page.waitForSelector('.leaflet-container',{timeout:60000});
+            await page.waitForFunction(()=>window.__fsV24Realtime1s===true,{timeout:30000});
+            await wait(2500);
+            const mapState=await page.evaluate(()=>({receiver:document.getElementById('feedState')?.dataset.receiver,countdown:document.getElementById('countdown')?.textContent,pointer:getComputedStyle(document.querySelector('.leaflet-container')).pointerEvents}));
+            if(mapState.receiver!=='1-sec'||mapState.pointer==='none')throw Error('map realtime state '+JSON.stringify(mapState));
             console.log('PASS FloodSafe one-second realtime receivers');await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

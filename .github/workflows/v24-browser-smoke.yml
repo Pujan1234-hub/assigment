@@ -24,8 +24,11 @@ jobs:
               && curl -fsSL "${URL}v23-upgrade.js?v=1" -o /tmp/v23copy.js \
               && curl -fsSL "${URL}v24-upgrade.js?v=1" -o /tmp/v24.js \
               && curl -fsSL "${URL}v24-authority-watch.js?v=4" -o /tmp/authority.js \
+              && curl -fsSL "${URL}v24-river-display.js?v=3" -o /tmp/riverdisplay.js \
               && grep -q 'fsNationalWatch' /tmp/authority.js \
-              && grep -q 'FS24_API_CACHE_MS=5000' /tmp/v24.js; then ok=1; break; fi
+              && grep -q 'FS24_API_CACHE_MS=1000' /tmp/v24.js \
+              && grep -q 'enrichBusy' /tmp/riverdisplay.js \
+              && grep -q '__fsRiverStableSetter' /tmp/riverdisplay.js; then ok=1; break; fi
             echo "Waiting for Pages propagation: attempt $i"
             sleep 3
           done
@@ -45,13 +48,17 @@ jobs:
           node --check /tmp/v23copy.js
           node --check /tmp/v24.js
           node --check /tmp/authority.js
+          node --check /tmp/riverdisplay.js
           mustgrep "fetchJSON('./nepal-districts.geojson'" /tmp/v24.html
           mustgrep 'renderDistricts()' /tmp/v24.html
           mustgrep 'setInterval(refreshSlow' /tmp/v24.html
           mustgrep 'showRiverStatus' /tmp/v24.html
           mustgrep 'const POLL=5000' /tmp/v23copy.js
-          mustgrep 'FS24_API_CACHE_MS=5000' /tmp/v24.js
+          mustgrep 'FS24_API_CACHE_MS=1000' /tmp/v24.js
           mustgrep '__floodsafeScaleBridge' /tmp/v24.js
+          mustgrep 'enrichBusy' /tmp/riverdisplay.js
+          mustgrep '__fsRiverStableSetter' /tmp/riverdisplay.js
+          mustgrep "el.closest?.('#fs24RiverMore')" /tmp/riverdisplay.js
           mustgrep 'fsNationalWatch' /tmp/authority.js
           mustgrep "flood:400,landslide:300,quake:250,air:200" /tmp/authority.js
           mustgrep 'm>=6.5' /tmp/authority.js

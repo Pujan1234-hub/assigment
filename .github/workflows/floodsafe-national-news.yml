@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install --quiet requests beautifulsoup4
-      - name: Collect verified fresh national headlines
+      - name: Collect verified current national headlines
         shell: bash
         run: |
           python - <<'PY'
@@ -40,70 +40,61 @@ jobs:
 
           NPT=timezone(timedelta(hours=5,minutes=45))
           now=datetime.now(NPT)
-          FRESH_MIN=60
+          FLASH_MIN=60
+          RECENT_MIN=360
           MAX_FUTURE_MIN=10
           sources=[
             ('OnlineKhabar','https://www.onlinekhabar.com/latest'),
             ('Setopati','https://www.setopati.com/'),
             ('Ratopati','https://www.ratopati.com/'),
             ('Kathmandu Post','https://kathmandupost.com/'),
+            ('The Rising Nepal','https://risingnepaldaily.com/'),
           ]
           urgent=[
             'बाढी','पहिरो','भूकम्प','दुर्घटना','मृत्यु','उद्धार','सम्पर्कविहीन','बेपत्ता','घाइते','राजमार्ग','बन्द','अवरुद्ध','आगलागी','चेतावनी','सतर्क','आपतकाल','वर्षा','मौसम','मन्त्रिपरिषद','प्रधानमन्त्री','राष्ट्रपति','सर्वोच्च','संसद','सेना','प्रहरी','सुरक्षा','सीमा','विमान','एयरपोर्ट','हड्ताल','आन्दोलन','निर्देशन','निर्णय','राहत','विद्युत','पुल','चुनाव','अदालत','मन्त्रालय','देशभर','स्वास्थ्य','महामारी',
             'flood','landslide','earthquake','accident','death','dead','rescue','missing','injured','highway','closed','blocked','fire','warning','alert','emergency','rain','weather','cabinet','prime minister','president','supreme court','parliament','army','police','security','border','airport','strike','protest','evacuation','relief','outbreak','election','court','ministry','nationwide','health emergency'
           ]
           exclude=['खेलकुद','मनोरञ्जन','राशिफल','जीवनशैली','फिल्म','सिनेमा','गीत','क्रिकेट','football','sports','entertainment','lifestyle','horoscope','opinion','विचार','ब्लग','साहित्य','beauty','fashion','इतिहास','history']
-          generic={
-            'गृहपृष्ठ','समाचार','राजनीति','समाज','बिजनेस','खेलकुद','अन्तर्राष्ट्रिय','english','home','news','politics','sports','business','lifestyle','opinion','more','latest','trending',
-            'एक्सक्लुसिभ स्टोरी','exclusive stories','थप समाचार','ताजा समाचार','मुख्य समाचार','लोकप्रिय','सम्पादकीय','फोटो फिचर','भिडियो'
-          }
+          generic={'गृहपृष्ठ','समाचार','राजनीति','समाज','बिजनेस','खेलकुद','अन्तर्राष्ट्रिय','english','home','news','politics','sports','business','lifestyle','opinion','more','latest','trending','एक्सक्लुसिभ स्टोरी','exclusive stories','थप समाचार','ताजा समाचार','मुख्य समाचार','लोकप्रिय','सम्पादकीय','फोटो फिचर','भिडियो'}
           headers={'User-Agent':'Mozilla/5.0 (compatible; FloodSafeNepal/1.0; +https://pujan1234-hub.github.io/assigment/floodsafe-nepal/)','Accept-Language':'ne,en;q=0.8'}
-          source_status={}; candidates=[]
-          def norm(s): return re.sub(r'[^\w\u0900-\u097f]+',' ',s.lower()).strip()
+          source_status={};candidates=[]
+          def norm(s):return re.sub(r'[^\w\u0900-\u097f]+',' ',s.lower()).strip()
           def clean_title(source,text):
             text=html.unescape(re.sub(r'\s+',' ',text)).strip(' -|•')
             if source=='Setopati':
-              text=re.split(r'\s+-\s+सेतोपाटी संवाददाता\b',text,maxsplit=1)[0].strip()
-              text=re.sub(r'\s*विस्तृतमा\s*$','',text).strip()
-            if source=='OnlineKhabar': text=re.sub(r'\s+२०८[०-९].*?अगाडि\s*$','',text).strip()
+              text=re.split(r'\s+-\s+सेतोपाटी संवाददाता\b',text,maxsplit=1)[0].strip();text=re.sub(r'\s*विस्तृतमा\s*$','',text).strip()
+            if source=='OnlineKhabar':text=re.sub(r'\s+२०८[०-९].*?अगाडि\s*$','',text).strip()
             return text
-          def is_urgent(t):
-            low=t.lower(); return any(k.lower() in low for k in urgent)
+          def is_urgent(t):return any(k.lower() in t.lower() for k in urgent)
           def score_title(t,pos):
-            low=t.lower(); score=max(0,15-pos//4)
-            if is_urgent(t): score+=9
-            if any(k in low for k in ['breaking','ब्रेकिङ','ताजा','just in','अहिले','चेतावनी','evacuation','आपतकाल']): score+=7
+            low=t.lower();score=max(0,15-pos//4)
+            if is_urgent(t):score+=9
+            if any(k in low for k in ['breaking','ब्रेकिङ','ताजा','just in','अहिले','चेतावनी','evacuation','आपतकाल']):score+=7
             return score
           def parse_dt(v):
             if not v:return None
             v=str(v).strip()
             try:
-              z=v.replace('Z','+00:00')
-              d=datetime.fromisoformat(z)
+              d=datetime.fromisoformat(v.replace('Z','+00:00'))
               if d.tzinfo is None:d=d.replace(tzinfo=NPT)
               return d.astimezone(NPT)
-            except: pass
+            except:pass
             for fmt in ('%Y-%m-%d %H:%M:%S','%Y-%m-%d %H:%M','%Y-%m-%dT%H:%M:%S'):
               try:return datetime.strptime(v[:19],fmt).replace(tzinfo=NPT)
-              except: pass
+              except:pass
             return None
-          def fresh(d):
-            if not d:return False
-            mins=(now-d).total_seconds()/60
-            return -MAX_FUTURE_MIN <= mins <= FRESH_MIN
+          def minutes_old(d):return (now-d).total_seconds()/60 if d else 10**9
+          def recent(d):
+            m=minutes_old(d);return -MAX_FUTURE_MIN<=m<=RECENT_MIN
           def published_from_html(text):
             soup=BeautifulSoup(text,'html.parser')
-            for attrs in (
-              {'property':'article:published_time'},{'name':'article:published_time'},
-              {'property':'og:published_time'},{'name':'datePublished'},
-              {'itemprop':'datePublished'},{'name':'pubdate'},{'name':'publish-date'}):
-              tag=soup.find('meta',attrs=attrs)
-              d=parse_dt(tag.get('content')) if tag and tag.get('content') else None
+            for attrs in ({'property':'article:published_time'},{'name':'article:published_time'},{'property':'og:published_time'},{'name':'datePublished'},{'itemprop':'datePublished'},{'name':'pubdate'},{'name':'publish-date'}):
+              tag=soup.find('meta',attrs=attrs);d=parse_dt(tag.get('content')) if tag and tag.get('content') else None
               if d:return d
-            for tm in soup.find_all('time',limit=8):
+            for tm in soup.find_all('time',limit=10):
               d=parse_dt(tm.get('datetime') or tm.get('content'))
               if d:return d
-            for sc in soup.find_all('script',type='application/ld+json',limit=10):
+            for sc in soup.find_all('script',type='application/ld+json',limit=12):
               raw=sc.string or sc.get_text(' ',strip=True)
               if not raw:continue
               m=re.search(r'"datePublished"\s*:\s*"([^"]+)"',raw)
@@ -114,10 +105,9 @@ jobs:
             return parse_dt(m.group(1)) if m else None
           def verify(x):
             try:
-              r=requests.get(x['url'],headers=headers,timeout=8);r.raise_for_status()
-              d=published_from_html(r.text)
-              if not fresh(d):return None
-              y=dict(x);y['published_at']=d.isoformat();return y
+              r=requests.get(x['url'],headers=headers,timeout=8);r.raise_for_status();d=published_from_html(r.text)
+              if not recent(d):return None
+              y=dict(x);y['published_at']=d.isoformat();y['flash']=minutes_old(d)<=FLASH_MIN;return y
             except:return None
 
           for source,url in sources:
@@ -126,30 +116,30 @@ jobs:
               host=urlparse(url).netloc.replace('www.','');seen_local=set();picked=0
               for pos,a in enumerate(soup.find_all('a',href=True)):
                 text=clean_title(source,' '.join(a.stripped_strings));low=text.lower().strip()
-                if not (18<=len(text)<=160) or low in generic: continue
-                if any(x.lower() in low for x in exclude): continue
+                if not (18<=len(text)<=170) or low in generic:continue
+                if any(x.lower() in low for x in exclude):continue
                 href=urljoin(url,a.get('href','')).split('#')[0];pu=urlparse(href)
-                if pu.scheme not in ('http','https') or host not in pu.netloc.replace('www.',''): continue
-                if pos>110 and not is_urgent(text): continue
+                if pu.scheme not in ('http','https') or host not in pu.netloc.replace('www.',''):continue
+                if pos>130 and not is_urgent(text):continue
                 key=norm(text)
-                if len(key)<12 or key in seen_local: continue
-                seen_local.add(key)
-                sc=score_title(text,pos)
-                if sc<10: continue
-                candidates.append({'title':text,'source':source,'url':href,'score':sc,'flash':sc>=21,'source_order':pos})
-                picked+=1
-                if picked>=12:break
-              source_status[source]={'ok':True,'candidates':picked,'fresh':0}
-            except Exception as e: source_status[source]={'ok':False,'error':str(e)[:120],'fresh':0}
+                if len(key)<12 or key in seen_local:continue
+                seen_local.add(key);sc=score_title(text,pos)
+                if sc<9:continue
+                candidates.append({'title':text,'source':source,'url':href,'score':sc,'source_order':pos});picked+=1
+                if picked>=16:break
+              source_status[source]={'ok':True,'candidates':picked,'flash':0,'recent':0}
+            except Exception as e:source_status[source]={'ok':False,'error':str(e)[:120],'flash':0,'recent':0}
 
           verified=[]
-          with ThreadPoolExecutor(max_workers=8) as ex:
+          with ThreadPoolExecutor(max_workers=10) as ex:
             futs=[ex.submit(verify,x) for x in candidates]
             for f in as_completed(futs):
               x=f.result()
-              if x:
-                verified.append(x)
-                if x['source'] in source_status:source_status[x['source']]['fresh']+=1
+              if not x:continue
+              verified.append(x)
+              if x['source'] in source_status:
+                source_status[x['source']]['recent']+=1
+                if x['flash']:source_status[x['source']]['flash']+=1
 
           dedup=[];seen=[]
           for x in sorted(verified,key=lambda v:(-datetime.fromisoformat(v['published_at']).timestamp(),-v['score'],v['source_order'])):
@@ -157,19 +147,18 @@ jobs:
             if k in generic:continue
             if any((k in old or old in k) and min(len(k),len(old))>22 for old in seen):continue
             seen.append(k);x.pop('source_order',None);x.pop('score',None);dedup.append(x)
-            if len(dedup)>=24:break
+            if len(dedup)>=30:break
 
-          out={'generated_at':now.isoformat(),'updated_at_npt':now.strftime('%d %b %H:%M NPT'),'fresh_window_minutes':FRESH_MIN,'items':dedup,'sources':source_status}
+          out={'generated_at':now.isoformat(),'updated_at_npt':now.strftime('%d %b %H:%M NPT'),'flash_window_minutes':FLASH_MIN,'recent_window_minutes':RECENT_MIN,'items':dedup,'sources':source_status}
           path='data/national-news.json'
           try:old=json.load(open(path,encoding='utf-8'))
           except Exception:old={}
-          old_sig=[(x.get('title'),x.get('url'),x.get('published_at')) for x in old.get('items',[])];new_sig=[(x.get('title'),x.get('url'),x.get('published_at')) for x in dedup]
-          old_meta=(old.get('fresh_window_minutes'),old.get('updated_at_npt'))
-          if old_sig==new_sig and old_meta[0]==FRESH_MIN:
+          old_sig=[(x.get('title'),x.get('url'),x.get('published_at'),x.get('flash')) for x in old.get('items',[])];new_sig=[(x.get('title'),x.get('url'),x.get('published_at'),x.get('flash')) for x in dedup]
+          if old_sig==new_sig and old.get('flash_window_minutes')==FLASH_MIN and old.get('recent_window_minutes')==RECENT_MIN:
             print('No verified headline change')
           else:
             with open(path,'w',encoding='utf-8') as f:json.dump(out,f,ensure_ascii=False,indent=2)
-            print('Updated',len(dedup),'verified <1h headlines')
+            print('Updated',len(dedup),'verified <=6h headlines; flash',sum(1 for x in dedup if x.get('flash')))
           PY
       - name: Commit changed feed
         shell: bash
@@ -178,6 +167,6 @@ jobs:
           git config user.name 'FloodSafe News Bot'
           git config user.email 'actions@users.noreply.github.com'
           git add data/national-news.json
-          git commit -m 'Update verified fresh national news feed'
+          git commit -m 'Update verified national news feed'
           git pull --rebase origin main
           git push origin HEAD:main

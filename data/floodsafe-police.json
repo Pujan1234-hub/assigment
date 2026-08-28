@@ -1,24 +1,56 @@
 {
   "source": "Nepal Police",
-  "source_url": "https://www.nepalpolice.gov.np/news/10255/",
+  "source_url": "https://www.nepalpolice.gov.np/news/10256/",
   "event": "Rasuwa flood",
   "event_ne": "रसुवा बाढी",
   "cause": "Flood",
   "cause_ne": "बाढी",
-  "total_deaths": 359,
-  "official_update_bs": "2083-05-11",
-  "official_update_time": "17:00 NPT",
-  "official_update_iso": "2026-08-27T17:00:00+05:45",
+  "total_deaths": 469,
+  "official_update_bs": "2083-05-12",
+  "official_update_time": "07:00 NPT",
+  "official_update_iso": "2026-08-28T07:00:00+05:45",
   "districts": [
-    {"name": "Rasuwa", "name_ne": "रसुवा", "deaths": 17},
-    {"name": "Nuwakot", "name_ne": "नुवाकोट", "deaths": 28},
-    {"name": "Dhading", "name_ne": "धादिङ", "deaths": 33},
-    {"name": "Chitwan", "name_ne": "चितवन", "deaths": 132},
-    {"name": "Gorkha", "name_ne": "गोरखा", "deaths": 30},
-    {"name": "Tanahun", "name_ne": "तनहुँ", "deaths": 22},
-    {"name": "Nawalparasi East", "name_ne": "नवलपरासी पूर्व", "deaths": 82},
-    {"name": "Nawalparasi West", "name_ne": "नवलपरासी पश्चिम", "deaths": 15}
+    {
+      "name": "Rasuwa",
+      "name_ne": "रसुवा",
+      "deaths": 12
+    },
+    {
+      "name": "Nuwakot",
+      "name_ne": "नुवाकोट",
+      "deaths": 37
+    },
+    {
+      "name": "Dhading",
+      "name_ne": "धादिङ",
+      "deaths": 33
+    },
+    {
+      "name": "Chitwan",
+      "name_ne": "चितवन",
+      "deaths": 178
+    },
+    {
+      "name": "Gorkha",
+      "name_ne": "गोरखा",
+      "deaths": 44
+    },
+    {
+      "name": "Tanahun",
+      "name_ne": "तनहुँ",
+      "deaths": 28
+    },
+    {
+      "name": "Nawalparasi East",
+      "name_ne": "नवलपरासी पूर्व",
+      "deaths": 110
+    },
+    {
+      "name": "Nawalparasi West",
+      "name_ne": "नवलपरासी पश्चिम",
+      "deaths": 27
+    }
   ],
   "status": "verified",
-  "note": "Latest verified Nepal Police bulletin detected for FloodSafe. Time is Nepal Time (NPT, UTC+05:45). The automatic sync checks Nepal Police for a newer verified bulletin and updates this file only after the parsed district total matches the published total."
+  "note": "Automatically synced from the latest Nepal Police Rasuwa flood bulletin. Time is Nepal Time (NPT, UTC+05:45). Data is written only when every district count is parsed and the district sum exactly matches the published total."
 }

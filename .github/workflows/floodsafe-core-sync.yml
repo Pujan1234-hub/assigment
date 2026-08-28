@@ -1,0 +1,53 @@
+name: FloodSafe core official feed sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/floodsafe-core-sync.yml'
+      - 'scripts/floodsafe-core-sync.py'
+      - 'floodsafe-nepal/v25/resilience.js'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: floodsafe-core-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch official core feeds
+        id: fetch
+        continue-on-error: true
+        run: python scripts/floodsafe-core-sync.py
+
+      - name: Validate snapshot JSON
+        run: python -m json.tool data/floodsafe-core.json >/dev/null
+
+      - name: Commit refreshed snapshot
+        run: |
+          if git diff --quiet -- data/floodsafe-core.json; then
+            echo 'No snapshot changes.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/floodsafe-core.json
+          git commit -m '[auto] refresh FloodSafe core official feeds'
+          git pull --rebase origin main
+          git push origin HEAD:main

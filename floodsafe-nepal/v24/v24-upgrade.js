@@ -1,5 +1,10 @@
 (()=>{
 'use strict';
+function loadDirectRealtime(){
+  if(window.__fsV24Realtime1s||document.getElementById('fsRealtimeDirectScript'))return;
+  const s=document.createElement('script');s.id='fsRealtimeDirectScript';s.src='./v24-realtime-1s.js?v=3';s.defer=true;document.head.appendChild(s);
+}
+loadDirectRealtime();
 const FS_MAP_ONLY=new URLSearchParams(location.search).get('mapOnly')==='1';
 function loadDirectAuthority(){
   if(FS_MAP_ONLY||window.__fsAuthorityWatchV1||document.getElementById('fsAuthorityWatchScript'))return;
@@ -20,10 +25,10 @@ loadDirectAuthority();applyMapOnly();
 const $=id=>document.getElementById(id);
 let selectedRiver=null;
 
-// Collapse duplicate reads only inside the same five-second receiver window.
+// Collapse duplicate reads only inside the same one-second receiver window.
 // This keeps the live map responsive to upstream changes on the next poll.
 const fs24PreviousFetch=window.fetch.bind(window);
-const FS24_API_CACHE_MS=5000;
+const FS24_API_CACHE_MS=1000;
 const fs24ApiCache=new Map();
 const fs24Pending=new Map();
 const fs24Health=new Map();

@@ -42,7 +42,7 @@ jobs:
             ! grep -q 'MutationObserver' /tmp/human.js || ok=0
             grep -q 'setInterval(poll,30000)' /tmp/district.js || ok=0
             grep -q 'setInterval(sync,15000)' /tmp/road.js || ok=0
-            grep -q 'shell-26' /tmp/sw25.js || ok=0
+            grep -q 'shell-27' /tmp/sw25.js || ok=0
             grep -q 'POLL_MS=15000' /tmp/maprt.js || ok=0
             grep -q 'setInterval(uiTick,1000)' /tmp/maprt.js || ok=0
             ! grep -q 'setInterval(sourceTick,1000)' /tmp/maprt.js || ok=0

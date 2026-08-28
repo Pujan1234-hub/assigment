@@ -1,0 +1,10 @@
+{
+  "source": "Department of Roads NAVIGATE",
+  "source_url": "https://navigate.dor.gov.np/app/dashboard",
+  "total": 42,
+  "closed": 8,
+  "opened": 26,
+  "partially_opened": 8,
+  "checked_at": "2026-08-28",
+  "status": "official_summary"
+}

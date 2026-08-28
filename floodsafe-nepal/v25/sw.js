@@ -1,4 +1,4 @@
-const CACHE='floodsafe-nepal-v25-shell-36';
+const CACHE='floodsafe-nepal-v25-shell-37';
 const SHELL=['./','./index.html','./map.html','./alerts.html','./people.html','./weather.html','./news.html','./sources.html','./shell.css','./live-core.css','./language-v2.js','./resilience.js','./live-core.js','./national-news.js','./news-stability.js','./disaster-monitor.js','./today-monitor-v4.js','./sync-controller.js','./district-road-live.js','./road-live-fast.js','./road-current-guard.js','./realtime-1s.js','./weather-live.js','./manifest.webmanifest','../v24/icon.svg'];
 self.addEventListener('install',e=>e.waitUntil((async()=>{const c=await caches.open(CACHE);await Promise.allSettled(SHELL.map(async u=>{try{const r=await fetch(u,{cache:'reload'});if(r.ok)await c.put(u,r)}catch(_){}}));await self.skipWaiting()})()));
 self.addEventListener('activate',e=>e.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('floodsafe-nepal-v25-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})()));

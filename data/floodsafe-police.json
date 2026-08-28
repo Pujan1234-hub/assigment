@@ -1,14 +1,14 @@
 {
   "source": "Nepal Police",
-  "source_url": "https://www.nepalpolice.gov.np/news/10256/",
+  "source_url": "https://www.nepalpolice.gov.np/news/10257/",
   "event": "Rasuwa flood",
   "event_ne": "रसुवा बाढी",
   "cause": "Flood",
   "cause_ne": "बाढी",
-  "total_deaths": 469,
+  "total_deaths": 475,
   "official_update_bs": "2083-05-12",
-  "official_update_time": "07:00 NPT",
-  "official_update_iso": "2026-08-28T07:00:00+05:45",
+  "official_update_time": "09:00 NPT",
+  "official_update_iso": "2026-08-28T09:00:00+05:45",
   "districts": [
     {
       "name": "Rasuwa",
@@ -23,12 +23,12 @@
     {
       "name": "Dhading",
       "name_ne": "धादिङ",
-      "deaths": 33
+      "deaths": 37
     },
     {
       "name": "Chitwan",
       "name_ne": "चितवन",
-      "deaths": 178
+      "deaths": 179
     },
     {
       "name": "Gorkha",
@@ -48,7 +48,7 @@
     {
       "name": "Nawalparasi West",
       "name_ne": "नवलपरासी पश्चिम",
-      "deaths": 27
+      "deaths": 28
     }
   ],
   "status": "verified",

@@ -1,28 +1,54 @@
 {
-  "generated_at": "2026-08-29T03:02:23.314574+05:45",
-  "updated_at_npt": "29 Aug 03:02 NPT",
-  "fresh_window_minutes": 60,
-  "items": [],
+  "generated_at": "2026-08-29T03:08:44.928267+05:45",
+  "updated_at_npt": "29 Aug 03:08 NPT",
+  "flash_window_minutes": 60,
+  "recent_window_minutes": 360,
+  "items": [
+    {
+      "title": "भोटेकोशी बाढी: म्याग्दीका तीन पालिकाद्वारा दुई/दुई लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588252/bhotekoshi-flood-three-municipalities-in-myagdi-provide-rs-200000-each",
+      "published_at": "2026-08-28T23:20:20+05:45",
+      "flash": false
+    },
+    {
+      "title": "रसुवा बाढीपीडितलाई ५१ लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588249/51-million-assistance-to-rasuwa-flood-victims",
+      "published_at": "2026-08-28T22:52:41+05:45",
+      "flash": false
+    }
+  ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 7,
-      "fresh": 0
+      "candidates": 16,
+      "flash": 0,
+      "recent": 0
     },
     "Setopati": {
       "ok": true,
-      "candidates": 12,
-      "fresh": 0
+      "candidates": 16,
+      "flash": 0,
+      "recent": 0
     },
     "Ratopati": {
       "ok": true,
-      "candidates": 12,
-      "fresh": 0
+      "candidates": 16,
+      "flash": 0,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,
-      "candidates": 1,
-      "fresh": 0
+      "candidates": 16,
+      "flash": 0,
+      "recent": 0
+    },
+    "The Rising Nepal": {
+      "ok": true,
+      "candidates": 16,
+      "flash": 0,
+      "recent": 0
     }
   }
 }

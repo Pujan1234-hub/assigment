@@ -21,7 +21,7 @@ jobs:
           for i in $(seq 1 100); do
             good=1
             for f in $files; do curl -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/$(basename "$f")" || good=0; done
-            grep -q 'shell-36' /tmp/sw.js || good=0
+            grep -q 'shell-37' /tmp/sw.js || good=0
             grep -q 'language-v2.js' /tmp/index.html || good=0
             grep -q 'sync-controller.js?v=2' /tmp/index.html || good=0
             grep -q 'today-monitor-v4.js' /tmp/disaster-monitor.js || good=0
@@ -51,48 +51,18 @@ jobs:
           const wait=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
-            const page=await browser.newPage();
-            page.setDefaultTimeout(60000);
-            const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
+            const page=await browser.newPage();page.setDefaultTimeout(60000);
+            const errors=[];page.on('pageerror',e=>errors.push(String(e)));
             const url=p=>process.env.BASE+p+(p.includes('?')?'&':'?')+'ci='+Date.now();
-
-            await page.goto(url(''),{waitUntil:'domcontentloaded'});
-            await page.waitForSelector('#homeDeathsLive');
-            await page.waitForSelector('#todayHazards');
-            await wait(8500);
-            const first=await page.evaluate(async()=>{
-              const p=await fetch('../../data/floodsafe-people-status.json?ci='+Date.now(),{cache:'no-store'}).then(r=>r.json());
-              return {expected:[String(p.recovered_bodies),String(p.missing_minimum),String(p.rescued_alive)],shown:[homeDeathsLive.textContent,homeMissingLive.textContent,homeRescuedLive.textContent],old:!!document.getElementById('homeDeaths'),hidden:humanStatsSection.hidden,eq:todayEq?.textContent,ls:todayLs?.textContent};
-            });
-            if(first.old||first.hidden||first.shown.join('|')!==first.expected.join('|')) throw Error('Human owner mismatch '+JSON.stringify(first));
-            await wait(7500);
-            const stable=await page.evaluate(()=>[homeDeathsLive.textContent,homeMissingLive.textContent,homeRescuedLive.textContent]);
-            if(stable.join('|')!==first.expected.join('|')) throw Error('Human values changed after legacy 5s cycle '+JSON.stringify({first,stable}));
-            if(first.eq==null||first.ls==null) throw Error('Today cards missing');
-
-            await page.click('#fsLangToggle'); await wait(900);
-            const en=await page.evaluate(()=>({head:document.querySelector('.pageHead h2')?.textContent,title:humanStatsTitleLive.textContent,toggle:fsLangToggle.textContent}));
-            if(en.head!=='Key information'||!/Human Status/.test(en.title)||en.toggle!=='नेपाली') throw Error('English language mode failed '+JSON.stringify(en));
-            await page.click('#fsLangToggle'); await wait(900);
-            const ne=await page.evaluate(()=>({head:document.querySelector('.pageHead h2')?.textContent,toggle:fsLangToggle.textContent}));
-            if(ne.head!=='मुख्य जानकारी'||ne.toggle!=='English') throw Error('Nepali language mode failed '+JSON.stringify(ne));
-
-            await page.goto(url('alerts.html'),{waitUntil:'domcontentloaded'}); await wait(9000);
-            const alerts=await page.evaluate(()=>({flood:!!floodAlertSection,road:!!roadLiveSection,dupHidden:closedRoadSection.hidden,dupCards:closedRoadSection.querySelectorAll('.item').length,floodCards:[...alertsList.querySelectorAll('.item')].map(x=>x.textContent),roadCards:[...roadCurrentList.querySelectorAll('.item')].map(x=>x.textContent),districtCards:districtStatusList.querySelectorAll('.item').length}));
-            if(!alerts.flood||!alerts.road||!alerts.dupHidden||alerts.dupCards) throw Error('Flood/Road separation failed '+JSON.stringify(alerts));
-            if(alerts.floodCards.some(x=>/ROAD|सडक|राजमार्ग|highway|bridge|पुल/i.test(x))) throw Error('Road leaked into flood section '+JSON.stringify(alerts.floodCards));
-            if(alerts.roadCards.length>15||alerts.districtCards>15) throw Error('Alert page too long '+JSON.stringify({road:alerts.roadCards.length,district:alerts.districtCards}));
-            if(alerts.roadCards.some(x=>/CLOSED|बन्द/.test(x)&&!/Alternative route|वैकल्पिक मार्ग/.test(x))) throw Error('Road card missing route disclosure '+JSON.stringify(alerts.roadCards));
-
-            await page.goto(url('people.html'),{waitUntil:'domcontentloaded'}); await page.waitForSelector('#peopleBodiesLive'); await wait(7000);
-            const people=await page.evaluate(()=>({shown:[peopleBodiesLive.textContent,peopleMissingLive.textContent,peopleRescuedLive.textContent],old:!!document.getElementById('peopleBodies'),hidden:peopleStatsSection.hidden}));
-            if(people.old||people.hidden||people.shown.join('|')!==first.expected.join('|')) throw Error('People Human mismatch '+JSON.stringify(people));
-
-            await page.goto(url('news.html'),{waitUntil:'domcontentloaded'}); await wait(7000);
-            const news=await page.evaluate(async()=>{const j=await fetch('../../data/national-news.json?ci='+Date.now(),{cache:'no-store'}).then(r=>r.json());return{recent:(j.items||[]).filter(x=>Date.now()-new Date(x.published_at||0).getTime()<21600000).length,cards:newsList.querySelectorAll('.item').length}});
-            if(news.recent>0&&news.cards===0) throw Error('Recent news exists but feed is empty '+JSON.stringify(news));
-            if(errors.length) throw Error('Page errors '+JSON.stringify(errors.slice(0,8)));
-            console.log('PASS unified V25', {human:first.expected,alerts:{road:alerts.roadCards.length,district:alerts.districtCards},news});
-            await browser.close();
+            await page.goto(url(''),{waitUntil:'domcontentloaded'});await page.waitForSelector('#homeDeathsLive');await page.waitForSelector('#todayHazards');await wait(8500);
+            const first=await page.evaluate(async()=>{const p=await fetch('../../data/floodsafe-people-status.json?ci='+Date.now(),{cache:'no-store'}).then(r=>r.json());return{expected:[String(p.recovered_bodies),String(p.missing_minimum),String(p.rescued_alive)],shown:[homeDeathsLive.textContent,homeMissingLive.textContent,homeRescuedLive.textContent],old:!!document.getElementById('homeDeaths'),hidden:humanStatsSection.hidden,eq:todayEq?.textContent,ls:todayLs?.textContent}});
+            if(first.old||first.hidden||first.shown.join('|')!==first.expected.join('|'))throw Error('Human owner mismatch '+JSON.stringify(first));
+            await wait(7500);const stable=await page.evaluate(()=>[homeDeathsLive.textContent,homeMissingLive.textContent,homeRescuedLive.textContent]);if(stable.join('|')!==first.expected.join('|'))throw Error('Human values changed after legacy 5s cycle '+JSON.stringify({first,stable}));if(first.eq==null||first.ls==null)throw Error('Today cards missing');
+            await page.click('#fsLangToggle');await wait(900);const en=await page.evaluate(()=>({head:document.querySelector('.pageHead h2')?.textContent,title:humanStatsTitleLive.textContent,toggle:fsLangToggle.textContent}));if(en.head!=='Key information'||!/Human Status/.test(en.title)||en.toggle!=='नेपाली')throw Error('English language mode failed '+JSON.stringify(en));
+            await page.click('#fsLangToggle');await wait(900);const ne=await page.evaluate(()=>({head:document.querySelector('.pageHead h2')?.textContent,toggle:fsLangToggle.textContent}));if(ne.head!=='मुख्य जानकारी'||ne.toggle!=='English')throw Error('Nepali language mode failed '+JSON.stringify(ne));
+            await page.goto(url('alerts.html'),{waitUntil:'domcontentloaded'});await wait(9000);const alerts=await page.evaluate(()=>({flood:!!floodAlertSection,road:!!roadLiveSection,dupHidden:closedRoadSection.hidden,dupCards:closedRoadSection.querySelectorAll('.item').length,floodCards:[...alertsList.querySelectorAll('.item')].map(x=>x.textContent),roadCards:[...roadCurrentList.querySelectorAll('.item')].map(x=>x.textContent),districtCards:districtStatusList.querySelectorAll('.item').length}));if(!alerts.flood||!alerts.road||!alerts.dupHidden||alerts.dupCards)throw Error('Flood/Road separation failed '+JSON.stringify(alerts));if(alerts.floodCards.some(x=>/ROAD|सडक|राजमार्ग|highway|bridge|पुल/i.test(x)))throw Error('Road leaked into flood section '+JSON.stringify(alerts.floodCards));if(alerts.roadCards.length>15||alerts.districtCards>15)throw Error('Alert page too long '+JSON.stringify({road:alerts.roadCards.length,district:alerts.districtCards}));if(alerts.roadCards.some(x=>/CLOSED|बन्द/.test(x)&&!/Alternative route|वैकल्पिक मार्ग/.test(x)))throw Error('Road card missing route disclosure '+JSON.stringify(alerts.roadCards));
+            await page.goto(url('people.html'),{waitUntil:'domcontentloaded'});await page.waitForSelector('#peopleBodiesLive');await wait(7000);const people=await page.evaluate(()=>({shown:[peopleBodiesLive.textContent,peopleMissingLive.textContent,peopleRescuedLive.textContent],old:!!document.getElementById('peopleBodies'),hidden:peopleStatsSection.hidden}));if(people.old||people.hidden||people.shown.join('|')!==first.expected.join('|'))throw Error('People Human mismatch '+JSON.stringify(people));
+            await page.goto(url('news.html'),{waitUntil:'domcontentloaded'});await wait(7000);const news=await page.evaluate(async()=>{const j=await fetch('../../data/national-news.json?ci='+Date.now(),{cache:'no-store'}).then(r=>r.json());return{recent:(j.items||[]).filter(x=>Date.now()-new Date(x.published_at||0).getTime()<21600000).length,cards:newsList.querySelectorAll('.item').length}});if(news.recent>0&&news.cards===0)throw Error('Recent news exists but feed is empty '+JSON.stringify(news));
+            if(errors.length)throw Error('Page errors '+JSON.stringify(errors.slice(0,8)));console.log('PASS unified V25',{human:first.expected,alerts:{road:alerts.roadCards.length,district:alerts.districtCards},news});await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

@@ -1,56 +1,24 @@
 {
   "source": "Nepal Police",
-  "source_url": "https://www.nepalpolice.gov.np/news/10257/",
+  "source_url": "https://www.nepalpolice.gov.np/news/10264/",
   "event": "Rasuwa flood",
   "event_ne": "रसुवा बाढी",
   "cause": "Flood",
   "cause_ne": "बाढी",
-  "total_deaths": 475,
+  "total_deaths": 489,
   "official_update_bs": "2083-05-12",
-  "official_update_time": "09:00 NPT",
-  "official_update_iso": "2026-08-28T09:00:00+05:45",
+  "official_update_time": "12:00 NPT",
+  "official_update_iso": "2026-08-28T12:00:00+05:45",
   "districts": [
-    {
-      "name": "Rasuwa",
-      "name_ne": "रसुवा",
-      "deaths": 12
-    },
-    {
-      "name": "Nuwakot",
-      "name_ne": "नुवाकोट",
-      "deaths": 37
-    },
-    {
-      "name": "Dhading",
-      "name_ne": "धादिङ",
-      "deaths": 37
-    },
-    {
-      "name": "Chitwan",
-      "name_ne": "चितवन",
-      "deaths": 179
-    },
-    {
-      "name": "Gorkha",
-      "name_ne": "गोरखा",
-      "deaths": 44
-    },
-    {
-      "name": "Tanahun",
-      "name_ne": "तनहुँ",
-      "deaths": 28
-    },
-    {
-      "name": "Nawalparasi East",
-      "name_ne": "नवलपरासी पूर्व",
-      "deaths": 110
-    },
-    {
-      "name": "Nawalparasi West",
-      "name_ne": "नवलपरासी पश्चिम",
-      "deaths": 28
-    }
+    {"name":"Rasuwa","name_ne":"रसुवा","deaths":13},
+    {"name":"Nuwakot","name_ne":"नुवाकोट","deaths":37},
+    {"name":"Dhading","name_ne":"धादिङ","deaths":40},
+    {"name":"Chitwan","name_ne":"चितवन","deaths":186},
+    {"name":"Gorkha","name_ne":"गोरखा","deaths":44},
+    {"name":"Tanahun","name_ne":"तनहुँ","deaths":29},
+    {"name":"Nawalparasi East","name_ne":"नवलपरासी पूर्व","deaths":112},
+    {"name":"Nawalparasi West","name_ne":"नवलपरासी पश्चिम","deaths":28}
   ],
   "status": "verified",
-  "note": "Automatically synced from the latest Nepal Police Rasuwa flood bulletin. Time is Nepal Time (NPT, UTC+05:45). Data is written only when every district count is parsed and the district sum exactly matches the published total."
+  "note": "Verified Nepal Police bulletin. Time is Nepal Time (NPT, UTC+05:45). District sum equals the published total. Automatic sync continues to look for newer bulletins."
 }

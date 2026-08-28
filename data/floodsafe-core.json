@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "generated_at": null,
+  "sources": {
+    "alerts": {"ok": false, "updated_at": null, "error": "snapshot not populated yet"},
+    "rivers": {"ok": false, "updated_at": null, "error": "snapshot not populated yet"},
+    "roads": {"ok": false, "updated_at": null, "error": "snapshot not populated yet"}
+  },
+  "alerts": [],
+  "rivers": [],
+  "roads": []
+}

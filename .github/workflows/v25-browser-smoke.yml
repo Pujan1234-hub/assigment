@@ -32,7 +32,7 @@ jobs:
             grep -Fq 'floodAlertsListLive' /tmp/flood.html || good=0
             grep -Fq 'roadCurrentListLive' /tmp/roads.html || good=0
             grep -Fq 'districtStatusList' /tmp/roads.html || good=0
-            grep -Fq 'shell-43' /tmp/sw.js || good=0
+            grep -Fq 'shell-44' /tmp/sw.js || good=0
             grep -Fq './sw-register.js' /tmp/sw.js || good=0
             if [ "$good" = 1 ]; then ok=1; break; fi
             sleep 3

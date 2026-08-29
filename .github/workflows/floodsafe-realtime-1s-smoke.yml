@@ -24,20 +24,20 @@ jobs:
           ok=0
           for i in $(seq 1 40); do
             good=1
-            for f in sw.js realtime-1s.js weather-live.js human-final.js flood-live-fast.js road-live-fast.js district-live-v4.js; do curl --max-time 8 -fsSL "${V25}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/${f}" || good=0; done
+            for f in sw.js realtime-1s.js weather-live.js human-final-v2.js flood-live-v2.js road-live-v3.js district-live-v4.js; do curl --max-time 8 -fsSL "${V25}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/${f}" || good=0; done
             curl --max-time 8 -fsSL "${V24}v24-realtime-1s.js?ci=${GITHUB_SHA}-${i}" -o /tmp/maprt.js || good=0
             curl --max-time 8 -fsSL "${V24}sw.js?ci=${GITHUB_SHA}-${i}" -o /tmp/sw24.js || good=0
-            grep -Fq 'shell-40' /tmp/sw.js || good=0
-            grep -Fq 'setInterval(poll,5000)' /tmp/human-final.js || good=0
-            grep -Fq 'setInterval(poll,5000)' /tmp/flood-live-fast.js || good=0
-            grep -Fq 'setInterval(poll,5000)' /tmp/road-live-fast.js || good=0
+            grep -Fq 'shell-41' /tmp/sw.js || good=0
+            grep -Fq 'setInterval(poll,5000)' /tmp/human-final-v2.js || good=0
+            grep -Fq 'setInterval(poll,5000)' /tmp/flood-live-v2.js || good=0
+            grep -Fq 'setInterval(poll,5000)' /tmp/road-live-v3.js || good=0
             grep -Fq 'setInterval(poll,15000)' /tmp/district-live-v4.js || good=0
             ! grep -Fq "dispatchEvent(new Event('online'))" /tmp/realtime-1s.js || good=0
             if [ "$good" = 1 ]; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-          for f in /tmp/sw.js /tmp/realtime-1s.js /tmp/weather-live.js /tmp/human-final.js /tmp/flood-live-fast.js /tmp/road-live-fast.js /tmp/district-live-v4.js /tmp/maprt.js /tmp/sw24.js; do node --check "$f"; done
+          for f in /tmp/sw.js /tmp/realtime-1s.js /tmp/weather-live.js /tmp/human-final-v2.js /tmp/flood-live-v2.js /tmp/road-live-v3.js /tmp/district-live-v4.js /tmp/maprt.js /tmp/sw24.js; do node --check "$f"; done
 
       - name: Browser network-stability check
         env:
@@ -45,15 +45,11 @@ jobs:
           V24: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/
         run: |
           set -euo pipefail
-          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
-          test -n "$CHROME"
-          mkdir -p /tmp/fsstable && cd /tmp/fsstable
-          npm init -y >/dev/null 2>&1
-          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"; test -n "$CHROME"
+          mkdir -p /tmp/fsstable && cd /tmp/fsstable; npm init -y >/dev/null 2>&1; npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
           V25="$V25" V24="$V24" CHROME="$CHROME" node <<'JS'
-          const puppeteer=require('puppeteer-core');const wait=ms=>new Promise(r=>setTimeout(r,ms));
+          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();p.setDefaultTimeout(60000);const req=[];p.on('request',r=>req.push({u:r.url(),t:Date.now()}));
-            await p.goto(process.env.V25+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsFloodState&&window.__fsRoadState&&window.__fsDistrictState,{timeout:45000});req.length=0;const s=Date.now();await wait(10500);const api=req.filter(x=>x.t>=s&&x.u.includes('bipadportal.gov.np/api/v1/'));if(api.length>70)throw Error('V25 network storm '+api.length);const st=await p.evaluate(()=>({f:window.__fsFloodState?.checkedAt,r:window.__fsRoadState?.checkedAt,d:window.__fsDistrictState?.checkedAt}));if(!st.f||!st.r||!st.d)throw Error('live states missing '+JSON.stringify(st));
-            req.length=0;await p.goto(process.env.V24+'?mapOnly=1&v25=1&ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('.leaflet-container',{timeout:60000});await wait(7000);const ms=Date.now();req.length=0;await wait(5000);const mapApi=req.filter(x=>x.t>=ms&&x.u.includes('bipadportal.gov.np/api/v1/'));if(mapApi.length>20)throw Error('Map network storm '+mapApi.length);const map=await p.evaluate(()=>{const e=document.querySelector('.leaflet-container');return{pointer:e?getComputedStyle(e).pointerEvents:null,receiver:document.getElementById('feedState')?.dataset.receiver||''}});if(map.pointer==='none')throw Error('map interaction disabled '+JSON.stringify(map));console.log('PASS controlled realtime cadence',{v25Api:api.length,mapApi:mapApi.length,st,map});await b.close();
-          })().catch(e=>{console.error(e);process.exit(3)});
+            await p.goto(process.env.V25+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsFloodState?.owner==='flood-v2'&&window.__fsRoadState?.owner==='road-v3'&&window.__fsDistrictState,{timeout:45000});req.length=0;const s=Date.now();await wait(10500);const api=req.filter(x=>x.t>=s&&x.u.includes('bipadportal.gov.np/api/v1/'));if(api.length>70)throw Error('V25 network storm '+api.length);const st=await p.evaluate(()=>({f:window.__fsFloodState?.checkedAt,r:window.__fsRoadState?.checkedAt,d:window.__fsDistrictState?.checkedAt}));if(!st.f||!st.r||!st.d)throw Error('live states missing '+JSON.stringify(st));
+            req.length=0;await p.goto(process.env.V24+'?mapOnly=1&v25=1&ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('.leaflet-container',{timeout:60000});await wait(7000);const ms=Date.now();req.length=0;await wait(5000);const mapApi=req.filter(x=>x.t>=ms&&x.u.includes('bipadportal.gov.np/api/v1/'));if(mapApi.length>20)throw Error('Map network storm '+mapApi.length);const map=await p.evaluate(()=>{const e=document.querySelector('.leaflet-container');return{pointer:e?getComputedStyle(e).pointerEvents:null}});if(map.pointer==='none')throw Error('map interaction disabled '+JSON.stringify(map));console.log('PASS controlled realtime cadence',{v25Api:api.length,mapApi:mapApi.length,st,map});await b.close()})().catch(e=>{console.error(e);process.exit(3)});
           JS

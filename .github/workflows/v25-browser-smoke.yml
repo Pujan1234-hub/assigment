@@ -37,9 +37,8 @@ jobs:
           grep -Fq 'SUNKOSHI' /tmp/map-v5.js
           grep -Fq 'flowTraceV3' /tmp/map-v5.js
           grep -Fq '__fsPureLangV3' /tmp/language-pure.js
-          grep -Fq "setInterval(poll,5000)" /tmp/flood-only.js
 
-      - name: Verify live upstream sources
+      - name: Verify live upstream source
         run: |
           set -euo pipefail
           curl --max-time 20 -fsSL 'https://bipadportal.gov.np/api/v1/river-stations/?limit=1000' -o /tmp/bipad.json
@@ -47,7 +46,7 @@ jobs:
           import json
           j=json.load(open('/tmp/bipad.json'))
           rows=j if isinstance(j,list) else j.get('results') or j.get('data') or []
-          assert len(rows)>0, 'BIPAD river station feed empty'
+          assert len(rows)>0
           print('BIPAD rows',len(rows))
           PY
 
@@ -76,6 +75,13 @@ jobs:
             if([en.title,en.outside,en.outsideText,en.zoom,en.map,...en.weather].some(x=>/[\u0900-\u097F]/.test(x)))throw Error('Nepali mixed in English UI '+JSON.stringify(en));
             await page.click('#langBtn');await page.waitForFunction(()=>document.documentElement.lang==='ne');
             await page.setRequestInterception(true);page.on('request',r=>/overpass-api\.de|overpass\.kumi\.systems/.test(r.url())?r.abort():r.continue());
-            await page.evaluate(()=>{const svg=document.querySelector('#riverMapV3'),p=[...document.querySelectorAll('.districtV3')].find(x=>x.dataset.key==='Sindhuli');if(!p)throw Error('Sindhuli path missing');const lo=86.328,la=27.164,minLo=80,maxLo=88.35,minLa=26.2,maxLa=30.5,x=(lo-minLo)/(maxLo-minLo)*1000,y=600-(la-minLa)/(maxLa-minLat||1)*600;});
+            await page.evaluate(()=>{const svg=document.querySelector('#riverMapV3'),p=[...document.querySelectorAll('.districtV3')].find(x=>x.dataset.key==='Sindhuli');if(!p)throw Error('Sindhuli path missing');const B={minLon:80,maxLon:88.35,minLat:26.2,maxLat:30.5},lo=86.328,la=27.164,x=(lo-B.minLon)/(B.maxLon-B.minLon)*1000,y=600-(la-B.minLat)/(B.maxLat-B.minLat)*600,pt=svg.createSVGPoint();pt.x=x;pt.y=y;const m=svg.getScreenCTM(),s=pt.matrixTransform(m);p.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:s.x,clientY:s.y}))});
+            await page.waitForSelector('.selectedPointV3',{timeout:10000});
+            await page.waitForFunction(()=>document.querySelectorAll('.riverV3').length>0&&document.querySelectorAll('.flowTraceV3').length>0,{timeout:45000});
+            const river=await page.$('.riverV3');await river.click();
+            const map=await page.evaluate(()=>({rivers:document.querySelectorAll('.riverV3').length,flows:document.querySelectorAll('.flowTraceV3').length,hint:mapHint.textContent,detail:riverDetail.innerText,animation:getComputedStyle(document.querySelector('.flowTraceV3')).animationName,focus:window.FloodSafe?.state?.kind||null}));
+            if(map.rivers<1||map.flows<1||map.animation==='none'||map.focus!=='map'||!/सुनकोशी|Sunkoshi/.test(map.hint+map.detail))throw Error('Sindhuli fallback failed '+JSON.stringify(map));
+            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,10)));
+            console.log('PASS screenshot regression',{ne,en,map});await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

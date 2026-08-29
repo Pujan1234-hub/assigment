@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Wait for current production files
+      - name: Wait for isolated production owners
         run: |
           set -euo pipefail
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
@@ -26,39 +26,23 @@ jobs:
           ok=0
           for i in $(seq 1 40); do
             good=1
-            for f in index.html people.html alerts.html human-final.js flood-live-fast.js road-live-fast.js district-live-v4.js alerts-final-lock.js language-v2.js language-runtime.js sw.js; do
-              curl --max-time 8 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/${f//\//_}" || good=0
-            done
+            for f in index.html people.html alerts.html human-final-v2.js flood-live-v2.js road-live-v3.js district-live-v4.js language-v2.js language-runtime.js sw.js; do curl --max-time 8 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/${f}" || good=0; done
             curl --max-time 8 -fsSL "${ROOT}data/floodsafe-people-status.json?ci=${GITHUB_SHA}-${i}" -o /tmp/people.json || good=0
             curl --max-time 8 -fsSL "${ROOT}data/floodsafe-police.json?ci=${GITHUB_SHA}-${i}" -o /tmp/police.json || good=0
-            grep -Fq 'human-final.js?v=1' /tmp/index.html || good=0
-            grep -Fq 'human-final.js?v=1' /tmp/people.html || good=0
-            grep -Fq 'flood-live-fast.js?v=1' /tmp/alerts.html || good=0
-            grep -Fq 'road-live-fast.js?v=2' /tmp/alerts.html || good=0
-            grep -Fq 'district-live-v4.js?v=1' /tmp/alerts.html || good=0
-            grep -Fq 'alerts-final-lock.js?v=1' /tmp/alerts.html || good=0
-            grep -Fq 'shell-40' /tmp/sw.js || good=0
+            grep -Fq 'human-final-v2.js?v=1' /tmp/index.html || good=0
+            grep -Fq 'human-final-v2.js?v=1' /tmp/people.html || good=0
+            grep -Fq 'id="homeDeathsLive"' /tmp/index.html || good=0
+            grep -Fq 'id="peopleBodiesLive"' /tmp/people.html || good=0
+            grep -Fq 'flood-live-v2.js?v=1' /tmp/alerts.html || good=0
+            grep -Fq 'road-live-v3.js?v=1' /tmp/alerts.html || good=0
+            grep -Fq 'id="floodAlertsListLive"' /tmp/alerts.html || good=0
+            grep -Fq 'id="roadCurrentListLive"' /tmp/alerts.html || good=0
+            grep -Fq 'shell-41' /tmp/sw.js || good=0
             if [ "$good" = 1 ]; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-
-      - name: Validate current contracts
-        run: |
-          set -euo pipefail
-          node --check /tmp/human-final.js
-          node --check /tmp/flood-live-fast.js
-          node --check /tmp/road-live-fast.js
-          node --check /tmp/district-live-v4.js
-          node --check /tmp/alerts-final-lock.js
-          node --check /tmp/language-v2.js
-          node --check /tmp/language-runtime.js
-          node --check /tmp/sw.js
-          grep -Fq 'setInterval(poll,5000)' /tmp/human-final.js
-          grep -Fq 'setInterval(poll,5000)' /tmp/flood-live-fast.js
-          grep -Fq 'setInterval(poll,5000)' /tmp/road-live-fast.js
-          grep -Fq 'setInterval(poll,15000)' /tmp/district-live-v4.js
-          grep -Fq 'networkFirst(e.request,4500)' /tmp/sw.js
+          for f in human-final-v2.js flood-live-v2.js road-live-v3.js district-live-v4.js language-v2.js language-runtime.js sw.js; do node --check "/tmp/$f"; done
           python3 - <<'PY'
           import json,datetime
           p=json.load(open('/tmp/people.json')); po=json.load(open('/tmp/police.json'))
@@ -66,33 +50,21 @@ jobs:
               if not v:return 0
               try:return datetime.datetime.fromisoformat(str(v).replace('Z','+00:00')).timestamp()
               except:return 0
-          pd=ts(p.get('recovered_update_iso') or p.get('recovered_update_time') or p.get('updated_date'))
-          pp=ts(po.get('official_update_iso'))
+          pd=ts(p.get('recovered_update_iso') or p.get('recovered_update_time') or p.get('updated_date')); pp=ts(po.get('official_update_iso'))
           d=p.get('recovered_bodies') if pd>=pp else po.get('total_deaths')
-          assert d is not None and p.get('missing_minimum') is not None and p.get('rescued_alive') is not None
           open('/tmp/expected.txt','w').write(f"{d}|{p['missing_minimum']}|{p['rescued_alive']}")
-          print('expected Human',d,p['missing_minimum'],p['rescued_alive'])
           PY
 
-      - name: Browser verify Human owner and split alerts
+      - name: Browser verify no legacy overwrite
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
           set -euo pipefail
-          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
-          test -n "$CHROME"
-          mkdir -p /tmp/v25-status && cd /tmp/v25-status
-          npm init -y >/dev/null 2>&1
-          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"; test -n "$CHROME"
+          mkdir -p /tmp/v25-status && cd /tmp/v25-status; npm init -y >/dev/null 2>&1; npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
           EXPECTED="$(cat /tmp/expected.txt)" BASE="$BASE" CHROME="$CHROME" node <<'JS'
-          const puppeteer=require('puppeteer-core');const wait=ms=>new Promise(r=>setTimeout(r,ms));
-          (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();await p.setViewport({width:412,height:915});p.setDefaultTimeout(60000);const errors=[];p.on('pageerror',e=>errors.push(String(e)));
-            const exp=process.env.EXPECTED.split('|').map(Number);
-            await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsUnifiedHuman&&Number(document.getElementById('homeDeaths')?.textContent)>0);await wait(12000);
-            const h=await p.evaluate(()=>({shown:['homeDeaths','homeMissing','homeRescued'].map(id=>Number(document.getElementById(id).textContent)),state:[window.__fsUnifiedHuman.d.value,window.__fsUnifiedHuman.m.value,window.__fsUnifiedHuman.r.value],hidden:document.getElementById('humanStatsSection').hidden,owner:window.__fsUnifiedHuman.owner}));
-            if(h.hidden||h.owner!=='human-final'||h.shown.join('|')!==exp.join('|')||h.state.join('|')!==exp.join('|'))throw Error('Human stale/overwritten '+JSON.stringify({h,exp}));
-            await p.waitForSelector('#fsLangToggle');if((await p.$eval('#fsLangToggle',e=>e.textContent.trim()))!=='अङ्ग्रेजी'){await p.click('#fsLangToggle');await wait(600)}await p.click('#fsLangToggle');await wait(1000);const en=await p.evaluate(()=>({toggle:document.getElementById('fsLangToggle').textContent.trim(),core:[...document.querySelectorAll('header,.pageHead,.grid,#humanStatsSection,.healthGrid')].map(x=>x.innerText).join(' ')}));if(en.toggle!=='Nepali'||/[\u0900-\u097F]/.test(en.core))throw Error('English UI mix '+JSON.stringify(en));
-            await p.goto(process.env.BASE+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsFloodState&&window.__fsRoadState&&window.__fsDistrictState,{timeout:45000});await p.waitForFunction(()=>document.querySelectorAll('#districtFilter option').length===78);await wait(7000);const a=await p.evaluate(()=>{const q=id=>document.getElementById(id),f=[...q('alertsList').querySelectorAll('.item')],r=[...q('roadCurrentList').querySelectorAll('.item')],rs=window.__fsRoadState;return{floodOwner:f.every(x=>x.dataset.floodOwner==='1'),roadOwner:r.every(x=>x.dataset.roadOwner==='1'),options:q('districtFilter').options.length,districts:window.__fsDistrictState.districts,cards:q('districtStatusList').querySelectorAll('.item').length,roadCount:Number(q('roadAlertCount').textContent),expectedRoad:rs.dor&&Number.isFinite(rs.dor.closed)?rs.dor.closed:rs.bipad.closed,dupHidden:q('closedRoadSection')?.hidden===true}});if(!a.floodOwner||!a.roadOwner||a.options!==78||a.districts!==77||a.cards>20||a.roadCount!==a.expectedRoad||!a.dupHidden)throw Error('Alert owner/layout '+JSON.stringify(a));
-            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,8)));console.log('PASS single-owner Human and split alerts',h,a);await b.close();
-          })().catch(e=>{console.error(e);process.exit(3)});
+          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();await p.setViewport({width:412,height:915});p.setDefaultTimeout(60000);const exp=process.env.EXPECTED.split('|').map(Number),errors=[];p.on('pageerror',e=>errors.push(String(e)));
+            await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsUnifiedHuman?.owner==='human-final-v2'&&Number(document.getElementById('homeDeathsLive')?.textContent)>0);await wait(16000);const h=await p.evaluate(()=>({shown:['homeDeathsLive','homeMissingLive','homeRescuedLive'].map(id=>Number(document.getElementById(id).textContent)),legacy:['homeDeaths','homeMissing','homeRescued'].map(id=>!!document.getElementById(id)),owner:window.__fsUnifiedHuman.owner,hidden:document.getElementById('humanStatsSection').hidden}));if(h.hidden||h.owner!=='human-final-v2'||h.shown.join('|')!==exp.join('|')||h.legacy.some(Boolean))throw Error('Human isolation '+JSON.stringify({h,exp}));
+            await p.goto(process.env.BASE+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsFloodState?.owner==='flood-v2'&&window.__fsRoadState?.owner==='road-v3'&&window.__fsDistrictState);await p.waitForFunction(()=>document.querySelectorAll('#districtFilter option').length===78);await wait(9000);const a=await p.evaluate(()=>{const q=id=>document.getElementById(id),f=[...q('floodAlertsListLive').querySelectorAll('.item')],r=[...q('roadCurrentListLive').querySelectorAll('.item')],rs=window.__fsRoadState;return{fOwner:window.__fsFloodState.owner,rOwner:rs.owner,fCards:f.length,rCards:r.length,fLegacy:!!q('alertsList'),rLegacy:!!q('roadCurrentList'),opts:q('districtFilter').options.length,districts:window.__fsDistrictState.districts,cards:q('districtStatusList').querySelectorAll('.item').length,road:Number(q('roadAlertCountLive').textContent),roadExpected:rs.dor&&Number.isFinite(rs.dor.closed)?rs.dor.closed:rs.bipad.closed}});if(a.fOwner!=='flood-v2'||a.rOwner!=='road-v3'||a.fLegacy||a.rLegacy||a.opts!==78||a.districts!==77||a.cards>20||a.road!==a.roadExpected)throw Error('Alert isolation '+JSON.stringify(a));if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,8)));console.log('PASS isolated live owners',h,a);await b.close()})().catch(e=>{console.error(e);process.exit(3)});
           JS

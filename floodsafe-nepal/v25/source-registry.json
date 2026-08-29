@@ -1,0 +1,13 @@
+{
+  "updated_at":"2026-08-29T13:50:00Z",
+  "policy":"Never label a value real-time unless the upstream source itself publishes a fresh observation. Preserve source and timestamp for every metric.",
+  "sources":[
+    {"id":"dhm","name":"Department of Hydrology and Meteorology","type":"official_primary","role":["river_watch","realtime_streamflow","rainfall_watch","hydrology_warning","weather_warning","flood_bulletin"],"url":"https://dhm.gov.np/","freshness":"upstream"},
+    {"id":"bipad","name":"BIPAD / NDRRMA","type":"official_primary","role":["river_api","river_stations","rain_stations","streamflow","disaster_incidents","situation_reports"],"url":"https://bipadportal.gov.np/","freshness":"upstream"},
+    {"id":"dor","name":"Department of Roads NAVIGATE","type":"official_primary","role":["road_closure","road_incident","road_advisory","bridge_closure","routing"],"url":"https://navigate.dor.gov.np/","freshness":"upstream"},
+    {"id":"nepal-police","name":"Nepal Police","type":"official_incident","role":["fatalities","rescue","search","traffic_and_disaster_incidents"],"url":"https://www.nepalpolice.gov.np/","freshness":"publication"},
+    {"id":"moha","name":"Ministry of Home Affairs","type":"official_incident","role":["national_emergency_notice","district_emergency_notice","coordination"],"url":"https://moha.gov.np/","freshness":"publication"},
+    {"id":"rimes","name":"RIMES Forecast via DHM","type":"official_support","role":["hydrological_forecast","flood_guidance"],"url":"https://dhm.gov.np/hydrology/current-forecast","freshness":"forecast_cycle"},
+    {"id":"glofas","name":"GloFAS Forecast via DHM","type":"forecast_support","role":["regional_flood_forecast","upstream_forecast"],"url":"https://dhm.gov.np/hydrology/current-forecast","freshness":"forecast_cycle"}
+  ]
+}

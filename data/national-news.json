@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-30T01:36:11.322787+05:45",
-  "updated_at_npt": "30 Aug 01:36 NPT",
+  "generated_at": "2026-08-30T03:52:55.321634+05:45",
+  "updated_at_npt": "30 Aug 03:52 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -9,41 +9,13 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588447/pokhara-metropolitan-city-launches-relief-collection-campaign",
       "published_at": "2026-08-30T01:27:31+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "रसुवाका बाढी पीडितलाई पुष्पलाल स्मारक समितिद्वारा ५१ हजार सहयोग",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588439/pushpalal-memorial-committee-provides-rs-51000-assistance-to-flood-victims-in-rasuwa",
       "published_at": "2026-08-29T22:27:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकाेशी बाढी : पीडितलाई सहारा सहकारी गर्‍यो १५ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588429/bhotekoshi-flood-sahara-cooperative-provides-rs-15-million-assistance-to-victims",
-      "published_at": "2026-08-29T21:10:53+05:45",
-      "flash": false
-    },
-    {
-      "title": "कृषि तथा वन विज्ञान विश्वविद्यालयले विपद् उद्धार कोषमा रकम जम्मा गर्ने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588427/university-of-agriculture-and-forestry-to-donate-money-to-disaster-relief-fund",
-      "published_at": "2026-08-29T21:04:37+05:45",
-      "flash": false
-    },
-    {
-      "title": "स्वास्थ्यकर्मीसहित १० जना सम्पर्कविहीन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588423/10-people-including-health-workers-uncontacted",
-      "published_at": "2026-08-29T20:55:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "कोशी प्रदेशका १४५ नागरिक अझै सम्पर्कविहीन, २१ जना आए सम्पर्कमा, एकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588413/145-citizens-of-koshi-province-still-uncontacted-21-people-have-come-into-contact-one-has-died",
-      "published_at": "2026-08-29T19:46:49+05:45",
       "flash": false
     }
   ],
@@ -63,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 6
+      "flash": 0,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,

@@ -91,7 +91,6 @@ jobs:
             await page.waitForFunction(()=>document.querySelector('#stationCount')?.textContent!=='—',{timeout:30000}).catch(()=>{});
             const newsAges=await page.$$eval('#liveNews .newsItem .meta',els=>els.map(e=>e.textContent));
             if(newsAges.some(t=>/घण्टा|दिन|hour|day/i.test(t))) throw Error('old news rendered '+JSON.stringify(newsAges));
-            if(document.querySelector){/* keep parser happy */}
             await page.$eval('.districtV3',el=>{const r=el.getBoundingClientRect();el.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2}));});
             await page.waitForSelector('.selectedPointV3',{timeout:10000});
             await page.waitForFunction(()=>document.querySelectorAll('.riverV3').length>0,{timeout:45000});

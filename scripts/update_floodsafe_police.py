@@ -103,6 +103,15 @@ def parse_bulletin(url:str,raw:str)->dict:
 def sync_people(data:dict)->bool:
     if not PEOPLE_OUT.exists(): return False
     people=json.loads(PEOPLE_OUT.read_text(encoding="utf-8")); changed=False
+    current_time=str(people.get("recovered_update_iso") or people.get("recovered_update_time") or "")
+    incoming_time=str(data.get("official_update_iso") or "")
+    if current_time and incoming_time:
+        try:
+            if datetime.fromisoformat(incoming_time) < datetime.fromisoformat(current_time):
+                print("Human Status has a newer death metric; not overwriting it with older Police bulletin")
+                return False
+        except Exception:
+            pass
     if people.get("recovered_bodies")!=data["total_deaths"]:
         people["recovered_bodies"]=data["total_deaths"]; changed=True
     fields={"recovered_source":"Nepal Police","recovered_source_url":data["source_url"],"recovered_update_time":data["official_update_time"],"recovered_update_iso":data["official_update_iso"],"updated_date":data["official_update_iso"][:10]}
@@ -115,7 +124,9 @@ def main()->int:
     old=json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
     url=latest_bulletin_url(fetch(HOME)); data=parse_bulletin(url,fetch(url))
     old_total=old.get("total_deaths")
-    if isinstance(old_total,int) and data["total_deaths"]<old_total: raise RuntimeError(f"Refusing rollback from {old_total} to {data['total_deaths']}")
+    if isinstance(old_total,int) and data["total_deaths"]<old_total:
+        print(f"Nepal Police homepage currently lags saved verified-reported snapshot ({data['total_deaths']} < {old_total}); keeping newer snapshot without rollback")
+        return 0
     police_changed=old.get("source_url")!=data["source_url"] or old_total!=data["total_deaths"] or old.get("official_update_time")!=data["official_update_time"]
     if police_changed:
         OUT.parent.mkdir(parents=True,exist_ok=True); OUT.write_text(json.dumps(data,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")

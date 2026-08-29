@@ -1,28 +1,49 @@
 {
-  "generated_at": "2026-08-29T19:17:10.259296+05:45",
-  "updated_at_npt": "29 Aug 19:17 NPT",
+  "generated_at": "2026-08-29T23:06:52.575077+05:45",
+  "updated_at_npt": "29 Aug 23:06 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "रसुवाका बाढी पीडितलाई पुष्पलाल स्मारक समितिद्वारा ५१ हजार सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588439/pushpalal-memorial-committee-provides-rs-51000-assistance-to-flood-victims-in-rasuwa",
+      "published_at": "2026-08-29T22:27:05+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकाेशी बाढी : पीडितलाई सहारा सहकारी गर्‍यो १५ लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588429/bhotekoshi-flood-sahara-cooperative-provides-rs-15-million-assistance-to-victims",
+      "published_at": "2026-08-29T21:10:53+05:45",
+      "flash": false
+    },
+    {
+      "title": "कृषि तथा वन विज्ञान विश्वविद्यालयले विपद् उद्धार कोषमा रकम जम्मा गर्ने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588427/university-of-agriculture-and-forestry-to-donate-money-to-disaster-relief-fund",
+      "published_at": "2026-08-29T21:04:37+05:45",
+      "flash": false
+    },
+    {
+      "title": "स्वास्थ्यकर्मीसहित १० जना सम्पर्कविहीन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588423/10-people-including-health-workers-uncontacted",
+      "published_at": "2026-08-29T20:55:35+05:45",
+      "flash": false
+    },
+    {
+      "title": "कोशी प्रदेशका १४५ नागरिक अझै सम्पर्कविहीन, २१ जना आए सम्पर्कमा, एकको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588413/145-citizens-of-koshi-province-still-uncontacted-21-people-have-come-into-contact-one-has-died",
+      "published_at": "2026-08-29T19:46:49+05:45",
+      "flash": false
+    },
     {
       "title": "रौतहटमा कृषि फार्मको गोठमा आगलागी: ७ चौपायाको मृत्यु, ९ लाख बराबरको क्षति",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588395/fire-in-farm-shed-in-rautahat-7-livestock-killed-damage-worth-rs-900000",
       "published_at": "2026-08-29T17:17:54+05:45",
-      "flash": false
-    },
-    {
-      "title": "जेनजी आन्दोलनका क्रममा कारागारबाट फरार जबरजस्ती करणीका दोषी पुनः पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588380/rape-convict-who-escaped-from-prison-during-genji-movement-re-arrested",
-      "published_at": "2026-08-29T16:41:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "‘नदी किनारमा शव गन्हाउन थालिसके, उद्धार र राहत ढिला भइसक्यो’",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588361/the-bodies-on-the-riverbank-have-started-to-stink-rescue-and-relief-are-too-late",
-      "published_at": "2026-08-29T15:02:41+05:45",
       "flash": false
     }
   ],
@@ -42,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 3
+      "flash": 1,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,

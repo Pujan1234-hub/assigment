@@ -22,23 +22,35 @@ jobs:
           set -euo pipefail
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
           ok=0
-          for i in $(seq 1 40); do
+          for i in $(seq 1 50); do
             good=1
-            for f in index.html alerts.html people.html weather.html news.html sources.html map.html human-final-v2.js flood-live-v2.js road-live-v3.js national-news.js news-stability.js language-v2.js language-runtime.js disaster-monitor.js sw.js; do curl --max-time 8 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/${f}" || good=0; done
-            grep -Fq 'human-final-v2.js?v=1' /tmp/index.html || good=0
-            grep -Fq 'human-final-v2.js?v=1' /tmp/people.html || good=0
-            grep -Fq 'flood-live-v2.js?v=1' /tmp/alerts.html || good=0
-            grep -Fq 'road-live-v3.js?v=1' /tmp/alerts.html || good=0
-            grep -Fq 'language-runtime.js?v=1' /tmp/index.html || good=0
-            grep -Fq 'shell-41' /tmp/sw.js || good=0
+            for f in index.html alerts.html flood.html roads.html people.html weather.html news.html sources.html map.html human-final-v2.js flood-live-v2.js road-live-v3.js district-live-v4.js national-news.js language-v2.js language-runtime.js disaster-monitor.js realtime-1s.js sw-register.js sw.js; do curl --max-time 8 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/${f}" || good=0; done
+            grep -Fq 'human-final-v2.js?v=3' /tmp/index.html || good=0
+            grep -Fq 'national-news.js?v=4' /tmp/index.html || good=0
+            grep -Fq 'href="./flood.html"' /tmp/alerts.html || good=0
+            grep -Fq 'href="./roads.html"' /tmp/alerts.html || good=0
+            grep -Fq 'floodAlertsListLive' /tmp/flood.html || good=0
+            grep -Fq 'roadCurrentListLive' /tmp/roads.html || good=0
+            grep -Fq 'districtStatusList' /tmp/roads.html || good=0
+            grep -Fq 'shell-43' /tmp/sw.js || good=0
+            grep -Fq './sw-register.js' /tmp/sw.js || good=0
             if [ "$good" = 1 ]; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-          for f in /tmp/human-final-v2.js /tmp/flood-live-v2.js /tmp/road-live-v3.js /tmp/national-news.js /tmp/news-stability.js /tmp/language-v2.js /tmp/language-runtime.js /tmp/disaster-monitor.js /tmp/sw.js; do node --check "$f"; done
-          grep -Fq 'FLASH_MS=60*60*1000' /tmp/national-news.js
-          grep -Fq 'RECENT_MS=6*60*60*1000' /tmp/national-news.js
-          grep -Fq 'seen.has(keyOf(x))' /tmp/national-news.js
+          ! grep -Fq 'roadCurrentListLive' /tmp/alerts.html
+          ! grep -Fq 'floodAlertsListLive' /tmp/alerts.html
+          ! grep -Fq 'districtStatusList' /tmp/alerts.html
+          ! grep -Fq 'news-stability.js' /tmp/index.html
+          ! grep -Fq 'news-stability.js' /tmp/news.html
+          for f in /tmp/human-final-v2.js /tmp/flood-live-v2.js /tmp/road-live-v3.js /tmp/district-live-v4.js /tmp/national-news.js /tmp/language-v2.js /tmp/language-runtime.js /tmp/disaster-monitor.js /tmp/realtime-1s.js /tmp/sw-register.js /tmp/sw.js; do node --check "$f"; done
+          grep -Fq '__fsHumanFinalV3' /tmp/human-final-v2.js
+          grep -Fq '__fsFloodLiveV3' /tmp/flood-live-v2.js
+          grep -Fq '__fsRoadLiveV4' /tmp/road-live-v3.js
+          grep -Fq '__fsDistrictLiveV5' /tmp/district-live-v4.js
+          grep -Fq '__fsNationalNewsV4' /tmp/national-news.js
+          grep -Fq '__fsLanguageV3' /tmp/language-v2.js
+          grep -Fq '__fsRealtime1sV4' /tmp/realtime-1s.js
 
       - name: Browser pages
         env:
@@ -51,11 +63,16 @@ jobs:
           BASE="$BASE" MAP="$MAP" CHROME="$CHROME" node <<'JS'
           const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();p.setDefaultTimeout(60000);const errors=[];p.on('pageerror',e=>errors.push(String(e)));
-            await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('.todayHero');await p.waitForFunction(()=>window.__fsUnifiedHuman?.owner==='human-final-v2'&&document.getElementById('homeDeathsLive')?.textContent!=='—');const home=await p.evaluate(()=>({map:document.querySelector('.navCard.map')?.getAttribute('href'),human:document.getElementById('humanStatsSection')?.hidden,owner:window.__fsUnifiedHuman?.owner,legacy:!!document.getElementById('homeDeaths')}));if(home.map!=='./map.html'||home.human||home.owner!=='human-final-v2'||home.legacy)throw Error('home '+JSON.stringify(home));
-            await p.goto(process.env.BASE+'news.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await wait(7000);const news=await p.evaluate(()=>({cards:[...document.querySelectorAll('#newsList .item h4')].map(x=>x.textContent.trim()),text:document.getElementById('newsList')?.textContent||''}));if(new Set(news.cards).size!==news.cards.length)throw Error('duplicate news '+JSON.stringify(news));
-            await p.goto(process.env.BASE+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsFloodState?.owner==='flood-v2'&&window.__fsRoadState?.owner==='road-v3');const al=await p.evaluate(()=>({f:!!document.getElementById('floodAlertsListLive'),r:!!document.getElementById('roadCurrentListLive'),d:!!document.getElementById('districtStatusList'),legacy:!!document.getElementById('alertsList')||!!document.getElementById('roadCurrentList'),map:document.querySelector('.footerNav a:nth-child(2)')?.getAttribute('href')}));if(!al.f||!al.r||!al.d||al.legacy||al.map!=='./map.html')throw Error('alerts '+JSON.stringify(al));
-            await p.goto(process.env.BASE+'weather.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#gpsWeatherBtn');if(!(await p.$('#wxTemp')))throw Error('weather UI missing');
-            await p.goto(process.env.BASE+'sources.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#fsLangToggle');if(!(await p.$('.pageHead h2')))throw Error('sources missing');
+            await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#fsLangToggle');await p.waitForFunction(()=>window.__fsUnifiedHuman?.owner==='human-final-v3'&&document.getElementById('homeDeathsLive')?.textContent!=='—');
+            const human=await p.evaluate(async()=>{const j=await fetch('../../data/floodsafe-people-status.json?ci='+Date.now(),{cache:'no-store'}).then(r=>r.json());return{dom:[+document.getElementById('homeDeathsLive').textContent,+document.getElementById('homeMissingLive').textContent,+document.getElementById('homeRescuedLive').textContent],src:[+j.recovered_bodies,+j.missing_minimum,+j.rescued_alive],owner:window.__fsUnifiedHuman?.owner}});if(JSON.stringify(human.dom)!==JSON.stringify(human.src))throw Error('human mismatch '+JSON.stringify(human));
+            const before=await p.$eval('.pageHead h2',e=>e.textContent.trim());await p.click('#fsLangToggle');await p.waitForFunction(()=>document.querySelector('.pageHead h2')?.textContent.trim()==='Key information');const en=await p.$eval('.pageHead h2',e=>e.textContent.trim());await p.click('#fsLangToggle');await p.waitForFunction(()=>document.querySelector('.pageHead h2')?.textContent.trim()==='मुख्य जानकारी');if(before!=='मुख्य जानकारी'||en!=='Key information')throw Error('language toggle failed '+JSON.stringify({before,en}));
+            await p.goto(process.env.BASE+'news.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#fsLangToggle');await wait(6500);const news=await p.evaluate(async()=>{const local=await fetch('../../data/national-news.json?ci='+Date.now(),{cache:'no-store'}).then(r=>r.json()).catch(()=>({items:[]}));const now=Date.now(),recent=(local.items||[]).filter(x=>{const t=+new Date(x.published_at||x.published||x.date||0);return t&&now-t<6*3600e3});return{cards:[...document.querySelectorAll('#newsList .item h4')].map(x=>x.textContent.trim()),recent:recent.length,state:window.__fsNewsState}});if(news.recent>0&&news.cards.length===0)throw Error('news empty with local recent feed '+JSON.stringify(news));if(new Set(news.cards).size!==news.cards.length)throw Error('duplicate news '+JSON.stringify(news));
+            await p.goto(process.env.BASE+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#fsLangToggle');const hub=await p.evaluate(()=>({f:document.querySelector('a[href="./flood.html"]')?.textContent,r:document.querySelector('a[href="./roads.html"]')?.textContent,details:!!document.getElementById('floodAlertsListLive')||!!document.getElementById('roadCurrentListLive')||!!document.getElementById('districtStatusList'),height:document.documentElement.scrollHeight}));if(!hub.f||!hub.r||hub.details||hub.height>2600)throw Error('alerts hub '+JSON.stringify(hub));
+            await p.goto(process.env.BASE+'flood.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsFloodState?.owner==='flood-v3');const flood=await p.evaluate(()=>({owner:window.__fsFloodState?.owner,list:!!document.getElementById('floodAlertsListLive'),rapid:!!document.getElementById('rapidSignalList'),lang:!!document.getElementById('fsLangToggle')}));if(flood.owner!=='flood-v3'||!flood.list||!flood.rapid||!flood.lang)throw Error('flood '+JSON.stringify(flood));
+            await p.goto(process.env.BASE+'roads.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsRoadState?.owner==='road-v4'&&window.__fsDistrictState?.owner==='district-v5');const road=await p.evaluate(()=>{const names=[...document.querySelectorAll('#roadCurrentListLive .item h4')].map(x=>x.textContent.trim().toLowerCase()),districts=document.querySelectorAll('#districtStatusList .item').length;return{owner:window.__fsRoadState?.owner,districtOwner:window.__fsDistrictState?.owner,names,districts}});if(new Set(road.names).size!==road.names.length||road.districts>12)throw Error('road duplicate/long '+JSON.stringify(road));
+            await p.goto(process.env.BASE+'people.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsUnifiedHuman?.owner==='human-final-v3');if(!(await p.$('#fsLangToggle')))throw Error('people language toggle missing');
+            await p.goto(process.env.BASE+'weather.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#fsLangToggle');if(!(await p.$('#wxTemp')))throw Error('weather UI missing');
+            await p.goto(process.env.BASE+'sources.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#fsLangToggle');
             await p.goto(process.env.MAP+'&ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('.leaflet-container',{timeout:60000});const map=await p.evaluate(()=>{const e=document.querySelector('.leaflet-container'),r=e.getBoundingClientRect();return{pointer:getComputedStyle(e).pointerEvents,w:r.width,h:r.height,back:!!document.querySelector('.fsMapBack')}});if(map.pointer==='none'||map.w<200||map.h<200||!map.back)throw Error('map '+JSON.stringify(map));
-            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,8)));console.log('PASS V25 pages',home,news,al,map);await b.close()})().catch(e=>{console.error(e);process.exit(3)});
+            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,12)));console.log('PASS V25 unified pages',{human,news,hub,flood,road,map});await b.close()})().catch(e=>{console.error(e);process.exit(3)});
           JS

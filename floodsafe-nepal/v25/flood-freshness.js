@@ -1,0 +1,26 @@
+(()=>{'use strict';
+if(window.__fsFloodFreshnessV1)return;window.__fsFloodFreshnessV1=true;
+const $=id=>document.getElementById(id),H24=24*60*60*1000;
+const PEOPLE='../../data/floodsafe-people-status.json';
+const KCHA='https://kchakhabar.com/api/v1/today.json?limit=160';
+const LOCAL='../../data/national-news.json';
+let lastImpact=null,lastImpactFetch=0,lastNewsFetch=0;
+const ts=v=>{const n=+new Date(v||0);return Number.isFinite(n)?n:0};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function get(u,ms=8000){const c=new AbortController(),to=setTimeout(()=>c.abort(),ms);try{const r=await fetch(u+(u.includes('?')?'&':'?')+'_fresh='+Date.now(),{cache:'no-store',credentials:'omit',signal:c.signal,headers:{accept:'application/json'}});if(!r.ok)throw Error(r.status);return await r.json()}finally{clearTimeout(to)}}
+function fmt(t){if(!ts(t))return 'समय उपलब्ध छैन';try{return new Intl.DateTimeFormat('ne-NP',{timeZone:'Asia/Kathmandu',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(t))+' NPT'}catch{return String(t)}}
+function impactApply(j){lastImpact=j;const d=j?.recovered_bodies??j?.total_deaths??null,m=j?.missing_minimum??j?.missing_total??null,r=j?.rescued_alive??j?.rescued_total??null;const et=j?.event_ne||j?.event||'हालको बाढी घटना';const newest=[j?.recovered_update_iso,j?.recovered_update_time,j?.missing_update_time,j?.rescued_update_time,j?.updated_date].map(ts).filter(Boolean).sort((a,b)=>b-a)[0]||0;if($('impactDeaths'))$('impactDeaths').textContent=d??'—';if($('impactMissing'))$('impactMissing').textContent=m??'—';if($('impactRescued'))$('impactRescued').textContent=r??'—';if($('impactEvent'))$('impactEvent').textContent=et;if($('impactFresh'))$('impactFresh').textContent=newest?'Verified data update • '+fmt(newest):'Verified data time उपलब्ध छैन';if($('impactDetail')){const ds=j?.recovered_source||'verified source',ms=j?.missing_source||'verified source',rs=j?.rescued_source||'verified source';$('impactDetail').textContent=`मृत्यु: ${ds} • सम्पर्कविहीन: ${ms} • उद्धार: ${rs}`}}
+async function syncImpact(force=false){if(!force&&Date.now()-lastImpactFetch<12000)return;lastImpactFetch=Date.now();try{impactApply(await get(PEOPLE,7000))}catch{if($('impactFresh'))$('impactFresh').textContent=lastImpact?'पछिल्लो verified snapshot देखाइँदैछ • नयाँ जाँच असफल':'Verified flood impact feed अहिले उपलब्ध छैन'}}
+function arr(j){if(Array.isArray(j))return j;if(Array.isArray(j?.stories))return j.stories;if(Array.isArray(j?.results))return j.results;if(Array.isArray(j?.items))return j.items;if(Array.isArray(j?.data))return j.data;return[]}
+function title(x){return x?.topic_ne||x?.title_ne||x?.title||x?.headline||x?.topic_en||''}
+function summary(x){return x?.summary_ne||x?.summary||x?.description||x?.summary_en||''}
+function when(x){return x?.published_at||x?.publishedAt||x?.updated_at||x?.updatedAt||x?.first_reported||x?.date||x?.created_at||x?.createdAt||null}
+function link(x){return x?.url||x?.link||x?.sources?.[0]?.url||x?.source_url||''}
+function source(x){return x?.sources?.[0]?.publisher||x?.publisher||x?.source||x?.source_name||'Nepal source'}
+function flood(x){const t=(title(x)+' '+summary(x)).toLowerCase();return /(flood|flash flood|river|inundat|overflow|बाढी|डुबान|नदी|खोला|कटान|बहाव)/i.test(t)}
+function strict24(x){const t=ts(when(x)),a=Date.now()-t;return t>0&&a>=-5*60*1000&&a<=H24}
+function renderNews(items){const out=$('floodNews');if(!out)return;const m=new Map();for(const x of items){if(!strict24(x)||!flood(x))continue;const k=title(x).trim().toLowerCase();if(!k||m.has(k))continue;m.set(k,x)}const list=[...m.values()].sort((a,b)=>ts(when(b))-ts(when(a))).slice(0,20);out.innerHTML='';if(!list.length){out.innerHTML='<div class="empty"><strong>पछिल्लो २४ घण्टामा verified flood headline भेटिएन।</strong><br>पुरानो वा publish-time नभएको समाचार जानाजानी देखाइएको छैन।</div>';return}for(const x of list){const e=document.createElement('div');e.className='newsItem';const u=link(x),age=Math.max(0,Math.floor((Date.now()-ts(when(x)))/60000)),ageText=age<60?`${age} मिनेट अघि`:`${Math.floor(age/60)} घण्टा ${age%60} मिनेट अघि`;e.innerHTML=`<h4>${esc(title(x))}</h4><div class="meta">${esc(source(x))} • ${esc(ageText)} • ${esc(fmt(when(x)))}</div>${u?`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">समाचार खोल्नुहोस् ↗</a>`:''}`;out.appendChild(e)}}
+async function syncNews(force=false){if(!force&&Date.now()-lastNewsFetch<12000)return;lastNewsFetch=Date.now();let all=[];try{all=all.concat(arr(await get(KCHA,8000)))}catch{}try{all=all.concat(arr(await get(LOCAL,5000)))}catch{}renderNews(all)}
+function boot(){syncImpact(true);syncNews(true);setInterval(()=>{syncImpact(false);syncNews(false)},5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){syncImpact(true);syncNews(true)}});window.addEventListener('online',()=>{syncImpact(true);syncNews(true)})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();

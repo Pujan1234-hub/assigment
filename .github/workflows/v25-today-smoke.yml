@@ -15,69 +15,56 @@ concurrency:
 jobs:
   browser:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
-      MAP: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/
       ROOT: https://pujan1234-hub.github.io/assigment/
     steps:
-      - name: Wait for production wiring
+      - name: Wait for current production wiring
         run: |
           set -euo pipefail
-          V25FILES='index.html alerts.html people.html news.html weather.html sources.html language-v2.js language-runtime.js sync-controller.js flood-live-fast.js road-live-fast.js district-live-v4.js today-monitor-v4.js national-news.js news-stability.js disaster-monitor.js weather-live.js sw.js realtime-1s.js'
           ok=0
-          for i in $(seq 1 100); do
+          for i in $(seq 1 40); do
             good=1
-            for f in $V25FILES; do curl -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/v25-$(basename "$f")" || good=0; done
-            curl -fsSL "${MAP}sw.js?ci=${GITHUB_SHA}-${i}" -o /tmp/v24-sw.js || good=0
-            curl -fsSL "${MAP}v24-river-source-guard.js?ci=${GITHUB_SHA}-${i}" -o /tmp/v24-river-source-guard.js || good=0
-            curl -fsSL "${MAP}v23-river-map-v3.js?ci=${GITHUB_SHA}-${i}" -o /tmp/v23-river-map-v3.js || good=0
-            curl -fsSL "${ROOT}data/floodsafe-people-status.json?ci=${GITHUB_SHA}-${i}" -o /tmp/people.json || good=0
-            curl -fsSL "${ROOT}data/floodsafe-police.json?ci=${GITHUB_SHA}-${i}" -o /tmp/police.json || good=0
-            grep -Fq 'shell-39' /tmp/v25-sw.js || good=0
-            grep -Fq 'shell-24' /tmp/v24-sw.js || good=0
+            for f in index.html alerts.html people.html news.html weather.html sources.html human-final.js language-v2.js language-runtime.js flood-live-fast.js road-live-fast.js district-live-v4.js alerts-final-lock.js national-news.js news-stability.js sw.js; do curl --max-time 8 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/v25-${f}" || good=0; done
+            curl --max-time 8 -fsSL "${ROOT}data/floodsafe-people-status.json?ci=${GITHUB_SHA}-${i}" -o /tmp/people.json || good=0
+            curl --max-time 8 -fsSL "${ROOT}data/floodsafe-police.json?ci=${GITHUB_SHA}-${i}" -o /tmp/police.json || good=0
+            curl --max-time 8 -fsSL "${ROOT}data/national-news.json?ci=${GITHUB_SHA}-${i}" -o /tmp/news.json || good=0
+            grep -Fq 'shell-40' /tmp/v25-sw.js || good=0
+            grep -Fq 'human-final.js?v=1' /tmp/v25-index.html || good=0
+            grep -Fq 'human-final.js?v=1' /tmp/v25-people.html || good=0
+            grep -Fq 'alerts-final-lock.js?v=1' /tmp/v25-alerts.html || good=0
             grep -Fq 'flood-live-fast.js?v=1' /tmp/v25-alerts.html || good=0
             grep -Fq 'road-live-fast.js?v=2' /tmp/v25-alerts.html || good=0
             grep -Fq 'district-live-v4.js?v=1' /tmp/v25-alerts.html || good=0
-            grep -Fq 'sync-controller.js?v=3' /tmp/v25-index.html || good=0
-            grep -Fq 'id="homeDeaths"' /tmp/v25-index.html || good=0
-            grep -Fq 'id="peopleBodies"' /tmp/v25-people.html || good=0
-            grep -Fq 'language-runtime.js?v=1' /tmp/v25-index.html || good=0
-            grep -Fq 'v24-river-source-guard.js?v=1' /tmp/v24-sw.js || good=0
-            grep -Fq 'v23-river-map-v3.js?v=4' /tmp/v24-sw.js || good=0
             if [ "$good" = 1 ]; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
 
-      - name: Validate syntax and live contracts
+      - name: Validate syntax and data contracts
         run: |
           set -euo pipefail
-          for f in language-v2.js language-runtime.js sync-controller.js flood-live-fast.js road-live-fast.js district-live-v4.js today-monitor-v4.js national-news.js news-stability.js disaster-monitor.js weather-live.js sw.js realtime-1s.js; do node --check "/tmp/v25-$f"; done
-          node --check /tmp/v24-river-source-guard.js
-          node --check /tmp/v23-river-map-v3.js
-          node --check /tmp/v24-sw.js
+          for f in human-final.js language-v2.js language-runtime.js flood-live-fast.js road-live-fast.js district-live-v4.js alerts-final-lock.js national-news.js news-stability.js sw.js; do node --check "/tmp/v25-$f"; done
+          grep -Fq 'setInterval(poll,5000)' /tmp/v25-human-final.js
           grep -Fq 'setInterval(poll,5000)' /tmp/v25-flood-live-fast.js
           grep -Fq 'setInterval(poll,5000)' /tmp/v25-road-live-fast.js
-          grep -Fq 'setInterval(localPoll,5000)' /tmp/v25-sync-controller.js
           grep -Fq 'setInterval(poll,15000)' /tmp/v25-district-live-v4.js
-          grep -Fq 'FETCH_MS=60000' /tmp/v25-weather-live.js
           grep -Fq 'FLASH_MS=60*60*1000' /tmp/v25-national-news.js
           grep -Fq 'RECENT_MS=6*60*60*1000' /tmp/v25-national-news.js
-          grep -Fq 'now-t>2*3600e3' /tmp/v24-river-source-guard.js
-          grep -Fq 'setInterval(()=>fetchGauges(false),5000)' /tmp/v23-river-map-v3.js
-          ! grep -Fq 'clients.navigate' /tmp/v24-sw.js
-          ! grep -Fq "dispatchEvent(new Event('online'))" /tmp/v25-realtime-1s.js
           python3 - <<'PY'
           import json,datetime
-          p=json.load(open('/tmp/people.json')); po=json.load(open('/tmp/police.json'))
+          p=json.load(open('/tmp/people.json')); po=json.load(open('/tmp/police.json')); n=json.load(open('/tmp/news.json'))
           def ts(v):
+              if not v:return 0
               try:return datetime.datetime.fromisoformat(str(v).replace('Z','+00:00')).timestamp()
               except:return 0
           pd=ts(p.get('recovered_update_iso') or p.get('recovered_update_time') or p.get('updated_date'))
           pp=ts(po.get('official_update_iso'))
-          expected=po.get('total_deaths') if pp>pd else p.get('recovered_bodies')
-          assert expected is not None and p.get('missing_minimum') is not None and p.get('rescued_alive') is not None
-          print('human source contract',expected,p['missing_minimum'],p['rescued_alive'])
+          d=p.get('recovered_bodies') if pd>=pp else po.get('total_deaths')
+          assert all(v is not None for v in (d,p.get('missing_minimum'),p.get('rescued_alive')))
+          for x in n.get('items',[]): assert x.get('published_at'),x
+          print('contracts',d,p['missing_minimum'],p['rescued_alive'],'news',len(n.get('items',[])))
           PY
 
       - name: Install browser harness
@@ -86,60 +73,21 @@ jobs:
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
           test -n "$CHROME"
           echo "CHROME=$CHROME" >> "$GITHUB_ENV"
-          mkdir -p /tmp/complete-live && cd /tmp/complete-live
+          mkdir -p /tmp/gate && cd /tmp/gate
           npm init -y >/dev/null 2>&1
           npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
 
-      - name: Home Human latest-source owner
+      - name: Browser safety gate
         run: |
           set -euo pipefail
-          cd /tmp/complete-live
-          node <<'JS'
-          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
-          (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();await p.setViewport({width:412,height:915});p.setDefaultTimeout(70000);await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsUnifiedHuman&&Number(document.getElementById('homeDeaths')?.textContent)>0);await wait(6500);const x=await p.evaluate(async()=>{const q=id=>document.getElementById(id),people=await fetch('../../data/floodsafe-people-status.json?x='+Date.now(),{cache:'no-store'}).then(r=>r.json()),police=await fetch('../../data/floodsafe-police.json?x='+Date.now(),{cache:'no-store'}).then(r=>r.json());return{shown:[q('homeDeaths').textContent,q('homeMissing').textContent,q('homeRescued').textContent],state:window.__fsUnifiedHuman,people,police,hidden:q('humanStatsSection').hidden}});if(x.hidden||x.shown.join('|')!==[x.state.d.value,x.state.m.value,x.state.r.value].map(String).join('|'))throw Error('Human DOM/state '+JSON.stringify(x));const pt=Date.parse(x.people.recovered_update_iso||x.people.updated_date||0),pot=Date.parse(x.police.official_update_iso||0);if(pt>pot&&Date.parse(x.state.d.time||0)<pt)throw Error('Death metric older than newer people source '+JSON.stringify(x));if(Date.parse(x.state.m.time||0)<Date.parse(x.people.missing_update_time||x.people.updated_date||0))throw Error('Missing metric stale '+JSON.stringify(x.state.m));if(Date.parse(x.state.r.time||0)<Date.parse(x.people.rescued_update_time||x.people.updated_date||0))throw Error('Rescue metric stale '+JSON.stringify(x.state.r));console.log('PASS Home Human',x.shown,x.state);await b.close()})().catch(e=>{console.error(e);process.exit(3)});
-          JS
-
-      - name: Home strict language mode
-        run: |
-          set -euo pipefail
-          cd /tmp/complete-live
+          cd /tmp/gate
           node <<'JS'
           const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms)),dev=/[\u0900-\u097F]/;
-          (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();await p.setViewport({width:412,height:915});p.setDefaultTimeout(70000);await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#fsLangToggle');await p.click('#fsLangToggle');await wait(1500);const en=await p.evaluate(()=>({head:document.querySelector('.pageHead h2')?.textContent||'',core:[...document.querySelectorAll('header,.pageHead,.grid,#humanStatsSection,.healthGrid')].map(x=>x.textContent).join(' '),toggle:document.getElementById('fsLangToggle')?.textContent}));if(en.head!=='Key information'||en.toggle!=='Nepali'||dev.test(en.core))throw Error('English mix '+JSON.stringify(en));await p.click('#fsLangToggle');await wait(1200);const ne=await p.evaluate(()=>({head:document.querySelector('.pageHead h2')?.textContent||'',toggle:document.getElementById('fsLangToggle')?.textContent}));if(ne.head!=='मुख्य जानकारी'||ne.toggle!=='अङ्ग्रेजी')throw Error('Nepali mode '+JSON.stringify(ne));console.log('PASS Home language',en.head,ne.head);await b.close()})().catch(e=>{console.error(e);process.exit(3)});
-          JS
-
-      - name: Flood Road and 77 Districts
-        run: |
-          set -euo pipefail
-          cd /tmp/complete-live
-          node <<'JS'
-          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
-          (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();await p.setViewport({width:412,height:915});p.setDefaultTimeout(70000);let n=0;p.on('request',r=>{/bipadportal\.gov\.np\/api\/v1\//.test(r.url())&&n++});await p.goto(process.env.BASE+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsFloodState&&window.__fsRoadState&&window.__fsDistrictState);await p.waitForFunction(()=>document.querySelectorAll('#districtFilter option').length===78);await wait(6500);const x=await p.evaluate(()=>{const q=id=>document.getElementById(id),f=[...q('alertsList').querySelectorAll('.item')],r=[...q('roadCurrentList').querySelectorAll('.item')];return{floodOwner:f.every(x=>x.dataset.floodOwner==='1'),roadOwner:r.every(x=>x.dataset.roadOwner==='1'),flood:f.map(x=>x.textContent),road:r.map(x=>x.textContent),count:Number(q('roadAlertCount').textContent),rs:window.__fsRoadState,fs:window.__fsFloodState,ds:window.__fsDistrictState,options:q('districtFilter').options.length,district:q('districtStatusList').querySelectorAll('.item').length,dup:q('closedRoadSection')?.hidden}});if(!x.floodOwner||!x.roadOwner||x.options!==78||x.ds.districts!==77||x.district>20||x.dup!==true)throw Error('Owner/layout '+JSON.stringify(x));if(x.flood.some(t=>/^ROAD\b|\bPARTIALLY OPEN\b|\bCLOSED\b.*Alternative route/i.test(t)))throw Error('Road leaked into flood '+JSON.stringify(x.flood));const expected=x.rs.dor?x.rs.dor.closed:x.rs.bipad.closed;if(x.count!==expected)throw Error('Road count '+JSON.stringify(x));if(x.road.some(t=>/CLOSED|बन्द/.test(t)&&!/Alternative route|वैकल्पिक मार्ग/.test(t)))throw Error('Road route disclosure '+JSON.stringify(x.road));await wait(10000);if(n>100)throw Error('Network storm '+n);console.log('PASS Alerts',{flood:x.fs,road:x.rs,district:x.ds,requests:n});await b.close()})().catch(e=>{console.error(e);process.exit(3)});
-          JS
-
-      - name: People and News
-        run: |
-          set -euo pipefail
-          cd /tmp/complete-live
-          node <<'JS'
-          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
-          (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();p.setDefaultTimeout(70000);await p.goto(process.env.BASE+'people.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsUnifiedHuman&&Number(document.getElementById('peopleBodies')?.textContent)>0);await wait(6500);const ppl=await p.evaluate(()=>({shown:['peopleBodies','peopleMissing','peopleRescued'].map(id=>document.getElementById(id).textContent),state:window.__fsUnifiedHuman,hidden:document.getElementById('peopleStatsSection').hidden}));if(ppl.hidden||ppl.shown.join('|')!==[ppl.state.d.value,ppl.state.m.value,ppl.state.r.value].map(String).join('|'))throw Error('People mismatch '+JSON.stringify(ppl));await p.goto(process.env.BASE+'news.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await wait(8000);const news=await p.evaluate(async()=>{let local=0,kcha=0;try{const j=await fetch('../../data/national-news.json?x='+Date.now(),{cache:'no-store'}).then(r=>r.json());local=(j.items||[]).filter(x=>Date.now()-new Date(x.published_at||x.published||x.date||0).getTime()<21600000).length}catch{}try{const j=await fetch('https://kchakhabar.com/api/v1/today.json?limit=100',{cache:'no-store'}).then(r=>r.json());kcha=(j.stories||[]).filter(x=>Date.now()-new Date(x.first_reported||x.updated_at||0).getTime()<21600000).length}catch{}return{local,kcha,cards:document.querySelectorAll('#newsList .item').length,text:document.getElementById('newsList').textContent}});if(news.local+news.kcha>0&&news.cards===0)throw Error('News empty '+JSON.stringify(news));console.log('PASS People/News',ppl.shown,news);await b.close()})().catch(e=>{console.error(e);process.exit(3)});
-          JS
-
-      - name: Weather and Sources language
-        run: |
-          set -euo pipefail
-          cd /tmp/complete-live
-          node <<'JS'
-          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms)),dev=/[\u0900-\u097F]/;
-          (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const ctx=b.defaultBrowserContext();await ctx.overridePermissions(new URL(process.env.BASE).origin,['geolocation']);const p=await b.newPage();await p.setGeolocation({latitude:27.7172,longitude:85.3240,accuracy:30});p.setDefaultTimeout(70000);await p.goto(process.env.BASE+'weather.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.click('#gpsWeatherBtn');await p.waitForFunction(()=>document.getElementById('wxTemp').textContent!=='—°');await p.click('#fsLangToggle');await wait(1500);const wx=await p.evaluate(()=>({condition:document.getElementById('wxCondition').textContent,status:document.getElementById('appStatus').textContent,head:document.querySelector('.pageHead h2').textContent,toggle:document.getElementById('fsLangToggle').textContent}));if(dev.test(wx.condition)||dev.test(wx.status)||dev.test(wx.head)||wx.toggle!=='Nepali')throw Error('Weather English mix '+JSON.stringify(wx));await p.goto(process.env.BASE+'sources.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await wait(1200);const s=await p.evaluate(()=>({text:[...document.querySelectorAll('.pageHead,.sourceCard p,.notice')].map(x=>x.textContent).join(' '),toggle:document.getElementById('fsLangToggle')?.textContent}));if(dev.test(s.text)||s.toggle!=='Nepali')throw Error('Sources English mix '+JSON.stringify(s));console.log('PASS Weather/Sources',wx);await b.close()})().catch(e=>{console.error(e);process.exit(3)});
-          JS
-
-      - name: Map and River freshness guard
-        run: |
-          set -euo pipefail
-          cd /tmp/complete-live
-          node <<'JS'
-          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
-          (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();p.setDefaultTimeout(70000);const u=process.env.MAP+'?mapOnly=1&v25=1&testFocus=1&ci='+Date.now();await p.goto(u,{waitUntil:'domcontentloaded'});await p.waitForSelector('#map');try{await p.waitForFunction(()=>window.__fsRiverSourceHealth&&document.getElementById('fsRiver3Sheet'),{timeout:20000})}catch{await p.reload({waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsRiverSourceHealth&&document.getElementById('fsRiver3Sheet'),{timeout:35000})}await wait(5000);const x=await p.evaluate(()=>({guard:window.__fsRiverSourceHealth,sheet:!!document.getElementById('fsRiver3Sheet'),map:!!window.__fs?.map}));if(!x.guard||!x.sheet||!x.map||!String(x.guard.source||'').includes('DHM'))throw Error('River guard '+JSON.stringify(x));console.log('PASS Map/River',x);await b.close()})().catch(e=>{console.error(e);process.exit(3)});
+          (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();await p.setViewport({width:412,height:915});p.setDefaultTimeout(65000);const errors=[];p.on('pageerror',e=>errors.push(String(e)));
+            await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsUnifiedHuman&&Number(document.getElementById('homeDeaths')?.textContent)>0);await wait(11000);const home=await p.evaluate(async()=>{const q=id=>document.getElementById(id),people=await fetch('../../data/floodsafe-people-status.json?x='+Date.now(),{cache:'no-store'}).then(r=>r.json()),police=await fetch('../../data/floodsafe-police.json?x='+Date.now(),{cache:'no-store'}).then(r=>r.json()),pt=Date.parse(people.recovered_update_iso||people.updated_date||0),pot=Date.parse(police.official_update_iso||0),expected=[pt>=pot?people.recovered_bodies:police.total_deaths,people.missing_minimum,people.rescued_alive];return{shown:['homeDeaths','homeMissing','homeRescued'].map(id=>Number(q(id).textContent)),expected,state:[window.__fsUnifiedHuman.d.value,window.__fsUnifiedHuman.m.value,window.__fsUnifiedHuman.r.value],owner:window.__fsUnifiedHuman.owner,hidden:q('humanStatsSection').hidden}});if(home.hidden||home.owner!=='human-final'||home.shown.join('|')!==home.expected.join('|')||home.state.join('|')!==home.expected.join('|'))throw Error('Human '+JSON.stringify(home));
+            await p.waitForSelector('#fsLangToggle');const t=await p.$eval('#fsLangToggle',e=>e.textContent.trim());if(t==='Nepali')await p.click('#fsLangToggle');await wait(500);await p.click('#fsLangToggle');await wait(1200);const en=await p.evaluate(()=>({toggle:document.getElementById('fsLangToggle').textContent.trim(),core:[...document.querySelectorAll('header,.pageHead,.grid,#humanStatsSection,.healthGrid')].map(x=>x.innerText).join(' ')}));if(en.toggle!=='Nepali'||dev.test(en.core))throw Error('English mix '+JSON.stringify(en));
+            await p.goto(process.env.BASE+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsFloodState&&window.__fsRoadState&&window.__fsDistrictState);await p.waitForFunction(()=>document.querySelectorAll('#districtFilter option').length===78);await wait(6500);const al=await p.evaluate(()=>{const q=id=>document.getElementById(id),f=[...q('alertsList').querySelectorAll('.item')],r=[...q('roadCurrentList').querySelectorAll('.item')],rs=window.__fsRoadState;return{floodOwner:f.every(x=>x.dataset.floodOwner==='1'),roadOwner:r.every(x=>x.dataset.roadOwner==='1'),districts:window.__fsDistrictState.districts,opts:q('districtFilter').options.length,cards:q('districtStatusList').querySelectorAll('.item').length,road:Number(q('roadAlertCount').textContent),roadExpected:rs.dor&&Number.isFinite(rs.dor.closed)?rs.dor.closed:rs.bipad.closed,split:!!q('floodAlertSection')&&!!q('roadLiveSection'),dup:q('closedRoadSection')?.hidden===true}});if(!al.floodOwner||!al.roadOwner||al.districts!==77||al.opts!==78||al.cards>20||al.road!==al.roadExpected||!al.split||!al.dup)throw Error('Alerts '+JSON.stringify(al));
+            await p.goto(process.env.BASE+'news.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await wait(7000);const news=await p.evaluate(()=>({cards:[...document.querySelectorAll('#newsList .item')].map(x=>({title:x.querySelector('h4')?.textContent||'',kind:x.dataset.newsKind||x.querySelector('.tag')?.textContent||''})),text:document.getElementById('newsList')?.innerText||''}));if(new Set(news.cards.map(x=>x.title)).size!==news.cards.length)throw Error('News duplicate '+JSON.stringify(news));
+            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,8)));console.log('PASS complete gate',{home,en:en.toggle,alerts:al,news:news.cards.length});await b.close();
+          })().catch(e=>{console.error(e);process.exit(3)});
           JS

@@ -77,7 +77,8 @@ jobs:
           (async()=>{
             const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
             const p=await b.newPage(); await p.setViewport({width:412,height:915}); p.setDefaultTimeout(70000); const exp=process.env.EXPECTED.split('|').map(Number),errors=[]; p.on('pageerror',e=>errors.push(String(e)));
-            async function nav(path){await p.goto(process.env.BASE+path+(path.includes('?')?'&':'?')+'ci='+Date.now(),{waitUntil:'commit',timeout:30000});}
+            const cdp=await p.createCDPSession();
+            async function nav(path){const url=process.env.BASE+path+(path.includes('?')?'&':'?')+'ci='+Date.now();await cdp.send('Page.navigate',{url});await new Promise(r=>setTimeout(r,900));}
             await nav('');
             await p.waitForFunction(()=>window.__fsUnifiedHuman?.owner==='human-final-v4'&&Number(document.getElementById('homeDeathsLive')?.textContent)>0);
             const h=await p.evaluate(()=>({shown:['homeDeathsLive','homeMissingLive','homeRescuedLive'].map(id=>Number(document.getElementById(id).textContent)),owner:window.__fsUnifiedHuman.owner,hidden:document.getElementById('humanStatsSection').hidden,toggle:!!document.getElementById('fsLangToggle'),lang:document.documentElement.lang}));

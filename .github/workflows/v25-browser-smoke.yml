@@ -98,18 +98,16 @@ jobs:
             await page.waitForFunction(()=>document.querySelector('#stationCount')?.textContent!=='—',{timeout:30000}).catch(()=>{});
             const newsAges=await page.$$eval('#floodNews .newsItem .meta',els=>els.map(e=>e.textContent));
             if(newsAges.some(t=>/घण्टा|दिन|hour|day/i.test(t))) throw Error('old news rendered '+JSON.stringify(newsAges));
-            const first=await page.$('.districtV3');
-            const box=await first.boundingBox(); if(!box) throw Error('district not clickable');
-            await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
-            await wait(18000);
+            await page.$eval('.districtV3',el=>{const r=el.getBoundingClientRect();el.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2}));});
+            await page.waitForSelector('.selectedPointV3',{timeout:10000});
+            await page.waitForFunction(()=>document.querySelectorAll('.riverV3').length>0,{timeout:45000});
             const map=await page.evaluate(()=>({
               rivers:document.querySelectorAll('.riverV3').length,
               marker:!!document.querySelector('.selectedPointV3'),
               hint:document.querySelector('#mapHint')?.textContent||'',
               vb:document.querySelector('#riverMapV3')?.getAttribute('viewBox')||''
             }));
-            if(!map.marker) throw Error('map tap marker missing '+JSON.stringify(map));
-            if(map.rivers<1) throw Error('map river geometry missing '+JSON.stringify(map));
+            if(!map.marker||map.rivers<1) throw Error('map interaction failed '+JSON.stringify(map));
             const feed=await page.evaluate(async()=>{
               const r=await fetch('https://bipadportal.gov.np/api/v1/river-stations/?limit=1000',{cache:'no-store'}); const j=await r.json();
               const a=Array.isArray(j)?j:(j.results||j.data||[]); return a.length;

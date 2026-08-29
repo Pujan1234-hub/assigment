@@ -1,76 +1,122 @@
-name: V25 Multi-page Smoke
+name: FloodSafe V25 Realtime Gate
 on:
   push:
     branches: ["main"]
     paths:
       - "floodsafe-nepal/v25/**"
-      - "data/**"
+      - "data/floodsafe-people-status.json"
       - ".github/workflows/v25-browser-smoke.yml"
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: v25-multipage-smoke
+  group: floodsafe-v25-realtime-gate
   cancel-in-progress: true
 jobs:
-  browser:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
-      - name: Wait for current production shell
+      - name: Wait for current GitHub Pages deployment
         run: |
           set -euo pipefail
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
           ok=0
-          for i in $(seq 1 50); do
-            good=1
-            for f in index.html alerts.html flood.html roads.html people.html weather.html news.html sources.html human-final-v2.js flood-live-v2.js road-live-v3.js district-live-v4.js national-news.js language-v2.js language-runtime.js realtime-1s.js sw-register.js sw.js; do
-              curl --max-time 8 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/${f}" || good=0
-            done
-            grep -Fq 'shell-45' /tmp/sw.js || good=0
-            grep -Fq 'href="./flood.html"' /tmp/alerts.html || good=0
-            grep -Fq 'href="./roads.html"' /tmp/alerts.html || good=0
-            grep -Fq '__fsLanguageRuntimeV3' /tmp/language-runtime.js || good=0
-            if [ "$good" = 1 ]; then ok=1; break; fi
+          for i in $(seq 1 60); do
+            curl --max-time 10 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
+            if grep -Fq 'news-live-v3.js?v=3' /tmp/index.html && grep -Fq 'map-v3.js?v=2' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-          ! grep -Fq 'roadCurrentListLive' /tmp/alerts.html
-          ! grep -Fq 'floodAlertsListLive' /tmp/alerts.html
-          ! grep -Fq 'districtStatusList' /tmp/alerts.html
-          ! grep -Fq 'news-stability.js' /tmp/index.html
-          ! grep -Fq 'news-stability.js' /tmp/news.html
-          for f in /tmp/human-final-v2.js /tmp/flood-live-v2.js /tmp/road-live-v3.js /tmp/district-live-v4.js /tmp/national-news.js /tmp/language-v2.js /tmp/language-runtime.js /tmp/realtime-1s.js /tmp/sw-register.js /tmp/sw.js; do node --check "$f"; done
-          grep -Fq '__fsHumanFinalV3' /tmp/human-final-v2.js
-          grep -Fq '__fsFloodLiveV3' /tmp/flood-live-v2.js
-          grep -Fq '__fsRoadLiveV4' /tmp/road-live-v3.js
-          grep -Fq '__fsDistrictLiveV5' /tmp/district-live-v4.js
-          grep -Fq '__fsNationalNewsV4' /tmp/national-news.js
-          grep -Fq '__fsLanguageV3' /tmp/language-v2.js
-          grep -Fq '__fsRealtime1sV4' /tmp/realtime-1s.js
+          for f in flood-only.js flood-freshness.js news-live-v3.js map-v3.js; do
+            curl --max-time 12 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}" -o "/tmp/${f}"
+            node --check "/tmp/${f}"
+          done
+          grep -Fq 'FRESH=30*60*1000' /tmp/news-live-v3.js
+          grep -Fq "setInterval(()=>syncRonb(false),10000)" /tmp/news-live-v3.js
+          grep -Fq "setInterval(poll,5000)" /tmp/flood-only.js
+          grep -Fq 'overpass-api.de/api/interpreter' /tmp/map-v3.js
 
-      - name: Browser pages
+      - name: Verify live upstream sources
+        run: |
+          set -euo pipefail
+          curl --max-time 20 -fsSL 'https://bipadportal.gov.np/api/v1/river-stations/?limit=1000' -o /tmp/bipad.json
+          python3 - <<'PY'
+          import json
+          j=json.load(open('/tmp/bipad.json'))
+          rows=j if isinstance(j,list) else j.get('results') or j.get('data') or []
+          assert len(rows)>0, 'BIPAD river station feed empty'
+          print('BIPAD rows',len(rows))
+          PY
+          curl --max-time 20 -fsSL 'https://www.ronbpost.com/wp-json/wp/v2/posts?per_page=5&_fields=date_gmt,modified_gmt,link,title' -o /tmp/ronb.json
+          python3 - <<'PY'
+          import json
+          j=json.load(open('/tmp/ronb.json'))
+          assert isinstance(j,list) and j, 'RONB feed empty'
+          assert j[0].get('link') and j[0].get('title'), 'RONB latest post malformed'
+          print('RONB latest',j[0].get('date_gmt'),j[0].get('link'))
+          PY
+          curl --max-time 25 -fsSL -X POST 'https://overpass-api.de/api/interpreter' \
+            --data-urlencode 'data=[out:json][timeout:15];(way["waterway"="river"](27.60,85.20,27.80,85.55);way["waterway"="stream"](27.60,85.20,27.80,85.55););out tags geom 25;' \
+            -o /tmp/river.json
+          python3 - <<'PY'
+          import json
+          j=json.load(open('/tmp/river.json'))
+          a=[x for x in j.get('elements',[]) if len(x.get('geometry',[]))>1]
+          assert a, 'Overpass returned no river geometry'
+          print('Overpass river geometries',len(a))
+          PY
+
+      - name: Browser map news and freshness smoke
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
-          MAP: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/?mapOnly=1&v25=1
         run: |
           set -euo pipefail
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"; test -n "$CHROME"
-          mkdir -p /tmp/v25pages && cd /tmp/v25pages; npm init -y >/dev/null 2>&1; npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
-          BASE="$BASE" MAP="$MAP" CHROME="$CHROME" node <<'JS'
-          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
+          mkdir -p /tmp/floodsafe && cd /tmp/floodsafe
+          npm init -y >/dev/null 2>&1
+          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          BASE="$BASE" CHROME="$CHROME" node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          const wait=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
-            const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
-            const p=await b.newPage();p.setDefaultTimeout(45000);p.setDefaultNavigationTimeout(45000);const errors=[];p.on('pageerror',e=>errors.push(String(e)));
-            const go=async path=>{await p.goto(process.env.BASE+path+'?ci='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});await p.waitForSelector('#fsLangToggle',{timeout:15000})};
-            await go('');await p.waitForFunction(()=>window.__fsUnifiedHuman?.owner==='human-final-v3'&&document.getElementById('homeDeathsLive')?.textContent!=='—');
-            const human=await p.evaluate(async()=>{const j=await fetch('../../data/floodsafe-people-status.json?ci='+Date.now(),{cache:'no-store'}).then(r=>r.json());return{dom:[+homeDeathsLive.textContent,+homeMissingLive.textContent,+homeRescuedLive.textContent],src:[+j.recovered_bodies,+j.missing_minimum,+j.rescued_alive]}});if(JSON.stringify(human.dom)!==JSON.stringify(human.src))throw Error('human mismatch '+JSON.stringify(human));
-            if((await p.$eval('.pageHead h2',e=>e.textContent.trim()))!=='मुख्य जानकारी')throw Error('home language default');await p.click('#fsLangToggle');await p.waitForFunction(()=>document.querySelector('.pageHead h2')?.textContent.trim()==='Key information');await p.click('#fsLangToggle');await p.waitForFunction(()=>document.querySelector('.pageHead h2')?.textContent.trim()==='मुख्य जानकारी');
-            await go('news.html');await wait(5000);const news=await p.evaluate(async()=>{const j=await fetch('../../data/national-news.json?ci='+Date.now(),{cache:'no-store'}).then(r=>r.json()).catch(()=>({items:[]})),recent=(j.items||[]).filter(x=>{const t=+new Date(x.published_at||x.published||x.date||0);return t&&Date.now()-t<21600000}),cards=[...document.querySelectorAll('#newsList .item h4')].map(x=>x.textContent.trim());return{recent:recent.length,cards,state:window.__fsNewsState}});if(news.recent&&news.cards.length===0)throw Error('news empty '+JSON.stringify(news));if(new Set(news.cards).size!==news.cards.length)throw Error('news duplicate');
-            await go('alerts.html');const hub=await p.evaluate(()=>({f:!!document.querySelector('a[href="./flood.html"]'),r:!!document.querySelector('a[href="./roads.html"]'),details:!!document.getElementById('floodAlertsListLive')||!!document.getElementById('roadCurrentListLive')||!!document.getElementById('districtStatusList'),h:document.documentElement.scrollHeight}));if(!hub.f||!hub.r||hub.details||hub.h>2600)throw Error('alerts hub '+JSON.stringify(hub));
-            await go('flood.html');await p.waitForFunction(()=>window.__fsFloodState?.owner==='flood-v3');
-            await go('roads.html');await p.waitForFunction(()=>window.__fsRoadState?.owner==='road-v4'&&window.__fsDistrictState?.owner==='district-v5');const road=await p.evaluate(()=>({names:[...document.querySelectorAll('#roadCurrentListLive .item h4')].map(x=>x.textContent.trim().toLowerCase()),districts:document.querySelectorAll('#districtStatusList .item').length}));if(new Set(road.names).size!==road.names.length||road.districts>12)throw Error('road duplicate/long '+JSON.stringify(road));
-            await go('people.html');await p.waitForFunction(()=>window.__fsUnifiedHuman?.owner==='human-final-v3');await go('weather.html');if(!(await p.$('#wxTemp')))throw Error('weather missing');await go('sources.html');
-            await p.goto(process.env.MAP+'&ci='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});await p.waitForSelector('.leaflet-container',{timeout:45000});const map=await p.evaluate(()=>{const e=document.querySelector('.leaflet-container'),r=e.getBoundingClientRect();return{pointer:getComputedStyle(e).pointerEvents,w:r.width,h:r.height,back:!!document.querySelector('.fsMapBack')}});if(map.pointer==='none'||map.w<200||map.h<200||!map.back)throw Error('map '+JSON.stringify(map));
-            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,10)));console.log('PASS unified V25',{human,news,hub,road,map});await b.close();
+            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
+            const page=await browser.newPage();
+            page.setDefaultTimeout(60000); page.setDefaultNavigationTimeout(60000);
+            const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'networkidle2'});
+            await page.waitForSelector('#riverMapV3');
+            await page.waitForSelector('.districtV3');
+            const base=await page.evaluate(()=>({
+              districts:document.querySelectorAll('.districtV3').length,
+              labels:document.querySelectorAll('.districtLabelV3').length,
+              mapRect:(()=>{const r=document.querySelector('#riverMapV3').getBoundingClientRect();return [r.width,r.height]})(),
+              newsText:document.querySelector('#floodNews')?.innerText||'',
+              stationText:document.querySelector('#stationCount')?.textContent||''
+            }));
+            if(base.districts<70||base.labels<70||base.mapRect[0]<250||base.mapRect[1]<300) throw Error('map base invalid '+JSON.stringify(base));
+            await page.waitForFunction(()=>document.querySelector('#stationCount')?.textContent!=='—',{timeout:30000}).catch(()=>{});
+            const newsAges=await page.$$eval('#floodNews .newsItem .meta',els=>els.map(e=>e.textContent));
+            if(newsAges.some(t=>/घण्टा|दिन|hour|day/i.test(t))) throw Error('old news rendered '+JSON.stringify(newsAges));
+            const first=await page.$('.districtV3');
+            const box=await first.boundingBox(); if(!box) throw Error('district not clickable');
+            await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
+            await wait(18000);
+            const map=await page.evaluate(()=>({
+              rivers:document.querySelectorAll('.riverV3').length,
+              marker:!!document.querySelector('.selectedPointV3'),
+              hint:document.querySelector('#mapHint')?.textContent||'',
+              vb:document.querySelector('#riverMapV3')?.getAttribute('viewBox')||''
+            }));
+            if(!map.marker) throw Error('map tap marker missing '+JSON.stringify(map));
+            if(map.rivers<1) throw Error('map river geometry missing '+JSON.stringify(map));
+            const feed=await page.evaluate(async()=>{
+              const r=await fetch('https://bipadportal.gov.np/api/v1/river-stations/?limit=1000',{cache:'no-store'}); const j=await r.json();
+              const a=Array.isArray(j)?j:(j.results||j.data||[]); return a.length;
+            });
+            if(feed<1) throw Error('browser BIPAD fetch empty');
+            if(errors.length) throw Error('page errors '+JSON.stringify(errors.slice(0,10)));
+            console.log('PASS FloodSafe realtime gate',{base,map,feed,newsAges:newsAges.slice(0,5)});
+            await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

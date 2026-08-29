@@ -1,0 +1,1 @@
+(()=>{'use strict';if(window.__fsSwRegister)return;window.__fsSwRegister=true;if(!('serviceWorker'in navigator))return;const register=()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>r.update().catch(()=>{})).catch(()=>{});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',register,{once:true});else register();})();

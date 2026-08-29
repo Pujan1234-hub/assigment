@@ -24,7 +24,7 @@ jobs:
           ok=0
           for i in $(seq 1 60); do
             curl --max-time 10 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'news-live-v3.js?v=3' /tmp/index.html && grep -Fq 'map-v3.js?v=2' /tmp/index.html; then ok=1; break; fi
+            if grep -Fq 'news-live-v3.js?v=4' /tmp/index.html && grep -Fq 'map-v3.js?v=2' /tmp/index.html && grep -Fq 'id="liveNews"' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
@@ -33,6 +33,7 @@ jobs:
             node --check "/tmp/${f}"
           done
           grep -Fq 'FRESH=30*60*1000' /tmp/news-live-v3.js
+          grep -Fq "document.getElementById('liveNews')" /tmp/news-live-v3.js
           grep -Fq "setInterval(()=>syncRonb(false),10000)" /tmp/news-live-v3.js
           grep -Fq "setInterval(poll,5000)" /tmp/flood-only.js
           grep -Fq 'overpass-api.de/api/interpreter' /tmp/map-v3.js
@@ -78,43 +79,27 @@ jobs:
           npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
           BASE="$BASE" CHROME="$CHROME" node <<'JS'
           const puppeteer=require('puppeteer-core');
-          const wait=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
             const page=await browser.newPage();
             page.setDefaultTimeout(60000); page.setDefaultNavigationTimeout(60000);
             const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
             await page.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'networkidle2'});
-            await page.waitForSelector('#riverMapV3');
-            await page.waitForSelector('.districtV3');
-            const base=await page.evaluate(()=>({
-              districts:document.querySelectorAll('.districtV3').length,
-              labels:document.querySelectorAll('.districtLabelV3').length,
-              mapRect:(()=>{const r=document.querySelector('#riverMapV3').getBoundingClientRect();return [r.width,r.height]})(),
-              newsText:document.querySelector('#floodNews')?.innerText||'',
-              stationText:document.querySelector('#stationCount')?.textContent||''
-            }));
+            await page.waitForSelector('#riverMapV3'); await page.waitForSelector('.districtV3'); await page.waitForSelector('#liveNews');
+            const base=await page.evaluate(()=>({districts:document.querySelectorAll('.districtV3').length,labels:document.querySelectorAll('.districtLabelV3').length,mapRect:(()=>{const r=document.querySelector('#riverMapV3').getBoundingClientRect();return [r.width,r.height]})(),stationText:document.querySelector('#stationCount')?.textContent||''}));
             if(base.districts<70||base.labels<70||base.mapRect[0]<250||base.mapRect[1]<300) throw Error('map base invalid '+JSON.stringify(base));
             await page.waitForFunction(()=>document.querySelector('#stationCount')?.textContent!=='—',{timeout:30000}).catch(()=>{});
-            const newsAges=await page.$$eval('#floodNews .newsItem .meta',els=>els.map(e=>e.textContent));
+            const newsAges=await page.$$eval('#liveNews .newsItem .meta',els=>els.map(e=>e.textContent));
             if(newsAges.some(t=>/घण्टा|दिन|hour|day/i.test(t))) throw Error('old news rendered '+JSON.stringify(newsAges));
+            if(document.querySelector){/* keep parser happy */}
             await page.$eval('.districtV3',el=>{const r=el.getBoundingClientRect();el.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2}));});
             await page.waitForSelector('.selectedPointV3',{timeout:10000});
             await page.waitForFunction(()=>document.querySelectorAll('.riverV3').length>0,{timeout:45000});
-            const map=await page.evaluate(()=>({
-              rivers:document.querySelectorAll('.riverV3').length,
-              marker:!!document.querySelector('.selectedPointV3'),
-              hint:document.querySelector('#mapHint')?.textContent||'',
-              vb:document.querySelector('#riverMapV3')?.getAttribute('viewBox')||''
-            }));
+            const map=await page.evaluate(()=>({rivers:document.querySelectorAll('.riverV3').length,marker:!!document.querySelector('.selectedPointV3'),hint:document.querySelector('#mapHint')?.textContent||'',vb:document.querySelector('#riverMapV3')?.getAttribute('viewBox')||''}));
             if(!map.marker||map.rivers<1) throw Error('map interaction failed '+JSON.stringify(map));
-            const feed=await page.evaluate(async()=>{
-              const r=await fetch('https://bipadportal.gov.np/api/v1/river-stations/?limit=1000',{cache:'no-store'}); const j=await r.json();
-              const a=Array.isArray(j)?j:(j.results||j.data||[]); return a.length;
-            });
+            const feed=await page.evaluate(async()=>{const r=await fetch('https://bipadportal.gov.np/api/v1/river-stations/?limit=1000',{cache:'no-store'});const j=await r.json();const a=Array.isArray(j)?j:(j.results||j.data||[]);return a.length});
             if(feed<1) throw Error('browser BIPAD fetch empty');
             if(errors.length) throw Error('page errors '+JSON.stringify(errors.slice(0,10)));
-            console.log('PASS FloodSafe realtime gate',{base,map,feed,newsAges:newsAges.slice(0,5)});
-            await browser.close();
+            console.log('PASS FloodSafe realtime gate',{base,map,feed,newsAges:newsAges.slice(0,5)}); await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

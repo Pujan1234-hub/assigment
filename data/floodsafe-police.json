@@ -1,24 +1,24 @@
 {
-  "source": "Nepal Police",
-  "source_url": "https://www.nepalpolice.gov.np/news/10264/",
-  "event": "Rasuwa flood",
-  "event_ne": "रसुवा बाढी",
+  "source": "Nepal Police via OnlineKhabar",
+  "source_url": "https://english.onlinekhabar.com/flood-death-toll-nepal.html",
+  "event": "Bhotekoshi flood",
+  "event_ne": "भोटेकोशी बाढी",
   "cause": "Flood",
   "cause_ne": "बाढी",
-  "total_deaths": 489,
-  "official_update_bs": "2083-05-12",
-  "official_update_time": "12:00 NPT",
-  "official_update_iso": "2026-08-28T12:00:00+05:45",
+  "total_deaths": 616,
+  "official_update_bs": "2083-05-13",
+  "official_update_time": "07:00 NPT",
+  "official_update_iso": "2026-08-29T07:00:00+05:45",
   "districts": [
     {"name":"Rasuwa","name_ne":"रसुवा","deaths":13},
-    {"name":"Nuwakot","name_ne":"नुवाकोट","deaths":37},
-    {"name":"Dhading","name_ne":"धादिङ","deaths":40},
-    {"name":"Chitwan","name_ne":"चितवन","deaths":186},
-    {"name":"Gorkha","name_ne":"गोरखा","deaths":44},
-    {"name":"Tanahun","name_ne":"तनहुँ","deaths":29},
-    {"name":"Nawalparasi East","name_ne":"नवलपरासी पूर्व","deaths":112},
-    {"name":"Nawalparasi West","name_ne":"नवलपरासी पश्चिम","deaths":28}
+    {"name":"Nuwakot","name_ne":"नुवाकोट","deaths":41},
+    {"name":"Dhading","name_ne":"धादिङ","deaths":45},
+    {"name":"Chitwan","name_ne":"चितवन","deaths":233},
+    {"name":"Gorkha","name_ne":"गोरखा","deaths":48},
+    {"name":"Tanahun","name_ne":"तनहुँ","deaths":31},
+    {"name":"Nawalparasi East","name_ne":"नवलपरासी पूर्व","deaths":158},
+    {"name":"Nawalparasi West","name_ne":"नवलपरासी पश्चिम","deaths":47}
   ],
-  "status": "verified",
-  "note": "Verified Nepal Police bulletin. Time is Nepal Time (NPT, UTC+05:45). District sum equals the published total. Automatic sync continues to look for newer bulletins."
+  "status": "verified_reported",
+  "note": "Nepal Police figure reported by OnlineKhabar at 07:00 NPT on 29 Aug 2026. District sum is validated to 616. The direct Nepal Police bulletin URL had not yet been resolved by the strict automated scraper at this snapshot; the scraper must never roll this value backward."
 }

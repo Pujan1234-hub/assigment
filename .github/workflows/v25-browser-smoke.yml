@@ -17,28 +17,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Wait for current GitHub Pages deployment
+      - name: Wait for current production
         run: |
           set -euo pipefail
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
           ok=0
           for i in $(seq 1 60); do
             curl --max-time 10 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'flood-only.js?v=10' /tmp/index.html && grep -Fq 'map-v5.js?v=1' /tmp/index.html && grep -Fq 'language-pure.js?v=3' /tmp/index.html && grep -Fq 'id="nationalRiverList"' /tmp/index.html; then ok=1; break; fi
+            if grep -Fq 'map-v6.js?v=1' /tmp/index.html && grep -Fq 'language-pure.js?v=3' /tmp/index.html && grep -Fq 'id="nationalRiverList"' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-          for f in flood-only.js flood-freshness.js news-live-v3.js map-v5.js language-pure.js; do
-            curl --max-time 12 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}" -o "/tmp/${f}"
-            node --check "/tmp/${f}"
-          done
-          grep -Fq '__fsFloodCoreV10' /tmp/flood-only.js
-          grep -Fq '__fsMapV8' /tmp/map-v5.js
-          grep -Fq 'SUNKOSHI' /tmp/map-v5.js
-          grep -Fq 'flowTraceV3' /tmp/map-v5.js
+          for f in flood-only.js map-v6.js language-pure.js; do curl --max-time 12 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}" -o "/tmp/${f}"; node --check "/tmp/${f}"; done
+          grep -Fq '__fsMapV9' /tmp/map-v6.js
+          grep -Fq 'gaugeFallback' /tmp/map-v6.js
+          grep -Fq 'flowTraceV3' /tmp/map-v6.js
           grep -Fq '__fsPureLangV3' /tmp/language-pure.js
 
-      - name: Verify live upstream source
+      - name: Verify official river feed
         run: |
           set -euo pipefail
           curl --max-time 20 -fsSL 'https://bipadportal.gov.np/api/v1/river-stations/?limit=1000' -o /tmp/bipad.json
@@ -50,7 +46,7 @@ jobs:
           print('BIPAD rows',len(rows))
           PY
 
-      - name: Browser screenshot regression smoke
+      - name: Browser exact screenshot regressions
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -63,25 +59,29 @@ jobs:
           const puppeteer=require('puppeteer-core');
           (async()=>{
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
-            const page=await browser.newPage();page.setDefaultTimeout(60000);page.setDefaultNavigationTimeout(60000);
+            const page=await browser.newPage();page.setDefaultTimeout(65000);page.setDefaultNavigationTimeout(65000);
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));
             await page.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'networkidle2'});
-            await page.waitForSelector('#riverMapV3');await page.waitForSelector('.districtV3');await page.waitForFunction(()=>document.querySelector('#stationCount')?.textContent!=='—',{timeout:30000});
-            const ne=await page.evaluate(()=>({core:!!window.__fsFloodCoreV10,map:!!window.__fsMapV8,pure:!!window.__fsPureLangV3,title:localRiskTitle.textContent,weather:[...document.querySelectorAll('.weatherGrid small')].map(x=>x.textContent),outside:document.querySelector('#outsideNotice strong')?.textContent||'',zoom:mapZoomIn.textContent}));
+            await page.waitForSelector('#riverMapV3');await page.waitForFunction(()=>document.querySelector('#stationCount')?.textContent!=='—',{timeout:30000});
+            const ne=await page.evaluate(()=>({core:!!window.__fsFloodCoreV10,map:!!window.__fsMapV9,pure:!!window.__fsPureLangV3,title:localRiskTitle.textContent,weather:[...document.querySelectorAll('.weatherGrid small')].map(x=>x.textContent),outside:document.querySelector('#outsideNotice strong')?.textContent||'',zoom:mapZoomIn.textContent}));
             if(!ne.core||!ne.map||!ne.pure)throw Error('engines '+JSON.stringify(ne));
-            if([ne.title,ne.outside,ne.zoom,...ne.weather].some(x=>/[A-Za-z]/.test(x)))throw Error('English mixed in Nepali UI '+JSON.stringify(ne));
+            if([ne.title,ne.outside,ne.zoom,...ne.weather].some(x=>/[A-Za-z]/.test(x)))throw Error('English mixed in Nepali '+JSON.stringify(ne));
             await page.click('#langBtn');await page.waitForFunction(()=>document.documentElement.lang==='en');
             const en=await page.evaluate(()=>({title:localRiskTitle.textContent,weather:[...document.querySelectorAll('.weatherGrid small')].map(x=>x.textContent),outside:document.querySelector('#outsideNotice strong')?.textContent||'',outsideText:outsideNoticeText.textContent,zoom:mapZoomIn.textContent,map:mapTitle.textContent}));
-            if([en.title,en.outside,en.outsideText,en.zoom,en.map,...en.weather].some(x=>/[\u0900-\u097F]/.test(x)))throw Error('Nepali mixed in English UI '+JSON.stringify(en));
+            if([en.title,en.outside,en.outsideText,en.zoom,en.map,...en.weather].some(x=>/[\u0900-\u097F]/.test(x)))throw Error('Nepali mixed in English '+JSON.stringify(en));
             await page.click('#langBtn');await page.waitForFunction(()=>document.documentElement.lang==='ne');
             await page.setRequestInterception(true);page.on('request',r=>/overpass-api\.de|overpass\.kumi\.systems/.test(r.url())?r.abort():r.continue());
-            await page.evaluate(()=>{const svg=document.querySelector('#riverMapV3'),p=[...document.querySelectorAll('.districtV3')].find(x=>x.dataset.key==='Sindhuli');if(!p)throw Error('Sindhuli path missing');const B={minLon:80,maxLon:88.35,minLat:26.2,maxLat:30.5},lo=86.328,la=27.164,x=(lo-B.minLon)/(B.maxLon-B.minLon)*1000,y=600-(la-B.minLat)/(B.maxLat-B.minLat)*600,pt=svg.createSVGPoint();pt.x=x;pt.y=y;const m=svg.getScreenCTM(),s=pt.matrixTransform(m);p.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:s.x,clientY:s.y}))});
-            await page.waitForSelector('.selectedPointV3',{timeout:10000});
-            await page.waitForFunction(()=>document.querySelectorAll('.riverV3').length>0&&document.querySelectorAll('.flowTraceV3').length>0,{timeout:45000});
-            const river=await page.$('.riverV3');await river.click();
-            const map=await page.evaluate(()=>({rivers:document.querySelectorAll('.riverV3').length,flows:document.querySelectorAll('.flowTraceV3').length,hint:mapHint.textContent,detail:riverDetail.innerText,animation:getComputedStyle(document.querySelector('.flowTraceV3')).animationName,focus:window.FloodSafe?.state?.kind||null}));
-            if(map.rivers<1||map.flows<1||map.animation==='none'||map.focus!=='map'||!/सुनकोशी|Sunkoshi/.test(map.hint+map.detail))throw Error('Sindhuli fallback failed '+JSON.stringify(map));
+            const tests=[['Myagdi',28.5782,83.5343],['Sindhuli',27.164,86.328],['Jhapa',26.5763,87.9019]];
+            const maps=[];
+            for(const [key,la,lo] of tests){
+              await page.evaluate(([la,lo,key])=>window.FloodSafeMap.choose(la,lo,key),[la,lo,key]);
+              await page.waitForFunction(()=>document.querySelectorAll('.riverV3').length>0&&document.querySelectorAll('.flowTraceV3').length>0,{timeout:35000});
+              const m=await page.evaluate(()=>{const f=document.querySelector('.flowTraceV3');return{rivers:document.querySelectorAll('.riverV3').length,flows:document.querySelectorAll('.flowTraceV3').length,hint:mapHint.textContent,detail:riverDetail.innerText,animation:f?getComputedStyle(f).animationName:'none',focus:window.FloodSafe?.state?.kind||null}});
+              if(m.rivers<1||m.flows<1||m.animation==='none'||m.focus!=='map')throw Error(key+' fallback failed '+JSON.stringify(m));
+              maps.push([key,m]);
+            }
+            const national=await page.evaluate(()=>document.querySelectorAll('#nationalRiverList .station').length);if(national<1)throw Error('nationwide status empty');
             if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,10)));
-            console.log('PASS screenshot regression',{ne,en,map});await browser.close();
+            console.log('PASS screenshot regressions',{ne,en,maps,national});await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

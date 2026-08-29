@@ -1,15 +1,57 @@
 {
-  "generated_at": "2026-08-29T06:53:22.833917+05:45",
-  "updated_at_npt": "29 Aug 06:53 NPT",
+  "generated_at": "2026-08-29T13:37:13.232135+05:45",
+  "updated_at_npt": "29 Aug 13:37 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बाढी पीडितका लागि वीरगन्ज हेल्थ केयर अस्पतालले दियो १० लाख रुपैयाँ",
+      "title": "त्रिशूलीको बाढीले गल्छीको बागेश्वरी मावि क्षतिग्रस्त, विद्यार्थीका झोला कक्षाकोठामै",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588269/birgunj-health-care-hospital-donates-rs-1-million-for-flood-victims",
-      "published_at": "2026-08-29T06:24:49+05:45",
+      "url": "https://www.ratopati.com/story/588338/bageshwori-secondary-school-in-galchi-damaged-by-trishuli-floods-students-bags-left-in-classrooms",
+      "published_at": "2026-08-29T13:03:02+05:45",
       "flash": true
+    },
+    {
+      "title": "बाढीपीडितका लागि क्यानद्वारा ३० लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588336/can-provides-rs-3-million-in-assistance-to-flood-victims",
+      "published_at": "2026-08-29T12:57:44+05:45",
+      "flash": true
+    },
+    {
+      "title": "गुल्मीमा कालीगण्डकी करिडोर र मदन भण्डारी राजमार्ग अवरुद्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588335/kaligandaki-corridor-and-madan-bhandari-highway-blocked-in-gulmi",
+      "published_at": "2026-08-29T12:52:21+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढी : मधेस प्रदेशका हराइरहेकामध्ये २२ जना सम्पर्कमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588333/bhotekoshi-flood-22-missing-people-from-madhes-province-in-contact",
+      "published_at": "2026-08-29T12:51:55+05:45",
+      "flash": true
+    },
+    {
+      "title": "पहिलो पटक आफ्नै ट्रक लिएर रसुवा पुगेका सुजन सम्पर्कविहीन, घरमा मोबाइलको घण्टी कुर्दै परिवार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588323/sujan-who-reached-rasuwa-for-the-first-time-with-his-own-truck-is-out-of-contact-family-waiting-for-his-mobile-phone-to-ring-at-home",
+      "published_at": "2026-08-29T12:30:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "खाजाको पैसा काटेर बाढीपीडितलाई सहयोग, रौतहटका विद्यार्थीको अभियान भाइरल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588328/rautahat-students-campaign-goes-viral-to-help-flood-victims-by-cutting-lunch-fees",
+      "published_at": "2026-08-29T12:22:42+05:45",
+      "flash": false
+    },
+    {
+      "title": "पोखरामा भेलले बगाउँदा आमा-छोरीको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588282/mother-and-daughter-die-after-being-swept-away-by-a-flash-flood-in-pokhara",
+      "published_at": "2026-08-29T08:25:43+05:45",
+      "flash": false
     }
   ],
   "sources": {
@@ -28,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 1
+      "flash": 4,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,

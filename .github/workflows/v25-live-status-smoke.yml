@@ -73,11 +73,12 @@ jobs:
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"; test -n "$CHROME"
           mkdir -p /tmp/v25-status && cd /tmp/v25-status; npm init -y >/dev/null 2>&1; npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
           EXPECTED="$(cat /tmp/expected.txt)" BASE="$BASE" CHROME="$CHROME" node <<'JS'
-          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
+          const puppeteer=require('puppeteer-core');
           (async()=>{
             const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
             const p=await b.newPage(); await p.setViewport({width:412,height:915}); p.setDefaultTimeout(70000); const exp=process.env.EXPECTED.split('|').map(Number),errors=[]; p.on('pageerror',e=>errors.push(String(e)));
-            await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});
+            async function nav(path){await p.goto(process.env.BASE+path+(path.includes('?')?'&':'?')+'ci='+Date.now(),{waitUntil:'commit',timeout:30000});}
+            await nav('');
             await p.waitForFunction(()=>window.__fsUnifiedHuman?.owner==='human-final-v4'&&Number(document.getElementById('homeDeathsLive')?.textContent)>0);
             const h=await p.evaluate(()=>({shown:['homeDeathsLive','homeMissingLive','homeRescuedLive'].map(id=>Number(document.getElementById(id).textContent)),owner:window.__fsUnifiedHuman.owner,hidden:document.getElementById('humanStatsSection').hidden,toggle:!!document.getElementById('fsLangToggle'),lang:document.documentElement.lang}));
             if(h.hidden||h.owner!=='human-final-v4'||h.shown.join('|')!==exp.join('|')||!h.toggle)throw Error('Human '+JSON.stringify({h,exp}));
@@ -86,18 +87,18 @@ jobs:
             if(!/Key information/i.test(en.head)||en.brand!=='FloodSafe Nepal'||en.nav.some(x=>/[\u0900-\u097F]/.test(x)))throw Error('English language '+JSON.stringify(en));
             await p.click('#fsLangToggle'); await p.waitForFunction(()=>document.documentElement.lang==='ne'&&/मुख्य जानकारी/.test(document.querySelector('.pageHead h2')?.textContent||''));
 
-            await p.goto(process.env.BASE+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});
+            await nav('alerts.html');
             await p.waitForFunction(()=>window.__fsAlertSummary?.checkedAt>0);
             const hub=await p.evaluate(()=>({flood:!!document.querySelector('a[href="./flood.html"]'),roads:!!document.querySelector('a[href="./roads.html"]'),mixedFlood:!!document.getElementById('alertsList'),mixedRoad:!!document.getElementById('roadCurrentListLive'),road:Number(document.getElementById('roadAlertCount')?.textContent),owner:window.__fsAlertSummary}));
             if(!hub.flood||!hub.roads||hub.mixedFlood||hub.mixedRoad||hub.road!==hub.owner.closed)throw Error('Alert hub '+JSON.stringify(hub));
 
-            await p.goto(process.env.BASE+'flood.html?ci='+Date.now(),{waitUntil:'domcontentloaded'}); await p.waitForFunction(()=>window.__fsFloodState?.owner==='flood-v4');
+            await nav('flood.html'); await p.waitForFunction(()=>window.__fsFloodState?.owner==='flood-v4');
             const fl=await p.evaluate(()=>({owner:window.__fsFloodState.owner,flood:!!document.getElementById('floodAlertsListLive'),road:!!document.getElementById('roadCurrentListLive')})); if(fl.owner!=='flood-v4'||!fl.flood||fl.road)throw Error('Flood isolation '+JSON.stringify(fl));
 
-            await p.goto(process.env.BASE+'roads.html?ci='+Date.now(),{waitUntil:'domcontentloaded'}); await p.waitForFunction(()=>window.__fsRoadState?.owner==='road-v5'&&window.__fsDistrictState?.owner==='district-v6'); await p.waitForFunction(()=>document.querySelectorAll('#districtFilter option').length===78);
+            await nav('roads.html'); await p.waitForFunction(()=>window.__fsRoadState?.owner==='road-v5'&&window.__fsDistrictState?.owner==='district-v6'); await p.waitForFunction(()=>document.querySelectorAll('#districtFilter option').length===78);
             const rd=await p.evaluate(()=>({owner:window.__fsRoadState.owner,dOwner:window.__fsDistrictState.owner,road:!!document.getElementById('roadCurrentListLive'),flood:!!document.getElementById('floodAlertsListLive'),opts:document.querySelectorAll('#districtFilter option').length,districts:window.__fsDistrictState.districts,visible:document.querySelectorAll('#districtStatusList .item').length})); if(rd.owner!=='road-v5'||rd.dOwner!=='district-v6'||!rd.road||rd.flood||rd.opts!==78||rd.districts!==77||rd.visible>12)throw Error('Road/district isolation '+JSON.stringify(rd));
 
-            await p.goto(process.env.BASE+'news.html?ci='+Date.now(),{waitUntil:'domcontentloaded'}); await p.waitForFunction(()=>document.querySelectorAll('#newsList .item').length>0,{timeout:70000}); const news=await p.evaluate(()=>({count:document.querySelectorAll('#newsList .item').length,titles:[...document.querySelectorAll('#newsList h4')].map(x=>x.textContent.trim()),empty:!!document.querySelector('#newsList .empty')})); if(news.count<1||news.empty||new Set(news.titles).size!==news.titles.length)throw Error('News '+JSON.stringify(news));
+            await nav('news.html'); await p.waitForFunction(()=>document.querySelectorAll('#newsList .item').length>0,{timeout:70000}); const news=await p.evaluate(()=>({count:document.querySelectorAll('#newsList .item').length,titles:[...document.querySelectorAll('#newsList h4')].map(x=>x.textContent.trim()),empty:!!document.querySelector('#newsList .empty')})); if(news.count<1||news.empty||new Set(news.titles).size!==news.titles.length)throw Error('News '+JSON.stringify(news));
             if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,10))); console.log('PASS current V25 architecture',{h,en,hub,fl,rd,news}); await b.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

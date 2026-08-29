@@ -1,0 +1,19 @@
+(()=>{'use strict';
+if(window.__fsNewsLiveV3)return;window.__fsNewsLiveV3=true;
+const out=()=>document.getElementById('floodNews');
+const KCHA='https://kchakhabar.com/api/v1/today.json?limit=220';
+const RONB='https://www.ronbpost.com/wp-json/wp/v2/posts?per_page=20&_fields=date,modified,link,title';
+const MAJOR=/routine of nepal|ronb|onlinekhabar|ratopati|setopati|kantipur|kathmandu post|radio nepal|gorkhapatra|nepal news|republica|baahrakhari|himal khabar|annapurna|nepal press|ujyaalo|ekantipur/i;
+let last=0;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const strip=s=>String(s??'').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#8211;|&#8212;|&#8230;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+const ts=v=>{const n=+new Date(v||0);return Number.isFinite(n)?n:0};
+async function get(u,ms=7000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(u+(u.includes('?')?'&':'?')+'_nl3='+Date.now(),{cache:'no-store',credentials:'omit',signal:c.signal,headers:{accept:'application/json'}});if(!r.ok)throw Error(r.status);return await r.json()}finally{clearTimeout(t)}}
+function kcha(j){const a=Array.isArray(j?.stories)?j.stories:Array.isArray(j?.items)?j.items:Array.isArray(j?.data)?j.data:[];return a.map(x=>{const s=x.sources?.[0]||{};return{title:x.topic_ne||x.title_ne||x.title||x.headline||x.topic_en||'',source:s.publisher||x.publisher||x.source||x.source_name||'Nepal media',url:s.url||x.url||x.link||'',time:x.first_reported||x.published_at||x.updated_at||x.date}})}
+function ronb(j){return(Array.isArray(j)?j:[]).map(x=>({title:strip(x?.title?.rendered||''),source:'RONB Post',url:x.link||'',time:x.date||x.modified}))}
+function age(t){const m=Math.max(0,Math.floor((Date.now()-ts(t))/60000));if(m<1)return'अहिले';if(m<60)return`${m} मिनेट अघि`;const h=Math.floor(m/60);return h<24?`${h} घण्टा ${m%60} मिनेट अघि`:`${Math.floor(h/24)} दिन अघि`}
+function render(all){const el=out();if(!el)return;const seen=new Set(),cut=Date.now()-36*3600000;const list=all.filter(x=>x.title&&ts(x.time)>=cut&&ts(x.time)<=Date.now()+300000).filter(x=>{const k=x.title.toLowerCase().replace(/\W+/g,' ').trim();if(!k||seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>ts(b.time)-ts(a.time)).slice(0,30);el.innerHTML='';if(!list.length){el.innerHTML='<div class="empty">नयाँ राष्ट्रिय समाचार feed अहिले उपलब्ध छैन।</div>';return}for(const x of list){const a=document.createElement('article');a.className='newsItem'+(/ronb/i.test(x.source)?' ronbNews':'');const live=Date.now()-ts(x.time)<30*60000?' <b class="liveDot">LIVE</b>':'';a.innerHTML=`<h4>${esc(x.title)}</h4><div class="meta">${esc(x.source)} • ${esc(age(x.time))}${live}</div>${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">समाचार खोल्नुहोस् ↗</a>`:''}`;el.appendChild(a)}}
+async function sync(force=false){if(!force&&Date.now()-last<10000)return;last=Date.now();let all=[];const [a,b]=await Promise.allSettled([get(KCHA,8000),get(RONB,6500)]);if(a.status==='fulfilled')all.push(...kcha(a.value));if(b.status==='fulfilled')all.push(...ronb(b.value));all=all.filter(x=>MAJOR.test(x.source)||/ronb/i.test(x.source));render(all)}
+function boot(){const h=document.querySelector('#bulletin h3');if(h)h.textContent='📰 Latest Nepal News • LIVE';const m=document.querySelector('#bulletin .head .muted');if(m)m.textContent='RONB + ठूला राष्ट्रिय मिडियाका नयाँ समाचार • newest post माथि';const badge=document.querySelector('#bulletin .badge');if(badge){badge.textContent='LIVE';badge.classList.remove('red');badge.classList.add('green')}sync(true);setInterval(sync,12000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync(true)});window.addEventListener('online',()=>sync(true))}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();

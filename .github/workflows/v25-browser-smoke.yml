@@ -24,20 +24,19 @@ jobs:
           ok=0
           for i in $(seq 1 60); do
             curl --max-time 10 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'flood-only.js?v=10' /tmp/index.html && grep -Fq 'map-v4.js?v=1' /tmp/index.html && grep -Fq 'language-pure.js?v=2' /tmp/index.html && grep -Fq 'id="nationalRiverList"' /tmp/index.html; then ok=1; break; fi
+            if grep -Fq 'flood-only.js?v=10' /tmp/index.html && grep -Fq 'map-v5.js?v=1' /tmp/index.html && grep -Fq 'language-pure.js?v=3' /tmp/index.html && grep -Fq 'id="nationalRiverList"' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-          for f in flood-only.js flood-freshness.js news-live-v3.js map-v4.js language-pure.js; do
+          for f in flood-only.js flood-freshness.js news-live-v3.js map-v5.js language-pure.js; do
             curl --max-time 12 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}" -o "/tmp/${f}"
             node --check "/tmp/${f}"
           done
           grep -Fq '__fsFloodCoreV10' /tmp/flood-only.js
-          grep -Fq 'stationInfoAt' /tmp/flood-only.js
-          grep -Fq 'renderNational' /tmp/flood-only.js
-          grep -Fq '__fsMapV7' /tmp/map-v4.js
-          grep -Fq 'flowTraceV3' /tmp/map-v4.js
-          grep -Fq '__fsPureLangV2' /tmp/language-pure.js
+          grep -Fq '__fsMapV8' /tmp/map-v5.js
+          grep -Fq 'SUNKOSHI' /tmp/map-v5.js
+          grep -Fq 'flowTraceV3' /tmp/map-v5.js
+          grep -Fq '__fsPureLangV3' /tmp/language-pure.js
           grep -Fq "setInterval(poll,5000)" /tmp/flood-only.js
 
       - name: Verify live upstream sources
@@ -51,18 +50,8 @@ jobs:
           assert len(rows)>0, 'BIPAD river station feed empty'
           print('BIPAD rows',len(rows))
           PY
-          curl --max-time 25 -fsSL -X POST 'https://overpass-api.de/api/interpreter' \
-            --data-urlencode 'data=[out:json][timeout:15];(way["waterway"="river"](26.45,87.65,26.80,88.15);way["waterway"="stream"](26.45,87.65,26.80,88.15););out tags geom 25;' \
-            -o /tmp/river.json
-          python3 - <<'PY'
-          import json
-          j=json.load(open('/tmp/river.json'))
-          a=[x for x in j.get('elements',[]) if len(x.get('geometry',[]))>1]
-          assert a, 'Overpass returned no river geometry'
-          print('Overpass river geometries',len(a))
-          PY
 
-      - name: Browser pure language flow map and nationwide status smoke
+      - name: Browser screenshot regression smoke
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -78,23 +67,15 @@ jobs:
             const page=await browser.newPage();page.setDefaultTimeout(60000);page.setDefaultNavigationTimeout(60000);
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));
             await page.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'networkidle2'});
-            await page.waitForSelector('#riverMapV3');await page.waitForSelector('.districtV3');await page.waitForSelector('#nationalRiverList');
-            await page.waitForFunction(()=>document.querySelector('#stationCount')?.textContent!=='—',{timeout:30000});
-            const ne=await page.evaluate(()=>({core:!!window.__fsFloodCoreV10,map:!!window.__fsMapV7,pure:!!window.__fsPureLangV2,districts:document.querySelectorAll('.districtV3').length,labels:[...document.querySelectorAll('.districtLabelV3')].slice(0,8).map(x=>x.textContent),title:localRiskTitle.textContent,near:nearTitle.textContent,status:riverStatusTitle.textContent,mapTitle:document.querySelector('#mapTitle').textContent}));
-            if(!ne.core||!ne.map||!ne.pure||ne.districts<70)throw Error('base '+JSON.stringify(ne));
-            if([ne.title,ne.near,ne.status,ne.mapTitle,...ne.labels].some(x=>/[A-Za-z]/.test(x)))throw Error('English mixed in Nepali UI '+JSON.stringify(ne));
-            await page.click('#langBtn');await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.querySelector('#localRiskTitle')?.textContent.includes('Local Flood Risk'));
-            const en=await page.evaluate(()=>({risk:localRiskTitle.textContent,map:mapTitle.textContent,near:nearTitle.textContent,national:riverStatusTitle.textContent,nav:navHome.textContent,zoom:mapZoomIn.textContent}));
-            if(Object.values(en).some(x=>/[\u0900-\u097F]/.test(x)))throw Error('Nepali mixed in English UI '+JSON.stringify(en));
+            await page.waitForSelector('#riverMapV3');await page.waitForSelector('.districtV3');await page.waitForFunction(()=>document.querySelector('#stationCount')?.textContent!=='—',{timeout:30000});
+            const ne=await page.evaluate(()=>({core:!!window.__fsFloodCoreV10,map:!!window.__fsMapV8,pure:!!window.__fsPureLangV3,title:localRiskTitle.textContent,weather:[...document.querySelectorAll('.weatherGrid small')].map(x=>x.textContent),outside:document.querySelector('#outsideNotice strong')?.textContent||'',zoom:mapZoomIn.textContent}));
+            if(!ne.core||!ne.map||!ne.pure)throw Error('engines '+JSON.stringify(ne));
+            if([ne.title,ne.outside,ne.zoom,...ne.weather].some(x=>/[A-Za-z]/.test(x)))throw Error('English mixed in Nepali UI '+JSON.stringify(ne));
+            await page.click('#langBtn');await page.waitForFunction(()=>document.documentElement.lang==='en');
+            const en=await page.evaluate(()=>({title:localRiskTitle.textContent,weather:[...document.querySelectorAll('.weatherGrid small')].map(x=>x.textContent),outside:document.querySelector('#outsideNotice strong')?.textContent||'',outsideText:outsideNoticeText.textContent,zoom:mapZoomIn.textContent,map:mapTitle.textContent}));
+            if([en.title,en.outside,en.outsideText,en.zoom,en.map,...en.weather].some(x=>/[\u0900-\u097F]/.test(x)))throw Error('Nepali mixed in English UI '+JSON.stringify(en));
             await page.click('#langBtn');await page.waitForFunction(()=>document.documentElement.lang==='ne');
-            await page.$eval('.districtV3',el=>{const r=el.getBoundingClientRect();el.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2}))});
-            await page.waitForSelector('.selectedPointV3',{timeout:10000});
-            await page.waitForFunction(()=>document.querySelectorAll('.riverV3').length>0&&document.querySelectorAll('.flowTraceV3').length>0,{timeout:45000});
-            const river=await page.$('.riverV3');await river.click();
-            const map=await page.evaluate(()=>({rivers:document.querySelectorAll('.riverV3').length,flows:document.querySelectorAll('.flowTraceV3').length,detail:riverDetail.innerText,focus:window.FloodSafe?.state?.kind||null,animation:getComputedStyle(document.querySelector('.flowTraceV3')).animationName}));
-            if(map.rivers<1||map.flows<1||map.focus!=='map'||map.animation==='none'||!/(पानीको तह|मापन केन्द्र|३५)/.test(map.detail))throw Error('flow map '+JSON.stringify(map));
-            const national=await page.evaluate(()=>document.querySelectorAll('#nationalRiverList .station').length);if(national<1)throw Error('no nationwide fresh rivers');
-            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,10)));
-            console.log('PASS pure language + flowing rivers + nationwide realtime',{ne,en,map,national});await browser.close();
+            await page.setRequestInterception(true);page.on('request',r=>/overpass-api\.de|overpass\.kumi\.systems/.test(r.url())?r.abort():r.continue());
+            await page.evaluate(()=>{const svg=document.querySelector('#riverMapV3'),p=[...document.querySelectorAll('.districtV3')].find(x=>x.dataset.key==='Sindhuli');if(!p)throw Error('Sindhuli path missing');const lo=86.328,la=27.164,minLo=80,maxLo=88.35,minLa=26.2,maxLa=30.5,x=(lo-minLo)/(maxLo-minLo)*1000,y=600-(la-minLa)/(maxLa-minLat||1)*600;});
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

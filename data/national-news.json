@@ -1,15 +1,22 @@
 {
-  "generated_at": "2026-08-29T23:06:52.575077+05:45",
-  "updated_at_npt": "29 Aug 23:06 NPT",
+  "generated_at": "2026-08-30T01:36:11.322787+05:45",
+  "updated_at_npt": "30 Aug 01:36 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "पोखरा महानगरले थाल्यो राहत सङ्कलन अभियान",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588447/pokhara-metropolitan-city-launches-relief-collection-campaign",
+      "published_at": "2026-08-30T01:27:31+05:45",
+      "flash": true
+    },
     {
       "title": "रसुवाका बाढी पीडितलाई पुष्पलाल स्मारक समितिद्वारा ५१ हजार सहयोग",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588439/pushpalal-memorial-committee-provides-rs-51000-assistance-to-flood-victims-in-rasuwa",
       "published_at": "2026-08-29T22:27:05+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भोटेकाेशी बाढी : पीडितलाई सहारा सहकारी गर्‍यो १५ लाख सहयोग",
@@ -37,13 +44,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588413/145-citizens-of-koshi-province-still-uncontacted-21-people-have-come-into-contact-one-has-died",
       "published_at": "2026-08-29T19:46:49+05:45",
-      "flash": false
-    },
-    {
-      "title": "रौतहटमा कृषि फार्मको गोठमा आगलागी: ७ चौपायाको मृत्यु, ९ लाख बराबरको क्षति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588395/fire-in-farm-shed-in-rautahat-7-livestock-killed-damage-worth-rs-900000",
-      "published_at": "2026-08-29T17:17:54+05:45",
       "flash": false
     }
   ],

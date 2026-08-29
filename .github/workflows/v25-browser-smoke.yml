@@ -24,17 +24,18 @@ jobs:
           ok=0
           for i in $(seq 1 40); do
             good=1
-            for f in index.html alerts.html people.html weather.html news.html sources.html map.html human-final.js national-news.js news-stability.js language-v2.js language-runtime.js disaster-monitor.js sw.js; do curl --max-time 8 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/${f//\//_}" || good=0; done
-            grep -Fq 'human-final.js?v=1' /tmp/index.html || good=0
-            grep -Fq 'human-final.js?v=1' /tmp/people.html || good=0
-            grep -Fq 'alerts-final-lock.js?v=1' /tmp/alerts.html || good=0
+            for f in index.html alerts.html people.html weather.html news.html sources.html map.html human-final-v2.js flood-live-v2.js road-live-v3.js national-news.js news-stability.js language-v2.js language-runtime.js disaster-monitor.js sw.js; do curl --max-time 8 -fsSL "${BASE}${f}?ci=${GITHUB_SHA}-${i}" -o "/tmp/${f}" || good=0; done
+            grep -Fq 'human-final-v2.js?v=1' /tmp/index.html || good=0
+            grep -Fq 'human-final-v2.js?v=1' /tmp/people.html || good=0
+            grep -Fq 'flood-live-v2.js?v=1' /tmp/alerts.html || good=0
+            grep -Fq 'road-live-v3.js?v=1' /tmp/alerts.html || good=0
             grep -Fq 'language-runtime.js?v=1' /tmp/index.html || good=0
-            grep -Fq 'shell-40' /tmp/sw.js || good=0
+            grep -Fq 'shell-41' /tmp/sw.js || good=0
             if [ "$good" = 1 ]; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-          for f in /tmp/human-final.js /tmp/national-news.js /tmp/news-stability.js /tmp/language-v2.js /tmp/language-runtime.js /tmp/disaster-monitor.js /tmp/sw.js; do node --check "$f"; done
+          for f in /tmp/human-final-v2.js /tmp/flood-live-v2.js /tmp/road-live-v3.js /tmp/national-news.js /tmp/news-stability.js /tmp/language-v2.js /tmp/language-runtime.js /tmp/disaster-monitor.js /tmp/sw.js; do node --check "$f"; done
           grep -Fq 'FLASH_MS=60*60*1000' /tmp/national-news.js
           grep -Fq 'RECENT_MS=6*60*60*1000' /tmp/national-news.js
           grep -Fq 'seen.has(keyOf(x))' /tmp/national-news.js
@@ -45,20 +46,16 @@ jobs:
           MAP: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v24/?mapOnly=1&v25=1
         run: |
           set -euo pipefail
-          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
-          test -n "$CHROME"
-          mkdir -p /tmp/v25pages && cd /tmp/v25pages
-          npm init -y >/dev/null 2>&1
-          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"; test -n "$CHROME"
+          mkdir -p /tmp/v25pages && cd /tmp/v25pages; npm init -y >/dev/null 2>&1; npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
           BASE="$BASE" MAP="$MAP" CHROME="$CHROME" node <<'JS'
-          const puppeteer=require('puppeteer-core');const wait=ms=>new Promise(r=>setTimeout(r,ms));
+          const puppeteer=require('puppeteer-core'),wait=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});const p=await b.newPage();p.setDefaultTimeout(60000);const errors=[];p.on('pageerror',e=>errors.push(String(e)));
-            await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('.todayHero');await p.waitForFunction(()=>window.__fsUnifiedHuman&&document.getElementById('homeDeaths')?.textContent!=='—');const home=await p.evaluate(()=>({map:document.querySelector('.navCard.map')?.getAttribute('href'),human:document.getElementById('humanStatsSection')?.hidden,owner:window.__fsUnifiedHuman?.owner}));if(home.map!=='./map.html'||home.human||home.owner!=='human-final')throw Error('home '+JSON.stringify(home));
-            await p.goto(process.env.BASE+'news.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await wait(7000);const news=await p.evaluate(()=>({cards:[...document.querySelectorAll('#newsList .item h4')].map(x=>x.textContent.trim()),empty:document.getElementById('newsList')?.textContent||'',count:document.getElementById('newsCount')?.textContent||''}));if(new Set(news.cards).size!==news.cards.length)throw Error('duplicate news '+JSON.stringify(news));
-            await p.goto(process.env.BASE+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#floodAlertSection');await p.waitForSelector('#roadLiveSection');await p.waitForSelector('#districtLiveSection');const al=await p.evaluate(()=>({f:!!document.getElementById('alertsList'),r:!!document.getElementById('roadCurrentList'),d:!!document.getElementById('districtStatusList'),map:document.querySelector('.footerNav a:nth-child(2)')?.getAttribute('href')}));if(!al.f||!al.r||!al.d||al.map!=='./map.html')throw Error('alerts '+JSON.stringify(al));
+            await p.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('.todayHero');await p.waitForFunction(()=>window.__fsUnifiedHuman?.owner==='human-final-v2'&&document.getElementById('homeDeathsLive')?.textContent!=='—');const home=await p.evaluate(()=>({map:document.querySelector('.navCard.map')?.getAttribute('href'),human:document.getElementById('humanStatsSection')?.hidden,owner:window.__fsUnifiedHuman?.owner,legacy:!!document.getElementById('homeDeaths')}));if(home.map!=='./map.html'||home.human||home.owner!=='human-final-v2'||home.legacy)throw Error('home '+JSON.stringify(home));
+            await p.goto(process.env.BASE+'news.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await wait(7000);const news=await p.evaluate(()=>({cards:[...document.querySelectorAll('#newsList .item h4')].map(x=>x.textContent.trim()),text:document.getElementById('newsList')?.textContent||''}));if(new Set(news.cards).size!==news.cards.length)throw Error('duplicate news '+JSON.stringify(news));
+            await p.goto(process.env.BASE+'alerts.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.__fsFloodState?.owner==='flood-v2'&&window.__fsRoadState?.owner==='road-v3');const al=await p.evaluate(()=>({f:!!document.getElementById('floodAlertsListLive'),r:!!document.getElementById('roadCurrentListLive'),d:!!document.getElementById('districtStatusList'),legacy:!!document.getElementById('alertsList')||!!document.getElementById('roadCurrentList'),map:document.querySelector('.footerNav a:nth-child(2)')?.getAttribute('href')}));if(!al.f||!al.r||!al.d||al.legacy||al.map!=='./map.html')throw Error('alerts '+JSON.stringify(al));
             await p.goto(process.env.BASE+'weather.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#gpsWeatherBtn');if(!(await p.$('#wxTemp')))throw Error('weather UI missing');
-            await p.goto(process.env.BASE+'sources.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#fsLangToggle');const src=await p.evaluate(()=>document.querySelector('.pageHead h2')?.textContent);if(!src)throw Error('sources missing');
+            await p.goto(process.env.BASE+'sources.html?ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('#fsLangToggle');if(!(await p.$('.pageHead h2')))throw Error('sources missing');
             await p.goto(process.env.MAP+'&ci='+Date.now(),{waitUntil:'domcontentloaded'});await p.waitForSelector('.leaflet-container',{timeout:60000});const map=await p.evaluate(()=>{const e=document.querySelector('.leaflet-container'),r=e.getBoundingClientRect();return{pointer:getComputedStyle(e).pointerEvents,w:r.width,h:r.height,back:!!document.querySelector('.fsMapBack')}});if(map.pointer==='none'||map.w<200||map.h<200||!map.back)throw Error('map '+JSON.stringify(map));
-            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,8)));console.log('PASS V25 pages',home,news,al,map);await b.close();
-          })().catch(e=>{console.error(e);process.exit(3)});
+            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,8)));console.log('PASS V25 pages',home,news,al,map);await b.close()})().catch(e=>{console.error(e);process.exit(3)});
           JS

@@ -1,5 +1,22 @@
 (()=>{'use strict';if(window.__fsSwRegister)return;window.__fsSwRegister=true;
-function hardNav(e){try{if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;const a=e.target&&e.target.closest?e.target.closest('a[href]'):null;if(!a||a.target==='_blank'||a.hasAttribute('download'))return;const u=new URL(a.href,location.href);if(u.origin!==location.origin)return;e.preventDefault();location.assign(u.href)}catch{}}
-document.addEventListener('click',hardNav,true);
-(async()=>{let controlled=false;try{controlled=!!navigator.serviceWorker?.controller}catch{}try{if('serviceWorker'in navigator){const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){if(String(r.scope||'').includes('/floodsafe-nepal/v25/'))await r.unregister()}}}catch{}try{if('caches'in window){const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('floodsafe-nepal-v25-')).map(k=>caches.delete(k)))}}catch{}if(controlled){let done=false;try{done=sessionStorage.getItem('fs-v25-sw-disabled-reload')==='1'}catch{}if(!done){try{sessionStorage.setItem('fs-v25-sw-disabled-reload','1')}catch{}location.reload()}}})();
+// Stability mode: never intercept taps/clicks. Native <a href> navigation must remain untouched.
+// Remove any old V25 service worker/cache quietly in the background.
+const cleanup=async()=>{
+  try{
+    if('serviceWorker' in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      for(const r of regs){
+        if(String(r.scope||'').includes('/floodsafe-nepal/v25/')) await r.unregister();
+      }
+    }
+  }catch(_){}
+  try{
+    if('caches' in window){
+      const keys=await caches.keys();
+      await Promise.all(keys.filter(k=>k.startsWith('floodsafe-nepal-v25-')).map(k=>caches.delete(k)));
+    }
+  }catch(_){}
+};
+if('requestIdleCallback' in window) requestIdleCallback(()=>cleanup(),{timeout:1500});
+else setTimeout(cleanup,400);
 })();

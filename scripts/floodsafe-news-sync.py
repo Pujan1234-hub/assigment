@@ -11,7 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 
 OUT=Path('data/floodsafe-news.json')
-UA='Mozilla/5.0 (compatible; FloodSafeNepal-News/3.2; +https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/)'
+UA='Mozilla/5.0 (compatible; FloodSafeNepal-News/3.3; +https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/)'
 HEADERS={'User-Agent':UA,'Cache-Control':'no-cache','Pragma':'no-cache','Accept-Language':'ne,en;q=0.8'}
 NP_DIGITS=str.maketrans('०१२३४५६७८९','0123456789')
 SOURCES=(('RONB Post','ronb'),('eKantipur','ekantipur'),('Hamro Patro','hamropatro'),('Radio Nepal','radionepal'))
@@ -89,6 +89,12 @@ def site_candidates(listing_urls,host,max_links=30):
    if len(title)<15 or len(title)>220 or u in seen:continue
    seen.add(u);out.append((title,u))
    if len(out)>=max_links:return out
+  # Some publishers hydrate links in JSON/script instead of normal anchors.
+  for raw_u in re.findall(r'(?:https?://(?:www\.)?'+re.escape(host)+r')?(/[^"\'<>\s]*/20\d{2}/\d{2}/\d{2}/[^"\'<>\s]+)',r.text,re.I):
+   u=urljoin(listing,raw_u).replace('\\/','/').split('#')[0]
+   if u in seen:continue
+   seen.add(u);out.append(('Latest article',u))
+   if len(out)>=max_links:return out
  return out
 
 def verified_candidates(source,cand):
@@ -100,12 +106,26 @@ def verified_candidates(source,cand):
    if x:out.append(x)
  return out
 
-def fetch_ronb():
- out=[];url='https://www.ronbpost.com/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,link,title'
+def wp_posts(url,source):
+ out=[]
  for x in get(url).json():
-  t=x.get('date_gmt') or x.get('modified_gmt') or ''
+  t=x.get('date_gmt') or x.get('modified_gmt') or x.get('date') or x.get('modified') or ''
   if t and not re.search(r'(?:Z|[+-]\d\d:\d\d)$',t,re.I):t+='Z'
-  add(out,(x.get('title') or {}).get('rendered'),x.get('link'),t,'RONB Post')
+  title=x.get('title') or {}
+  if isinstance(title,dict):title=title.get('rendered')
+  add(out,title,x.get('link'),t,source)
+ return out
+
+def fetch_ronb():
+ return wp_posts('https://www.ronbpost.com/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,link,title','RONB Post')
+
+def first_seen_fallback(source,cand):
+ now=datetime.now(timezone.utc);out=[]
+ for i,(title,u) in enumerate(cand):
+  old=OLD_BY_URL.get(u)
+  if old and stamp(old.get('published_at')):
+   x=dict(old);x['source']=source;x['time_exact']=False;out.append(x)
+  elif title!='Latest article':add(out,title,u,(now-timedelta(seconds=i)).isoformat(),source,time_exact=False)
  return out
 
 def fetch_ekantipur():
@@ -113,19 +133,11 @@ def fetch_ekantipur():
   items=parse_rss(get('https://ekantipur.com/rss').text,'eKantipur','https://ekantipur.com/')
   if items:return items
  except:pass
- cand=site_candidates(('https://ekantipur.com/headlines','https://ekantipur.com/'),'ekantipur.com',15)
+ cand=site_candidates(('https://ekantipur.com/headlines','https://ekantipur.com/breaking','https://ekantipur.com/news','https://ekantipur.com/'),'ekantipur.com',40)
  if not cand:return []
  exact=verified_candidates('eKantipur',cand)
  if exact:return exact
- # Kantipur's page sometimes exposes live ordering but no machine-readable time.
- # Preserve the first-seen timestamp per URL so old stories never become "new" again.
- now=datetime.now(timezone.utc);out=[]
- for i,(title,u) in enumerate(cand):
-  old=OLD_BY_URL.get(u)
-  if old and stamp(old.get('published_at')):
-   x=dict(old);x['source']='eKantipur';x['time_exact']=False;out.append(x)
-  else:add(out,title,u,(now-timedelta(seconds=i)).isoformat(),'eKantipur',time_exact=False)
- return out
+ return first_seen_fallback('eKantipur',cand)
 
 def rel_minutes(text):
  s=str(text or '').translate(NP_DIGITS).lower()
@@ -161,13 +173,21 @@ def fetch_hamropatro():
  return []
 
 def fetch_radionepal():
- for url in ('https://radionepalonline.com/feed/','https://radionepalonline.com/en/feed/'):
+ # Radio Nepal is the official public broadcaster; use the official .gov.np site only.
+ for url in ('https://radionepal.gov.np/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,date,modified,link,title',
+             'https://radionepal.gov.np/en/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,date,modified,link,title'):
   try:
-   items=parse_rss(get(url).text,'Radio Nepal','https://radionepalonline.com/')
+   items=wp_posts(url,'Radio Nepal')
    if items:return items
   except:pass
- cand=site_candidates(('https://radionepalonline.com/','https://radionepalonline.com/en/'),'radionepalonline.com',20)
- return verified_candidates('Radio Nepal',cand)
+ try:
+  items=parse_rss(get('https://radionepal.gov.np/feed/').text,'Radio Nepal','https://radionepal.gov.np/')
+  if items:return items
+ except:pass
+ cand=site_candidates(('https://radionepal.gov.np/','https://radionepal.gov.np/en/'),'radionepal.gov.np',30)
+ exact=verified_candidates('Radio Nepal',cand)
+ if exact:return exact
+ return first_seen_fallback('Radio Nepal',cand)
 
 def main():
  global OLD_BY_URL

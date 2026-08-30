@@ -4,40 +4,38 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 OUT = Path('data/floodsafe-people-status.json')
-NEWS = Path('data/national-news.json')
+POLICE = Path('data/floodsafe-police.json')
 RADIO = 'https://radionepalonline.com/en/'
 RADIO_SEARCHES = [
     'https://radionepalonline.com/en/?s=Bhotekoshi',
     'https://radionepalonline.com/en/?s=Rasuwa+flood',
     'https://radionepalonline.com/en/?s=Trishuli+flood',
 ]
-KCHA = 'https://kchakhabar.com/api/v1/today.json?limit=150'
-UA = 'FloodSafe-Nepal/1.3 (+https://pujan1234-hub.github.io/assigment/floodsafe-nepal/)'
+EKANTIPUR = 'https://ekantipur.com/'
+EKANTIPUR_SEARCHES = [
+    'https://ekantipur.com/search?q=%E0%A4%AD%E0%A5%8B%E0%A4%9F%E0%A5%87%E0%A4%95%E0%A5%8B%E0%A4%B6%E0%A5%80',
+    'https://ekantipur.com/search?q=%E0%A4%B0%E0%A4%B8%E0%A5%81%E0%A4%B5%E0%A4%BE%20%E0%A4%AC%E0%A4%BE%E0%A4%A2%E0%A5%80',
+    'https://ekantipur.com/search?q=Bhotekoshi%20flood',
+]
+UA = 'FloodSafe-Nepal/1.4 (+https://pujan1234-hub.github.io/assigment/floodsafe-nepal/)'
 
 EVENT_RE = re.compile(r'(rasuwa|bhotekoshi|bhote\s*koshi|trishuli|रसुवा|भोटेकोशी|त्रिशूली)', re.I)
 FLOOD_RE = re.compile(r'(flood|flash flood|बाढी|आकस्मिक बाढी)', re.I)
-AUTH_RE = re.compile(r'(NDRRMA|National Disaster Risk Reduction|Nepal Police|नेपाल प्रहरी|प्राधिकरण|Authority|security agencies|सरकार)', re.I)
+AUTH_RE = re.compile(r'(NDRRMA|National Disaster Risk Reduction|Nepal Police|नेपाल प्रहरी|प्रहरी प्रधान कार्यालय|प्राधिकरण|Authority)', re.I)
 AGG_RE = re.compile(r'(total|so far|death toll|confirmed|remain(?:s)? unaccounted|remain(?:s)? missing|overall|कुल|हालसम्म|पुष्टि|सम्पर्कविहीन)', re.I)
 CORRECTION_RE = re.compile(r'(revis(?:ed|ion)|correct(?:ed|ion)|updated figure|संशोधित|सच्याइएको)', re.I)
-TRUSTED_PUBLISHERS = re.compile(r'(Radio Nepal|Public Service Broadcasting|RSS|Rastriya Samachar Samiti|The Rising Nepal|Kathmandu Post|Onlinekhabar|Setopati|Ratopati)', re.I)
+SUBGROUP_RE = re.compile(r'(tourists?|foreigners?|विदेशी|पर्यटक|army|सेना|police personnel|प्रहरी कर्मचारी|armed police|सशस्त्र प्रहरी|customs|भन्सार|immigration|अध्यागमन)', re.I)
 
 
 def fetch_text(url):
-    req = urllib.request.Request(
-        url,
-        headers={
-            'User-Agent': UA,
-            'Accept': 'text/html,application/json;q=0.9,*/*;q=0.8',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-        },
-    )
+    req = urllib.request.Request(url, headers={
+        'User-Agent': UA,
+        'Accept': 'text/html,application/json;q=0.9,*/*;q=0.8',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+    })
     with urllib.request.urlopen(req, timeout=20) as r:
         return r.read().decode('utf-8-sig', 'replace')
-
-
-def fetch_json(url):
-    return json.loads(fetch_text(url))
 
 
 def strip_html(raw):
@@ -68,13 +66,20 @@ def url_date_stamp(url):
 def page_time(raw, url):
     patterns = [
         r'<meta[^>]+property=["\']article:published_time["\'][^>]+content=["\']([^"\']+)',
+        r'<meta[^>]+property=["\']article:modified_time["\'][^>]+content=["\']([^"\']+)',
         r'<meta[^>]+name=["\']date["\'][^>]+content=["\']([^"\']+)',
         r'<time[^>]+datetime=["\']([^"\']+)',
+        r'"dateModified"\s*:\s*"([^"]+)"',
+        r'"datePublished"\s*:\s*"([^"]+)"',
     ]
+    best = (0, None)
     for p in patterns:
-        m = re.search(p, raw, re.I)
-        if m and parse_time(m.group(1)):
-            return parse_time(m.group(1)), m.group(1)
+        for m in re.finditer(p, raw, re.I):
+            stamp = parse_time(m.group(1))
+            if stamp > best[0]:
+                best = (stamp, m.group(1))
+    if best[0]:
+        return best
     stamp = url_date_stamp(url)
     iso = datetime.fromtimestamp(stamp, timezone.utc).isoformat() if stamp else None
     return stamp, iso
@@ -94,8 +99,8 @@ def metrics(text):
     pats = {
         'death': [
             r'(?:death toll|deaths?|confirmed dead|मृत्यु|मृतक)[^0-9]{0,55}(\d{1,6})',
-            r'(\d{1,6})\s+(?:people|persons|जना)?[^.।]{0,45}(?:confirmed dead|dead|died|मृत्यु|मृतक)',
-            r'(?:total|कुल|हालसम्म)[^0-9]{0,30}(\d{1,6})[^.।]{0,30}(?:dead|deaths?|मृत्यु|मृतक)',
+            r'(\d{1,6})\s+(?:people|persons|जना)?[^.।]{0,45}(?:confirmed dead|dead|died|मृत्यु|मृतक|शव\s+फेला)',
+            r'(?:total|कुल|हालसम्म)[^0-9]{0,30}(\d{1,6})[^.।]{0,35}(?:dead|deaths?|मृत्यु|मृतक|शव)',
         ],
         'missing': [
             r'(\d{1,6})\s+(?:people|persons|जना)?[^.।]{0,65}(?:remain\s+)?(?:unaccounted for|missing|सम्पर्कविहीन|बेपत्ता)',
@@ -119,142 +124,121 @@ def metrics(text):
     return out
 
 
-def add_candidate(best, kind, value, stamp, iso, source, url, confidence=2, correction=False):
+def add_candidate(best, kind, value, stamp, iso, source, url, authority=True, correction=False):
     if not value or value <= 0:
         return
     c = {
-        'value': int(value), 'stamp': stamp or 0, 'iso': iso or datetime.now(timezone.utc).isoformat(),
-        'source': source, 'url': url, 'confidence': confidence, 'correction': correction,
+        'value': int(value),
+        'stamp': stamp or 0,
+        'iso': iso or datetime.now(timezone.utc).isoformat(),
+        'source': source,
+        'url': url,
+        'authority': bool(authority),
+        'correction': bool(correction),
     }
     cur = best.get(kind)
     if cur is None:
         best[kind] = c
         return
-    # Newer publication wins. For same timestamp/date, prefer higher-confidence source,
-    # then the larger cumulative total. Explicit corrections are allowed to replace totals.
-    key = (c['stamp'], c['confidence'], 1 if c['correction'] else 0, c['value'])
-    oldkey = (cur['stamp'], cur['confidence'], 1 if cur.get('correction') else 0, cur['value'])
+    # Fastest credible update wins. Authority status only breaks an exact timestamp tie.
+    key = (c['stamp'], 1 if c['authority'] else 0, 1 if c['correction'] else 0, c['value'])
+    oldkey = (cur['stamp'], 1 if cur.get('authority') else 0, 1 if cur.get('correction') else 0, cur['value'])
     if key > oldkey:
         best[kind] = c
 
 
-def discover_radio_links():
+def discover_links(listings, base, domain, max_links=80):
     links = []
-    for listing in [RADIO] + RADIO_SEARCHES:
+    for listing in listings:
         try:
             raw = fetch_text(listing)
         except Exception as e:
-            print('Radio listing failed:', listing, repr(e))
+            print('Listing failed:', listing, repr(e))
             continue
         for href, label in re.findall(r'(?is)<a[^>]+href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', raw):
             title = strip_html(label)
-            href = urllib.parse.urljoin(RADIO, href)
-            if not href.startswith('https://radionepalonline.com/'):
+            href = urllib.parse.urljoin(base, href)
+            if domain not in href:
                 continue
             if not relevant(title + ' ' + href):
                 continue
             if href not in [x[0] for x in links]:
                 links.append((href, title))
-    return links[:80]
+    return links[:max_links]
 
 
 def radio_metrics():
     best = {}
-    for url, title in discover_radio_links():
+    links = discover_links([RADIO] + RADIO_SEARCHES, RADIO, 'radionepalonline.com')
+    for url, title in links:
         try:
             raw = fetch_text(url)
         except Exception:
             continue
         text = strip_html(raw)
         joined = title + ' ' + text
-        if not relevant(joined):
+        if not relevant(joined) or not aggregate_context(joined):
             continue
-        mm = metrics(joined)
-        if not mm:
-            continue
-        # Public-service Radio Nepal/RSS is accepted when the item clearly presents cumulative totals.
-        # If it also cites NDRRMA/Nepal Police, give it the highest confidence.
         authority = bool(AUTH_RE.search(joined))
-        if not authority and not aggregate_context(joined):
-            continue
-        stamp, iso = page_time(raw, url)
-        source = 'NDRRMA / Nepal Police via Public Service Broadcasting Radio Nepal' if authority else 'Public Service Broadcasting Radio Nepal / RSS'
-        confidence = 4 if authority else 3
         correction = bool(CORRECTION_RE.search(joined))
-        for k, v in mm.items():
-            add_candidate(best, k, v, stamp, iso, source, url, confidence, correction)
+        stamp, iso = page_time(raw, url)
+        for k, v in metrics(joined).items():
+            add_candidate(best, k, v, stamp, iso, 'Radio Nepal', url, authority, correction)
     return best
 
 
-def kcha_metrics():
+def ekantipur_metrics():
     best = {}
-    j = fetch_json(KCHA)
-    for s in j.get('stories') or []:
-        text = ' '.join(str(s.get(k) or '') for k in ('topic_ne', 'topic_en', 'summary_ne', 'summary_en'))
-        if not relevant(text):
+    links = discover_links(EKANTIPUR_SEARCHES, EKANTIPUR, 'ekantipur.com', 100)
+    for url, title in links:
+        try:
+            raw = fetch_text(url)
+        except Exception:
             continue
-        src = (s.get('sources') or [{}])[0]
-        publisher = src.get('publisher') or s.get('source') or 'Nepal media'
-        authority = bool(AUTH_RE.search(text + ' ' + publisher))
-        trusted = bool(TRUSTED_PUBLISHERS.search(publisher))
-        # Do not turn subgroup updates (tourists, one district, one agency) into national totals.
-        if not authority and not (trusted and aggregate_context(text)):
+        text = strip_html(raw)
+        joined = title + ' ' + text
+        if not relevant(joined) or not aggregate_context(joined):
             continue
-        when = s.get('updated_at') or s.get('first_reported')
-        stamp = parse_time(when)
-        confidence = 4 if authority else 2
-        correction = bool(CORRECTION_RE.search(text))
-        for k, v in metrics(text).items():
-            add_candidate(best, k, v, stamp, when, ('Authority report via ' if authority else 'Latest aggregate via ') + publisher, src.get('url') or s.get('url') or '', confidence, correction)
+        # Require an authority attribution for Human Status totals from eKantipur.
+        authority = bool(AUTH_RE.search(joined))
+        if not authority:
+            continue
+        # Reject obvious subgroup-only stories unless the same story also clearly says total/overall/so far.
+        if SUBGROUP_RE.search(title) and not re.search(r'(कुल|हालसम्म|overall|total|so far)', joined, re.I):
+            continue
+        correction = bool(CORRECTION_RE.search(joined))
+        stamp, iso = page_time(raw, url)
+        for k, v in metrics(joined).items():
+            add_candidate(best, k, v, stamp, iso, 'eKantipur', url, True, correction)
     return best
 
 
-def national_news_metrics():
+def nepal_police_metrics():
     best = {}
-    if not NEWS.exists():
+    if not POLICE.exists():
         return best
     try:
-        j = json.loads(NEWS.read_text(encoding='utf-8'))
+        j = json.loads(POLICE.read_text(encoding='utf-8'))
     except Exception:
         return best
-    for item in j.get('items') or []:
-        title = str(item.get('title') or '')
-        url = str(item.get('url') or '')
-        publisher = str(item.get('source') or 'Nepal media')
-        if not relevant(title):
-            continue
-        try:
-            raw = fetch_text(url)
-        except Exception:
-            continue
-        text = strip_html(raw)
-        joined = title + ' ' + text
-        mm = metrics(joined)
-        if not mm:
-            continue
-        authority = bool(AUTH_RE.search(joined))
-        trusted = bool(TRUSTED_PUBLISHERS.search(publisher))
-        if not authority and not (trusted and aggregate_context(joined)):
-            continue
-        stamp = parse_time(item.get('published_at')) or page_time(raw, url)[0]
-        iso = item.get('published_at') or datetime.fromtimestamp(stamp, timezone.utc).isoformat()
-        confidence = 4 if authority else 2
-        correction = bool(CORRECTION_RE.search(joined))
-        for k, v in mm.items():
-            add_candidate(best, k, v, stamp, iso, ('Authority report via ' if authority else 'Latest aggregate via ') + publisher, url, confidence, correction)
+    v = j.get('total_deaths')
+    stamp = parse_time(j.get('official_update_iso'))
+    iso = j.get('official_update_iso')
+    url = j.get('source_url') or 'https://www.nepalpolice.gov.np/'
+    if isinstance(v, int) and v > 0 and stamp:
+        add_candidate(best, 'death', v, stamp, iso, 'Nepal Police', url, True, False)
     return best
 
 
 def main():
     old = json.loads(OUT.read_text(encoding='utf-8')) if OUT.exists() else {}
     combined = {}
-    loaders = (radio_metrics, kcha_metrics, national_news_metrics)
-    for loader in loaders:
+    for loader in (nepal_police_metrics, radio_metrics, ekantipur_metrics):
         try:
             got = loader()
             for k, c in got.items():
                 cur = combined.get(k)
-                if cur is None or (c['stamp'], c['confidence'], c['value']) > (cur['stamp'], cur['confidence'], cur['value']):
+                if cur is None or (c['stamp'], 1 if c['authority'] else 0, c['value']) > (cur['stamp'], 1 if cur.get('authority') else 0, cur['value']):
                     combined[k] = c
         except Exception as e:
             print(loader.__name__, 'failed:', repr(e))
@@ -265,37 +249,40 @@ def main():
         'rescued': ('rescued_alive', 'rescued_update_time', 'rescued_update_time', 'rescued_source', 'rescued_source_url'),
     }
     changed = False
+    winners = {}
     for k, c in combined.items():
         vf, tf, tf2, sf, uf = fields[k]
         oldstamp = parse_time(old.get(tf))
         oldv = int(old.get(vf) or 0)
-        # Ignore older reports. Cumulative totals normally cannot fall; a lower value is accepted only
-        # when the newer source explicitly says the figure was revised/corrected.
         if c['stamp'] < oldstamp:
             continue
         if c['value'] < oldv and not c.get('correction'):
             continue
-        if c['stamp'] == oldstamp and c['value'] == oldv:
+        if c['stamp'] == oldstamp and c['value'] == oldv and old.get(sf) == c['source']:
+            winners[k] = c['source']
             continue
         old[vf] = c['value']
         old[tf] = c['iso']
         old[tf2] = c['iso']
         old[sf] = c['source']
         old[uf] = c['url']
+        winners[k] = c['source']
         changed = True
-        print(k, c['value'], c['url'])
+        print(k, c['value'], c['source'], c['url'])
 
     now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
     old.setdefault('event', 'Bhotekoshi flash flood')
     old.setdefault('event_ne', 'भोटेकोशी आकस्मिक बाढी')
     old['last_checked_utc'] = now
     old['updated_date'] = datetime.now(timezone.utc).date().isoformat()
-    old['status'] = 'auto_multi_source_aggregate'
-    old['sync_policy'] = 'Latest credible cumulative aggregate; official/authority reports preferred; subgroup counts rejected.'
+    old['status'] = 'auto_3source_fastest_credible'
+    old['sync_sources'] = ['Nepal Police', 'Radio Nepal', 'eKantipur']
+    old['sync_policy'] = 'Among Nepal Police, Radio Nepal and eKantipur, use the newest credible cumulative authority-reported metric and display that publisher as the source. Reject subgroup-only counts.'
+    old['last_winning_sources'] = winners
     old.pop('setu_breakdown', None)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(old, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    print('Human Status sync complete', 'metrics changed' if changed else 'no newer credible aggregate')
+    print('Human Status 3-source sync complete', 'metrics changed' if changed else 'no newer credible aggregate')
 
 
 if __name__ == '__main__':

@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 import json
+import re
 import ssl
 import sys
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from html.parser import HTMLParser
 from pathlib import Path
 
 OUT = Path('data/floodsafe-core.json')
-UA = 'FloodSafe-Nepal/1.0 (+https://pujan1234-hub.github.io/assigment/floodsafe-nepal/)'
+UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36 FloodSafe-Nepal/1.0'
 ALERTS_URL = 'https://bipadportal.gov.np/api/v1/alert/?limit=300&ordering=-createdOn'
 ROADS_URL = 'https://bipadportal.gov.np/api/v1/highway/?limit=500'
 RIVER_META_URL = 'https://bipadportal.gov.np/api/v1/river-stations/?limit=2000'
+DHM_REALTIME_URL = 'https://dhm.gov.np/hydrology/realtime-stream'
 RIVER_URLS = [
     ('river-trimed', 'https://bipadportal.gov.np/api/v1/river-trimed/?limit=2000'),
     ('river-newest', 'https://bipadportal.gov.np/api/v1/river/?limit=2000&ordering=-waterLevelOn'),
     ('river', 'https://bipadportal.gov.np/api/v1/river/?limit=2000'),
 ]
+NPT = timezone(timedelta(hours=5, minutes=45))
 
 
 def now_iso():
@@ -35,20 +39,147 @@ def rows(payload):
     raise ValueError('JSON response does not contain a list')
 
 
-def fetch_json(url):
-    req = urllib.request.Request(
+def request(url, accept):
+    return urllib.request.Request(
         url,
         headers={
             'User-Agent': UA,
-            'Accept': 'application/json, text/plain, */*',
+            'Accept': accept,
             'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
         },
     )
+
+
+def fetch_json(url):
     ctx = ssl.create_default_context()
-    with urllib.request.urlopen(req, timeout=30, context=ctx) as response:
+    with urllib.request.urlopen(request(url, 'application/json, text/plain, */*'), timeout=35, context=ctx) as response:
         if response.status < 200 or response.status >= 300:
             raise RuntimeError(f'HTTP {response.status}')
         return json.loads(response.read().decode('utf-8-sig'))
+
+
+def fetch_text(url):
+    ctx = ssl.create_default_context()
+    with urllib.request.urlopen(request(url, 'text/html,application/xhtml+xml,*/*;q=0.8'), timeout=35, context=ctx) as response:
+        if response.status < 200 or response.status >= 300:
+            raise RuntimeError(f'HTTP {response.status}')
+        return response.read().decode('utf-8', errors='replace')
+
+
+class TableParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.in_cell = False
+        self.in_row = False
+        self.cell = []
+        self.row = []
+        self.rows = []
+        self.all_text = []
+
+    def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
+        if tag == 'tr':
+            self.in_row = True
+            self.row = []
+        elif tag in ('td', 'th') and self.in_row:
+            self.in_cell = True
+            self.cell = []
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+        if tag in ('td', 'th') and self.in_cell:
+            text = ' '.join(' '.join(self.cell).split())
+            self.row.append(text)
+            self.in_cell = False
+            self.cell = []
+        elif tag == 'tr' and self.in_row:
+            if self.row:
+                self.rows.append(self.row)
+            self.in_row = False
+            self.row = []
+
+    def handle_data(self, data):
+        text = str(data or '').strip()
+        if text:
+            self.all_text.append(text)
+            if self.in_cell:
+                self.cell.append(text)
+
+
+def parse_dhm_updated(text):
+    compact = ' '.join(text.split())
+    m = re.search(
+        r'Last\s+updated\s+on\s+(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*,?\s+'
+        r'([A-Za-z]{3,9})\s+(\d{1,2}),\s*(\d{4})\s+(\d{1,2}):(\d{2})(?:\s*([AP]M))?',
+        compact,
+        re.I,
+    )
+    if not m:
+        return None
+    month_name, day, year, hour, minute, ap = m.groups()
+    months = {name.lower(): i for i, name in enumerate(
+        ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'), 1
+    )}
+    mon = months.get(month_name[:3].lower())
+    if not mon:
+        return None
+    h = int(hour)
+    if ap and h <= 12:
+        if ap.upper() == 'PM' and h < 12:
+            h += 12
+        elif ap.upper() == 'AM' and h == 12:
+            h = 0
+    if h > 23:
+        return None
+    return datetime(int(year), mon, int(day), h, int(minute), tzinfo=NPT)
+
+
+def to_float(value):
+    if value in (None, '', '-', '—', 'NA', 'N/A'):
+        return None
+    m = re.search(r'-?\d+(?:\.\d+)?', str(value).replace(',', ''))
+    return float(m.group(0)) if m else None
+
+
+def fetch_dhm_realtime():
+    html = fetch_text(DHM_REALTIME_URL)
+    parser = TableParser()
+    parser.feed(html)
+    updated = parse_dhm_updated(' '.join(parser.all_text))
+    if updated is None:
+        raise ValueError('DHM realtime page did not expose Last updated time')
+    live = []
+    for row in parser.rows:
+        cells = [str(x).strip() for x in row]
+        if len(cells) < 6:
+            continue
+        low = ' | '.join(cells).lower()
+        if 'station name' in low or 'water level' in low and 'basin name' in low:
+            continue
+        # Official table: S.No | Basin | Station Index | Station Name | District | Water Level | Discharge
+        if len(cells) >= 7:
+            _, basin_name, station_index, station_name, district_name, level_text, discharge_text = cells[:7]
+        else:
+            basin_name, station_index, station_name, district_name, level_text, discharge_text = cells[:6]
+        wl = to_float(level_text)
+        if not station_name or wl is None:
+            continue
+        live.append({
+            'title': station_name,
+            'basin': basin_name,
+            'stationIndex': station_index,
+            'districtName': district_name,
+            'waterLevel': wl,
+            'discharge': to_float(discharge_text),
+            'waterLevelOn': updated.isoformat(),
+            'dataSource': 'dhm.gov.np',
+            '_officialLive': True,
+            '_officialLivePage': DHM_REALTIME_URL,
+        })
+    if len(live) < 100:
+        raise ValueError(f'DHM realtime table too small: {len(live)} rows')
+    return live, updated
 
 
 def load_old():
@@ -111,6 +242,14 @@ def coords(row):
     return None
 
 
+def normalize_title(value):
+    text = str(value or '').lower().strip()
+    text = re.sub(r'\s+(?:at|near)\s+.*$', '', text)
+    text = re.sub(r'\b(river|khola|nadi|stream|station|gauge|bridge|rls|hs)\b', ' ', text)
+    text = re.sub(r'[^a-z0-9]+', ' ', text)
+    return ' '.join(text.split())
+
+
 def station_key(row):
     sid = first(row, ('stationSeriesId', 'station_series_id', 'stationId', 'station_id'))
     if sid is not None:
@@ -169,7 +308,7 @@ def extract_alert_rivers(alerts):
 
 
 def attach_meta(readings, meta):
-    by_id, by_name = {}, {}
+    by_id, by_name, by_base = {}, {}, {}
     for raw in meta:
         row = flatten(raw)
         sid = first(row, ('stationSeriesId', 'station_series_id', 'stationId', 'station_id', 'id'))
@@ -177,14 +316,24 @@ def attach_meta(readings, meta):
             by_id[str(sid)] = row
         title = str(first(row, ('title', 'river_name', 'riverName', 'station_name', 'stationName', 'name')) or '').lower().strip()
         if title:
-            by_name[' '.join(title.split())] = row
+            key = ' '.join(title.split())
+            by_name[key] = row
+            base = normalize_title(title)
+            if base:
+                by_base.setdefault(base, []).append(row)
     joined = []
     for row in readings:
         sid = first(row, ('stationSeriesId', 'station_series_id', 'stationId', 'station_id'))
         title = str(first(row, ('title', 'river_name', 'riverName', 'station_name', 'stationName', 'name')) or '').lower().strip()
         m = by_id.get(str(sid)) if sid is not None else None
         if m is None and title:
-            m = by_name.get(' '.join(title.split()))
+            key = ' '.join(title.split())
+            m = by_name.get(key)
+            if m is None:
+                base = normalize_title(title)
+                hits = by_base.get(base, []) if base else []
+                if len(hits) == 1:
+                    m = hits[0]
         joined.append({**m, **row} if isinstance(m, dict) else row)
     return joined
 
@@ -192,6 +341,25 @@ def attach_meta(readings, meta):
 def river_sync(alerts, old):
     groups = []
     sources = {}
+    try:
+        dhm_live, dhm_updated = fetch_dhm_realtime()
+        groups.append(dhm_live)
+        sources['dhm-realtime-stream'] = {
+            'ok': True,
+            'count': len(dhm_live),
+            'updated_at': dhm_updated.isoformat(),
+            'endpoint': DHM_REALTIME_URL,
+            'error': None,
+        }
+        print(f'DHM realtime-stream: OK ({len(dhm_live)} rows), updated {dhm_updated.isoformat()}')
+    except Exception as exc:
+        sources['dhm-realtime-stream'] = {
+            'ok': False,
+            'count': 0,
+            'endpoint': DHM_REALTIME_URL,
+            'error': f'{type(exc).__name__}: {exc}',
+        }
+        print(f'DHM realtime-stream: FAILED ({exc})', file=sys.stderr)
     for label, url in RIVER_URLS:
         try:
             items = rows(fetch_json(url))
@@ -230,7 +398,7 @@ def main():
     old = load_old()
     stamp_now = now_iso()
     result = {
-        'schema_version': 2,
+        'schema_version': 3,
         'generated_at': stamp_now,
         'sources': {},
         'alerts': old.get('alerts', []),
@@ -254,7 +422,7 @@ def main():
         'count': len(rivers),
         'measured_count': measured_count,
         'newest_measurement': newest_time.isoformat() if newest_time else None,
-        'endpoint': 'multi-source DHM/BIPAD river-trimed + river + alerts',
+        'endpoint': 'DHM realtime-stream + BIPAD river feeds + alerts',
         'error': None if rivers else 'No river rows available',
         'feeds': river_sources,
     }

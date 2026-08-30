@@ -17,11 +17,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Build small spatial tiles
+      - name: Build small spatial tiles and nationwide overview
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json,math,os,shutil
+          import json,os,shutil
           src=json.load(open('data/nepal-waterways-snapshot.json'))
           waterways=src.get('waterways') or []
           if len(waterways)<=500:
@@ -45,11 +45,26 @@ jobs:
             fn=f'{root}/{x}-{y}.json'
             json.dump({'count':len(arr),'waterways':arr},open(fn,'w'),ensure_ascii=False,separators=(',',':'))
             counts[f'{x}-{y}']=len(arr)
-          manifest={'generated_at':src.get('generated_at'),'source':src.get('source'),'license':src.get('license'),'count':src.get('count',len(waterways)),'minLon':minLon,'minLat':minLat,'stepLon':stepLon,'stepLat':stepLat,'nx':nx,'ny':ny,'tiles':counts}
+
+          def rank(w):
+            named=bool(w.get('name') or w.get('name_ne') or w.get('name_en'))
+            return (1000 if w.get('type')=='river' else 0)+(500 if named else 0)+min(400,len(w.get('pts') or [])*4)
+          overview={}
+          for arr in tiles.values():
+            for w in sorted(arr,key=rank,reverse=True)[:90]:
+              pts=w.get('pts') or []
+              wid=str(w.get('id') or f"{w.get('type','stream')}|{pts[0] if pts else ''}|{pts[-1] if pts else ''}")
+              overview[wid]=w
+          overview_list=list(overview.values())
+          json.dump({'generated_at':src.get('generated_at'),'source':src.get('source'),'license':src.get('license'),'source_count':src.get('count',len(waterways)),'count':len(overview_list),'waterways':overview_list},open(f'{root}/overview.json','w'),ensure_ascii=False,separators=(',',':'))
+
+          manifest={'generated_at':src.get('generated_at'),'source':src.get('source'),'license':src.get('license'),'count':src.get('count',len(waterways)),'overview_count':len(overview_list),'minLon':minLon,'minLat':minLat,'stepLon':stepLon,'stepLat':stepLat,'nx':nx,'ny':ny,'tiles':counts}
           json.dump(manifest,open(f'{root}/manifest.json','w'),separators=(',',':'))
           sizes=[os.path.getsize(f'{root}/{k}.json') for k in counts]
-          print('source waterways',len(waterways),'tiles',len(counts),'max bytes',max(sizes),'avg bytes',sum(sizes)//len(sizes))
+          overview_size=os.path.getsize(f'{root}/overview.json')
+          print('source waterways',len(waterways),'overview',len(overview_list),'overview bytes',overview_size,'tiles',len(counts),'max tile bytes',max(sizes))
           assert len(counts)>50 and max(sizes)<7000000
+          assert len(overview_list)>1000 and overview_size<8000000
           PY
       - name: Commit tiles
         run: |

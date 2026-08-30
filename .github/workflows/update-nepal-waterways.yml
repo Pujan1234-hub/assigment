@@ -11,71 +11,115 @@ permissions:
   contents: write
 concurrency:
   group: nepal-waterways-snapshot
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 28
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch Nepal river and stream geometry in small tiles
+      - name: Preserve current last-good snapshot
         run: |
           set -euo pipefail
           mkdir -p /tmp/waterways data
           python3 - <<'PY'
-          import subprocess, json, time
+          import json,os,shutil
+          p='data/nepal-waterways-snapshot.json'
+          if os.path.exists(p) and os.path.getsize(p)>100:
+            try:
+              j=json.load(open(p))
+              if isinstance(j.get('waterways'),list) and len(j['waterways'])>500:
+                shutil.copy2(p,'/tmp/previous-good.json')
+                print('preserved previous good',len(j['waterways']))
+            except Exception as e: print('current snapshot invalid:',e)
+          PY
+      - name: Fetch Nepal river and stream geometry
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import subprocess,json,time,os
+          # 18 moderate tiles: avoids one huge Nepal Overpass query.
           lons=[80.0,81.4,82.8,84.2,85.6,87.0,88.35]
           lats=[26.2,27.6,29.0,30.5]
           tiles=[(lats[y],lons[x],lats[y+1],lons[x+1]) for y in range(len(lats)-1) for x in range(len(lons)-1)]
-          eps=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']
+          eps=['https://overpass.kumi.systems/api/interpreter','https://overpass-api.de/api/interpreter']
           for i,(s,w,n,e) in enumerate(tiles):
-            q=f'[out:json][timeout:60];(way["waterway"="river"]({s},{w},{n},{e});way["waterway"="stream"]({s},{w},{n},{e}););out tags geom;'
+            q=f'[out:json][timeout:65];(way["waterway"="river"]({s},{w},{n},{e});way["waterway"="stream"]({s},{w},{n},{e}););out tags geom;'
             ok=False
-            for attempt in range(3):
+            for attempt in range(4):
               for ep in eps:
                 try:
-                  p=subprocess.run(['curl','--retry','1','--retry-delay','1','--max-time','75','-fsSL','-X','POST',ep,'--data-urlencode','data='+q],capture_output=True,text=True,check=True)
+                  p=subprocess.run(['curl','--retry','2','--retry-delay','2','--max-time','82','-fsSL','-X','POST',ep,'--data-urlencode','data='+q],capture_output=True,text=True,check=True)
                   j=json.loads(p.stdout)
-                  if isinstance(j.get('elements'),list):
-                    json.dump(j,open(f'/tmp/waterways/{i}.json','w'))
-                    print('tile',i,'elements',len(j['elements']))
+                  els=j.get('elements')
+                  if isinstance(els,list) and len(els)>0:
+                    with open(f'/tmp/waterways/{i}.json','w') as f: json.dump(j,f)
+                    print('tile',i,'elements',len(els),'via',ep)
                     ok=True; break
                 except Exception as ex:
-                  print('retry',attempt,'tile',i,ep,str(ex)[:160])
-                  time.sleep(1.5)
+                  print('attempt',attempt+1,'tile',i,'failed',ep,str(ex)[:180])
               if ok: break
-              time.sleep(3)
-            if not ok:
-              raise SystemExit(f'tile {i} failed')
+              time.sleep(3+attempt*2)
+            if not ok: raise SystemExit(f'tile {i} failed; refusing to replace last-good snapshot')
+          if len(os.listdir('/tmp/waterways')) != len(tiles): raise SystemExit('incomplete tile set')
           PY
-      - name: Merge and simplify snapshot
+      - name: Merge validate and atomically stage snapshot
         run: |
+          set -euo pipefail
           python3 - <<'PY'
           import json,glob,math,datetime,os
           out=[]; seen=set()
-          for fn in glob.glob('/tmp/waterways/*.json'):
+          files=glob.glob('/tmp/waterways/*.json')
+          if len(files)!=18: raise SystemExit(f'expected 18 tiles, got {len(files)}')
+          for fn in files:
             for e in json.load(open(fn)).get('elements',[]):
               if e.get('type')!='way' or e.get('id') in seen: continue
               geom=e.get('geometry') or []
               if len(geom)<2: continue
               seen.add(e.get('id'))
-              step=max(1,math.ceil(len(geom)/45))
-              pts=[[round(p['lon'],6),round(p['lat'],6)] for p in geom[::step]]
+              step=max(1,math.ceil(len(geom)/55))
+              pts=[[round(p['lon'],6),round(p['lat'],6)] for p in geom[::step] if 79.8<=p['lon']<=88.6 and 26.0<=p['lat']<=30.7]
               last=[round(geom[-1]['lon'],6),round(geom[-1]['lat'],6)]
-              if pts[-1]!=last: pts.append(last)
+              if len(pts)<2: continue
+              if pts[-1]!=last and 79.8<=last[0]<=88.6 and 26.0<=last[1]<=30.7: pts.append(last)
               tags=e.get('tags') or {}
               out.append({'id':e.get('id'),'type':tags.get('waterway','stream'),'name':tags.get('name') or '','name_ne':tags.get('name:ne') or tags.get('name_ne') or '','name_en':tags.get('name:en') or '','pts':pts})
+          if len(out)<=500: raise SystemExit(f'only {len(out)} waterways; refusing replacement')
           payload={'generated_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'source':'OpenStreetMap via Overpass','license':'ODbL','count':len(out),'waterways':out}
-          json.dump(payload,open('data/nepal-waterways-snapshot.json','w'),ensure_ascii=False,separators=(',',':'))
-          print('snapshot waterways',len(out),'bytes',os.path.getsize('data/nepal-waterways-snapshot.json'))
-          assert len(out)>500
+          tmp='/tmp/nepal-waterways-next.json'
+          with open(tmp,'w') as f: json.dump(payload,f,ensure_ascii=False,separators=(',',':'))
+          j=json.load(open(tmp)); assert j['count']==len(j['waterways']) and j['count']>500
+          assert os.path.getsize(tmp)>50000
+          print('validated snapshot',j['count'],'bytes',os.path.getsize(tmp))
           PY
-      - name: Commit snapshot
+          cp /tmp/nepal-waterways-next.json data/nepal-waterways-snapshot.json
+          cp /tmp/nepal-waterways-next.json data/nepal-waterways-last-good.json
+      - name: Validate reported trouble spots have nearby geometry
         run: |
+          python3 - <<'PY'
+          import json,math
+          j=json.load(open('data/nepal-waterways-snapshot.json'))
+          tests=[('Jhapa',26.5763,87.9019),('Sindhuli',27.164,86.328),('Myagdi',28.5782,83.5343),('Dolpa',29.2623,83.0371)]
+          def km(a,b,c,d):
+            R=6371; p=math.pi/180
+            q=math.sin((c-a)*p/2)**2+math.cos(a*p)*math.cos(c*p)*math.sin((d-b)*p/2)**2
+            return 2*R*math.asin(math.sqrt(q))
+          for name,la,lo in tests:
+            near=0; best=9999
+            for w in j['waterways']:
+              for x,y in w.get('pts',[]):
+                d=km(la,lo,y,x); best=min(best,d)
+                if d<=30: near+=1; break
+            print(name,'nearby routes',near,'nearest km',round(best,2))
+            if near<1: raise SystemExit(name+' has no waterway within 30 km')
+          PY
+      - name: Commit validated snapshot and last-good
+        run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/nepal-waterways-snapshot.json
+          git add data/nepal-waterways-snapshot.json data/nepal-waterways-last-good.json
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Refresh Nepal waterways snapshot"
+          git commit -m "Refresh validated Nepal waterways snapshot"
           git pull --rebase origin main
           git push

@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-if(window.__fsHydroCompleteV1)return;window.__fsHydroCompleteV1=true;
+if(window.__fsHydroCompleteV2)return;window.__fsHydroCompleteV2=true;
 
 const MANIFEST='../../data/nepal-waterways-tiles/manifest.json';
 const TILE_BASE='../../data/nepal-waterways-tiles/';
@@ -36,7 +36,14 @@ function keepForZoom(w,z){
   if(z<8.8)return w.type==='river'||named||w.pts.length>=8;
   return true;
 }
-function feature(w){return{type:'Feature',geometry:{type:'LineString',coordinates:w.pts},properties:{id:String(w.id||''),name:String(w.name_ne||w.name_en||w.name||''),type:w.type||'stream',named:!!(w.name||w.name_en||w.name_ne)}}}
+function sourceName(w){return String(lang()==='en'?(w.name_en||w.name||w.name_ne||''):(w.name_ne||w.name||w.name_en||''))}
+function feature(w){
+  const id=String(w.id||`${w.type||'stream'}|${w.pts?.[0]||''}|${w.pts?.[w.pts.length-1]||''}`);
+  return{type:'Feature',geometry:{type:'LineString',coordinates:w.pts},properties:{
+    id,key:'hydro:'+id,name:sourceName(w),name_raw:String(w.name||''),name_ne:String(w.name_ne||''),name_en:String(w.name_en||''),
+    type:w.type||'stream',named:!!(w.name||w.name_en||w.name_ne),geometry_source:'OpenStreetMap via Overpass',license:'ODbL'
+  }};
+}
 function fcFor(keys,z){
   const seen=new Set(),features=[];
   for(const k of keys){const a=CACHE.get(k)||[];let list=a;
@@ -51,13 +58,16 @@ function ensureLayers(){
   if(!map.getSource('hydro-complete'))map.addSource('hydro-complete',{type:'geojson',data:{type:'FeatureCollection',features:[]},promoteId:'id'});
   if(!map.getLayer('hydro-complete-shadow'))map.addLayer({id:'hydro-complete-shadow',type:'line',source:'hydro-complete',paint:{'line-color':'#003847','line-width':['interpolate',['linear'],['zoom'],5,1.0,8,1.7,11,3.0,15,5.0],'line-opacity':['interpolate',['linear'],['zoom'],5,0.46,7,0.56,10,0.68,15,0.76]}});
   if(!map.getLayer('hydro-complete-lines'))map.addLayer({id:'hydro-complete-lines',type:'line',source:'hydro-complete',paint:{'line-color':['match',['get','type'],'river','#18dff5','#52d9ef'],'line-width':['interpolate',['linear'],['zoom'],5,0.55,7,0.85,10,1.55,13,2.5,16,3.8],'line-opacity':['interpolate',['linear'],['zoom'],5,0.78,7,0.86,10,0.92,15,0.96]}});
-  try{if(map.getLayer('river-shadow'))map.setPaintProperty('river-shadow','line-opacity',0.18);if(map.getLayer('river-base'))map.setPaintProperty('river-base','line-opacity',0.22)}catch{}
+  if(!map.getLayer('hydro-complete-labels'))map.addLayer({id:'hydro-complete-labels',type:'symbol',source:'hydro-complete',minzoom:6.2,filter:['==',['get','named'],true],layout:{'symbol-placement':'line','text-field':['get','name'],'text-size':['interpolate',['linear'],['zoom'],6.2,8,10,10.5,14,12.5],'symbol-spacing':360,'text-allow-overlap':false,'text-ignore-placement':false},paint:{'text-color':'#eaffff','text-halo-color':'#062f38','text-halo-width':1.4,'text-halo-blur':0.5}});
+  if(!map.getLayer('hydro-complete-hit'))map.addLayer({id:'hydro-complete-hit',type:'line',source:'hydro-complete',paint:{'line-color':'rgba(0,0,0,0)','line-width':['interpolate',['linear'],['zoom'],5,7,10,12,16,18]}});
+  try{if(map.getLayer('river-shadow'))map.setPaintProperty('river-shadow','line-opacity',0.16);if(map.getLayer('river-base'))map.setPaintProperty('river-base','line-opacity',0.18)}catch{}
   return true;
 }
 function statusText(keys,fc){
   const h=document.getElementById('mapHint');if(!h)return;
   const loaded=keys.filter(k=>CACHE.has(k)).length,total=keys.length;
-  h.textContent=tr(`🇳🇵 ७७ जिल्ला • ${fc.features.length.toLocaleString()} नदी/खोला • ${loaded}/${total} जल-नक्सा भाग लोड`,`🇳🇵 77 districts • ${fc.features.length.toLocaleString()} rivers/streams • ${loaded}/${total} hydro tiles loaded`);
+  const src=manifest?.source||'OpenStreetMap via Overpass';
+  h.textContent=tr(`🇳🇵 ७७ जिल्ला • ${fc.features.length.toLocaleString()} नदी/खोला • ${loaded}/${total} जल-नक्सा भाग • ${src}`,`🇳🇵 77 districts • ${fc.features.length.toLocaleString()} rivers/streams • ${loaded}/${total} hydro tiles • ${src}`);
 }
 function render(keys){
   if(!ensureLayers())return;

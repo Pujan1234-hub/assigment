@@ -1,42 +1,35 @@
 {
-  "generated_at": "2026-08-31T03:16:35.351219+05:45",
-  "updated_at_npt": "31 Aug 03:16 NPT",
+  "generated_at": "2026-08-31T05:33:08.194422+05:45",
+  "updated_at_npt": "31 Aug 05:33 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "किसानको राम्रो आम्दानीको स्रोत बन्दै रुद्राक्ष",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588692/rudraksha-is-becoming-a-good-source-of-income-for-farmers",
+      "published_at": "2026-08-31T05:17:09+05:45",
+      "flash": true
+    },
+    {
+      "title": "१ सय ६५ उद्योग–व्यवसाय थपिँदा ८२ बन्द",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588690/165-industries-and-businesses-added-82-closed",
+      "published_at": "2026-08-31T05:06:43+05:45",
+      "flash": true
+    },
+    {
+      "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा सहयोग गर्ने बढे",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588689/donations-to-the-prime-ministers-disaster-relief-fund-have-increased",
+      "published_at": "2026-08-31T05:03:54+05:45",
+      "flash": true
+    },
     {
       "title": "भोटेकोशी बाढीः काभ्रेका ४१ अझै सम्पर्कविहीन, आठ जना परिवारको सम्पर्कमा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588687/bhotekoshi-flood-41-people-from-kavre-still-missing-eight-in-contact-with-family",
       "published_at": "2026-08-31T01:46:57+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपीडितलाई जगरनाथपुरद्वारा १५ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588681/jagarnathpur-provides-rs-15-million-assistance-to-flood-victims",
-      "published_at": "2026-08-30T23:11:02+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : पोखरा ल्याइएका १५ शव आफन्तले बुझे",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588673/bhotekoshi-flood-relatives-identify-15-bodies-brought-to-pokhara",
-      "published_at": "2026-08-30T22:12:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "उद्धारका लागि हेलिकप्टर सेवा सहज बनाउन पेशागत संस्थाहरूको संयुक्त अपिल",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588671/joint-appeal-by-professional-organizations-to-facilitate-helicopter-services-for-rescue",
-      "published_at": "2026-08-30T22:04:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा सुदूरपश्चिमेली समाज इजरायलकाे ६ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588670/far-western-society-donates-600000-to-prime-ministers-disaster-relief-fund",
-      "published_at": "2026-08-30T21:56:32+05:45",
       "flash": false
     }
   ],
@@ -56,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 5
+      "flash": 3,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

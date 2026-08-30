@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/split-nepal-waterways.yml"
+      - "data/nepal-waterways-snapshot.json"
 permissions:
   contents: write
 concurrency:
@@ -22,13 +23,16 @@ jobs:
           python3 - <<'PY'
           import json,math,os,shutil
           src=json.load(open('data/nepal-waterways-snapshot.json'))
+          waterways=src.get('waterways') or []
+          if len(waterways)<=500:
+            raise SystemExit(f'invalid/incomplete waterway snapshot: {len(waterways)}')
           minLon,minLat=80.0,26.2
           stepLon,stepLat=.70,.60
           nx,ny=12,8
           root='data/nepal-waterways-tiles'
           shutil.rmtree(root,ignore_errors=True); os.makedirs(root,exist_ok=True)
           tiles={}
-          for w in src['waterways']:
+          for w in waterways:
             pts=w.get('pts') or []
             touched=set()
             for lo,la in pts:
@@ -41,10 +45,10 @@ jobs:
             fn=f'{root}/{x}-{y}.json'
             json.dump({'count':len(arr),'waterways':arr},open(fn,'w'),ensure_ascii=False,separators=(',',':'))
             counts[f'{x}-{y}']=len(arr)
-          manifest={'generated_at':src.get('generated_at'),'source':src.get('source'),'license':src.get('license'),'minLon':minLon,'minLat':minLat,'stepLon':stepLon,'stepLat':stepLat,'nx':nx,'ny':ny,'tiles':counts}
+          manifest={'generated_at':src.get('generated_at'),'source':src.get('source'),'license':src.get('license'),'count':src.get('count',len(waterways)),'minLon':minLon,'minLat':minLat,'stepLon':stepLon,'stepLat':stepLat,'nx':nx,'ny':ny,'tiles':counts}
           json.dump(manifest,open(f'{root}/manifest.json','w'),separators=(',',':'))
           sizes=[os.path.getsize(f'{root}/{k}.json') for k in counts]
-          print('tiles',len(counts),'max bytes',max(sizes),'avg bytes',sum(sizes)//len(sizes))
+          print('source waterways',len(waterways),'tiles',len(counts),'max bytes',max(sizes),'avg bytes',sum(sizes)//len(sizes))
           assert len(counts)>50 and max(sizes)<7000000
           PY
       - name: Commit tiles

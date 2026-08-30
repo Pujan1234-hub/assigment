@@ -5,9 +5,11 @@ from pathlib import Path
 
 OUT = Path('data/floodsafe-people-status.json')
 POLICE = Path('data/floodsafe-police.json')
-UA = 'FloodSafe-Nepal/2.1 (+https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/)'
+UA = 'FloodSafe-Nepal/2.2 (+https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/)'
 RONB = 'https://www.ronbpost.com/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,link,title,excerpt,content'
+ONLINEKHABAR = 'https://english.onlinekhabar.com/wp-json/wp/v2/posts?per_page=70&_fields=date,date_gmt,modified,modified_gmt,link,title,excerpt,content'
 KCHA = 'https://kchakhabar.com/api/v1/today.json?limit=100'
+ONLINE_LISTINGS = ['https://english.onlinekhabar.com/','https://english.onlinekhabar.com/?s=Bhotekoshi','https://english.onlinekhabar.com/?s=Rasuwa+flood','https://english.onlinekhabar.com/?s=Trishuli+flood']
 RADIO_LISTINGS = ['https://radionepalonline.com/en/','https://radionepalonline.com/en/?s=Bhotekoshi','https://radionepalonline.com/en/?s=Rasuwa+flood','https://radionepalonline.com/en/?s=Trishuli+flood']
 HAMRO_LISTINGS = ['https://www.hamropatro.com/','https://www.hamropatro.com/posts','https://www.hamropatro.com/en/posts']
 EVENT_RE = re.compile(r'(rasuwa|bhotekoshi|bhote\s*koshi|trishuli|रसुवा|भोटेकोशी|भोटेकोसी|त्रिशूली)', re.I)
@@ -80,6 +82,14 @@ def add(best,kind,value,stamp,iso,source,url,authority,correction=False):
     oldkey=(-1,0,0,0) if not old else (old['stamp'],1 if old.get('authority') else 0,1 if old.get('correction') else 0,old['value'])
     if key>oldkey: best[kind]=c
 
+def merge_into(dst,src):
+    for kind,c in (src or {}).items():
+        cur=dst.get(kind)
+        key=(c['stamp'],1 if c.get('authority') else 0,1 if c.get('correction') else 0,c['value'])
+        oldkey=(-1,0,0,0) if not cur else (cur['stamp'],1 if cur.get('authority') else 0,1 if cur.get('correction') else 0,cur['value'])
+        if key>oldkey: dst[kind]=c
+    return dst
+
 def police_loader():
     best={}
     if not POLICE.exists(): return best
@@ -112,6 +122,32 @@ def article_loader(listings,domain,source_name,limit=70):
         for kind,value in metrics(text).items(): add(best,kind,value,stamp,iso,source_name,u,authority,correction)
     return best
 
+def wordpress_loader(endpoint,source_name):
+    best={}
+    try: posts=fetch_json(endpoint)
+    except Exception as e:
+        print(source_name,'wordpress failed',repr(e));return best
+    for p in posts if isinstance(posts,list) else []:
+        title=strip_html((p.get('title') or {}).get('rendered',''))
+        body=strip_html((p.get('content') or {}).get('rendered','')+' '+(p.get('excerpt') or {}).get('rendered',''))
+        joined=title+' '+body
+        if not aggregate_ok(title,body): continue
+        modified=p.get('modified_gmt') or p.get('date_gmt')
+        iso=as_iso(str(modified)+'+00:00') if modified else None
+        if not iso:
+            local=p.get('modified') or p.get('date');iso=as_iso(local)
+        stamp=parse_time(iso)
+        if not stamp: continue
+        authority=bool(AUTH_RE.search(joined));correction=bool(CORRECTION_RE.search(joined));u=p.get('link') or endpoint
+        for kind,value in metrics(joined).items(): add(best,kind,value,stamp,iso,source_name,u,authority,correction)
+    return best
+
+def onlinekhabar_loader():
+    # Direct publisher feed first: this avoids K-cha-khabar CDN/discovery lag.
+    best=wordpress_loader(ONLINEKHABAR,'OnlineKhabar')
+    # HTML search/listing fallback keeps the sync alive if WP REST is temporarily blocked.
+    return merge_into(best,article_loader(ONLINE_LISTINGS,'english.onlinekhabar.com','OnlineKhabar',100))
+
 def radio_loader(): return article_loader(RADIO_LISTINGS,'radionepalonline.com','Radio Nepal',80)
 
 def hamro_loader():
@@ -119,16 +155,7 @@ def hamro_loader():
     # Never use the current clock time as a substitute for article freshness.
     return article_loader(HAMRO_LISTINGS,'hamropatro.com','Hamro Patro',80)
 
-def ronb_loader():
-    best={}
-    try: posts=fetch_json(RONB)
-    except Exception as e: print('ronb failed',repr(e));return best
-    for p in posts if isinstance(posts,list) else []:
-        title=strip_html((p.get('title') or {}).get('rendered',''));body=strip_html((p.get('content') or {}).get('rendered','')+' '+(p.get('excerpt') or {}).get('rendered',''))
-        if not aggregate_ok(title,body): continue
-        modified=p.get('modified_gmt') or p.get('date_gmt');iso=as_iso(str(modified)+'+00:00') if modified else None;stamp=parse_time(iso);authority=bool(AUTH_RE.search(title+' '+body));correction=bool(CORRECTION_RE.search(body));u=p.get('link') or 'https://www.ronbpost.com/'
-        for kind,value in metrics(title+' '+body).items(): add(best,kind,value,stamp,iso,'RONB',u,authority,correction)
-    return best
+def ronb_loader(): return wordpress_loader(RONB,'RONB')
 
 def kcha_loader():
     best={}
@@ -151,12 +178,10 @@ def kcha_loader():
 
 def main():
     old=json.loads(OUT.read_text(encoding='utf-8')) if OUT.exists() else {};combined={}
-    for loader in (police_loader,radio_loader,ronb_loader,hamro_loader,kcha_loader):
+    for loader in (police_loader,onlinekhabar_loader,radio_loader,ronb_loader,hamro_loader,kcha_loader):
         try: got=loader()
         except Exception as e: print(loader.__name__,'failed',repr(e));continue
-        for kind,c in got.items():
-            cur=combined.get(kind);key=(c['stamp'],1 if c['authority'] else 0,c['value']);oldkey=(-1,0,0) if not cur else (cur['stamp'],1 if cur.get('authority') else 0,cur['value'])
-            if key>oldkey: combined[kind]=c
+        merge_into(combined,got)
     fields={'death':('recovered_bodies','recovered_update_time','recovered_source','recovered_source_url','recovered_update_iso'),'missing':('missing_minimum','missing_update_time','missing_source','missing_source_url',None),'rescued':('rescued_alive','rescued_update_time','rescued_source','rescued_source_url',None)};winners={}
     for kind,c in combined.items():
         vf,tf,sf,uf,extra=fields[kind];oldstamp=parse_time(old.get(tf));oldv=int(old.get(vf) or 0)
@@ -165,7 +190,7 @@ def main():
         old[vf]=c['value'];old[tf]=c['iso'];old[sf]=c['source'];old[uf]=c['url'];winners[kind]=c['source']
         if extra: old[extra]=c['iso']
         print('winner',kind,c['value'],c['source'],c['url'])
-    now=datetime.now(timezone.utc).isoformat().replace('+00:00','Z');old.setdefault('event','Bhotekoshi flash flood');old.setdefault('event_ne','भोटेकोशी आकस्मिक बाढी');old['updated_date']=datetime.now(timezone.utc).date().isoformat();old['last_checked_utc']=now;old['status']='auto_multisource_fastest_credible';old['sync_sources']=['Nepal Police','Radio Nepal','RONB','Hamro Patro','K cha khabar verified national media'];old['sync_policy']='Use the newest credible cumulative authority-attributed figure. Reject subgroup-only counts, require a stable source timestamp, and do not roll a metric backward unless the source explicitly marks a correction.';old['last_winning_sources']=winners
+    now=datetime.now(timezone.utc).isoformat().replace('+00:00','Z');old.setdefault('event','Bhotekoshi flash flood');old.setdefault('event_ne','भोटेकोशी आकस्मिक बाढी');old['updated_date']=datetime.now(timezone.utc).date().isoformat();old['last_checked_utc']=now;old['status']='auto_multisource_fastest_credible';old['sync_sources']=['Nepal Police','OnlineKhabar direct','Radio Nepal','RONB','Hamro Patro','K cha khabar verified national media'];old['sync_policy']='Use the newest credible cumulative authority-attributed figure independently for each metric. Reject subgroup-only counts, require a stable source timestamp, and do not roll a metric backward unless the source explicitly marks a correction.';old['last_winning_sources']=winners
     OUT.parent.mkdir(parents=True,exist_ok=True);OUT.write_text(json.dumps(old,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 
 if __name__=='__main__': main()

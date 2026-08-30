@@ -53,7 +53,7 @@ jobs:
             await page.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'networkidle2'});
             await page.waitForSelector('#riverMapV3');
             await page.waitForFunction(()=>window.FloodSafeMap&&window.__fsMapV8,{timeout:30000});
-            if(document.documentElement.lang!=='en')await page.click('#langBtn');
+            const currentLang=await page.evaluate(()=>document.documentElement.lang); if(currentLang!=='en')await page.click('#langBtn');
             await page.waitForFunction(()=>document.documentElement.lang==='en');
             await page.evaluate(()=>window.FloodSafeMap.select(26.5763,87.9019));
             await page.waitForFunction(()=>document.querySelectorAll('.riverRouteV8').length>0&&document.querySelectorAll('.riverArrowV8').length>0,{timeout:30000});

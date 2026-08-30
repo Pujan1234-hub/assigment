@@ -11,7 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 
 OUT=Path('data/floodsafe-news.json')
-UA='Mozilla/5.0 (compatible; FloodSafeNepal-News/3.3; +https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/)'
+UA='Mozilla/5.0 (compatible; FloodSafeNepal-News/3.4; +https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/)'
 HEADERS={'User-Agent':UA,'Cache-Control':'no-cache','Pragma':'no-cache','Accept-Language':'ne,en;q=0.8'}
 NP_DIGITS=str.maketrans('०१२३४५६७८९','0123456789')
 SOURCES=(('RONB Post','ronb'),('eKantipur','ekantipur'),('Hamro Patro','hamropatro'),('Radio Nepal','radionepal'))
@@ -81,7 +81,8 @@ def site_candidates(listing_urls,host,max_links=30):
  for listing in listing_urls:
   try:r=get(listing)
   except:continue
-  soup=BeautifulSoup(r.text,'html.parser')
+  raw_links=r.text.replace('\\/','/')
+  soup=BeautifulSoup(raw_links,'html.parser')
   for a in soup.find_all('a',href=True):
    title=clean(' '.join(a.stripped_strings));u=urljoin(listing,a.get('href')).split('#')[0];p=urlparse(u)
    if host not in p.netloc.replace('www.',''):continue
@@ -90,8 +91,8 @@ def site_candidates(listing_urls,host,max_links=30):
    seen.add(u);out.append((title,u))
    if len(out)>=max_links:return out
   pattern=r'(?:https?://(?:www\.)?'+re.escape(host)+r")?(/[^\"'<>\s]*/20\d{2}/\d{2}/\d{2}/[^\"'<>\s]+)"
-  for raw_u in re.findall(pattern,r.text,re.I):
-   u=urljoin(listing,raw_u).replace('\\/','/').split('#')[0]
+  for raw_u in re.findall(pattern,raw_links,re.I):
+   u=urljoin(listing,raw_u).split('#')[0]
    if u in seen:continue
    seen.add(u);out.append(('Latest article',u))
    if len(out)>=max_links:return out
@@ -133,7 +134,8 @@ def fetch_ekantipur():
   items=parse_rss(get('https://ekantipur.com/rss').text,'eKantipur','https://ekantipur.com/')
   if items:return items
  except:pass
- cand=site_candidates(('https://ekantipur.com/headlines','https://ekantipur.com/breaking','https://ekantipur.com/news','https://ekantipur.com/'),'ekantipur.com',40)
+ listings=('https://www-np.ekantipur.com/','https://www-np.ekantipur.com/headlines','https://ekantipur.com/headlines','https://ekantipur.com/breaking','https://ekantipur.com/news','https://ekantipur.com/')
+ cand=site_candidates(listings,'ekantipur.com',50)
  if not cand:return []
  exact=verified_candidates('eKantipur',cand)
  if exact:return exact
@@ -173,8 +175,7 @@ def fetch_hamropatro():
  return []
 
 def fetch_radionepal():
- for url in ('https://radionepal.gov.np/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,date,modified,link,title',
-             'https://radionepal.gov.np/en/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,date,modified,link,title'):
+ for url in ('https://radionepal.gov.np/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,date,modified,link,title','https://radionepal.gov.np/en/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,date,modified,link,title'):
   try:
    items=wp_posts(url,'Radio Nepal')
    if items:return items

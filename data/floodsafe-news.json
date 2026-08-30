@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-08-30T12:02:09Z",
+  "refresh_minutes": 5,
+  "sources": {
+    "RONB Post": {"seeded": true, "items": 0},
+    "eKantipur": {"seeded": true, "items": 0},
+    "Hamro Patro": {"seeded": true, "items": 3},
+    "Radio Nepal": {"seeded": true, "items": 0}
+  },
+  "items": [
+    {
+      "title": "तीन दिनपछि सुरुङको ‘क्राउन हेड’ भेटियो, उद्धार टोलीले बोलाउँदा आएन जवाफ",
+      "url": "https://www.hamropatro.com/news/detail/276472275686261?breakout=y&immersive=true",
+      "published_at": "2026-08-30T10:09:53Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "भारतबाट प्राविधिक टोली र पुलसहित चौथो खेप सहायता नेपाल आइपुग्यो",
+      "url": "https://www.hamropatro.com/news/detail/256367396856246",
+      "published_at": "2026-08-30T04:24:31Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "भोटेकोशीमा पुनः बाढी, सतर्कता अपनाउन स्थानीय प्रशासनको आग्रह",
+      "url": "https://www.hamropatro.com/news/detail/241979026297761-bhotekoshima-punah-badhi-satarkata-apanaun-sthaniy-prashasanako-agrah",
+      "published_at": "2026-08-30T00:31:14Z",
+      "source": "Hamro Patro"
+    }
+  ]
+}

@@ -28,22 +28,14 @@ jobs:
           for i in $(seq 1 90); do
             curl --max-time 10 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
             curl --max-time 20 -fsSL "${DATA}?ci=${GITHUB_SHA}-${i}" -o /tmp/seed.json || true
-            if grep -Fq 'map-v8.js?v=1' /tmp/index.html && grep -Fq 'map-v3.css?v=8' /tmp/index.html && ! grep -Fq 'waterways-local.js' /tmp/index.html && python3 - <<'PY' 2>/dev/null
-import json
-j=json.load(open('/tmp/seed.json'))
-assert j.get('count',0)>=100
-assert len(j.get('waterways',[]))==j['count']
-PY
-            then ok=1; break; fi
+            if grep -Fq 'map-v8.js?v=1' /tmp/index.html && grep -Fq 'map-v3.css?v=8' /tmp/index.html && ! grep -Fq 'waterways-local.js' /tmp/index.html && python3 -c "import json; j=json.load(open('/tmp/seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']" 2>/dev/null; then
+              ok=1
+              break
+            fi
             sleep 3
           done
           test "$ok" = 1
-          python3 - <<'PY'
-          import json
-          j=json.load(open('/tmp/seed.json'))
-          print('production seed waterways',j['count'],j.get('source'))
-          assert j['count']>=100
-          PY
+          python3 -c "import json; j=json.load(open('/tmp/seed.json')); print('production seed waterways',j['count'],j.get('source')); assert j['count']>=100"
           curl --max-time 12 -fsSL "${BASE}map-v8.js?ci=${GITHUB_SHA}" -o /tmp/map.js
           curl --max-time 12 -fsSL "${BASE}map-v3.css?ci=${GITHUB_SHA}" -o /tmp/map.css
           node --check /tmp/map.js

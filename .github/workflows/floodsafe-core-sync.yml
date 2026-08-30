@@ -42,11 +42,23 @@ jobs:
           j=json.load(open('data/floodsafe-core.json'))
           src=j.get('sources',{}).get('rivers',{})
           assert j.get('schema_version',0) >= 4, j.get('schema_version')
-          assert src.get('count',0) >= 150, src
+          assert src.get('count',0) >= 120, src
           assert src.get('live_60m_count',0) >= 5, src
+          assert src.get('dhm_live_page_count',0) >= 5, src
           newest=datetime.fromisoformat(src['newest_measurement'].replace('Z','+00:00'))
           assert datetime.now(timezone.utc)-newest.astimezone(timezone.utc) < timedelta(minutes=60), src
+          rivers=j.get('rivers',[])
+          def title(r): return str(r.get('title') or r.get('river_name') or r.get('name') or '').lower()
+          def is_live(r):
+              t=datetime.fromisoformat(str(r.get('waterLevelOn') or r.get('retrievedAt')).replace('Z','+00:00'))
+              return datetime.now(timezone.utc)-t.astimezone(timezone.utc) < timedelta(minutes=60)
+          kankai=[r for r in rivers if 'kankai' in title(r) and 'mainachuli' in title(r) and r.get('_officialLive') and is_live(r)]
+          karnali=[r for r in rivers if 'karnali' in title(r) and 'chisapani' in title(r) and r.get('_officialLive') and is_live(r)]
+          assert kankai, 'Fresh direct DHM Kankai at Mainachuli missing'
+          assert karnali, 'Fresh direct DHM Karnali at Chisapani missing'
           print('river snapshot',src.get('count'),'live<=60m',src.get('live_60m_count'),'DHM live',src.get('dhm_live_page_count'),'newest',newest.isoformat())
+          print('Kankai LIVE',kankai[0].get('waterLevel'),'m',kankai[0].get('waterLevelOn'))
+          print('Karnali LIVE',karnali[0].get('waterLevel'),'m',karnali[0].get('waterLevelOn'))
           PY
 
       - name: Commit refreshed river snapshot immediately

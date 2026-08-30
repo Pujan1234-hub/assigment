@@ -3,6 +3,7 @@ on:
   push:
     branches: ["main"]
     paths:
+      - "floodsafe-nepal/v25/flood-only.js"
       - "floodsafe-nepal/v25/river-current-20m-v1.js"
       - "floodsafe-nepal/v25/river-line-status-v1.js"
       - "floodsafe-nepal/v25/river-line-style-v1.js"
@@ -23,6 +24,7 @@ jobs:
       - name: JavaScript syntax
         run: |
           set -euo pipefail
+          node --check floodsafe-nepal/v25/flood-only.js
           node --check floodsafe-nepal/v25/river-current-20m-v1.js
           node --check floodsafe-nepal/v25/river-line-status-v1.js
           node --check floodsafe-nepal/v25/river-line-style-v1.js
@@ -31,9 +33,11 @@ jobs:
       - name: Wiring and current-data contracts
         run: |
           set -euo pipefail
+          grep -Fq 'flood-only.js?v=13' floodsafe-nepal/v25/index.html
           grep -Fq 'river-current-20m-v1.js?v=1' floodsafe-nepal/v25/index.html
           grep -Fq 'river-line-status-v1.js?v=2' floodsafe-nepal/v25/index.html
           grep -Fq 'river-line-style-v1.js?v=2' floodsafe-nepal/v25/index.html
+          grep -Fq 'FRESH_MS=20*60*1000' floodsafe-nepal/v25/flood-only.js
           grep -Fq 'FRESH_MS=20*60*1000,POLL_MS=1000' floodsafe-nepal/v25/river-line-status-v1.js
           grep -Fq 'MAX_AGE=20*60*1000' floodsafe-nepal/v25/river-current-20m-v1.js
           grep -Fq "'danger','#ff2d20'" floodsafe-nepal/v25/river-line-style-v1.js

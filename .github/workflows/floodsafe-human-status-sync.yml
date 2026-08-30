@@ -7,7 +7,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'scripts/update_floodsafe_people.py'
+      - 'scripts/update_floodsafe_people_v2.py'
+      - 'data/floodsafe-police.json'
       - '.github/workflows/floodsafe-human-status-sync.yml'
 
 permissions:
@@ -20,12 +21,25 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Sync latest Human Status metrics
-        run: python scripts/update_floodsafe_people.py
+      - name: Sync latest multisource Human Status metrics
+        run: python scripts/update_floodsafe_people_v2.py
+      - name: Validate Human Status contract
+        run: |
+          python - <<'PY'
+          import json
+          j=json.load(open('data/floodsafe-people-status.json'))
+          for k in ('recovered_bodies','missing_minimum','rescued_alive'):
+              assert isinstance(j.get(k),int) and j[k]>0, (k,j.get(k))
+          for k in ('recovered_source','missing_source','rescued_source'):
+              assert str(j.get(k,'')).strip(), k
+          assert str(j.get('last_checked_utc','')).strip()
+          print('Human Status',j['recovered_bodies'],j['missing_minimum'],j['rescued_alive'])
+          PY
       - name: Commit changed Human Status
         shell: bash
         run: |

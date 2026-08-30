@@ -1,0 +1,66 @@
+name: V25 River Line Status Smoke
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "floodsafe-nepal/v25/river-line-status-v1.js"
+      - "floodsafe-nepal/v25/river-line-style-v1.js"
+      - "floodsafe-nepal/v25/map-stable-v2.js"
+      - "floodsafe-nepal/v25/hydro-complete-v1.js"
+      - "floodsafe-nepal/v25/map-loader-v3.js"
+      - "floodsafe-nepal/v25/index.html"
+      - ".github/workflows/v25-river-line-status-smoke.yml"
+permissions:
+  contents: read
+concurrency:
+  group: v25-river-line-status-smoke
+  cancel-in-progress: true
+jobs:
+  river-status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check floodsafe-nepal/v25/river-line-status-v1.js
+          node --check floodsafe-nepal/v25/river-line-style-v1.js
+          node --check floodsafe-nepal/v25/map-stable-v2.js
+          node --check floodsafe-nepal/v25/hydro-complete-v1.js
+          node --check floodsafe-nepal/v25/map-loader-v3.js
+      - name: Wiring and map color contracts
+        run: |
+          set -euo pipefail
+          grep -Fq 'river-line-status-v1.js?v=1' floodsafe-nepal/v25/index.html
+          grep -Fq 'river-line-style-v1.js?v=1' floodsafe-nepal/v25/index.html
+          grep -Fq "FRESH_MS=60*1000,POLL_MS=1000" floodsafe-nepal/v25/river-line-status-v1.js
+          grep -Fq "'danger','#e63946'" floodsafe-nepal/v25/map-stable-v2.js
+          grep -Fq "'warning','#ff8c32'" floodsafe-nepal/v25/map-stable-v2.js
+          grep -Fq "'normal','#19b56b'" floodsafe-nepal/v25/map-stable-v2.js
+          grep -Fq "status_label" floodsafe-nepal/v25/hydro-complete-v1.js
+          grep -Fq "fsriverlinestatus" floodsafe-nepal/v25/hydro-complete-v1.js
+      - name: Realtime status unit contract
+        run: |
+          node <<'JS'
+          const assert=require('assert');
+          global.window=global;
+          global.document={hidden:false};
+          global.CustomEvent=function(type,opts){this.type=type;this.detail=opts?.detail};
+          window.addEventListener=()=>{};
+          window.dispatchEvent=()=>{};
+          const now=()=>new Date().toISOString();
+          window.FloodSafe={state:{stations:[]}};
+          require('./floodsafe-nepal/v25/river-line-status-v1.js');
+          const route={name:'Bagmati River',name_en:'Bagmati River',pts:[[85.34,27.70],[85.35,27.71]]};
+          function station(extra={}){return {river_name:'Bagmati River at Test',latitude:27.705,longitude:85.345,waterLevelOn:now(),...extra}}
+          function check(data,expected){window.FloodSafe.state.stations=[data];window.FloodSafeRiverLine.rebuild(true);const got=window.FloodSafeRiverLine.forWaterway(route);assert(got,`missing match for ${expected}`);assert.equal(got.status,expected)}
+          check(station({waterLevel:8,warningLevel:5,dangerLevel:7}),'danger');
+          check(station({waterLevel:6,warningLevel:5,dangerLevel:7}),'warning');
+          check(station({waterLevel:4,warningLevel:5,dangerLevel:7}),'normal');
+          check(station({waterLevel:4}),'unknown');
+          const stale=station({waterLevel:8,warningLevel:5,dangerLevel:7,waterLevelOn:new Date(Date.now()-61000).toISOString()});
+          window.FloodSafe.state.stations=[stale];window.FloodSafeRiverLine.rebuild(true);assert.equal(window.FloodSafeRiverLine.forWaterway(route),null,'stale reading must not color a river');
+          console.log('PASS realtime river line status contract');
+          process.exit(0);
+          JS

@@ -22,20 +22,15 @@
   "rescued_source_url": "https://english.nepalnews.com/s/nation/bhote-koshi-flood-death-toll-reaches-788-2502-missing/",
   "rescued_update_time": "2026-08-30T13:00:00+05:45",
   "status": "auto_multisource_fastest_credible",
-  "last_checked_utc": "2026-08-30T15:45:00Z",
-  "sync_policy": "Use the newest credible cumulative Nepal-side authority-attributed figure independently for each metric. Reject subgroup-only counts, never combine Nepal and China totals, require a stable source timestamp, and do not roll a metric backward unless the source explicitly marks a correction.",
+  "last_checked_utc": "2026-08-30T18:33:47.247289Z",
+  "sync_policy": "Use the newest credible cumulative authority-attributed figure independently for each metric. Reject subgroup-only counts, require a stable source timestamp, and do not roll a metric backward unless the source explicitly marks a correction.",
   "sync_sources": [
     "Nepal Police",
-    "NDRRMA",
+    "OnlineKhabar direct",
     "Radio Nepal",
     "RONB",
     "Hamro Patro",
-    "OnlineKhabar",
-    "Nepal News"
+    "K cha khabar verified national media"
   ],
-  "last_winning_sources": {
-    "death": "Nepal Police via Nepal News",
-    "missing": "NDRRMA via Nepal News",
-    "rescued": "NDRRMA via Nepal News"
-  }
+  "last_winning_sources": {}
 }

@@ -24,7 +24,7 @@ jobs:
           ok=0
           for i in $(seq 1 100); do
             curl --max-time 15 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'map-loader-v3.js?v=1' /tmp/index.html && grep -Fq 'hydro-complete-v1.js?v=2' /tmp/index.html && grep -Fq 'river-map-detail-v2.js?v=5' /tmp/index.html; then ok=1; break; fi
+            if grep -Fq 'map-loader-v3.js?v=1' /tmp/index.html && grep -Fq 'hydro-complete-v1.js?v=3' /tmp/index.html && grep -Fq 'river-map-detail-v2.js?v=5' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
@@ -35,17 +35,31 @@ jobs:
           node --check /tmp/hydro.js
           node --check /tmp/river-detail.js
           grep -Fq "hydro-complete-hit" /tmp/hydro.js
+          grep -Fq "overview.json" /tmp/hydro.js
           grep -Fq "OpenStreetMap via Overpass" /tmp/hydro.js
           grep -Fq "DHM / BIPAD" /tmp/river-detail.js
-          curl --max-time 20 -fsSL "https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/nepal-waterways-tiles/manifest.json?ci=${GITHUB_SHA}" -o /tmp/manifest.json
-          python3 - <<'PY'
+          data_ok=0
+          for i in $(seq 1 80); do
+            curl --max-time 20 -fsSL "https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/nepal-waterways-tiles/manifest.json?ci=${GITHUB_SHA}-${i}" -o /tmp/manifest.json || true
+            curl --max-time 20 -fsSL "https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/nepal-waterways-tiles/overview.json?ci=${GITHUB_SHA}-${i}" -o /tmp/overview.json || true
+            if python3 - <<'PY'
           import json
-          j=json.load(open('/tmp/manifest.json'))
-          assert j.get('count',0)>=60000, j.get('count')
-          assert j.get('source')=='OpenStreetMap via Overpass', j.get('source')
-          assert j.get('license')=='ODbL', j.get('license')
-          assert len(j.get('tiles',{}))>50
+          try:
+            m=json.load(open('/tmp/manifest.json')); o=json.load(open('/tmp/overview.json'))
+            assert m.get('count',0)>=60000
+            assert m.get('source')=='OpenStreetMap via Overpass'
+            assert m.get('license')=='ODbL'
+            assert m.get('overview_count',0)>=1000
+            assert len(m.get('tiles',{}))>50
+            assert o.get('count',0)>=1000
+            assert o.get('source_count',0)>=60000
+          except Exception:
+            raise SystemExit(1)
           PY
+            then data_ok=1; break; fi
+            sleep 3
+          done
+          test "$data_ok" = 1
       - name: Browser 77 districts complete rivers and source-safe status UI
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
@@ -67,15 +81,16 @@ jobs:
             await page.goto(process.env.BASE+'?ci='+Date.now()+'#map',{waitUntil:'domcontentloaded'});
             await page.waitForSelector('#riverMapGL .maplibregl-canvas');
             await page.waitForFunction(()=>window.FloodSafeMap?.map&&window.FloodSafeMap.districtCount===77,{timeout:80000});
-            await page.waitForFunction(()=>window.FloodSafeHydroComplete?.loadedTiles>10,{timeout:80000});
+            await page.waitForFunction(()=>window.FloodSafeHydroComplete?.overviewCount>=1000,{timeout:80000});
             await page.waitForFunction(()=>{const m=window.FloodSafeMap?.map;return !!m?.getLayer('hydro-complete-lines')&&!!m?.getLayer('hydro-complete-hit')&&m.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']}).length>20},{timeout:80000});
-            const national=await page.evaluate(()=>{const m=window.FloodSafeMap.map,fs=m.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']});const sample=fs.find(f=>f?.properties?.geometry_source);return{districts:window.FloodSafeMap.districtCount,labels:document.querySelectorAll('.districtLabelGL').length,loadedTiles:window.FloodSafeHydroComplete.loadedTiles,visible:fs.length,source:sample?.properties?.geometry_source,license:sample?.properties?.license,hint:document.querySelector('#mapHint')?.textContent||''}});
-            if(national.districts!==77||national.labels!==77||national.visible<20||national.source!=='OpenStreetMap via Overpass'||national.license!=='ODbL')throw Error('National hydro map incomplete '+JSON.stringify(national));
+            const national=await page.evaluate(()=>{const m=window.FloodSafeMap.map,fs=m.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']});const sample=fs.find(f=>f?.properties?.geometry_source);return{districts:window.FloodSafeMap.districtCount,labels:document.querySelectorAll('.districtLabelGL').length,overviewCount:window.FloodSafeHydroComplete.overviewCount,visible:fs.length,source:sample?.properties?.geometry_source,license:sample?.properties?.license,hint:document.querySelector('#mapHint')?.textContent||''}});
+            if(national.districts!==77||national.labels!==77||national.overviewCount<1000||national.visible<20||national.source!=='OpenStreetMap via Overpass'||national.license!=='ODbL')throw Error('National hydro map incomplete '+JSON.stringify(national));
             await page.evaluate(()=>window.FloodSafeMap.select(26.5763,87.9019,true));
-            await sleep(1800);
+            await page.waitForFunction(()=>window.FloodSafeHydroComplete.loadedTiles>0,{timeout:45000});
             await page.waitForFunction(()=>window.FloodSafeMap.map.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']}).length>0,{timeout:45000});
-            const local=await page.evaluate(()=>{const m=window.FloodSafeMap.map,fs=m.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']});return{visible:fs.length,zoom:m.getZoom(),props:fs[0]?.properties||{}}});
-            if(local.visible<1||local.zoom<10||local.props.geometry_source!=='OpenStreetMap via Overpass')throw Error('Local hydro detail missing '+JSON.stringify(local));
+            await sleep(500);
+            const local=await page.evaluate(()=>{const m=window.FloodSafeMap.map,fs=m.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']});return{visible:fs.length,zoom:m.getZoom(),loadedTiles:window.FloodSafeHydroComplete.loadedTiles,props:fs[0]?.properties||{}}});
+            if(local.visible<1||local.zoom<10||local.loadedTiles<1||local.props.geometry_source!=='OpenStreetMap via Overpass')throw Error('Local hydro detail missing '+JSON.stringify(local));
             if(pageErrors.length)throw Error('Page errors '+JSON.stringify(pageErrors.slice(0,10)));
             console.log('PASS FloodSafe V25 complete hydrography',{national,local});
             await browser.close();

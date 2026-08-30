@@ -1,9 +1,10 @@
-name: FloodSafe Five Source News Sync
+name: FloodSafe Four Source Live News Sync
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - 'scripts/floodsafe-news-sync.py'
       - '.github/workflows/floodsafe-news-sync.yml'
@@ -11,7 +12,7 @@ permissions:
   contents: write
 concurrency:
   group: floodsafe-news-sync
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -19,16 +20,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
-      - name: Fetch allowed news sources
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install news parser dependencies
+        run: pip install --quiet requests beautifulsoup4
+      - name: Fetch RONB, eKantipur, Hamro Patro and Radio Nepal
         run: python3 scripts/floodsafe-news-sync.py
-      - name: Commit snapshot
+      - name: Commit changed snapshot
         shell: bash
         run: |
           set -e
-          if git diff --quiet -- data/floodsafe-news.json; then exit 0; fi
+          if git diff --quiet -- data/floodsafe-news.json; then echo 'No headline change'; exit 0; fi
           git config user.name 'FloodSafe news sync'
           git config user.email 'actions@users.noreply.github.com'
           git add data/floodsafe-news.json
-          git commit -m '[auto] refresh FloodSafe five-source news'
+          git commit -m '[auto] refresh FloodSafe four-source live news'
           git pull --rebase origin main
           git push origin HEAD:main

@@ -73,8 +73,7 @@ jobs:
                   s=re.sub(rf'<script[^>]+{re.escape(old)}[^>]*></script>','',s)
               for fn,vernum in [('v23-gateway.js','1'),('v23-upgrade.js','5'),('v23-hotfix.js','4'),('v23-ux.js','2'),('v23-river-map-v3.js','3'),('v23-location.js','1'),('v23-lang-police.js','1'),('v23-live-2s.js','1'),('v23-active-hazards.js','1'),('v23-map-guard.js','1')]:
                   f=p.parent/fn
-                  if f.exists():
-                      s=s.replace('</body>',f'<script src="./{fn}?v={vernum}"></script></body>')
+                  if f.exists(): s=s.replace('</body>',f'<script src="./{fn}?v={vernum}"></script></body>')
               p.write_text(s)
           PY
           if grep -Eqi '\bAI\b|AI-assisted|artificial intelligence' _site/index.html; then exit 2; fi
@@ -87,7 +86,7 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Verify FloodSafe V25 Nepal 3D map and river data are public
+      - name: Verify FloodSafe V25 Nepal 3D map v4 is public
         shell: bash
         run: |
           set -euo pipefail
@@ -95,9 +94,9 @@ jobs:
           ok=0
           for i in $(seq 1 80); do
             curl --max-time 15 -fsSL "$BASE/floodsafe-nepal/v25/?riverdeploy=$GITHUB_SHA-$i" -o /tmp/v25.html || true
-            curl --max-time 15 -fsSL "$BASE/floodsafe-nepal/v25/map-gl-v3.js?riverdeploy=$GITHUB_SHA-$i" -o /tmp/mapgl.js || true
+            curl --max-time 15 -fsSL "$BASE/floodsafe-nepal/v25/map-gl-v4.js?riverdeploy=$GITHUB_SHA-$i" -o /tmp/mapgl.js || true
             curl --max-time 25 -fsSL "$BASE/data/nepal-waterways-seed.json?riverdeploy=$GITHUB_SHA-$i" -o /tmp/seed.json || true
-            if grep -Fq 'map-gl-v3.js?v=1' /tmp/v25.html && grep -Fq 'map-gl-v1.css?v=2' /tmp/v25.html && grep -Fq 'maplibre-gl@6.6.0' /tmp/v25.html && grep -Fq 'new maplibregl.Map' /tmp/mapgl.js && grep -Fq 'nationalWater' /tmp/mapgl.js && grep -Fq 'districtLabelGL' /tmp/mapgl.js && grep -Fq 'nepal-border' /tmp/mapgl.js && grep -Fq 'maxZoom:19.5' /tmp/mapgl.js && grep -Fq "encoding:'terrarium'" /tmp/mapgl.js && python3 -c "import json; j=json.load(open('/tmp/seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']" 2>/dev/null; then
+            if grep -Fq 'map-gl-v4.js?v=1' /tmp/v25.html && grep -Fq 'map-gl-v1.css?v=2' /tmp/v25.html && grep -Fq 'maplibre-gl@6.6.0' /tmp/v25.html && grep -Fq 'new maplibregl.Map' /tmp/mapgl.js && grep -Fq "map.on('style.load',initLayers)" /tmp/mapgl.js && grep -Fq 'nationalWater' /tmp/mapgl.js && grep -Fq 'districtLabelGL' /tmp/mapgl.js && grep -Fq 'nepal-mask' /tmp/mapgl.js && grep -Fq 'nepal-border' /tmp/mapgl.js && grep -Fq 'maxZoom:19.5' /tmp/mapgl.js && grep -Fq "encoding:'terrarium'" /tmp/mapgl.js && python3 -c "import json; j=json.load(open('/tmp/seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']" 2>/dev/null; then
               node --check /tmp/mapgl.js
               ok=1
               break
@@ -105,7 +104,7 @@ jobs:
             sleep 3
           done
           test "$ok" = 1
-          python3 -c "import json; j=json.load(open('/tmp/seed.json')); print('PUBLIC Nepal 3D river routes',j['count'],j.get('source'))"
+          python3 -c "import json; j=json.load(open('/tmp/seed.json')); print('PUBLIC Nepal map v4 river routes',j['count'],j.get('source'))"
       - name: Verify stable FloodSafe scripts
         shell: bash
         run: |

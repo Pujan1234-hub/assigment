@@ -4,6 +4,9 @@ on:
     branches: ["main"]
     paths:
       - "floodsafe-nepal/v25/**"
+      - "data/nepal-waterways-snapshot.json"
+      - "data/nepal-waterways-seed.json"
+      - "data/nepal-waterways-last-good.json"
       - ".github/workflows/v25-browser-smoke.yml"
   workflow_dispatch:
 permissions:
@@ -14,26 +17,40 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
-      - name: Wait for current production
+      - name: Wait for production app and real river data
         run: |
           set -euo pipefail
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
+          DATA='https://pujan1234-hub.github.io/assigment/data/nepal-waterways-seed.json'
           ok=0
-          for i in $(seq 1 70); do
+          for i in $(seq 1 90); do
             curl --max-time 10 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'map-v8.js?v=1' /tmp/index.html && grep -Fq 'map-v3.css?v=8' /tmp/index.html && ! grep -Fq 'waterways-local.js' /tmp/index.html; then ok=1; break; fi
+            curl --max-time 20 -fsSL "${DATA}?ci=${GITHUB_SHA}-${i}" -o /tmp/seed.json || true
+            if grep -Fq 'map-v8.js?v=1' /tmp/index.html && grep -Fq 'map-v3.css?v=8' /tmp/index.html && ! grep -Fq 'waterways-local.js' /tmp/index.html && python3 - <<'PY' 2>/dev/null
+import json
+j=json.load(open('/tmp/seed.json'))
+assert j.get('count',0)>=100
+assert len(j.get('waterways',[]))==j['count']
+PY
+            then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
+          python3 - <<'PY'
+          import json
+          j=json.load(open('/tmp/seed.json'))
+          print('production seed waterways',j['count'],j.get('source'))
+          assert j['count']>=100
+          PY
           curl --max-time 12 -fsSL "${BASE}map-v8.js?ci=${GITHUB_SHA}" -o /tmp/map.js
           curl --max-time 12 -fsSL "${BASE}map-v3.css?ci=${GITHUB_SHA}" -o /tmp/map.css
           node --check /tmp/map.js
           grep -Fq '__fsMapV8' /tmp/map.js
           grep -Fq 'riverSheetV8' /tmp/map.js
           grep -Fq 'riverArrowV8' /tmp/map.css
-      - name: Browser screenshot-style river regression
+      - name: Browser four reported river regressions
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -48,39 +65,39 @@ jobs:
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
             const page=await browser.newPage();
             await page.setViewport({width:430,height:900,deviceScaleFactor:2});
-            page.setDefaultTimeout(65000);page.setDefaultNavigationTimeout(65000);
+            page.setDefaultTimeout(70000);page.setDefaultNavigationTimeout(70000);
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));
             await page.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'networkidle2'});
             await page.waitForSelector('#riverMapV3');
             await page.waitForFunction(()=>window.FloodSafeMap&&window.__fsMapV8,{timeout:30000});
-            const currentLang=await page.evaluate(()=>document.documentElement.lang); if(currentLang!=='en')await page.click('#langBtn');
+            const currentLang=await page.evaluate(()=>document.documentElement.lang);if(currentLang!=='en')await page.click('#langBtn');
             await page.waitForFunction(()=>document.documentElement.lang==='en');
-            await page.evaluate(()=>window.FloodSafeMap.select(26.5763,87.9019));
-            await page.waitForFunction(()=>document.querySelectorAll('.riverRouteV8').length>0&&document.querySelectorAll('.riverArrowV8').length>0,{timeout:30000});
-            const r=await page.evaluate(()=>{
-              const routes=[...document.querySelectorAll('.riverRouteV8')],arrows=[...document.querySelectorAll('.riverArrowV8')];
-              const cs=getComputedStyle(routes[0]);
-              return{routes:routes.length,arrows:arrows.length,width:parseFloat(cs.strokeWidth),dash:cs.strokeDasharray,focus:window.FloodSafe?.state?.kind,legacyLocal:document.querySelectorAll('.localRiverV7').length,legacyV3:document.querySelectorAll('.riverV3').length};
-            });
-            if(r.routes<1||r.routes>45)throw Error('River route count invalid '+JSON.stringify(r));
-            if(r.arrows<1)throw Error('Flow arrows missing '+JSON.stringify(r));
-            if(r.width>5)throw Error('River line too thick '+JSON.stringify(r));
-            if(r.focus!=='map')throw Error('Map focus not selected '+JSON.stringify(r));
-            if(r.legacyLocal||r.legacyV3)throw Error('Legacy renderer still active '+JSON.stringify(r));
-            await page.$eval('.riverHitV8',el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
-            await page.waitForFunction(()=>{const s=document.querySelector('#riverSheet');return s&&!s.hidden&&getComputedStyle(s).display!=='none'});
-            const sheet=await page.evaluate(()=>({
-              text:document.querySelector('#riverSheet')?.innerText||'',
-              selected:document.querySelectorAll('.riverRouteV8.selected').length,
-              position:getComputedStyle(document.querySelector('#riverSheet')).position,
-              close:!!document.querySelector('#riverSheetClose')
-            }));
-            for(const word of['Water level','Warning level','Danger level','Nearest official station','Measured','Source'])if(!sheet.text.includes(word))throw Error('Detail sheet missing '+word+' '+sheet.text);
-            if(sheet.selected<1||sheet.position!=='fixed'||!sheet.close)throw Error('Detail sheet interaction failed '+JSON.stringify(sheet));
-            const nepaliLeak=/[\u0900-\u097F]/.test(sheet.text);
-            if(nepaliLeak)throw Error('Nepali mixed into English river sheet '+sheet.text);
+            const tests=[['Jhapa',26.5763,87.9019],['Sindhuli',27.164,86.328],['Myagdi',28.5782,83.5343],['Dolpa',29.2623,83.0371]];
+            const results=[];
+            for(const [name,la,lo] of tests){
+              await page.evaluate(([la,lo])=>window.FloodSafeMap.select(la,lo),[la,lo]);
+              await page.waitForFunction(()=>document.querySelectorAll('.riverRouteV8').length>0&&document.querySelectorAll('.riverArrowV8').length>0,{timeout:30000});
+              const r=await page.evaluate(()=>{
+                const routes=[...document.querySelectorAll('.riverRouteV8')],arrows=[...document.querySelectorAll('.riverArrowV8')];
+                const cs=getComputedStyle(routes[0]);
+                return{routes:routes.length,arrows:arrows.length,width:parseFloat(cs.strokeWidth),focus:window.FloodSafe?.state?.kind,legacyLocal:document.querySelectorAll('.localRiverV7').length,legacyV3:document.querySelectorAll('.riverV3').length,hint:document.querySelector('#mapHint')?.textContent||''};
+              });
+              if(r.routes<1||r.routes>45)throw Error(name+' route count invalid '+JSON.stringify(r));
+              if(r.arrows<1)throw Error(name+' flow arrows missing '+JSON.stringify(r));
+              if(r.width>5)throw Error(name+' line too thick '+JSON.stringify(r));
+              if(r.focus!=='map')throw Error(name+' map focus failed '+JSON.stringify(r));
+              if(r.legacyLocal||r.legacyV3)throw Error(name+' legacy renderer active '+JSON.stringify(r));
+              await page.$eval('.riverHitV8',el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+              await page.waitForFunction(()=>{const s=document.querySelector('#riverSheet');return s&&!s.hidden&&getComputedStyle(s).display!=='none'});
+              const sheet=await page.evaluate(()=>({text:document.querySelector('#riverSheet')?.innerText||'',selected:document.querySelectorAll('.riverRouteV8.selected').length,position:getComputedStyle(document.querySelector('#riverSheet')).position,close:!!document.querySelector('#riverSheetClose')}));
+              for(const word of['Water level','Warning level','Danger level','Nearest official station','Measured','Source'])if(!sheet.text.includes(word))throw Error(name+' detail missing '+word+' '+sheet.text);
+              if(sheet.selected<1||sheet.position!=='fixed'||!sheet.close)throw Error(name+' sheet interaction failed '+JSON.stringify(sheet));
+              if(/[\u0900-\u097F]/.test(sheet.text))throw Error(name+' Nepali mixed into English sheet '+sheet.text);
+              await page.click('#riverSheetClose');
+              results.push({name,...r});
+            }
             if(errors.length)throw Error('Page errors '+JSON.stringify(errors.slice(0,8)));
-            console.log('PASS screenshot-style Jhapa river map',r,{selected:sheet.selected});
+            console.log('PASS real river geometry at four reported locations',results);
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

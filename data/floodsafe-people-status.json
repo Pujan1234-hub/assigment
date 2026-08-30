@@ -2,13 +2,13 @@
   "event": "Bhotekoshi flash flood",
   "event_ne": "भोटेकोशी आकस्मिक बाढी",
   "updated_date": "2026-08-30",
-  "recovered_bodies": 768,
+  "recovered_bodies": 788,
   "recovered_bodies_label": "Confirmed deaths",
   "recovered_bodies_label_ne": "पुष्टि भएका मृत्यु",
-  "recovered_source": "Nepal Police via OnlineKhabar",
-  "recovered_source_url": "https://english.onlinekhabar.com/rasuwa-flood-death-toll-reaches-768-160-injured-discharged.html",
-  "recovered_update_time": "2026-08-30T14:00:00+05:45",
-  "recovered_update_iso": "2026-08-30T14:00:00+05:45",
+  "recovered_source": "OnlineKhabar",
+  "recovered_source_url": "https://english.onlinekhabar.com/flood-death-toll.html",
+  "recovered_update_time": "2026-08-30T11:15:34+00:00",
+  "recovered_update_iso": "2026-08-30T11:15:34+00:00",
   "missing_minimum": 2502,
   "missing_scope": "Latest government-reported unaccounted figure",
   "missing_scope_ne": "सरकारले दिएको पछिल्लो सम्पर्कविहीन संख्या",
@@ -22,7 +22,7 @@
   "rescued_source_url": "https://english.onlinekhabar.com/bhotekoshi-flood-death-toll.html",
   "rescued_update_time": "2026-08-30T13:00:00+05:45",
   "status": "auto_multisource_fastest_credible",
-  "last_checked_utc": "2026-08-30T11:09:00Z",
+  "last_checked_utc": "2026-08-30T12:28:37.225240Z",
   "sync_policy": "Use the newest credible cumulative authority-attributed figure independently for each metric. Reject subgroup-only counts, require a stable source timestamp, and do not roll a metric backward unless the source explicitly marks a correction.",
   "sync_sources": [
     "Nepal Police",
@@ -33,8 +33,6 @@
     "K cha khabar verified national media"
   ],
   "last_winning_sources": {
-    "death": "Nepal Police via OnlineKhabar",
-    "missing": "NDRRMA via OnlineKhabar",
-    "rescued": "NDRRMA via OnlineKhabar"
+    "death": "OnlineKhabar"
   }
 }

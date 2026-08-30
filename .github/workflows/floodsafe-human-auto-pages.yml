@@ -1,0 +1,20 @@
+name: FloodSafe Human Status Auto Deploy
+
+on:
+  workflow_run:
+    workflows: ["FloodSafe Human Status Sync"]
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger GitHub Pages deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run fixcheck-pages.yml --repo "$GITHUB_REPOSITORY"

@@ -9,6 +9,8 @@ on:
     paths:
       - '.github/workflows/floodsafe-core-sync.yml'
       - 'scripts/floodsafe-core-sync.py'
+      - 'scripts/update_floodsafe_people_v2.py'
+      - 'data/floodsafe-police.json'
       - 'floodsafe-nepal/v25/resilience.js'
 
 permissions:
@@ -21,7 +23,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,22 +34,40 @@ jobs:
           python-version: '3.12'
 
       - name: Fetch official core feeds
-        id: fetch
-        continue-on-error: true
         run: python scripts/floodsafe-core-sync.py
 
-      - name: Validate snapshot JSON
-        run: python -m json.tool data/floodsafe-core.json >/dev/null
+      - name: Fetch latest Human Status from credible Nepal sources
+        run: python scripts/update_floodsafe_people_v2.py
 
-      - name: Commit refreshed snapshot
+      - name: Validate live snapshot contracts
         run: |
-          if git diff --quiet -- data/floodsafe-core.json; then
-            echo 'No snapshot changes.'
+          python -m json.tool data/floodsafe-core.json >/dev/null
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          j=json.load(open('data/floodsafe-people-status.json'))
+          for k in ('recovered_bodies','missing_minimum','rescued_alive'):
+              assert isinstance(j.get(k),int) and j[k]>0, (k,j.get(k))
+          for k in ('recovered_source','missing_source','rescued_source'):
+              assert str(j.get(k,'')).strip(), k
+          checked=str(j.get('last_checked_utc','')).strip()
+          assert checked, 'last_checked_utc'
+          t=datetime.fromisoformat(checked.replace('Z','+00:00'))
+          age=(datetime.now(timezone.utc)-t).total_seconds()
+          assert age < 900, ('Human Status source scan too old',age,checked)
+          print('Human Status',j['recovered_bodies'],j['missing_minimum'],j['rescued_alive'],'checked',checked)
+          PY
+
+      - name: Commit refreshed live snapshots
+        shell: bash
+        run: |
+          if git diff --quiet -- data/floodsafe-core.json data/floodsafe-people-status.json; then
+            echo 'No live snapshot changes.'
             exit 0
           fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/floodsafe-core.json
-          git commit -m '[auto] refresh FloodSafe core official feeds'
+          git config user.name 'FloodSafe live sync'
+          git config user.email 'actions@users.noreply.github.com'
+          git add data/floodsafe-core.json data/floodsafe-people-status.json
+          git commit -m '[auto] refresh FloodSafe core and Human Status'
           git pull --rebase origin main
           git push origin HEAD:main

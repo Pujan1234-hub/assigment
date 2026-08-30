@@ -87,23 +87,24 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Verify FloodSafe V25 river data is public
+      - name: Verify FloodSafe V25 real 3D map and river data are public
         shell: bash
         run: |
           set -euo pipefail
           BASE=https://pujan1234-hub.github.io/assigment
           ok=0
-          for i in $(seq 1 40); do
+          for i in $(seq 1 50); do
             curl --max-time 15 -fsSL "$BASE/floodsafe-nepal/v25/?riverdeploy=$GITHUB_SHA-$i" -o /tmp/v25.html || true
+            curl --max-time 15 -fsSL "$BASE/floodsafe-nepal/v25/map-gl-v1.js?riverdeploy=$GITHUB_SHA-$i" -o /tmp/mapgl.js || true
             curl --max-time 25 -fsSL "$BASE/data/nepal-waterways-seed.json?riverdeploy=$GITHUB_SHA-$i" -o /tmp/seed.json || true
-            if grep -Fq 'map-v8.js?v=1' /tmp/v25.html && python3 -c "import json; j=json.load(open('/tmp/seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']" 2>/dev/null; then
+            if grep -Fq 'map-gl-v1.js?v=1' /tmp/v25.html && grep -Fq 'maplibre-gl@6.6.0' /tmp/v25.html && grep -Fq 'new maplibregl.Map' /tmp/mapgl.js && grep -Fq 'setTerrain' /tmp/mapgl.js && grep -Fq 'maxZoom:19.5' /tmp/mapgl.js && python3 -c "import json; j=json.load(open('/tmp/seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']" 2>/dev/null; then
               ok=1
               break
             fi
             sleep 3
           done
           test "$ok" = 1
-          python3 -c "import json; j=json.load(open('/tmp/seed.json')); print('PUBLIC river routes',j['count'],j.get('source'))"
+          python3 -c "import json; j=json.load(open('/tmp/seed.json')); print('PUBLIC real-3D river routes',j['count'],j.get('source'))"
       - name: Verify stable FloodSafe scripts
         shell: bash
         run: |

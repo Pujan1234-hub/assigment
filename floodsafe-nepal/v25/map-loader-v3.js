@@ -4,9 +4,9 @@ window.maplibregl = maplibregl;
 
 if(!window.__fsStableMapLoading){
   window.__fsStableMapLoading=true;
-  import('./map-stable-v2.js?v=3').then(()=>{
+  import('./map-stable-v2.js?v=4').then(()=>{
     window.__fsStableMapLoaded=true;
-    return import('./hydro-complete-v1.js?v=1');
+    return import('./hydro-complete-v1.js?v=4');
   }).then(()=>{
     window.__fsHydroCompleteLoaded=true;
   }).catch((err)=>{

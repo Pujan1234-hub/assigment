@@ -1,14 +1,35 @@
 {
-  "generated_at": "2026-08-30T06:03:54.444300+05:45",
-  "updated_at_npt": "30 Aug 06:03 NPT",
+  "generated_at": "2026-08-30T11:18:20.298264+05:45",
+  "updated_at_npt": "30 Aug 11:18 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "पोखरा महानगरले थाल्यो राहत सङ्कलन अभियान",
+      "title": "ट्याक्टर दुर्घटनामा चालकको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588447/pokhara-metropolitan-city-launches-relief-collection-campaign",
-      "published_at": "2026-08-30T01:27:31+05:45",
+      "url": "https://www.ratopati.com/story/588497/driver-dies-in-tractor-accident",
+      "published_at": "2026-08-30T11:13:03+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीप्रभावितलाई ‘होल्डिङ सेन्टर’मै राहत सामग्री",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588493/relief-materials-for-flood-victims-at-holding-center",
+      "published_at": "2026-08-30T10:49:59+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढीमा भोजपुरका चार जना सम्पर्कविहीन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588471/four-people-from-bhojpur-remain-unaccounted-for-in-bhotekoshi-flood",
+      "published_at": "2026-08-30T08:22:23+05:45",
+      "flash": false
+    },
+    {
+      "title": "पन्थोक र जुग्जामा राष्ट्रिय प्रसारण लाइनको विद्युत् विस्तार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588461/national-transmission-line-expansion-in-panthok-and-jugja",
+      "published_at": "2026-08-30T07:01:11+05:45",
       "flash": false
     }
   ],
@@ -28,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 1
+      "flash": 2,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

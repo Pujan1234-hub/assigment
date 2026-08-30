@@ -6,14 +6,18 @@ try{
 
 async function recoverMap(){
   try{
+    if(window.__fsStableMapLoading) return;
+    window.__fsStableMapLoading=true;
     if(!window.maplibregl){
       const mod=await import('https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.mjs');
       window.maplibregl=mod;
     }
     const api=window.FloodSafeMap;
-    if(api?.map && api?.initialized) return;
-    await import('./map-stable-v2.js?fallback=4');
+    if(api?.map && api?.initialized){window.__fsStableMapLoaded=true;return;}
+    await import('./map-stable-v2.js?fallback=5');
+    window.__fsStableMapLoaded=true;
   }catch(e){
+    window.__fsStableMapLoading=false;
     console.error('FloodSafe map recovery failed',e);
     const hint=document.getElementById('mapHint');
     if(hint) hint.textContent='नक्सा लोड हुन सकेन — पेज फेरि खोल्नुहोस्।';
@@ -23,7 +27,7 @@ async function recoverMap(){
 setTimeout(()=>{
   const api=window.FloodSafeMap;
   if(!api?.map || !api?.initialized) recoverMap();
-},700);
+},900);
 
 let tries=0;
 const timer=setInterval(()=>{

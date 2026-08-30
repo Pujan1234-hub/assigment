@@ -22,7 +22,7 @@
   "rescued_source_url": "https://english.onlinekhabar.com/rasuwa-flood-death-toll-6.html",
   "rescued_update_time": "2026-08-30T09:00:00+05:45",
   "status": "auto_multisource_fastest_credible",
-  "last_checked_utc": "2026-08-30T09:05:49.092984Z",
+  "last_checked_utc": "2026-08-30T10:47:58.962315Z",
   "sync_policy": "Use the newest credible cumulative authority-attributed figure. Reject subgroup-only counts, require a stable source timestamp, and do not roll a metric backward unless the source explicitly marks a correction.",
   "sync_sources": [
     "Nepal Police",

@@ -7,49 +7,71 @@ on:
       - ".github/workflows/seed-nepal-waterways.yml"
 permissions:
   contents: write
+concurrency:
+  group: seed-nepal-waterways
+  cancel-in-progress: false
 jobs:
   seed:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 16
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch reported regions
+      - name: Fetch verified reported regions to temporary seed
         run: |
           set -euo pipefail
           mkdir -p /tmp/seed data
           python3 - <<'PY'
-          import subprocess,json,time,math,datetime
-          regions=[('Myagdi',28.5782,83.5343),('Sindhuli',27.164,86.328),('Jhapa',26.5763,87.9019),('Dolpa',29.2623,83.0371)]
-          eps=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']
+          import subprocess,json,time,math,datetime,os
+          regions=[
+            ('Jhapa',26.5763,87.9019),('Sindhuli',27.164,86.328),
+            ('Myagdi',28.5782,83.5343),('Dolpa',29.2623,83.0371),
+            ('Kathmandu',27.70,85.32),('Kailali',28.70,80.75)
+          ]
+          eps=['https://overpass.kumi.systems/api/interpreter','https://overpass-api.de/api/interpreter']
           all=[]; seen=set()
           for label,la,lo in regions:
-            s,n=la-.45,la+.45; w,e=lo-.55,lo+.55
-            q=f'[out:json][timeout:45];(way["waterway"="river"]({s},{w},{n},{e});way["waterway"="stream"]({s},{w},{n},{e}););out tags geom;'
+            # Wide enough for a useful local map but still small enough for reliable Overpass response.
+            s,n=la-.34,la+.34; w,e=lo-.44,lo+.44
+            q=f'[out:json][timeout:55];(way["waterway"="river"]({s},{w},{n},{e});way["waterway"="stream"]({s},{w},{n},{e}););out tags geom;'
             j=None
-            for ep in eps:
-              try:
-                p=subprocess.run(['curl','--retry','2','--retry-delay','1','--max-time','55','-fsSL','-X','POST',ep,'--data-urlencode','data='+q],capture_output=True,text=True,check=True)
-                j=json.loads(p.stdout); break
-              except Exception as ex: print(label,ep,'failed',str(ex)[:120]); time.sleep(1)
-            if not j: raise SystemExit(label+' failed')
-            print(label,len(j.get('elements',[])))
+            for attempt in range(4):
+              for ep in eps:
+                try:
+                  p=subprocess.run(['curl','--retry','2','--retry-delay','2','--max-time','70','-fsSL','-X','POST',ep,'--data-urlencode','data='+q],capture_output=True,text=True,check=True)
+                  x=json.loads(p.stdout)
+                  if isinstance(x.get('elements'),list) and len(x['elements'])>0:
+                    j=x; print(label,'elements',len(x['elements']),'via',ep); break
+                except Exception as ex: print(label,'attempt',attempt+1,'failed',ep,str(ex)[:140])
+              if j: break
+              time.sleep(3+attempt*2)
+            if not j: raise SystemExit(label+' fetch failed; refusing empty seed')
+            local=0
             for x in j.get('elements',[]):
               if x.get('type')!='way' or x.get('id') in seen: continue
               g=x.get('geometry') or []
               if len(g)<2: continue
-              seen.add(x.get('id')); step=max(1,math.ceil(len(g)/45)); pts=[[round(p['lon'],6),round(p['lat'],6)] for p in g[::step]]
+              seen.add(x.get('id')); step=max(1,math.ceil(len(g)/55))
+              pts=[[round(p['lon'],6),round(p['lat'],6)] for p in g[::step]]
               last=[round(g[-1]['lon'],6),round(g[-1]['lat'],6)]
               if pts[-1]!=last: pts.append(last)
-              t=x.get('tags') or {}; all.append({'id':x.get('id'),'type':t.get('waterway','stream'),'name':t.get('name') or '','name_ne':t.get('name:ne') or t.get('name_ne') or '','name_en':t.get('name:en') or '','pts':pts})
-          out={'generated_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'source':'OpenStreetMap via Overpass','license':'ODbL','count':len(all),'waterways':all}
-          json.dump(out,open('data/nepal-waterways-seed.json','w'),ensure_ascii=False,separators=(',',':'))
-          assert len(all)>50
+              t=x.get('tags') or {}
+              all.append({'id':x.get('id'),'type':t.get('waterway','stream'),'name':t.get('name') or '','name_ne':t.get('name:ne') or t.get('name_ne') or '','name_en':t.get('name:en') or '','pts':pts}); local+=1
+            if local<1: raise SystemExit(label+' produced no usable routes')
+          if len(all)<100: raise SystemExit(f'only {len(all)} seed routes; refusing publish')
+          out={'generated_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'source':'OpenStreetMap via Overpass','license':'ODbL','coverage':'reported-regions emergency fallback','count':len(all),'waterways':all}
+          tmp='/tmp/nepal-waterways-seed-next.json'
+          json.dump(out,open(tmp,'w'),ensure_ascii=False,separators=(',',':'))
+          chk=json.load(open(tmp)); assert chk['count']==len(chk['waterways']) and chk['count']>=100
+          assert os.path.getsize(tmp)>10000
+          print('validated seed',chk['count'],'bytes',os.path.getsize(tmp))
           PY
-      - name: Commit seed
+          cp /tmp/nepal-waterways-seed-next.json data/nepal-waterways-seed.json
+      - name: Commit only validated seed
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/nepal-waterways-seed.json
-          git commit -m "Seed local Nepal waterways geometry" || exit 0
+          git commit -m "Seed validated local Nepal waterways geometry" || exit 0
           git pull --rebase origin main
           git push

@@ -1,6 +1,6 @@
 (()=>{'use strict';
-if(window.__fsGaugeBridgeV13)return;window.__fsGaugeBridgeV13=true;
-const LIVE=60*1000,RECENT=24*60*60*1000,LOCAL_CONTEXT_KM=20,SAME_RIVER_LOCAL_KM=25;
+if(window.__fsGaugeBridgeV14)return;window.__fsGaugeBridgeV14=true;
+const LIVE=60*1000,RECENT=30*60*1000,LOCAL_CONTEXT_KM=20,SAME_RIVER_LOCAL_KM=25;
 const num=v=>{const n=Number(String(v??'').replace(/[^0-9.+-]/g,''));return Number.isFinite(n)?n:null};
 const val=(o,ks)=>{for(const k of ks){const v=o?.[k];if(v!==undefined&&v!==null&&v!=='')return v}return null};
 function flat(o){return o&&typeof o==='object'&&o.fields&&typeof o.fields==='object'?Object.assign({},o.fields,o):o}

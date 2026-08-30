@@ -89,8 +89,8 @@ def site_candidates(listing_urls,host,max_links=30):
    if len(title)<15 or len(title)>220 or u in seen:continue
    seen.add(u);out.append((title,u))
    if len(out)>=max_links:return out
-  # Some publishers hydrate links in JSON/script instead of normal anchors.
-  for raw_u in re.findall(r'(?:https?://(?:www\.)?'+re.escape(host)+r')?(/[^"\'<>\s]*/20\d{2}/\d{2}/\d{2}/[^"\'<>\s]+)',r.text,re.I):
+  pattern=r'(?:https?://(?:www\.)?'+re.escape(host)+r")?(/[^\"'<>\s]*/20\d{2}/\d{2}/\d{2}/[^\"'<>\s]+)"
+  for raw_u in re.findall(pattern,r.text,re.I):
    u=urljoin(listing,raw_u).replace('\\/','/').split('#')[0]
    if u in seen:continue
    seen.add(u);out.append(('Latest article',u))
@@ -173,7 +173,6 @@ def fetch_hamropatro():
  return []
 
 def fetch_radionepal():
- # Radio Nepal is the official public broadcaster; use the official .gov.np site only.
  for url in ('https://radionepal.gov.np/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,date,modified,link,title',
              'https://radionepal.gov.np/en/wp-json/wp/v2/posts?per_page=50&_fields=date_gmt,modified_gmt,date,modified,link,title'):
   try:

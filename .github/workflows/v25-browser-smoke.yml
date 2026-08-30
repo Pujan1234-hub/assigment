@@ -4,6 +4,7 @@ on:
     branches: ["main"]
     paths:
       - "floodsafe-nepal/v25/**"
+      - "data/nepal-waterways-snapshot.json"
       - ".github/workflows/v25-browser-smoke.yml"
   workflow_dispatch:
 permissions:
@@ -16,23 +17,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Wait for current production
+      - name: Wait for current production and snapshot
         run: |
           set -euo pipefail
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
           ok=0
-          for i in $(seq 1 60); do
+          for i in $(seq 1 80); do
             curl --max-time 10 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'map-v6.js?v=2' /tmp/index.html && grep -Fq 'language-pure.js?v=3' /tmp/index.html; then ok=1; break; fi
+            curl --max-time 10 -fsSL "https://pujan1234-hub.github.io/assigment/data/nepal-waterways-snapshot.json?ci=${GITHUB_SHA}-${i}" -o /tmp/water.json || true
+            if grep -Fq 'waterways-local.js?v=1' /tmp/index.html && python3 -c "import json; j=json.load(open('/tmp/water.json')); assert j.get('count',0)>100" 2>/dev/null; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-          curl --max-time 12 -fsSL "${BASE}map-v6.js?ci=${GITHUB_SHA}" -o /tmp/map-v6.js
-          node --check /tmp/map-v6.js
-          grep -Fq '__fsMapV10' /tmp/map-v6.js
-          grep -Fq 'gaugeFallback' /tmp/map-v6.js
-          grep -Fq 'selectAt' /tmp/map-v6.js
-      - name: Browser exact map regressions
+          curl --max-time 12 -fsSL "${BASE}waterways-local.js?ci=${GITHUB_SHA}" -o /tmp/local.js
+          node --check /tmp/local.js
+          grep -Fq '__fsLocalWaterwaysV1' /tmp/local.js
+      - name: Browser exact reported map regressions
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -45,25 +45,31 @@ jobs:
           const puppeteer=require('puppeteer-core');
           (async()=>{
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
-            const page=await browser.newPage();page.setDefaultTimeout(60000);page.setDefaultNavigationTimeout(60000);
+            const page=await browser.newPage();page.setDefaultTimeout(65000);page.setDefaultNavigationTimeout(65000);
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+            await page.setRequestInterception(true);
+            page.on('request',r=>/overpass-api\.de|overpass\.kumi\.systems/.test(r.url())?r.abort():r.continue());
             await page.goto(process.env.BASE+'?ci='+Date.now(),{waitUntil:'networkidle2'});
             await page.waitForSelector('#riverMapV3');
-            await page.waitForFunction(()=>window.FloodSafeMap&&window.FloodSafe?.state?.stations?.length>0,{timeout:30000});
+            await page.waitForFunction(()=>window.FloodSafeMap&&window.FloodSafeLocalWaterways,{timeout:30000});
             await page.click('#langBtn');await page.waitForFunction(()=>document.documentElement.lang==='en');
             const en=await page.evaluate(()=>({weather:[...document.querySelectorAll('.weatherGrid small')].map(x=>x.textContent),outside:document.querySelector('#outsideNotice strong')?.textContent||'',outsideText:outsideNoticeText.textContent,zoom:mapZoomIn.textContent}));
             if([en.outside,en.outsideText,en.zoom,...en.weather].some(x=>/[\u0900-\u097F]/.test(x)))throw Error('Nepali mixed in English '+JSON.stringify(en));
-            const tests=[['Myagdi',28.5782,83.5343],['Sindhuli',27.164,86.328],['Jhapa',26.5763,87.9019]];
+            const tests=[['Myagdi',28.5782,83.5343],['Sindhuli',27.164,86.328],['Jhapa',26.5763,87.9019],['Dolpa',29.2623,83.0371]];
             const results=[];
             for(const [key,la,lo] of tests){
               await page.evaluate(([la,lo,key])=>window.FloodSafeMap.choose(la,lo,key),[la,lo,key]);
-              await page.waitForFunction(()=>document.querySelectorAll('.riverV3').length>0&&document.querySelectorAll('.flowTraceV3').length>0,{timeout:8000});
-              const r=await page.evaluate(()=>{const f=document.querySelector('.flowTraceV3');return{rivers:document.querySelectorAll('.riverV3').length,flows:document.querySelectorAll('.flowTraceV3').length,hint:mapHint.textContent,animation:f?getComputedStyle(f).animationName:'none',focus:window.FloodSafe?.state?.kind}});
-              if(r.rivers<1||r.flows<1||r.animation==='none'||r.focus!=='map')throw Error(key+' failed '+JSON.stringify(r));
+              await page.waitForFunction(()=>document.querySelectorAll('.localRiverV7').length>0&&document.querySelectorAll('.localFlowV7').length>0,{timeout:12000});
+              const r=await page.evaluate(()=>{const f=document.querySelector('.localFlowV7');const p=document.querySelector('.localRiverV7');return{rivers:document.querySelectorAll('.localRiverV7').length,flows:document.querySelectorAll('.localFlowV7').length,hint:mapHint.textContent,animation:f?getComputedStyle(f).animationName:'none',stroke:p?getComputedStyle(p).stroke:'none',focus:window.FloodSafe?.state?.kind}});
+              if(r.rivers<1||r.flows<1||r.animation==='none'||r.stroke==='none'||r.focus!=='map')throw Error(key+' local snapshot failed '+JSON.stringify(r));
+              await page.$eval('.localRiverV7',el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+              const detail=await page.$eval('#riverDetail',el=>el.innerText);
+              if(!/Type|Map source|Water level|official gauge/.test(detail))throw Error(key+' detail failed '+detail);
               results.push([key,r]);
             }
-            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,5)));
-            console.log('PASS exact reported locations',{en,results});
+            const national=await page.evaluate(()=>document.querySelectorAll('#nationalRiverList .station').length);if(national<1)throw Error('national status empty');
+            if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,8)));
+            console.log('PASS local snapshot map with Overpass blocked',{en,results,national});
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

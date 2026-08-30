@@ -1,0 +1,55 @@
+name: DHM River Watch Endpoint Discovery
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dhm-river-endpoint-discovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Inspect rendered DHM River Watch and network
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$CHROME"
+          mkdir -p /tmp/dhm && cd /tmp/dhm
+          npm init -y >/dev/null 2>&1
+          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          CHROME="$CHROME" node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          (async()=>{
+            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+            const page=await browser.newPage();
+            await page.setViewport({width:1440,height:1000});
+            const seen=[];
+            page.on('response',async r=>{
+              const u=r.url();
+              if(/river|hydro|api|gss|station|water/i.test(u)){
+                const ct=(r.headers()['content-type']||'');
+                seen.push({status:r.status(),url:u,ct});
+              }
+            });
+            await page.goto('https://dhm.gov.np/hydrology/river-watch',{waitUntil:'domcontentloaded',timeout:90000});
+            await new Promise(r=>setTimeout(r,25000));
+            const data=await page.evaluate(()=>({
+              title:document.title,
+              rows:[...document.querySelectorAll('table tbody tr')].slice(0,25).map(tr=>[...tr.querySelectorAll('td')].map(td=>td.innerText.trim())),
+              tables:[...document.querySelectorAll('table')].map(t=>t.innerText.slice(0,2500)),
+              body:document.body.innerText.slice(0,6000)
+            }));
+            console.log('=== NETWORK CANDIDATES ===');
+            for(const x of [...new Map(seen.map(x=>[x.url,x])).values()]) console.log(JSON.stringify(x));
+            console.log('=== TABLE ROWS ===');
+            console.log(JSON.stringify(data.rows,null,2));
+            console.log('=== TABLE TEXT ===');
+            console.log(JSON.stringify(data.tables,null,2));
+            console.log('=== BODY SAMPLE ===');
+            console.log(data.body);
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(2)});
+          JS

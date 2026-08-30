@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Inspect rendered DHM River Watch and network
+      - name: Inspect rendered DHM River Watch payload
         run: |
           set -euo pipefail
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
@@ -27,29 +27,27 @@ jobs:
             const page=await browser.newPage();
             await page.setViewport({width:1440,height:1000});
             const seen=[];
-            page.on('response',async r=>{
-              const u=r.url();
-              if(/river|hydro|api|gss|station|water/i.test(u)){
-                const ct=(r.headers()['content-type']||'');
-                seen.push({status:r.status(),url:u,ct});
+            page.on('response',r=>{const u=r.url();if(/river|hydro|api|gss|station|water|chart|graph/i.test(u))seen.push({status:r.status(),url:u,ct:r.headers()['content-type']||''})});
+            await page.goto('https://dhm.gov.np/hydrology/river-watch',{waitUntil:'domcontentloaded',timeout:90000});
+            await new Promise(r=>setTimeout(r,12000));
+            const data=await page.evaluate(()=>{
+              const rows=[...document.querySelectorAll('table tbody tr')];
+              return {
+                rowCount:rows.length,
+                rowHtml:rows.slice(0,5).map(r=>r.outerHTML),
+                links:rows.slice(0,10).flatMap(r=>[...r.querySelectorAll('a')].map(a=>({text:a.innerText,href:a.href,onclick:a.getAttribute('onclick'),data:{...a.dataset}}))),
+                imgs:rows.slice(0,10).flatMap(r=>[...r.querySelectorAll('img')].map(i=>({src:i.src,alt:i.alt,title:i.title,data:{...i.dataset}}))),
+                attrs:rows.slice(0,10).map(r=>Object.fromEntries([...r.attributes].map(a=>[a.name,a.value]))),
+                scripts:[...document.scripts].map(s=>s.src||s.textContent).filter(x=>/Likhu Khola|river|station|water_level|warning_level|danger_level|hydrograph/i.test(x)).slice(0,20)
               }
             });
-            await page.goto('https://dhm.gov.np/hydrology/river-watch',{waitUntil:'domcontentloaded',timeout:90000});
-            await new Promise(r=>setTimeout(r,25000));
-            const data=await page.evaluate(()=>({
-              title:document.title,
-              rows:[...document.querySelectorAll('table tbody tr')].slice(0,25).map(tr=>[...tr.querySelectorAll('td')].map(td=>td.innerText.trim())),
-              tables:[...document.querySelectorAll('table')].map(t=>t.innerText.slice(0,2500)),
-              body:document.body.innerText.slice(0,6000)
-            }));
-            console.log('=== NETWORK CANDIDATES ===');
-            for(const x of [...new Map(seen.map(x=>[x.url,x])).values()]) console.log(JSON.stringify(x));
-            console.log('=== TABLE ROWS ===');
-            console.log(JSON.stringify(data.rows,null,2));
-            console.log('=== TABLE TEXT ===');
-            console.log(JSON.stringify(data.tables,null,2));
-            console.log('=== BODY SAMPLE ===');
-            console.log(data.body);
+            console.log('=== NETWORK ===');for(const x of [...new Map(seen.map(x=>[x.url,x])).values()])console.log(JSON.stringify(x));
+            console.log('=== ROW COUNT ===',data.rowCount);
+            console.log('=== ROW HTML ===');console.log(JSON.stringify(data.rowHtml,null,2));
+            console.log('=== LINKS ===');console.log(JSON.stringify(data.links,null,2));
+            console.log('=== IMAGES ===');console.log(JSON.stringify(data.imgs,null,2));
+            console.log('=== ATTRS ===');console.log(JSON.stringify(data.attrs,null,2));
+            console.log('=== SCRIPTS ===');console.log(JSON.stringify(data.scripts,null,2));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(2)});
           JS

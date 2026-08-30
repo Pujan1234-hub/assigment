@@ -6,6 +6,9 @@ if(!window.__fsStableMapLoading){
   window.__fsStableMapLoading=true;
   import('./map-stable-v2.js?v=3').then(()=>{
     window.__fsStableMapLoaded=true;
+    return import('./hydro-complete-v1.js?v=1');
+  }).then(()=>{
+    window.__fsHydroCompleteLoaded=true;
   }).catch((err)=>{
     window.__fsStableMapLoading=false;
     console.error('FloodSafe stable map runtime failed', err);

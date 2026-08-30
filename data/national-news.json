@@ -1,15 +1,57 @@
 {
-  "generated_at": "2026-08-30T20:46:19.784214+05:45",
-  "updated_at_npt": "30 Aug 20:46 NPT",
+  "generated_at": "2026-08-31T00:19:37.414908+05:45",
+  "updated_at_npt": "31 Aug 00:19 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "बाढीपीडितलाई जगरनाथपुरद्वारा १५ लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588681/jagarnathpur-provides-rs-15-million-assistance-to-flood-victims",
+      "published_at": "2026-08-30T23:11:02+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी : पोखरा ल्याइएका १५ शव आफन्तले बुझे",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588673/bhotekoshi-flood-relatives-identify-15-bodies-brought-to-pokhara",
+      "published_at": "2026-08-30T22:12:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "उद्धारका लागि हेलिकप्टर सेवा सहज बनाउन पेशागत संस्थाहरूको संयुक्त अपिल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588671/joint-appeal-by-professional-organizations-to-facilitate-helicopter-services-for-rescue",
+      "published_at": "2026-08-30T22:04:20+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढी पीडितका लागि राहत सामग्री सङ्कलन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588669/collection-of-relief-materials-for-flood-victims",
+      "published_at": "2026-08-30T21:53:48+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढीपीडितलाई कांग्रेस बागमतीको पाँच लाख ५५ हजार सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588667/congress-bagmati-provides-rs-555000-assistance-to-bhotekoshi-flood-victims",
+      "published_at": "2026-08-30T21:42:30+05:45",
+      "flash": false
+    },
+    {
+      "title": "कृष्णभीरको पहिरोमात्रै होइन, त्रिशूलीले सडक छेउको १ किलोमिटर भाग नै कटान गर्‍यो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588663/not-only-the-landslide-at-krishnabhir-but-trishuli-also-eroded-a-1-kilometer-section-of-the-roadside",
+      "published_at": "2026-08-30T21:23:37+05:45",
+      "flash": false
+    },
     {
       "title": "त्रिशुली जलविद्युत् आयोजनामा काम गर्ने अशोक बेपत्ता, मोबाइलमा तस्बिर बोकेर अस्पताल धाउँदै आफन्त",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588645/ashok-who-worked-at-the-trishuli-hydropower-project-goes-missing-relatives-rush-to-the-hospital-with-photos-on-their-mobile-phones",
       "published_at": "2026-08-30T20:17:20+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढी : मधेस प्रदेशका हराइरहेका ३० जना सम्पर्कमा",
@@ -26,52 +68,10 @@
       "flash": false
     },
     {
-      "title": "बाढीपीडितलाई कैलाश गाउँपालिकाद्वारा पाँच लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588635/kailash-rural-municipality-provides-rs-500000-assistance-to-flood-victims",
-      "published_at": "2026-08-30T19:08:26+05:45",
-      "flash": false
-    },
-    {
       "title": "कोशी प्रदेशका २१ जना सकुशल सम्पर्कमा, ३ जनाको उद्धार, एक जनाको मृत्यु",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588634/21-people-from-koshi-province-in-safe-contact-3-rescued-1-dead",
       "published_at": "2026-08-30T19:00:33+05:45",
-      "flash": false
-    },
-    {
-      "title": "कोशी प्रदेशका सम्पर्कविहीन १६१ को सूची सार्वजनिक (सूचीसहित)",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588632/list-of-161-uncontacted-people-from-koshi-province-made-public-with-list",
-      "published_at": "2026-08-30T18:46:23+05:45",
-      "flash": false
-    },
-    {
-      "title": "दोलखाका रुद्रबहादुर खड्का बाढीपछि स्याफ्रुबेसीबाट सम्पर्कविहीन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588621/rudra-bahadur-khadka-of-dolakha-lost-contact-with-syafrubesi-after-the-flood",
-      "published_at": "2026-08-30T17:44:01+05:45",
-      "flash": false
-    },
-    {
-      "title": "त्रिशूलीको बाढीले घ्याल्चोकको पुल बगायो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588579/trishuli-floods-wash-away-ghyalchowk-bridge",
-      "published_at": "2026-08-30T15:32:46+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपछि सम्पर्कविहीन भएका पर्साका दुई जना परिवारको सम्पर्कमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588576/two-people-from-parsa-who-were-lost-to-contact-after-the-flood-have-been-reunited-with-their-families",
-      "published_at": "2026-08-30T15:27:06+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवाबाट सम्पर्कविहीन दाइको खोजीमा बुटवल आइपुगे भाइ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588567/brother-arrives-in-butwal-in-search-of-missing-brother-from-rasuwa",
-      "published_at": "2026-08-30T14:49:18+05:45",
       "flash": false
     }
   ],
@@ -91,7 +91,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
+      "flash": 0,
       "recent": 10
     },
     "Kathmandu Post": {

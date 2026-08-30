@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-30T12:08:32.532477Z",
+  "generated_at": "2026-08-30T12:14:54.328406Z",
   "refresh_minutes": 5,
   "sources": {
     "RONB Post": {
@@ -12,8 +12,8 @@
       "error": "no-verified-items"
     },
     "Hamro Patro": {
-      "ok": false,
-      "error": "HTTPError"
+      "ok": true,
+      "items": 40
     },
     "Radio Nepal": {
       "ok": true,
@@ -22,15 +22,147 @@
   },
   "items": [
     {
-      "title": "बाढीले खल्बल्यायो उपत्यकाको आपूर्ति शृङ्खला : अहिले अभावको चिन्ता, दसैँमा महँगी",
-      "url": "https://www.hamropatro.com/news/detail/282163785849599-badhile-khalbalyayo-upatyakako-apurti-shringkhala-ahile-abhavako-chinta-dasainma",
-      "published_at": "2026-08-30T11:51:09Z",
+      "title": "ललितपुरमा चिकित्सकसहितको एम्बुलेन्स सेवा, 6 मेडिकल अधिकृत खटाउने गरी पाटनसँग सम्झौता",
+      "url": "https://www.hamropatro.com/news/detail/283386060691110-lalitapurama-chikitsakasahitako-embulens-seva-6-medikal-adhikrit-khataune-gari",
+      "published_at": "2026-08-30T12:09:48.287337Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "भोटेकोशी बाढीः उदयपुरका २१ जनामध्ये ५ जना सम्पर्कमा",
-      "url": "https://www.hamropatro.com/news/detail/282163753345178-bhotekoshi-badhih-udayapuraka-21-janamadhye-5-jana-samparkama",
-      "published_at": "2026-08-30T11:51:09Z",
+      "title": "नेपाल-चीन सिमानासम्म नेपाल टेलिकमको मोबाइल सेवा पुनः सञ्चालनमा",
+      "url": "https://www.hamropatro.com/news/detail/283369913995119-nepal-chin-simanasamm-nepal-telikamako-mobail-seva-punah-sanychalanama",
+      "published_at": "2026-08-30T12:09:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "एमालेले औंल्यायो सरकारले तत्काल गर्नुपर्ने 8 काम",
+      "url": "https://www.hamropatro.com/news/detail/283369608926835-emalele-aunlyayo-sarakarale-tatkal-garnuparne-8-kam",
+      "published_at": "2026-08-30T12:09:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "विपद्मा चेम्बरको सहयोग : बाढी प्रभावितका लागि राहत सामग्री सरकारलाई हस्तान्तरण",
+      "url": "https://www.hamropatro.com/news/detail/283370112669649-vipadma-chembarako-sahayog-badhi-prabhavitaka-lagi-rahat-samagri-sarakaralai",
+      "published_at": "2026-08-30T12:09:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "दोस्रोपटक एसिया कपमा छनोट हुने लक्ष्य",
+      "url": "https://www.hamropatro.com/news/detail/283373052960563-dosropatak-esiya-kapama-chhanot-hune-lakshy",
+      "published_at": "2026-08-30T12:09:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "नारायणी दोभानमा सेनाको निरन्तर खोज तथा उद्धार रसुवामा आएको बाढीको प्रभावपछि चितवनको नारायणी नदी र राप्ती नदीको दोभान गोलाघाट क्षेत्रमा नेपाली सेनाले खोज तथा उद्धार कार्यलाई निरन्तरता दिएको छ। भाद्र 10 गते बिहान बाढी आएलगत्तैदेखि श्री नयाँ गोर...",
+      "url": "https://www.hamropatro.com/news/detail/283371332497449-narayani-dobhanama-senako-nirantar-khoj-tatha-uddhar",
+      "published_at": "2026-08-30T12:09:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "विज्ञ टोलीको अध्ययनपछि मात्र कृष्णभीरको सडक मर्मत गरिने पृथ्वी राजमार्गअन्तर्गत कृष्णभीरमा भासिएको सडक तत्काल मर्मत नहुने भएको छ। सडक विभागले विज्ञ टोली पठाएर अध्ययन गराएपछि मात्रै सडक कसरी मर्मत गर्ने भन्ने टुंगो लगाउने भएको हो। आइतबार बिहान सडक चिरिए...",
+      "url": "https://www.hamropatro.com/news/detail/283080784744175-vigy-toliko-adhyayanapachhi-matr-krishnabhirako-sadak-marmat-garine",
+      "published_at": "2026-08-30T12:04:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "'नाडा अटो शो'को अन्तिम 3 घण्टाको टिकट बिक्री रकम बाढीपीडितलाई सहयोग गरिने काठमाडौं : सामाजिक उत्तरदायित्व र विपद्मा परेका नागरिकहरूप्रति ऐक्यबद्धता जनाउँदै नाडा अटोमोबाइल्स एसोसिएसन अफ नेपालले नाडा अटो शोको अन्तिम दिन आईतबार साँझ 4 बजेदेखि 7 बजेसम्म बिक्री हुने सम्पूर्ण ...",
+      "url": "https://www.hamropatro.com/news/detail/283075991828644-nada-ato-sho-ko-antim-3-ghantako-tikat-bikri-rakam",
+      "published_at": "2026-08-30T12:04:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "नेपाल लाइफको ‘लिडरसीप एक्सिलेन्स अवार्ड्स 2026’ सम्पन्न काठमाडौं– नेपाल लाइफ इन्स्योरेन्स कम्पनी लिमिटेडले आफ्नो 25औँ वार्षिकोत्सवको अवसरमा आयोजना गरेको ‘लिडरसीप एक्सिलेन्स अवार्ड्स 2026’ सम्पन्न भएको छ। ‘Everest Year – Clouds and Beyond’ मूल नाराका सा...",
+      "url": "https://www.hamropatro.com/news/detail/283071402180780-nepal-laiphako-lidarasip-eksilens-avards-2026-sampann",
+      "published_at": "2026-08-30T12:04:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "दोलखाका रुद्रबहादुर खड्का बाढीपछि स्याफ्रुबेसीबाट सम्पर्कविहीन काठमाडौँ । दोलखाको बैतेश्वर गाउँपालिका वडा नम्बर 7 मार्बुटार निवासी रुद्रबहादुर खड्का कामको सिलसिलामा स्याफ्रुबेसी पुगेको अवस्थामा बाढी आएपछि बेपत्ता भएका छन् । सवारी चालक रहेका खड्काको बाढी आउनुअ...",
+      "url": "https://www.hamropatro.com/news/detail/283065588504938-dolakhaka-rudrabahadur-khadka-badhipachhi-syaphrubesibat-samparkavihin",
+      "published_at": "2026-08-30T12:04:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "भोटेकोशी बाढी : ट्रमा सेन्टरमा 17 जनाको उपचार जारी काठमाडौं– रसुवामा बुधबार बिहान गएको भोटेकोशी बाढीमा परी घाइते भएका 43 जनालाई उद्धार गरी काठमाडौँ राष्ट्रिय ट्रमा सेन्टर ल्याइएकामा 24 जना उपचारपछि घर फर्किएका छन् । जिल्ला प्रहरी परिसर काठमाडौँका ...",
+      "url": "https://www.hamropatro.com/news/detail/283071089751871-bhotekoshi-badhi-trama-sentarama-17-janako-upachar-jari",
+      "published_at": "2026-08-30T12:04:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "अर्घाखाँची सिमेन्टद्वारा प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा 1 करोड 11 लाख सहयोगको घोषणा काठमाडौं। अर्घाखाँची सिमेन्ट लिमिटेडले रसुवामा हालै आएको विनाशकारी बाढीबाट प्रभावित नागरिकको उद्धार, राहत तथा पुनर्स्थापनाका लागि प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा 1 करोड 11 लाख रुपैयाँ सहयोग...",
+      "url": "https://www.hamropatro.com/news/detail/282783433359697-arghakhanchi-simentadvara-pradhanamantri-daivi-prakop-uddhar-koshama-1-karod-11",
+      "published_at": "2026-08-30T11:59:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "बाढीपीडितको उद्धारमा ढिलाइ नगर्न सरकारलाई कांग्रेसको आग्रह, 1 करोड राहत दिने निर्णय ललितपुर । नेपाली कांग्रेसले भोटेकोसी–त्रिशूलीमा आएको भीषण बाढीबाट प्रभावितको उद्धार, राहत र पुनःस्थापनालाई तीव्र बनाउन सरकारसँग आग्रह गरेको छ । कांग्रेस सभापति गगनकुमार थापाको सभापतित्वमा आइतबार क...",
+      "url": "https://www.hamropatro.com/news/detail/282776943876357-badhipiditako-uddharama-dhilai-nagarn-sarakaralai-kangresako-agrah-1-karod-rahat",
+      "published_at": "2026-08-30T11:59:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "बाढी प्रभावित सवार बस दुर्घटना, 32 जना घाइते रसुवाको भोटेकोशी नदीमा गएको बाढीपछि उद्धार गरिएका बाढी प्रभावित घर फर्किने क्रममा सवार यात्रुवाहक बस नवलपरासी पूर्वको डण्डामा दुर्घटनामा परेको छ । बसमा सवार 38 जनामध्ये 32 जना घाइते भएका छन् । जि...",
+      "url": "https://www.hamropatro.com/news/detail/282777349152553-badhi-prabhavit-savar-bas-durghatana-32-jana-ghaite",
+      "published_at": "2026-08-30T11:59:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "'गाली खाउला' भन्दै स्ट्याटस लेखेको अर्को दिन प्रदेश सचिवको सरूवा, शव व्यवस्थापनको जिम्मेवारी कोशी प्रदेशका आर्थिक मामिला तथा योजना मन्त्रालयका सचिव कोशहरी निरौलाको सरूवा भएको छ। उनलाई रसुवाको बाढी प्रभावित क्षेत्रमा शव व्यवस्थापनको जिम्मेवारी दिइएको छ। भूमि व्यवस्था, सहकारी, संघीय मामिला...",
+      "url": "https://www.hamropatro.com/news/detail/282771904125044-gali-khaula-bhandai-styatas-lekheko-arko-din-pradesh-sachivako-saruva",
+      "published_at": "2026-08-30T11:59:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "एनएजेएफ पल्सर स्पोर्ट्स अवार्डको सर्वोत्कृष्ट खेलाडी र प्रशिक्षकको नाम सार्वजनिक",
+      "url": "https://www.hamropatro.com/news/detail/282783062700483-enaejeeph-palsar-sports-avardako-sarvotkrisht-kheladi-r-prashikshakako-nam",
+      "published_at": "2026-08-30T11:59:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "नेपाल–चीन सिमासम्म नेपाल टेलिकमको मोबाइल सेवा पुनः सञ्चालनमा नेपाल टेलिकमले बाढी प्रभावित क्षेत्रका थप सात स्थानमा आज सेवा सुचारु गरेको छ। यससँगै बाढी प्रभावित क्षेत्रका अधिकांश मोबाइल बीटीएस साइटहरु पुनः सञ्चालनमा आएका छन्। आज सञ्चालनमा आएका साइटहरुमा रसु...",
+      "url": "https://www.hamropatro.com/news/detail/282766527188976-nepal-chin-simasamm-nepal-telikamako-mobail-seva-punah-sanychalanama",
+      "published_at": "2026-08-30T11:59:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "बाढी प्रभावित बोकेको बस दुर्घटना, 32 जना घाइते काठमाडौँ- रसुवाको भोटेकोशी नदीमा गएको बाढीपछि उद्धार गरिएका बाढी प्रभावित घर फर्किने क्रममा सवार यात्रुवाहक बस नवलपरासी पूर्वको डण्डामा दुर्घटनामा परेको छ। बसमा सवार 38 जनामध्ये 32 जना घाइते भएका ...",
+      "url": "https://www.hamropatro.com/news/detail/282473598998316-badhi-prabhavit-bokeko-bas-durghatana-32-jana-ghaite",
+      "published_at": "2026-08-30T11:54:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "भोटेकोशी बाढीः सप्तरीका एकै परिवारका 3 दाजुभाइसहित 35 जना सम्पर्कबिहिन राजविराज । रसुवामा भदौ 10 गते आएको बाढीमा सप्तरीका 35 जना अझै सम्पर्कबिहिन छन् । त्यसक्षेत्रमा रहेको हाइड्रोपावरको विभिन्न पदमा र अन्य ठाउँमा कार्यरत जिल्लाका 35 जना सम्पर्कमा आउन नसकेको जिल्ला प्र...",
+      "url": "https://www.hamropatro.com/news/detail/282462860411188-bhotekoshi-badhih-saptarika-ekai-parivaraka-3-dajubhaisahit-35-jana",
+      "published_at": "2026-08-30T11:54:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "भोटेकोशी बाढी: 788 वटा शव फेला रसुवाको भोटेकोशी क्षेत्रमा आएको बाढीपछि 25 जना प्रहरी कर्मचारी हालसम्म सम्पर्कविहीन रहेको नेपाल प्रहरीले जनाएको छ । बाढी प्रभावित क्षेत्रमा खोज तथा उद्धारका लागि ठूलो संख्यामा प्रहरी परिचालन गरिएको...",
+      "url": "https://www.hamropatro.com/news/detail/282482661922411-bhotekoshi-badhi-788-vata-shav-phela",
+      "published_at": "2026-08-30T11:54:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "रसुवा बाढी : गोरखामा फेला परेका तीन शव सनाखतपछि आफन्तलाई बुझाइयो गोरखा : गोरखामा भेटिएका तीन मृतकको शवको सनाखत भएको छ । त्रिशूलीको गोरखातर्फको किनारमा विभिन्न समयमा फेला परेका शवहरू पहिचान भएपछि आफन्तले बुझेर लगेको प्रहरी नायव उपरीक्षक राजकुमार श्रेष्ठले जानकारी...",
+      "url": "https://www.hamropatro.com/news/detail/282478067841341-rasuva-badhi-gorakhama-phela-pareka-tin-shav-sanakhatapachhi-aphantalai-bujhaiyo",
+      "published_at": "2026-08-30T11:54:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "विश्व स्वास्थ्य संगठनद्वारा नेपाललाई बाढी प्रभावितका लागि 1 लाख 50 हजार अमेरिकी डलर सहायता",
+      "url": "https://www.hamropatro.com/news/detail/282189542555148-vishv-svasthy-sangathanadvara-nepalalai-badhi-prabhavitaka-lagi-1-lakh-50",
+      "published_at": "2026-08-30T11:49:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "मुस्ताङमा छिटो पाक्ने स्याउ टिप्न सोमबारदेखि सुरु",
+      "url": "https://www.hamropatro.com/news/detail/282170840819521-mustangama-chhito-pakne-syau-tipn-somabaradekhi-suru",
+      "published_at": "2026-08-30T11:49:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "बाढी प्रभावित थप सात स्थानमा टेलिकमको सेवा सुचारु काठमाडौं । नेपाल टेलिकमले बाढी प्रभावित क्षेत्रका थप सात स्थानमा सेवा सुचारु गरेको छ । यससँगै बाढी प्रभावित क्षेत्रका अधिकांश मोबाइल बीटीएस साइटहरु सञ्चालनमा आएका छन् । आइतबार सञ्चालनमा आएका साइटह...",
+      "url": "https://www.hamropatro.com/news/detail/282194841665063-badhi-prabhavit-thap-sat-sthanama-telikamako-seva-sucharu",
+      "published_at": "2026-08-30T11:49:48.287337Z",
       "source": "Hamro Patro"
     },
     {
@@ -46,28 +178,10 @@
       "source": "Radio Nepal"
     },
     {
-      "title": "रविसँग बागमतीका मुख्यमन्त्रीले भने– संघ सरकारले समन्वय नै गरेन",
-      "url": "https://www.hamropatro.com/news/detail/281881752036796-ravisang-bagamatika-mukhyamantrile-bhane-sangh-sarakarale-samanvay-nai-garen",
-      "published_at": "2026-08-30T11:46:09Z",
-      "source": "Hamro Patro"
-    },
-    {
-      "title": "बाढी प्रभावितका लागि विश्व स्वास्थ्य सङ्गठनले गर्‍यो २ करोड बराबरको सहयोग",
-      "url": "https://www.hamropatro.com/news/detail/281564779307970-badhi-prabhavitaka-lagi-vishv-svasthy-sanggathanale-gar-yo-2-karod",
-      "published_at": "2026-08-30T11:41:09Z",
-      "source": "Hamro Patro"
-    },
-    {
       "title": "भोटेकोशी बाढीलाई राष्ट्रिय शोक र पीडाका रूपमा लिनुपर्छ : अध्यक्ष ओली",
       "url": "https://radionepalonline.com/2026/08/30/731334.html",
       "published_at": "2026-08-30T11:37:22Z",
       "source": "Radio Nepal"
-    },
-    {
-      "title": "त्रिवि शिक्षण अस्पतालमा अब शव राख्न कठिन",
-      "url": "https://www.hamropatro.com/news/detail/281291639760607-trivi-shikshan-aspatalama-ab-shav-rakhn-kathin",
-      "published_at": "2026-08-30T11:36:09Z",
-      "source": "Hamro Patro"
     },
     {
       "title": "टेलिकमद्वारा बाढी प्रभावित थप ७ स्थानमा सेवा सुचारु",
@@ -86,6 +200,54 @@
       "url": "https://radionepalonline.com/2026/08/30/731326.html",
       "published_at": "2026-08-30T11:16:02Z",
       "source": "Radio Nepal"
+    },
+    {
+      "title": "बाढी प्रभावित क्षेत्रमा राष्ट्रिय ट्रमा सेन्टरको दोस्रो टोली",
+      "url": "https://www.hamropatro.com/news/detail/279763402697308-badhi-prabhavit-kshetrama-rashtriy-trama-sentarako-dosro-toli",
+      "published_at": "2026-08-30T11:14:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "भ्रष्टाचार मुद्दाका अभियुक्त अर्याल हिमालयन बैंकका अध्यक्ष!",
+      "url": "https://www.hamropatro.com/news/detail/279484744687062-bhrashtachar-muddaka-abhiyukt-aryal-himalayan-bainkaka-adhyaksh",
+      "published_at": "2026-08-30T11:14:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "चार विधाका मनोनयन सार्वजनिक, पल्सर स्पोटर्स अवार्ड बाढी पीडितमा समर्पित",
+      "url": "https://www.hamropatro.com/news/detail/280094382483392-char-vidhaka-manonayan-sarvajanik-palsar-spotars-avard-badhi-piditama-samarpit",
+      "published_at": "2026-08-30T11:14:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "आइसल्यान्डका जनताले गरे ईयूमा संलग्न नहुने पक्षमा मतदान",
+      "url": "https://www.hamropatro.com/news/detail/280062926395193-aisalyandaka-janatale-gare-iyuma-sanlagn-nahune-pakshama-matadan",
+      "published_at": "2026-08-30T11:14:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "‘वास्तविक शत्रु’ विरुद्ध एकजुट हुन खाडी राष्ट्रका शासकलाई खामेनीको सन्देश",
+      "url": "https://www.hamropatro.com/news/detail/280062998020542-vastavik-shatru-viruddh-ekajut-hun-khadi-rashtraka-shasakalai-khameniko-sandesh",
+      "published_at": "2026-08-30T11:14:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "कहिले रोकिएला इरान युद्ध ?",
+      "url": "https://www.hamropatro.com/news/detail/279463845686662-kahile-rokiela-iran-yuddh",
+      "published_at": "2026-08-30T11:14:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "भोटेकोशी बाढी साझा समस्या हो, साझा विपद् हो भन्ने कुरा सरकारले बुझोस् : अध्यक्ष ओली काठमाण्डु – नेकपा एमालेका अध्यक्ष तथा पूर्वप्रधानमन्त्री केपी शर्मा ओलीले भोटेकोशी–त्रिशूलीमा आएको बाढीलाई साझा समस्या र साझा विपद्का रूपमा बुझ्न सरकारलाई आग्रह गरेका छन् । एमाले महासचिव शंकर पोखर...",
+      "url": "https://www.hamropatro.com/news/detail/280068811832729-bhotekoshi-badhi-sajha-samasya-ho-sajha-vipad-ho-bhanne-kura",
+      "published_at": "2026-08-30T11:14:48.287337Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "भोटेकोशी बाढीले बगाएको 788 जनाको शव भेटियो काठमाडौं– भोटेकोशी नदीमा आएको विनाशकारी बाढीपछि विभिन्न नदी किनार तथा आसपासका क्षेत्रमा हालसम्म 788 जनाको शव भेटिएको छ। नेपाल प्रहरीका अनुसार शनिबार अपराह्न 3 बजेसम्म नदी किनारका विभिन्न स्थानमा 7...",
+      "url": "https://www.hamropatro.com/news/detail/280068555719812-bhotekoshi-badhile-bagaeko-788-janako-shav-bhetiyo",
+      "published_at": "2026-08-30T11:14:48.287337Z",
+      "source": "Hamro Patro"
     },
     {
       "title": "प्रधानमन्त्री राहत कोषमा काँग्रेसले एक करोड जम्मा गर्ने",

@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-if(window.__fsHydroCompleteV3)return;window.__fsHydroCompleteV3=true;
+if(window.__fsHydroCompleteV4)return;window.__fsHydroCompleteV4=true;
 
 const MANIFEST='../../data/nepal-waterways-tiles/manifest.json';
 const OVERVIEW='../../data/nepal-waterways-tiles/overview.json';
@@ -8,7 +8,7 @@ const TILE_BASE='../../data/nepal-waterways-tiles/';
 const RAW_BASE='https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/nepal-waterways-tiles/';
 const CACHE=new Map();
 const PENDING=new Map();
-let manifest=null,overview=null,overviewP=null,map=null,started=false,renderTimer=0,lastZoom=-1;
+let manifest=null,overview=null,overviewP=null,map=null,started=false,renderTimer=0,statusTimer=0,lastZoom=-1,lastTileKeys=[];
 const LOCAL_ZOOM=6.9;
 const lang=()=>window.FloodSafe?.state?.lang||localStorage.getItem('fs-flood-lang')||'ne';
 const tr=(ne,en)=>lang()==='en'?en:ne;
@@ -35,11 +35,13 @@ function tileRange(bounds,m){
   const out=[];for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++){const k=`${x}-${y}`;if(m.tiles?.[k])out.push(k)}return out;
 }
 function sourceName(w){return String(lang()==='en'?(w.name_en||w.name||w.name_ne||''):(w.name_ne||w.name||w.name_en||''))}
+function statusLabel(k){return window.FloodSafeRiverLine?.label?.(k,lang()==='en')||tr('LIVE gauge छैन','NO LIVE GAUGE')}
 function feature(w){
-  const id=String(w.id||`${w.type||'stream'}|${w.pts?.[0]||''}|${w.pts?.[w.pts.length-1]||''}`);
+  const id=String(w.id||`${w.type||'stream'}|${w.pts?.[0]||''}|${w.pts?.[w.pts.length-1]||''}`),live=(w.name||w.name_en||w.name_ne)?window.FloodSafeRiverLine?.forWaterway?.(w):null,status=live?.status||'unknown';
   return{type:'Feature',geometry:{type:'LineString',coordinates:w.pts},properties:{
     id,key:'hydro:'+id,name:sourceName(w),name_raw:String(w.name||''),name_ne:String(w.name_ne||''),name_en:String(w.name_en||''),
-    type:w.type||'stream',named:!!(w.name||w.name_en||w.name_ne),geometry_source:'OpenStreetMap via Overpass',license:'ODbL'
+    type:w.type||'stream',named:!!(w.name||w.name_en||w.name_ne),geometry_source:'OpenStreetMap via Overpass',license:'ODbL',
+    live_status:status,status_label:statusLabel(status),live_station:String(live?.name||''),live_level:live?.level==null?'':String(live.level),live_time:String(live?.time||'')
   }};
 }
 function fcFrom(list){
@@ -56,17 +58,17 @@ function ensureLayers(){
   if(!map||!map.isStyleLoaded())return false;
   if(!map.getSource('hydro-complete'))map.addSource('hydro-complete',{type:'geojson',data:{type:'FeatureCollection',features:[]},promoteId:'id'});
   if(!map.getLayer('hydro-complete-shadow'))map.addLayer({id:'hydro-complete-shadow',type:'line',source:'hydro-complete',paint:{'line-color':'#003847','line-width':['interpolate',['linear'],['zoom'],5,1.0,8,1.7,11,3.0,15,5.0],'line-opacity':['interpolate',['linear'],['zoom'],5,0.46,7,0.56,10,0.68,15,0.76]}});
-  if(!map.getLayer('hydro-complete-lines'))map.addLayer({id:'hydro-complete-lines',type:'line',source:'hydro-complete',paint:{'line-color':['match',['get','type'],'river','#18dff5','#52d9ef'],'line-width':['interpolate',['linear'],['zoom'],5,0.55,7,0.85,10,1.55,13,2.5,16,3.8],'line-opacity':['interpolate',['linear'],['zoom'],5,0.78,7,0.86,10,0.92,15,0.96]}});
-  if(!map.getLayer('hydro-complete-labels'))map.addLayer({id:'hydro-complete-labels',type:'symbol',source:'hydro-complete',minzoom:5.7,filter:['==',['get','named'],true],layout:{'symbol-placement':'line','text-field':['get','name'],'text-size':['interpolate',['linear'],['zoom'],5.7,8,10,10.5,14,12.5],'symbol-spacing':360,'text-allow-overlap':false,'text-ignore-placement':false},paint:{'text-color':'#eaffff','text-halo-color':'#062f38','text-halo-width':1.4,'text-halo-blur':0.5}});
+  if(!map.getLayer('hydro-complete-lines'))map.addLayer({id:'hydro-complete-lines',type:'line',source:'hydro-complete',paint:{'line-color':['match',['get','live_status'],'danger','#e63946','warning','#ff8c32','watch','#f4c542','normal','#19b56b',['match',['get','type'],'river','#18dff5','#52d9ef']],'line-width':['interpolate',['linear'],['zoom'],5,0.55,7,0.85,10,1.55,13,2.5,16,3.8],'line-opacity':['match',['get','live_status'],'unknown',['interpolate',['linear'],['zoom'],5,0.72,7,0.80,10,0.88,15,0.94],0.99]}});
+  if(!map.getLayer('hydro-complete-labels'))map.addLayer({id:'hydro-complete-labels',type:'symbol',source:'hydro-complete',minzoom:5.7,filter:['==',['get','named'],true],layout:{'symbol-placement':'line','text-field':['case',['==',['get','live_status'],'unknown'],['get','name'],['concat',['get','status_label'],' • ',['get','name']]],'text-size':['interpolate',['linear'],['zoom'],5.7,8,10,10.5,14,12.5],'symbol-spacing':360,'text-allow-overlap':false,'text-ignore-placement':false},paint:{'text-color':['match',['get','live_status'],'danger','#ffd8dc','warning','#ffe5cf','watch','#fff1ad','normal','#d9ffe9','#eaffff'],'text-halo-color':'#062f38','text-halo-width':1.4,'text-halo-blur':0.5}});
   if(!map.getLayer('hydro-complete-hit'))map.addLayer({id:'hydro-complete-hit',type:'line',source:'hydro-complete',paint:{'line-color':'rgba(0,0,0,0)','line-width':['interpolate',['linear'],['zoom'],5,7,10,12,16,18]}});
   try{if(map.getLayer('river-shadow'))map.setPaintProperty('river-shadow','line-opacity',0.12);if(map.getLayer('river-base'))map.setPaintProperty('river-base','line-opacity',0.14)}catch{}
   return true;
 }
 function setData(fc){if(!ensureLayers())return;map.getSource('hydro-complete')?.setData(fc);lastZoom=map.getZoom()}
-function overviewStatus(fc){const h=document.getElementById('mapHint');if(!h)return;const source=overview?.source||manifest?.source||'OpenStreetMap via Overpass',all=manifest?.count||overview?.source_count||'';h.textContent=tr(`🇳🇵 ७७ जिल्ला • ${fc.features.length.toLocaleString()} देशव्यापी नदी/खोला • स्रोत ${source}${all?` • पूर्ण स्रोत ${Number(all).toLocaleString()}`:''} • zoom गर्दा सबै स्थानीय खोला खुल्छन्`,`🇳🇵 77 districts • ${fc.features.length.toLocaleString()} nationwide rivers/streams • ${source}${all?` • ${Number(all).toLocaleString()} in full source`:''} • zoom in for all local waterways`)}
-function tileStatus(keys,fc){const h=document.getElementById('mapHint');if(!h)return;const loaded=keys.filter(k=>CACHE.has(k)).length,total=keys.length;h.textContent=tr(`📍 स्थानीय विस्तृत नक्सा • ${fc.features.length.toLocaleString()} स्रोत नदी/खोला • ${loaded}/${total} भाग लोड • OpenStreetMap via Overpass`,`📍 Detailed local map • ${fc.features.length.toLocaleString()} source rivers/streams • ${loaded}/${total} tiles loaded • OpenStreetMap via Overpass`)}
-async function renderOverview(){const j=await loadOverview();if(!j?.waterways?.length)return false;const fc=fcFrom(j.waterways);setData(fc);overviewStatus(fc);return true}
-function renderTiles(keys){const fc=fcForTiles(keys);setData(fc);tileStatus(keys,fc);return fc}
+function overviewStatus(fc){const h=document.getElementById('mapHint');if(!h)return;const source=overview?.source||manifest?.source||'OpenStreetMap via Overpass',all=manifest?.count||overview?.source_count||'',live=fc.features.filter(f=>f.properties?.live_status&&f.properties.live_status!=='unknown').length;h.textContent=tr(`🇳🇵 ७७ जिल्ला • ${fc.features.length.toLocaleString()} देशव्यापी नदी/खोला • ${live} live status match • स्रोत ${source}${all?` • पूर्ण स्रोत ${Number(all).toLocaleString()}`:''} • zoom गर्दा सबै स्थानीय खोला खुल्छन्`,`🇳🇵 77 districts • ${fc.features.length.toLocaleString()} nationwide rivers/streams • ${live} live status matches • ${source}${all?` • ${Number(all).toLocaleString()} in full source`:''} • zoom in for all local waterways`)}
+function tileStatus(keys,fc){const h=document.getElementById('mapHint');if(!h)return;const loaded=keys.filter(k=>CACHE.has(k)).length,total=keys.length,live=fc.features.filter(f=>f.properties?.live_status&&f.properties.live_status!=='unknown').length;h.textContent=tr(`📍 स्थानीय विस्तृत नक्सा • ${fc.features.length.toLocaleString()} नदी/खोला • ${live} live status match • ${loaded}/${total} भाग लोड • OpenStreetMap via Overpass`,`📍 Detailed local map • ${fc.features.length.toLocaleString()} rivers/streams • ${live} live status matches • ${loaded}/${total} tiles loaded • OpenStreetMap via Overpass`)}
+async function renderOverview(){const j=await loadOverview();if(!j?.waterways?.length)return false;lastTileKeys=[];const fc=fcFrom(j.waterways);setData(fc);overviewStatus(fc);return true}
+function renderTiles(keys){lastTileKeys=keys.slice();const fc=fcForTiles(keys);setData(fc);tileStatus(keys,fc);return fc}
 async function loadTile(k){
   if(CACHE.has(k))return CACHE.get(k);if(PENDING.has(k))return PENDING.get(k);
   const p=(async()=>{let j=null;try{j=await getJSON(TILE_BASE+k+'.json',14000)}catch{try{j=await getJSON(RAW_BASE+k+'.json',18000)}catch{j=null}}const a=Array.isArray(j?.waterways)?j.waterways:[];CACHE.set(k,a);PENDING.delete(k);return a})();PENDING.set(k,p);return p;
@@ -79,13 +81,15 @@ async function refresh(){
   const workers=Array.from({length:Math.min(5,missing.length)},async()=>{while(i<missing.length){const k=missing[i++];await loadTile(k);clearTimeout(renderTimer);renderTimer=setTimeout(()=>renderTiles(keys),90)}});
   await Promise.all(workers);renderTiles(keys);
 }
+function repaintStatus(){if(!map||!map.isStyleLoaded())return;try{if(map.getZoom()<LOCAL_ZOOM||!lastTileKeys.length){if(overview?.waterways?.length){const fc=fcFrom(overview.waterways);setData(fc);overviewStatus(fc)}}else renderTiles(lastTileKeys)}catch(e){console.warn('FloodSafe river status repaint failed',e)}}
+function scheduleStatusRepaint(){clearTimeout(statusTimer);statusTimer=setTimeout(repaintStatus,80)}
 function boot(){
   if(started)return;const f=window.FloodSafeMap,m=f?.map;if(!m){setTimeout(boot,120);return}map=m;started=true;
   const go=()=>{refresh().catch(e=>console.warn('FloodSafe complete hydrography failed',e))};
   if(map.loaded())go();else map.once('load',go);
   map.on('moveend',go);map.on('zoomend',()=>{if(Math.abs(map.getZoom()-lastZoom)>0.18)go()});
-  window.addEventListener('fslanguage',go);
-  window.FloodSafeHydroComplete={refresh,get loadedTiles(){return CACHE.size},get overviewCount(){return overview?.waterways?.length||0},get manifest(){return manifest},get localZoom(){return LOCAL_ZOOM}};
+  window.addEventListener('fslanguage',go);window.addEventListener('fsriverlinestatus',scheduleStatusRepaint);
+  window.FloodSafeHydroComplete={refresh,repaintStatus,get loadedTiles(){return CACHE.size},get overviewCount(){return overview?.waterways?.length||0},get manifest(){return manifest},get localZoom(){return LOCAL_ZOOM}};
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

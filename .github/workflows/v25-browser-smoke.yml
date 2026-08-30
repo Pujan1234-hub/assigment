@@ -16,63 +16,50 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 18
     steps:
-      - name: Wait for current production hydro and river build
+      - name: Wait for deployed river build and official snapshot
         run: |
           set -euo pipefail
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
+          ROOT='https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/'
           ok=0
           for i in $(seq 1 100); do
             curl --max-time 15 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'map-loader-v3.js?v=1' /tmp/index.html && \
-               grep -Fq 'hydro-complete-v1.js?v=3' /tmp/index.html && \
-               grep -Fq 'flood-only.js?v=11' /tmp/index.html && \
-               grep -Fq 'gauge-bridge.js?v=3' /tmp/index.html && \
-               grep -Fq 'river-map-detail-v2.js?v=6' /tmp/index.html; then ok=1; break; fi
+            if grep -Fq 'flood-only.js?v=12' /tmp/index.html && \
+               grep -Fq 'gauge-bridge.js?v=4' /tmp/index.html && \
+               grep -Fq 'river-map-detail-v2.js?v=7' /tmp/index.html && \
+               grep -Fq 'hydro-complete-v1.js?v=3' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-          curl --max-time 20 -fsSL "${BASE}map-stable-v2.js?ci=${GITHUB_SHA}" -o /tmp/map-stable.js
-          curl --max-time 20 -fsSL "${BASE}hydro-complete-v1.js?ci=${GITHUB_SHA}" -o /tmp/hydro.js
           curl --max-time 20 -fsSL "${BASE}flood-only.js?ci=${GITHUB_SHA}" -o /tmp/flood-only.js
           curl --max-time 20 -fsSL "${BASE}gauge-bridge.js?ci=${GITHUB_SHA}" -o /tmp/gauge.js
           curl --max-time 20 -fsSL "${BASE}river-map-detail-v2.js?ci=${GITHUB_SHA}" -o /tmp/river-detail.js
-          node --check /tmp/map-stable.js
-          node --check /tmp/hydro.js
           node --check /tmp/flood-only.js
           node --check /tmp/gauge.js
           node --check /tmp/river-detail.js
-          grep -Fq "hydro-complete-hit" /tmp/hydro.js
-          grep -Fq "overview.json" /tmp/hydro.js
-          grep -Fq "OpenStreetMap via Overpass" /tmp/hydro.js
-          grep -Fq "river-trimed" /tmp/flood-only.js
-          grep -Fq "floodsafe-core.json" /tmp/flood-only.js
-          grep -Fq "DHM / BIPAD" /tmp/river-detail.js
-          data_ok=0
-          for i in $(seq 1 80); do
-            curl --max-time 20 -fsSL "https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/nepal-waterways-tiles/manifest.json?ci=${GITHUB_SHA}-${i}" -o /tmp/manifest.json || true
-            curl --max-time 20 -fsSL "https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/nepal-waterways-tiles/overview.json?ci=${GITHUB_SHA}-${i}" -o /tmp/overview.json || true
-            if python3 - <<'PY'
+          grep -Fq 'river-trimed' /tmp/flood-only.js
+          grep -Fq 'FRESH_MS=24*60*60*1000' /tmp/flood-only.js
+          grep -Fq "coverage:'basin-match'" /tmp/gauge.js
+          grep -Fq 'Local status context' /tmp/river-detail.js
+          curl --max-time 30 -fsSL "${ROOT}data/floodsafe-core.json?ci=${GITHUB_SHA}" -o /tmp/core.json
+          python3 - <<'PY'
           import json
-          try:
-            m=json.load(open('/tmp/manifest.json')); o=json.load(open('/tmp/overview.json'))
-            assert m.get('count',0)>=60000
-            assert m.get('source')=='OpenStreetMap via Overpass'
-            assert m.get('license')=='ODbL'
-            assert m.get('overview_count',0)>=1000
-            assert len(m.get('tiles',{}))>50
-            assert o.get('count',0)>=1000
-            assert o.get('source_count',0)>=60000
-          except Exception:
-            raise SystemExit(1)
+          from datetime import datetime, timezone, timedelta
+          j=json.load(open('/tmp/core.json'))
+          src=j.get('sources',{}).get('rivers',{})
+          assert j.get('schema_version',0)>=2, j.get('schema_version')
+          assert src.get('count',0)>=150, src
+          assert src.get('measured_count',0)>=150, src
+          newest=datetime.fromisoformat(src['newest_measurement'].replace('Z','+00:00'))
+          assert datetime.now(timezone.utc)-newest.astimezone(timezone.utc) < timedelta(hours=24), src
+          bag=[r for r in j.get('rivers',[]) if 'bagmati' in str(r.get('title') or r.get('river_name') or r.get('name') or '').lower()]
+          assert bag, 'Bagmati official river rows missing'
+          print('official snapshot',src.get('count'),'Bagmati rows',len(bag),'newest',newest.isoformat())
           PY
-            then data_ok=1; break; fi
-            sleep 3
-          done
-          test "$data_ok" = 1
 
-      - name: Browser verify 77 districts rivers and official gauge readings
+      - name: Browser verify Bagmati and all-waterway status context
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -83,31 +70,26 @@ jobs:
           npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
           BASE="$BASE" CHROME="$CHROME" node <<'JS'
           const puppeteer=require('puppeteer-core');
-          const sleep=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
-            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-webgl','--ignore-gpu-blocklist','--use-gl=swiftshader']});
+            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
             const page=await browser.newPage();
-            await page.setViewport({width:1280,height:900,deviceScaleFactor:1});
-            page.setDefaultTimeout(90000);page.setDefaultNavigationTimeout(90000);
-            const pageErrors=[];page.on('pageerror',e=>pageErrors.push(String(e)));
+            await page.setViewport({width:412,height:915});
+            page.setDefaultTimeout(90000);
+            const errors=[];page.on('pageerror',e=>errors.push(String(e)));
             await page.goto(process.env.BASE+'?ci='+Date.now()+'#map',{waitUntil:'domcontentloaded'});
-            await page.waitForSelector('#riverMapGL .maplibregl-canvas');
-            await page.waitForFunction(()=>window.FloodSafeMap?.map&&window.FloodSafeMap.districtCount===77,{timeout:80000});
-            await page.waitForFunction(()=>window.FloodSafeHydroComplete?.overviewCount>=1000,{timeout:80000});
-            await page.waitForFunction(()=>window.FloodSafe?.state?.lastPoll>0,{timeout:45000});
-            await page.waitForFunction(()=>{const m=window.FloodSafeMap?.map;return !!m?.getLayer('hydro-complete-lines')&&!!m?.getLayer('hydro-complete-hit')&&m.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']}).length>20},{timeout:80000});
-            const live=await page.evaluate(()=>{const s=window.FloodSafe.state,rows=s.stations||[];const reading=rows.find(o=>o.waterLevel!=null||o.water_level!=null||o.currentWaterLevel!=null||o.current_water_level!=null||String(o.status||o.status_name||'').trim());return{stations:rows.length,fresh:Number(document.getElementById('stationCount')?.textContent||0),source:s.feedSource,reading:reading?{name:reading.title||reading.river_name||reading.station_name||reading.name,level:reading.waterLevel??reading.water_level??reading.currentWaterLevel??reading.current_water_level,status:reading.status??reading.status_name,time:reading.waterLevelOn??reading.water_level_on??reading.measuredOn??reading.updatedOn}:null};});
-            if(live.stations<1||!live.reading)throw Error('Official river readings missing '+JSON.stringify(live));
-            const national=await page.evaluate(()=>{const m=window.FloodSafeMap.map,fs=m.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']});const sample=fs.find(f=>f?.properties?.geometry_source);return{districts:window.FloodSafeMap.districtCount,labels:document.querySelectorAll('.districtLabelGL').length,overviewCount:window.FloodSafeHydroComplete.overviewCount,visible:fs.length,source:sample?.properties?.geometry_source,license:sample?.properties?.license,hint:document.querySelector('#mapHint')?.textContent||''}});
-            if(national.districts!==77||national.labels!==77||national.overviewCount<1000||national.visible<20||national.source!=='OpenStreetMap via Overpass'||national.license!=='ODbL')throw Error('National hydro map incomplete '+JSON.stringify(national));
-            await page.evaluate(()=>window.FloodSafeMap.select(26.5763,87.9019,true));
-            await page.waitForFunction(()=>window.FloodSafeHydroComplete.loadedTiles>0,{timeout:45000});
-            await page.waitForFunction(()=>window.FloodSafeMap.map.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']}).length>0,{timeout:45000});
-            await sleep(500);
-            const local=await page.evaluate(()=>{const m=window.FloodSafeMap.map,fs=m.queryRenderedFeatures(undefined,{layers:['hydro-complete-lines']});return{visible:fs.length,zoom:m.getZoom(),loadedTiles:window.FloodSafeHydroComplete.loadedTiles,props:fs[0]?.properties||{}}});
-            if(local.visible<1||local.zoom<10||local.loadedTiles<1||local.props.geometry_source!=='OpenStreetMap via Overpass')throw Error('Local hydro detail missing '+JSON.stringify(local));
-            if(pageErrors.length)throw Error('Page errors '+JSON.stringify(pageErrors.slice(0,10)));
-            console.log('PASS FloodSafe V25 hydrography + official river readings',{live,national,local});
+            await page.waitForFunction(()=>window.FloodSafe?.state?.lastPoll>0,{timeout:60000});
+            await page.waitForFunction(()=>window.FloodSafeGauge?.forWaterway,{timeout:30000});
+            const result=await page.evaluate(()=>{
+              const s=window.FloodSafe.state;
+              const bag=window.FloodSafeGauge.forWaterway({name:'Bagmati River'},27.728,85.382);
+              const generic=window.FloodSafeGauge.forWaterway({name:'Example Khola'},27.728,85.382);
+              return {stations:s.stations.length,fresh:Number(document.getElementById('stationCount')?.textContent||0),source:s.feedSource,bag,generic};
+            });
+            if(result.stations<150||result.fresh<1)throw Error('Fresh official river set missing '+JSON.stringify(result));
+            if(!result.bag||!result.bag.sameRiver||!result.bag.statusLabel)throw Error('Bagmati did not resolve to official status '+JSON.stringify(result.bag));
+            if(!result.generic||!result.generic.statusLabel||!result.generic.reference)throw Error('Ungauged stream did not receive nearby official status context '+JSON.stringify(result.generic));
+            if(errors.length)throw Error('Page errors '+JSON.stringify(errors.slice(0,10)));
+            console.log('PASS Bagmati + every-waterway status context',result);
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

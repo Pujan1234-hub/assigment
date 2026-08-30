@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
-      - name: Wait for deployed river build and official snapshot
+      - name: Wait for deployed per-waterway detail build
         run: |
           set -euo pipefail
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
@@ -27,8 +27,8 @@ jobs:
           for i in $(seq 1 100); do
             curl --max-time 15 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
             if grep -Fq 'flood-only.js?v=12' /tmp/index.html && \
-               grep -Fq 'gauge-bridge.js?v=4' /tmp/index.html && \
-               grep -Fq 'river-map-detail-v2.js?v=7' /tmp/index.html && \
+               grep -Fq 'gauge-bridge.js?v=5' /tmp/index.html && \
+               grep -Fq 'river-map-detail-v2.js?v=8' /tmp/index.html && \
                grep -Fq 'hydro-complete-v1.js?v=3' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
@@ -41,8 +41,9 @@ jobs:
           node --check /tmp/river-detail.js
           grep -Fq 'river-trimed' /tmp/flood-only.js
           grep -Fq 'FRESH_MS=24*60*60*1000' /tmp/flood-only.js
-          grep -Fq "coverage:'basin-match'" /tmp/gauge.js
-          grep -Fq 'Local status context' /tmp/river-detail.js
+          grep -Fq 'LOCAL_CONTEXT_KM=20' /tmp/gauge.js
+          grep -Fq 'Selected mapped segment' /tmp/river-detail.js
+          grep -Fq 'Source segment ID' /tmp/river-detail.js
           curl --max-time 30 -fsSL "${ROOT}data/floodsafe-core.json?ci=${GITHUB_SHA}" -o /tmp/core.json
           python3 - <<'PY'
           import json
@@ -59,7 +60,7 @@ jobs:
           print('official snapshot',src.get('count'),'Bagmati rows',len(bag),'newest',newest.isoformat())
           PY
 
-      - name: Browser verify Bagmati and all-waterway status context
+      - name: Browser verify exact river vs local-only context
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -82,14 +83,17 @@ jobs:
             const result=await page.evaluate(()=>{
               const s=window.FloodSafe.state;
               const bag=window.FloodSafeGauge.forWaterway({name:'Bagmati River'},27.728,85.382);
+              const kunchal=window.FloodSafeGauge.forWaterway({name:'Kunchal Khola'},27.649,85.114);
               const generic=window.FloodSafeGauge.forWaterway({name:'Example Khola'},27.728,85.382);
-              return {stations:s.stations.length,fresh:Number(document.getElementById('stationCount')?.textContent||0),source:s.feedSource,bag,generic};
+              return {stations:s.stations.length,fresh:Number(document.getElementById('stationCount')?.textContent||0),source:s.feedSource,bag,kunchal,generic,contextKm:window.FloodSafeGauge.LOCAL_CONTEXT_KM};
             });
             if(result.stations<150||result.fresh<1)throw Error('Fresh official river set missing '+JSON.stringify(result));
             if(!result.bag||!result.bag.sameRiver||!result.bag.statusLabel)throw Error('Bagmati did not resolve to official status '+JSON.stringify(result.bag));
-            if(!result.generic||!result.generic.statusLabel||!result.generic.reference)throw Error('Ungauged stream did not receive nearby official status context '+JSON.stringify(result.generic));
+            if(result.contextKm!==20)throw Error('Local context radius wrong '+JSON.stringify(result));
+            if(result.kunchal&&!result.kunchal.sameRiver&&result.kunchal.distanceKm>20.01)throw Error('Distant unrelated gauge leaked into Kunchal '+JSON.stringify(result.kunchal));
+            if(result.generic&&!result.generic.sameRiver&&result.generic.distanceKm>20.01)throw Error('Distant generic context leaked '+JSON.stringify(result.generic));
             if(errors.length)throw Error('Page errors '+JSON.stringify(errors.slice(0,10)));
-            console.log('PASS Bagmati + every-waterway status context',result);
+            console.log('PASS exact river and local-only context',result);
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

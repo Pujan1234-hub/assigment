@@ -9,9 +9,6 @@ on:
     paths:
       - '.github/workflows/floodsafe-core-sync.yml'
       - 'scripts/floodsafe-core-sync.py'
-      - 'scripts/update_floodsafe_people_v2.py'
-      - 'data/floodsafe-police.json'
-      - 'floodsafe-nepal/v25/resilience.js'
 
 permissions:
   contents: write
@@ -23,7 +20,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,41 +30,35 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Fetch official core feeds
+      - name: Fetch official DHM and BIPAD river feeds
         run: python scripts/floodsafe-core-sync.py
 
-      - name: Fetch latest Human Status from credible Nepal sources
-        run: python scripts/update_floodsafe_people_v2.py
-
-      - name: Validate live snapshot contracts
+      - name: Validate current river snapshot
         run: |
           python -m json.tool data/floodsafe-core.json >/dev/null
           python - <<'PY'
           import json
-          from datetime import datetime, timezone
-          j=json.load(open('data/floodsafe-people-status.json'))
-          for k in ('recovered_bodies','missing_minimum','rescued_alive'):
-              assert isinstance(j.get(k),int) and j[k]>0, (k,j.get(k))
-          for k in ('recovered_source','missing_source','rescued_source'):
-              assert str(j.get(k,'')).strip(), k
-          checked=str(j.get('last_checked_utc','')).strip()
-          assert checked, 'last_checked_utc'
-          t=datetime.fromisoformat(checked.replace('Z','+00:00'))
-          age=(datetime.now(timezone.utc)-t).total_seconds()
-          assert age < 900, ('Human Status source scan too old',age,checked)
-          print('Human Status',j['recovered_bodies'],j['missing_minimum'],j['rescued_alive'],'checked',checked)
+          from datetime import datetime, timezone, timedelta
+          j=json.load(open('data/floodsafe-core.json'))
+          src=j.get('sources',{}).get('rivers',{})
+          assert j.get('schema_version',0) >= 4, j.get('schema_version')
+          assert src.get('count',0) >= 150, src
+          assert src.get('live_60m_count',0) >= 5, src
+          newest=datetime.fromisoformat(src['newest_measurement'].replace('Z','+00:00'))
+          assert datetime.now(timezone.utc)-newest.astimezone(timezone.utc) < timedelta(minutes=60), src
+          print('river snapshot',src.get('count'),'live<=60m',src.get('live_60m_count'),'DHM live',src.get('dhm_live_page_count'),'newest',newest.isoformat())
           PY
 
-      - name: Commit refreshed live snapshots
+      - name: Commit refreshed river snapshot immediately
         shell: bash
         run: |
-          if git diff --quiet -- data/floodsafe-core.json data/floodsafe-people-status.json; then
-            echo 'No live snapshot changes.'
+          if git diff --quiet -- data/floodsafe-core.json; then
+            echo 'No river snapshot change.'
             exit 0
           fi
           git config user.name 'FloodSafe live sync'
           git config user.email 'actions@users.noreply.github.com'
-          git add data/floodsafe-core.json data/floodsafe-people-status.json
-          git commit -m '[auto] refresh FloodSafe core and Human Status'
+          git add data/floodsafe-core.json
+          git commit -m '[auto] refresh FloodSafe realtime rivers'
           git pull --rebase origin main
           git push origin HEAD:main

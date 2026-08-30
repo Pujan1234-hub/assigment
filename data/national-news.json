@@ -1,9 +1,16 @@
 {
-  "generated_at": "2026-08-31T00:19:37.414908+05:45",
-  "updated_at_npt": "31 Aug 00:19 NPT",
+  "generated_at": "2026-08-31T03:16:35.351219+05:45",
+  "updated_at_npt": "31 Aug 03:16 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढीः काभ्रेका ४१ अझै सम्पर्कविहीन, आठ जना परिवारको सम्पर्कमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588687/bhotekoshi-flood-41-people-from-kavre-still-missing-eight-in-contact-with-family",
+      "published_at": "2026-08-31T01:46:57+05:45",
+      "flash": false
+    },
     {
       "title": "बाढीपीडितलाई जगरनाथपुरद्वारा १५ लाख सहयोग",
       "source": "Ratopati",
@@ -26,52 +33,10 @@
       "flash": false
     },
     {
-      "title": "बाढी पीडितका लागि राहत सामग्री सङ्कलन",
+      "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा सुदूरपश्चिमेली समाज इजरायलकाे ६ लाख सहयोग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588669/collection-of-relief-materials-for-flood-victims",
-      "published_at": "2026-08-30T21:53:48+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीपीडितलाई कांग्रेस बागमतीको पाँच लाख ५५ हजार सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588667/congress-bagmati-provides-rs-555000-assistance-to-bhotekoshi-flood-victims",
-      "published_at": "2026-08-30T21:42:30+05:45",
-      "flash": false
-    },
-    {
-      "title": "कृष्णभीरको पहिरोमात्रै होइन, त्रिशूलीले सडक छेउको १ किलोमिटर भाग नै कटान गर्‍यो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588663/not-only-the-landslide-at-krishnabhir-but-trishuli-also-eroded-a-1-kilometer-section-of-the-roadside",
-      "published_at": "2026-08-30T21:23:37+05:45",
-      "flash": false
-    },
-    {
-      "title": "त्रिशुली जलविद्युत् आयोजनामा काम गर्ने अशोक बेपत्ता, मोबाइलमा तस्बिर बोकेर अस्पताल धाउँदै आफन्त",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588645/ashok-who-worked-at-the-trishuli-hydropower-project-goes-missing-relatives-rush-to-the-hospital-with-photos-on-their-mobile-phones",
-      "published_at": "2026-08-30T20:17:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : मधेस प्रदेशका हराइरहेका ३० जना सम्पर्कमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588641/bhotekoshi-flood-30-missing-people-from-madhesh-province-in-contact",
-      "published_at": "2026-08-30T19:44:31+05:45",
-      "flash": false
-    },
-    {
-      "title": "बग्दै–बग्दै लुम्बिनी आइपुगे शव, नदीले पुर्‍यायो सीमापार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588639/bodies-arrive-in-lumbini-carried-across-the-border-by-the-river",
-      "published_at": "2026-08-30T19:26:32+05:45",
-      "flash": false
-    },
-    {
-      "title": "कोशी प्रदेशका २१ जना सकुशल सम्पर्कमा, ३ जनाको उद्धार, एक जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588634/21-people-from-koshi-province-in-safe-contact-3-rescued-1-dead",
-      "published_at": "2026-08-30T19:00:33+05:45",
+      "url": "https://www.ratopati.com/story/588670/far-western-society-donates-600000-to-prime-ministers-disaster-relief-fund",
+      "published_at": "2026-08-30T21:56:32+05:45",
       "flash": false
     }
   ],
@@ -92,7 +57,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 10
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

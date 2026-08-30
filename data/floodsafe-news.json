@@ -4,26 +4,38 @@
   "sources": {
     "RONB Post": {"seeded": true, "items": 0},
     "eKantipur": {"seeded": true, "items": 0},
-    "Hamro Patro": {"seeded": true, "items": 3},
+    "Hamro Patro": {"seeded": true, "items": 5},
     "Radio Nepal": {"seeded": true, "items": 0}
   },
   "items": [
     {
-      "title": "तीन दिनपछि सुरुङको ‘क्राउन हेड’ भेटियो, उद्धार टोलीले बोलाउँदा आएन जवाफ",
-      "url": "https://www.hamropatro.com/news/detail/276472275686261?breakout=y&immersive=true",
-      "published_at": "2026-08-30T10:09:53Z",
+      "title": "बाढीले खल्बल्यायो उपत्यकाको आपूर्ति शृङ्खला : अहिले अभावको चिन्ता, दसैँमा महँगी",
+      "url": "https://www.hamropatro.com/news/detail/282163785849599-badhile-khalbalyayo-upatyakako-apurti-shringkhala-ahile-abhavako-chinta-dasainma",
+      "published_at": "2026-08-30T11:51:09Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "भारतबाट प्राविधिक टोली र पुलसहित चौथो खेप सहायता नेपाल आइपुग्यो",
-      "url": "https://www.hamropatro.com/news/detail/256367396856246",
-      "published_at": "2026-08-30T04:24:31Z",
+      "title": "भोटेकोशी बाढीः उदयपुरका २१ जनामध्ये ५ जना सम्पर्कमा",
+      "url": "https://www.hamropatro.com/news/detail/282163753345178-bhotekoshi-badhih-udayapuraka-21-janamadhye-5-jana-samparkama",
+      "published_at": "2026-08-30T11:51:09Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "भोटेकोशीमा पुनः बाढी, सतर्कता अपनाउन स्थानीय प्रशासनको आग्रह",
-      "url": "https://www.hamropatro.com/news/detail/241979026297761-bhotekoshima-punah-badhi-satarkata-apanaun-sthaniy-prashasanako-agrah",
-      "published_at": "2026-08-30T00:31:14Z",
+      "title": "रविसँग बागमतीका मुख्यमन्त्रीले भने– संघ सरकारले समन्वय नै गरेन",
+      "url": "https://www.hamropatro.com/news/detail/281881752036796-ravisang-bagamatika-mukhyamantrile-bhane-sangh-sarakarale-samanvay-nai-garen",
+      "published_at": "2026-08-30T11:46:09Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "बाढी प्रभावितका लागि विश्व स्वास्थ्य सङ्गठनले गर्‍यो २ करोड बराबरको सहयोग",
+      "url": "https://www.hamropatro.com/news/detail/281564779307970-badhi-prabhavitaka-lagi-vishv-svasthy-sanggathanale-gar-yo-2-karod",
+      "published_at": "2026-08-30T11:41:09Z",
+      "source": "Hamro Patro"
+    },
+    {
+      "title": "त्रिवि शिक्षण अस्पतालमा अब शव राख्न कठिन",
+      "url": "https://www.hamropatro.com/news/detail/281291639760607-trivi-shikshan-aspatalama-ab-shav-rakhn-kathin",
+      "published_at": "2026-08-30T11:36:09Z",
       "source": "Hamro Patro"
     }
   ]

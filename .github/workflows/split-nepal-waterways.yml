@@ -1,0 +1,57 @@
+name: Split Nepal Waterways Tiles
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/split-nepal-waterways.yml"
+permissions:
+  contents: write
+concurrency:
+  group: split-nepal-waterways
+  cancel-in-progress: true
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build small spatial tiles
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,math,os,shutil
+          src=json.load(open('data/nepal-waterways-snapshot.json'))
+          minLon,minLat=80.0,26.2
+          stepLon,stepLat=.70,.60
+          nx,ny=12,8
+          root='data/nepal-waterways-tiles'
+          shutil.rmtree(root,ignore_errors=True); os.makedirs(root,exist_ok=True)
+          tiles={}
+          for w in src['waterways']:
+            pts=w.get('pts') or []
+            touched=set()
+            for lo,la in pts:
+              x=max(0,min(nx-1,int((lo-minLon)/stepLon)))
+              y=max(0,min(ny-1,int((la-minLat)/stepLat)))
+              touched.add((x,y))
+            for x,y in touched: tiles.setdefault((x,y),[]).append(w)
+          counts={}
+          for (x,y),arr in tiles.items():
+            fn=f'{root}/{x}-{y}.json'
+            json.dump({'count':len(arr),'waterways':arr},open(fn,'w'),ensure_ascii=False,separators=(',',':'))
+            counts[f'{x}-{y}']=len(arr)
+          manifest={'generated_at':src.get('generated_at'),'source':src.get('source'),'license':src.get('license'),'minLon':minLon,'minLat':minLat,'stepLon':stepLon,'stepLat':stepLat,'nx':nx,'ny':ny,'tiles':counts}
+          json.dump(manifest,open(f'{root}/manifest.json','w'),separators=(',',':'))
+          sizes=[os.path.getsize(f'{root}/{k}.json') for k in counts]
+          print('tiles',len(counts),'max bytes',max(sizes),'avg bytes',sum(sizes)//len(sizes))
+          assert len(counts)>50 and max(sizes)<7000000
+          PY
+      - name: Commit tiles
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/nepal-waterways-tiles
+          git commit -m "Build mobile Nepal waterway tiles" || exit 0
+          git pull --rebase origin main
+          git push

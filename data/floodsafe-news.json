@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-30T12:38:31.713781Z",
+  "generated_at": "2026-08-30T16:06:31.486270Z",
   "refresh_minutes": 5,
   "sources": {
     "RONB Post": {
@@ -13,7 +13,7 @@
     },
     "Hamro Patro": {
       "ok": true,
-      "items": 36
+      "items": 41
     },
     "Radio Nepal": {
       "ok": true,
@@ -22,189 +22,195 @@
   },
   "items": [
     {
-      "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा सिद्धार्थ बैंकको 2 करोड 51 लाख सहयोग",
-      "url": "https://www.hamropatro.com/news/detail/284881588771827-pradhanamantri-daivi-prakop-uddhar-koshama-siddharth-bainkako-2-karod-51",
-      "published_at": "2026-08-30T12:35:29.580980Z",
+      "title": "कांग्रेसमा समानान्तर महाधिवेशन हुने सङ्केत",
+      "url": "https://www.hamropatro.com/news/detail/297488017971285-kangresama-samanantar-mahadhiveshan-hune-sangket",
+      "published_at": "2026-08-30T16:01:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "भोटेकोशी बाढीलाई राष्ट्रिय शोक र पीडाका रूपमा लिनुपर्छ- अध्यक्ष ओली",
-      "url": "https://www.hamropatro.com/news/detail/284869527500313-bhotekoshi-badhilai-rashtriy-shok-r-pidaka-rupama-linuparchha-adhyaksh-oli",
-      "published_at": "2026-08-30T12:35:29.580980Z",
+      "title": "रसुवा बाढी : चीनद्वारा 20 लाख अमेरिकी डलर सहयोग",
+      "url": "https://www.hamropatro.com/news/detail/297469546111189-rasuva-badhi-chinadvara-20-lakh-ameriki-dalar-sahayog",
+      "published_at": "2026-08-30T16:01:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "प्राकृतिक विपद्का बीच बेपत्ता दिवस",
-      "url": "https://www.hamropatro.com/news/detail/284869230129243-prakritik-vipadka-bich-bepatta-divas",
-      "published_at": "2026-08-30T12:35:29.580980Z",
+      "title": "जबरजस्ती करणी मुद्दाका फरार प्रतिवादी पक्राउ",
+      "url": "https://www.hamropatro.com/news/detail/297469800281158-jabarajasti-karani-muddaka-pharar-prativadi-pakrau",
+      "published_at": "2026-08-30T16:01:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "शव व्यवस्थापनबारे अनुभव सेयर गरेका सहसचिव निरौलालाई रसुवाको टिमुरे सरुवा",
-      "url": "https://www.hamropatro.com/news/detail/284864159681708-shav-vyavasthapanabare-anubhav-seyar-gareka-sahasachiv-niraulalai-rasuvako",
-      "published_at": "2026-08-30T12:35:29.580980Z",
+      "title": "प्रधानमन्त्री दैवी प्रकोप कोषमा पाँच अर्ब 24 करोड सङ्कलन",
+      "url": "https://www.hamropatro.com/news/detail/297469816550449-pradhanamantri-daivi-prakop-koshama-panch-arb-24-karod-sangkalan",
+      "published_at": "2026-08-30T16:01:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "आवश्यकता अनुसार अन्तर्राष्ट्रिय समुदायबाट सहयोग लिइरहेका छौँः परराष्ट्र सचिव राई",
-      "url": "https://www.hamropatro.com/news/detail/284866845095231-avashyakata-anusar-antarrashtriy-samudayabat-sahayog-liraheka-chhaunh-pararashtr",
-      "published_at": "2026-08-30T12:35:29.580980Z",
+      "title": "सरकारलाई सल्लाह दिने सचिवलाई शव व्यवस्थापनको जिम्मा",
+      "url": "https://www.hamropatro.com/news/detail/297464637358841-sarakaralai-sallah-dine-sachivalai-shav-vyavasthapanako-jimma",
+      "published_at": "2026-08-30T16:01:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "‘पार्वती’को एक दिनको कमाइ 11 लाख रुपैयाँ प्रधानमन्त्री राहत कोषमा",
-      "url": "https://www.hamropatro.com/news/detail/284863953832909-parvati-ko-ek-dinako-kamai-11-lakh-rupaiyan-pradhanamantri-rahat",
-      "published_at": "2026-08-30T12:35:29.580980Z",
+      "title": "भोटेकोशी बाढीपीडितलाई कांग्रेस बागमतीको पाँच लाख 55 हजार सहयोग हेटौँडा । नेपाली कांग्रेस बागमती प्रदेश कार्यसमितिले भोटेकोशी बाढीबाट प्रभावित नागरिकको उद्धार, राहत तथा पुनःस्थापनाका लागि रु पाँच लाख 55 हजार 555 सहयोग गर्ने भएको छ । प्रदेश कार्यसमितिले उक्त रकम...",
+      "url": "https://www.hamropatro.com/news/detail/297464470629458-bhotekoshi-badhipiditalai-kangres-bagamatiko-panch-lakh-55-hajar-sahayog",
+      "published_at": "2026-08-30T16:01:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "बाढीका कारण उत्पन्न परिस्थितिमा सरकारले तत्काल गर्नुपर्ने 8 काम : एमाले नेकपा एमालेले रसुवामा गएको विनाशकारी बाढीका कारण उत्पन्न परिस्थितिमा सरकारले तत्काल गर्नुपर्ने 8 काम औंल्याएको छ । भदौ 10 गते रसुवाको भोटेकोशी नदीमा भीषण बाढी गएको थियो । उक्त बाढीबाट रसुवा, नुवाक...",
-      "url": "https://www.hamropatro.com/news/detail/284879461122906-badhika-karan-utpann-paristhitima-sarakarale-tatkal-garnuparne-8-kam-emale",
-      "published_at": "2026-08-30T12:35:29.580980Z",
+      "title": "यसरी भइरहेको छ सुरुङमा फसेकाहरुको उद्धार काठमाडौँ- गत बुधबार बिहान रसुवाको भोटेकोशी नदीमा गएको बाढीका कारण विभिन्न जलविद्युत् आयोजना प्रभावित भएका छन्। प्रभावित आयोजनामा मानिससमेत फसेका सूचना आइरहेका छन्। प्रभावित क्षेत्रमा कति जलविद्युत...",
+      "url": "https://www.hamropatro.com/news/detail/297171634469330-yasari-bhairaheko-chha-surungama-phasekaharuko-uddhar",
+      "published_at": "2026-08-30T15:56:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "जावलाखेल ग्रुपद्वारा प्रधानमन्त्री दैवी प्रकोप उद्धार कोषलाई 3 करोड हस्तान्तरण 12 भदौ, काठमाडौं । जावलाखेल ग्रुप अफ इन्डस्ट्रिज (जेआईजी)ले हालै देशका विभिन्न स्थानमा आएको विनाशकारी आकस्मिक बाढीबाट प्रभावित समुदायको राहत, पुनर्स्थापना तथा पुनःउद्धारका लागि प्रधानमन्त्री दैवी प...",
-      "url": "https://www.hamropatro.com/news/detail/284869107111877-javalakhel-grupadvara-pradhanamantri-daivi-prakop-uddhar-koshalai-3-karod",
-      "published_at": "2026-08-30T12:35:29.580980Z",
+      "title": "भोटेकोशी बाढी : आजसम्म 289 पर्यटकको उद्धार काठमाडौँ। रसुवाको भोटेकोशीमा आएको बाढीमा परेर हराएका विभिन्न देशका पर्यटकमध्ये 289 पर्यटकको उद्धार गरिएको छ। नेपाल पर्यटन बोर्डले दिएको जानकारी अनुसार बुधबार बिहान भोटेकोशीमा आएको बाढीमा परेर सम्पर...",
+      "url": "https://www.hamropatro.com/news/detail/297165527251510-bhotekoshi-badhi-ajasamm-289-paryatakako-uddhar",
+      "published_at": "2026-08-30T15:56:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "रसुवा बाढीः सुदूरपश्चिमका 140 जना अझै सम्पर्कविहीन धनगढी – रसुवाको भोटेकोशी नदीमा आएको बाढीपछि सुदूरपश्चिम प्रदेशका 1 सय 40 जना अझै सम्पर्कविहीन रहेका छन्।",
-      "url": "https://www.hamropatro.com/news/detail/284864233578444-rasuva-badhih-sudurapashchimaka-140-jana-ajhai-samparkavihin",
-      "published_at": "2026-08-30T12:35:29.580980Z",
+      "title": "प्रधानमन्त्री दैवी प्रकोप कोषमा पाँच अर्ब 24 करोड सङ्कलन बाढी प्रभावितका लागि सरकारले सञ्चालन गरेको प्रधानमन्त्री दैवी प्रकोप कोषमा हालसम्म रु पाँच अर्ब 24 करोड 69 लाख 44 हजार सङ्कलन भएको छ । प्रधानमन्त्री तथा मन्त्रिपरिषद्को कार्यालयका अनुसार प्रधानमन्...",
+      "url": "https://www.hamropatro.com/news/detail/296872405652005-pradhanamantri-daivi-prakop-koshama-panch-arb-24-karod-sangkalan",
+      "published_at": "2026-08-30T15:51:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "रक्तदान अभियानबाट 8 हजार 6 सय 94 पिन्ट रगत संकलन काठमाडौं- ब्रह्माकुमारी राजयोग सेवा केन्द्र नेपालले आयोजना गरेको देशव्यापी बृहत् रक्तदान अभियानबाट 8 हजार 6 सय 94 पिन्ट रगत संकलन भएको छ। संकलित रगत नेपाल रेडक्रस सोसाइटीलगायत विभिन्न ब्लड बैंकलाई ...",
-      "url": "https://www.hamropatro.com/news/detail/284585904807548-raktadan-abhiyanabat-8-hajar-6-say-94-pint-ragat-sankalan",
-      "published_at": "2026-08-30T12:30:29.580980Z",
+      "title": "कर्णाली शिवराजले भेट्टायो नयाँ प्रतिभा, डम्बर बीसी छनोट काठमाडाैं। नेपाल भलिबल लिगकाे फ्रेन्चाइज टोली कर्णाली शिवराजले आयोजना गरेको ट्यालेन्ट हन्ट सम्पन्न भएको छ। ट्यालेन्ट हन्ट न्यू डायमण्ड यूथ स्पोर्ट्स क्लबमा आयोजना गरिएको थियो। कर्णालीले सामाजिक सञ...",
+      "url": "https://www.hamropatro.com/news/detail/296861266831064-karnali-shivarajale-bhettayo-nayan-pratibha-dambar-bisi-chhanot",
+      "published_at": "2026-08-30T15:51:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "बाढीपीडितका लागि कयाल ग्रुपको 25 लाख सहयोग काठमाडौं। व्यावसायिक घराना कयाल ग्रुपले रसुवाको भोटेकोशी हुँदै त्रिशूली नदीमा आएको बाढीबाट प्रभावित नागरिकको उद्धार तथा राहतका लागि 25 लाख रुपैयाँ सहयोग गरेको छ। ग्रुपका निर्देशक कुनाल कयालले आइत...",
-      "url": "https://www.hamropatro.com/news/detail/284580302304561-badhipiditaka-lagi-kayal-grupako-25-lakh-sahayog",
-      "published_at": "2026-08-30T12:30:29.580980Z",
+      "title": "झुक्काउन सक्छ सरकारी उद्धार पोर्टलले, कसरी थाहा पाउने आधिकारिक विवरण ? 14 भदौ, काठमाडौं । रसुवा बाढी प्रभावितलाई ध्यानमा राख्दै नेपाल सरकारले उद्धार अनुरोध पोर्टल बनाएको छ । भौतिक पूर्वाधार मन्त्रालयको समन्वयमा बनाइएको यो पोर्टल राष्ट्रिय विपद् जोखिम न्यूनीकरण तथा व्य...",
+      "url": "https://www.hamropatro.com/news/detail/296566914968809-jhukkaun-sakchha-sarakari-uddhar-portalale-kasari-thaha-paune-adhikarik-vivaran",
+      "published_at": "2026-08-30T15:46:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "‘अकल्पनीय बाढी’ले भग्नावशेष बन्यो बेत्रावती बजार, छैन परिवारको अत्तोपत्तो नुवाकोटका आकाशमा छिनछिनमा हेलिकप्टर उडिरहेछन् । भोटेकोशी–त्रिशुलीमा आएको विनाशकारी बाढीले एकदेखि अर्को बजारसम्म पुग्ने सडक क्षतविक्षत छन् । सामान्य अवस्थामा सहजै पुगिने बेत्रावतीसम्मको यात्रा बाढी...",
-      "url": "https://www.hamropatro.com/news/detail/284579772887530-akalpaniy-badhi-le-bhagnavashesh-banyo-betravati-bajar-chhain-parivarako",
-      "published_at": "2026-08-30T12:30:29.580980Z",
+      "title": "भारतबाट 49 लाखको राहत सामग्री बोकेका दुई ट्रक नेपाल भित्रिए भोटेकोशी नदीमा आएको विनाशकारी बाढीबाट प्रभावित नागरिकका लागि भारतबाट पठाइएको राहत सामग्री आइतबार रुपन्देहीको बेलहिया नाका हुँदै नेपाल भित्रिएको छ । भारतको हरिद्वारस्थित श्रीवेदमाता गायत्री ट्रस्टल...",
+      "url": "https://www.hamropatro.com/news/detail/296567044057922-bharatabat-49-lakhako-rahat-samagri-bokeka-dui-trak-nepal-bhitrie",
+      "published_at": "2026-08-30T15:46:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "आवश्यकताअनुसार अन्तर्राष्ट्रिय समुदायबाट सहयोग लिइरहेका छौँ : परराष्ट्र सचिव राई काठमाडौँ- परराष्ट्र मन्त्रालयका सचिव अमृतबहादुर राईले सरकारले भोटेकोशी बाढी प्रभावित क्षेत्रमा खोज, उद्धार र राहतमा आवश्यकताअनुसार अन्तर्राष्ट्रिय समुदायबाट सहयोग लिइरहेको बताएका छन्। भोटेकोशी बाढ...",
-      "url": "https://www.hamropatro.com/news/detail/284573606062795-avashyakatanusar-antarrashtriy-samudayabat-sahayog-liraheka-chhaun-pararashtr",
-      "published_at": "2026-08-30T12:30:29.580980Z",
+      "title": "जमिनमुनि राखिएको शव कति समयसम्म सुरक्षित हुन्छ ? चितवन । रसुवाको भोटेकोशीमा आएको बाढीपछि त्रिशूली र नारायणी नदी हुँदै चितवनसम्म बगेर आएका पहिचान नखुलेका शवको व्यवस्थापनको काम तीव्र पारिएको छ। ठूलो संख्यामा शव फेला परेपछि तत्काल दाहसंस्कार गर्न क...",
+      "url": "https://www.hamropatro.com/news/detail/296283191194049-jaminamuni-rakhieko-shav-kati-samayasamm-surakshit-hunchha",
+      "published_at": "2026-08-30T15:41:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "भोटेकोशी बाढीमा 788 शव फेला, दुई हजार 742 जनाको उद्धार काठमाडौँ । रसुवाको भोटेकोशी नदीमा आएको बाढीबाट प्रभावित जिल्लामा हालसम्म 788 जनाको शव फेला परेको नेपाल प्रहरीले जनाएको छ। बाढी प्रभावित क्षेत्रमा खोज, उद्धार तथा सुरक्षा व्यवस्थापनका लागि सात हजार ...",
-      "url": "https://www.hamropatro.com/news/detail/284560316505362-bhotekoshi-badhima-788-shav-phela-dui-hajar-742-janako-uddhar",
-      "published_at": "2026-08-30T12:30:29.580980Z",
+      "title": "‘सरी’ इण्डिया - फर पाष्ट, ‘एक्सट्रिम्ली सरी’ चाइना - फर प्रिजेन्ट भोटेकोशी (त्रिशूली) को बाढीले 10 भदौमा रसुवा–नुवाकोटमा निम्त्याएको क्रुर विनाशलीला देखेको भए सायद चिनियाँँ पूर्वप्रधानमन्त्री झु रोङ्जीका आँखाका आँसुपनि थामिने थिएनन् । उनी पनि त्यसैगरी भक्कानिने थ...",
+      "url": "https://www.hamropatro.com/news/detail/296273282414300-sari-indiya-phar-pasht-eksatrimli-sari-chaina-phar-prijent",
+      "published_at": "2026-08-30T15:41:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "यस्तो रह्यो नाडा अटो शो 2026 को अन्तिम दिन (तस्बिरहरू)",
-      "url": "https://www.hamropatro.com/news/detail/284571787573048-yasto-rahyo-nada-ato-sho-2026-ko-antim-din-tasbiraharu",
-      "published_at": "2026-08-30T12:30:29.580980Z",
+      "title": "प्रधानमन्त्रीले सुरुङभित्र भइरहेको उद्धारबारे के-के भने ? प्रधानमन्त्री बालेन्द्र शाहले नेपाली सुरक्षाकर्मी र चीन, भारत तथा दक्षिण कोरियाका उद्धार टोलीले उद्धारको काम गरिरहेको बताएका छन् । आइतबार साँझ फेसबुकमार्फत बाढी प्रतिकार्यबारे जानकारी दिँदै प्रधानम...",
+      "url": "https://www.hamropatro.com/news/detail/296278093279324-pradhanamantrile-surungabhitr-bhairaheko-uddharabare-ke-ke-bhane",
+      "published_at": "2026-08-30T15:41:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "सभापति लामिछाने र मुख्यमन्त्री थापाबीच भेटवार्ता राष्ट्रिय स्वतन्त्र पार्टी (रास्वपा) का सभापति रवि लामिछाने र बागमती प्रदेशका मुख्यमन्त्री किरण थापा मगरबीच भेटवार्ता भएको छ । रास्वापाको पार्टी कार्यालय वनस्थलीमा आइतबार भएको उक्त भेटवार्तामा उहा...",
-      "url": "https://www.hamropatro.com/news/detail/284569151465807-sabhapati-lamichhane-r-mukhyamantri-thapabich-bhetavarta",
-      "published_at": "2026-08-30T12:30:29.580980Z",
+      "title": "यसरी भइरहेको छ जलविद्युत्को सुरुङमा फसेकाहरुको उद्धार काठमाडाैं – गत बुधबार बिहान रसुवाको भोटेकोशी नदीमा आएको भीषण बाढीका कारण विभिन्न जलविद्युत् आयोजना प्रभावित भएका छन् । बाढीका कारण आयोजनाका संरचनामा क्षति पुग्नुका साथै सुरुङभित्र काम गरिरहेका दर्ज...",
+      "url": "https://www.hamropatro.com/news/detail/296268305409267-yasari-bhairaheko-chha-jalavidyutko-surungama-phasekaharuko-uddhar",
+      "published_at": "2026-08-30T15:41:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "बाढी प्रभावितको उद्धार र राहतमा प्रभावकारी काम गर्न सरकारलाई कांग्रेसको आग्रह काठमाडौँ ।नेपाली कांग्रेसले भोटेकोशी–त्रिशूली क्षेत्रमा आएको भीषण बाढीबाट प्रभावित नागरिकको खोजी, उद्धार, राहत र पुनर्स्थापना प्रभावकारी बनाउन सरकारसँग आग्रह गरेको छ । नेपाली कांग्रेसका सभापति गगन...",
-      "url": "https://www.hamropatro.com/news/detail/284292049311894-badhi-prabhavitako-uddhar-r-rahatama-prabhavakari-kam-garn-sarakaralai",
-      "published_at": "2026-08-30T12:25:29.580980Z",
+      "title": "थला पर्‍यो अर्थतन्त्र, तंग्रिन सात खर्ब रुपैयाँ लाग्ने अनुमान काठमाडौँ- भोटेकोशीको भीषण बाढीले नेपालको अर्थतन्त्रमा ठूलो धक्का पुर्‍याएको छ। आर्थिक रूपमा 2072 मा आएको विनाशकारी भूकम्पका बेला सामना गर्नुपरेजस्तै चुनौती फेरि खडा भएको हो। अर्थमन्त्री स्वर्णिम व...",
+      "url": "https://www.hamropatro.com/news/detail/296268801737839-thala-par-yo-arthatantr-tangrin-sat-kharb-rupaiyan-lagne-anuman",
+      "published_at": "2026-08-30T15:41:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "कुनै पनि शव अस्थायी चिहानका रुपमा 12 वर्षसम्म राख्न सकिन्छ : प्राडा हरिहर वस्ती काठमाडौं– प्राकृतिक विपद्का बेला ठूलो संख्यामा मानिसको मृत्यु वा बेपत्ता हुँदा उद्धारसँगै मृतकको पहिचान र शव व्यवस्थापन अर्को ठूलो चुनौती बन्ने गर्छ । विशेषगरी एकैपटक ठूलो संख्यामा शव प्राप्त हुँदा...",
-      "url": "https://www.hamropatro.com/news/detail/284271503465415-kunai-pani-shav-asthayi-chihanaka-rupama-12-varshasamm-rakhn-sakinchha",
-      "published_at": "2026-08-30T12:25:29.580980Z",
+      "title": "‘माया भनेकै यस्तो होला’को प्रदर्शन स्थगित काठमाडौं । रेखा थापाको निर्देशनमा बनेको चलचित्र ‘माया भनेकै यस्तो होला’को प्रदर्शन मिति स्थगित गरिएको छ। मुलुकमा उत्पन्न प्रतिकूल परिस्थिति तथा देश पीडा र दुःखमा रहेका बेला मनोरञ्जनात्मक चलचित्र प...",
+      "url": "https://www.hamropatro.com/news/detail/295963120699026-maya-bhanekai-yasto-hola-ko-pradarshan-sthagit",
+      "published_at": "2026-08-30T15:36:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "कृष्णभीर सडकखण्ड अवरुद्ध भएपछि वैकल्पिक मार्गबाट काठमाडौंमा ग्यास र पेट्रोलियम आपूर्ति गरिँदै काठमाडौं– त्रिशुली नदीमा आएको भीषण बाढीका कारण पृथ्वी राजमार्गको कृष्णभीर खण्ड अवरुद्ध भएपछि नेपाल आयल निगमले वैकल्पिक मार्गबाट काठमाडौं उपत्यका तथा आसपासका जिल्लाहरूमा एल.पी. ग्यास र पेट्रोलियम पद...",
-      "url": "https://www.hamropatro.com/news/detail/284266072548781-krishnabhir-sadakakhand-avaruddh-bhaepachhi-vaikalpik-margabat-kathamadaunma",
-      "published_at": "2026-08-30T12:25:29.580980Z",
+      "title": "ताप्लेजुङ गोल्डकप : सलहेश युवा क्लब सेमिफाइनलमा",
+      "url": "https://www.hamropatro.com/news/detail/295663230987743-taplejung-goldakap-salahesh-yuva-klab-semiphainalama",
+      "published_at": "2026-08-30T15:31:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "पल्सर स्पोर्ट्स अवार्ड : यी हुन् वर्ष पुरुष, महिला, युवा खेलाडी र प्रशिक्षकका दाबेदार काठमाडौँ । नेपाल खेलकुद पत्रकार मञ्च (एनएसजेएफ) ले आयोजना गर्ने एनएसजेएफ पल्सर स्पोर्टस् अवार्ड 2082 अन्तर्गत वर्ष पुरुष खेलाडी, वर्ष महिला खेलाडी, युवा वर्ष खेलाडी र वर्ष प्रशिक्षक विधाका मनोनयन स...",
-      "url": "https://www.hamropatro.com/news/detail/284261381978859-palsar-sports-avard-yi-hun-varsh-purush-mahila-yuva-kheladi",
-      "published_at": "2026-08-30T12:25:29.580980Z",
+      "title": "लामो तैनाथीपछि अमेरिकी विमानवाहक लिङ्कन घर फर्कंदै",
+      "url": "https://www.hamropatro.com/news/detail/295683878137502-lamo-tainathipachhi-ameriki-vimanavahak-lingkan-ghar-pharkandai",
+      "published_at": "2026-08-30T15:31:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "सात आँखा अस्पताल सिलबन्दीबारे मन्त्रालयसँग अप्थाल्मिक सोसाइटीको छलफल",
-      "url": "https://www.hamropatro.com/news/detail/283987776522364-sat-ankha-aspatal-silabandibare-mantralayasang-apthalmik-sosaitiko-chhalaphal",
-      "published_at": "2026-08-30T12:20:29.580980Z",
+      "title": "पाडा खोज्न निस्केका फुयाँल जंगलमा मृत भेटिए सिमराः हराएको पाडा खोज्न भन्दै घरबाट निस्किएका बारा जीतपुरसिमरा उपमहानगरपालिका–16 टांगियाबस्तीका 55 वर्षीय देवीप्रसाद फुयाँल आइतबार जंगलमा मृत फेला परेका छन्। उनको शव सहजनाथ मन्दिरदेखि दक्षिणतर्फको...",
+      "url": "https://www.hamropatro.com/news/detail/295373927163656-pada-khojn-niskeka-phuyanl-jangalama-mrit-bhetie",
+      "published_at": "2026-08-30T15:26:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "रेखा थापा निर्देशित ‘माया भनेकै यस्तो होला’ 20 कात्तिकमा आउने",
-      "url": "https://www.hamropatro.com/news/detail/283972271879595-rekha-thapa-nirdeshit-maya-bhanekai-yasto-hola-20-kattikama-aune",
-      "published_at": "2026-08-30T12:20:29.580980Z",
+      "title": "प्रधानमन्त्री बालेनले भने– सुरूङभित्र चिनियाँ टोलीले 3 किलोमिटरसम्म खोज्दा कोही फेला परेन प्रधानमन्त्री बालेन शाहले रसुवाको माथिल्लो त्रिशूली-1 जलविद्युत आयोजनाको सुरूङभित्र चिनियाँ टोलीले 3 किलोमिटरसम्म खोजी गरेको र अहिलेसम्म कोही पनि मान्छे फेला नपरेको बताएका छन्। भदौ 10 गतेको विनाशक...",
+      "url": "https://www.hamropatro.com/news/detail/295374047200494-pradhanamantri-balenale-bhane-surungabhitr-chiniyan-tolile-3-kilomitarasamm",
+      "published_at": "2026-08-30T15:26:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "निगमले भन्यो- कृष्णभीरमा सडक अवरुद्ध भएपछि वैकल्पिक मार्गबाट ग्यास र इन्धन ल्याइँदैछ पृथ्वी राजमार्गअन्तर्गत धादिङको कृष्णभीर खण्डमा बाढीका कारण सडक अवरुद्ध भएपछि नेपाल आयल निगमले वैकल्पिक मार्गमार्फत काठमाडौं उपत्यका र आसपासका क्षेत्रमा एलपी ग्यास तथा पेट्रोलियम पदार्थको आपूर्ति व...",
-      "url": "https://www.hamropatro.com/news/detail/283967500114318-nigamale-bhanyo-krishnabhirama-sadak-avaruddh-bhaepachhi-vaikalpik-margabat-gyas",
-      "published_at": "2026-08-30T12:20:29.580980Z",
+      "title": "प्रधानमन्त्री राहत कोषमा चीनको ३० करोड सहयोग",
+      "url": "https://www.ronbpost.com/2026/08/19518/",
+      "published_at": "2026-08-30T15:23:48Z",
+      "source": "RONB Post"
+    },
+    {
+      "title": "जितबहादुर, बैकुण्ठ र सूर्यकुमारीका प्रशिक्षक मधु शमशेरको सहयोग",
+      "url": "https://www.hamropatro.com/news/detail/290584110541842-jitabahadur-baikunth-r-suryakumarika-prashikshak-madhu-shamasherako-sahayog",
+      "published_at": "2026-08-30T14:06:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "न बत्ती, न बाटो, न सञ्चार - रसुवाका बाढीपीडितको व्यथा बाढीले व्यापक क्षति पुर्‍याएका जिल्लामध्ये रसुवाको एक क्षेत्रका प्रभावित व्यक्तिहरूले राहत नपाएको मात्र नभई हालसम्म सडक र सञ्चारसम्पर्कविहीन समेत रहेको बीबीसीलाई बताएका छन्। विगत पाँच दिनयता बिजुल...",
-      "url": "https://www.hamropatro.com/news/detail/283967458948675-n-batti-n-bato-n-sanychar-rasuvaka-badhipiditako-vyatha",
-      "published_at": "2026-08-30T12:20:29.580980Z",
+      "title": "‘श्रुति’को 14औं वार्षिक साधारण सभा सम्पन्न",
+      "url": "https://www.hamropatro.com/news/detail/290580965630348-shruti-ko-14aun-varshik-sadharan-sabha-sampann",
+      "published_at": "2026-08-30T14:06:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "शव व्यवस्थापनमा फ्रिजर र डीएनए किटको अभाव, अन्तर्राष्ट्रिय सहयोग माग्दै सरकार काठमाडौं– भोटेकोशी बाढीपछि संकलित शवहरू कुहिन थालेपछि सुरक्षित व्यवस्थापन सरकारका लागि मुख्य चुनौती बनेको छ । शव सुरक्षित राख्न कम्तीमा एक हजार जनासम्मको क्षमता भएको फ्रिजर र पर्याप्त डीएनए परीक्ष...",
-      "url": "https://www.hamropatro.com/news/detail/283987912629410-shav-vyavasthapanama-phrijar-r-dienae-kitako-abhav-antarrashtriy-sahayog-magdai",
-      "published_at": "2026-08-30T12:20:29.580980Z",
+      "title": "ऐतिहासिक सहर दोलखामा भैरवकुमारी जात्रा सुरु",
+      "url": "https://www.hamropatro.com/news/detail/290877199152132-aitihasik-sahar-dolakhama-bhairavakumari-jatra-suru",
+      "published_at": "2026-08-30T14:06:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "बाढीपीडितलाई सिद्धार्थ बैंकको 2 करोड 51 लाख सहयोग काठमाडौं । रसुवा जिल्लाको भोटेकोशी तथा त्रिशूली नदी प्रणालीमा आएको विनाशकारी बाढी तथा प्राकृतिक विपद्बाट प्रभावित नागरिकको राहत, उद्धार र पुनःस्थापनाका लागि सिद्धार्थ बैंक लिमिटेडले 2 करोड 51 लाख र...",
-      "url": "https://www.hamropatro.com/news/detail/281580570733710-badhipiditalai-siddharth-bainkako-2-karod-51-lakh-sahayog",
-      "published_at": "2026-08-30T11:40:29.580980Z",
+      "title": "राहत कोषमा सहयोग गर्नेलाई कर सहुलियत, व्यवसायीले कसरी गर्ने दाबी ?",
+      "url": "https://www.hamropatro.com/news/detail/291192472584431-rahat-koshama-sahayog-garnelai-kar-sahuliyat-vyavasayile-kasari-garne-dabi",
+      "published_at": "2026-08-30T14:06:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "गोरखामा आगलागीबाट घर जलेर नष्ट गोरखा : गोरखामा एक घर आगलागीबाट जलेर पूर्ण रुपमा नष्ट भएको छ । गोरखा नगरपालिका 3 नारेश्वरस्थित सीता अर्यालको घर आगलागीबाट पूर्ण रुपमा नष्ट भएको हो । गाउँको परम्परागत ढुंगा माटोले बनेको मौलिक घर शनि...",
-      "url": "https://www.hamropatro.com/news/detail/281574828440098-gorakhama-agalagibat-ghar-jaler-nasht",
-      "published_at": "2026-08-30T11:40:29.580980Z",
+      "title": "एनडीपीको दोस्रो साधारणसभा सम्पन्न, 2.5 प्रतिशत बोनस सेयर पारित",
+      "url": "https://www.hamropatro.com/news/detail/291171471374318-enadipiko-dosro-sadharanasabha-sampann-2-5-pratishat-bonas-seyar-parit",
+      "published_at": "2026-08-30T14:06:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "मृतकको पहिचानमा सहयोग गर्न भारतीय फरेन्सिक टोली नेपालमा काठमाडौं । रसुवालगायतका क्षेत्रमा आएको भीषण बाढीमा ज्यान गुमाएकाहरूको पहिचानका लागि सहयोग गर्न भारतीय फरेन्सिक टोली नेपाल आइपुगेको छ। नेपालका लागि भारतीय राजदूत नवीन श्रीवास्तवले काठमाडौं आइपुगेको...",
-      "url": "https://www.hamropatro.com/news/detail/281574785413053-mritakako-pahichanama-sahayog-garn-bharatiy-pharensik-toli-nepalama",
-      "published_at": "2026-08-30T11:40:29.580980Z",
+      "title": "रसुवा बाढीमा ज्यान गुमाएकाप्रति चिनियाँ राष्ट्रपति र प्रधानमन्त्रीको श्रद्धाञ्जली, ‘यो दुःखमा नेपाल एक्लै छैन’",
+      "url": "https://www.hamropatro.com/news/detail/291770885888250-rasuva-badhima-jyan-gumaekaprati-chiniyan-rashtrapati-r-pradhanamantriko",
+      "published_at": "2026-08-30T14:06:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "त्रिवि शिक्षण अस्पतालमा अब शव राख्न कठिन",
-      "url": "https://www.hamropatro.com/news/detail/281291639760607-trivi-shikshan-aspatalama-ab-shav-rakhn-kathin",
-      "published_at": "2026-08-30T11:38:29.580980Z",
+      "title": "जावलाखेल ग्रुप अफ इन्डस्ट्रिजद्वारा प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा 3 करोड रुपैयाँ सहयोग काठमाडौं । जावलाखेल ग्रुप अफ इन्डस्ट्रिज (JGI) ले देशभर आएको विनाशकारी बाढीपहिरो तथा आकस्मिक बाढीबाट प्रभावित नागरिकको राहत, पुनःस्थापना तथा पुनर्निर्माणका लागि प्रधानमन्त्री दैवी प्रकोप उद्धार कोष...",
+      "url": "https://www.hamropatro.com/news/detail/291470908671763-javalakhel-grup-aph-indastrijadvara-pradhanamantri-daivi-prakop-uddhar-koshama-3",
+      "published_at": "2026-08-30T14:06:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "‘वास्तविक शत्रु’ विरुद्ध एकजुट हुन खाडी राष्ट्रका शासकलाई खामेनीको सन्देश",
-      "url": "https://www.hamropatro.com/news/detail/281280874805516-vastavik-shatru-viruddh-ekajut-hun-khadi-rashtraka-shasakalai-khameniko-sandesh",
-      "published_at": "2026-08-30T11:38:29.580980Z",
+      "title": "मन्त्री चौधरीको पहलमा बाढी प्रभावितका लागि आठ हजार किलो तरकारी पठाइयो कृषि, वन तथा वातावरण मन्त्री गीता चौधरीको पहलमा भोटेकोशी तथा त्रिशूली बाढी प्रभावित नागरिकका लागि ताजा तरकारी तथा खाद्य सामग्री पठाइएको छ । कालीमाटी फलफूल तथा तरकारी बजार विकास समितिको समन्वयमा का...",
+      "url": "https://www.hamropatro.com/news/detail/291468541231865-mantri-chaudhariko-pahalama-badhi-prabhavitaka-lagi-ath-hajar-kilo-tarakari",
+      "published_at": "2026-08-30T14:06:23.361694Z",
       "source": "Hamro Patro"
     },
     {
-      "title": "मुस्लिम देशहरूलाई वास्तविक शत्रु विरूद्ध एकजुट हुन इरानका सर्वोच्च नेता खमेनीको आह्वान",
-      "url": "https://www.hamropatro.com/news/detail/281271092468185-muslim-deshaharulai-vastavik-shatru-viruddh-ekajut-hun-iranaka-sarvochch-neta",
-      "published_at": "2026-08-30T11:38:29.580980Z",
+      "title": "पेट्रोलियम पदार्थ वैकल्पिक मार्गबाट आपूर्ति गरिने त्रिशूली नदीमा आएको बाढीका कारण धादिङको बेनीघाट रोराङ गाउँपालिका-7 अन्तर्गत पृथ्वी राजमार्गको कृष्णभीर सडकखण्डमा कटान भई आवागमन अवरुद्ध भएपछि नेपाल आयल निगमले काठमाडौं उपत्यका तथा आसपासका जिल्लामा ...",
+      "url": "https://www.hamropatro.com/news/detail/290573998120616-petroliyam-padarth-vaikalpik-margabat-apurti-garine",
+      "published_at": "2026-08-30T14:06:23.361694Z",
       "source": "Hamro Patro"
     },
     {
@@ -505,12 +511,6 @@
       "title": "नेपाल ‘ए’ आज एसीटीसँग भिड्दै, जित्नैपर्ने दबाब",
       "url": "https://www.ronbpost.com/2026/08/19366/",
       "published_at": "2026-08-26T02:56:13Z",
-      "source": "RONB Post"
-    },
-    {
-      "title": "प्रतिनिधिसभा बैठकमा प्रधानमन्त्रीले सांसदका प्रश्नको जवाफ दिने",
-      "url": "https://www.ronbpost.com/2026/08/19363/",
-      "published_at": "2026-08-26T02:20:38Z",
       "source": "RONB Post"
     },
     {

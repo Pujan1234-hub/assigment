@@ -3,11 +3,10 @@ on:
   push:
     branches: ["main"]
     paths:
+      - "floodsafe-nepal/v25/river-current-20m-v1.js"
       - "floodsafe-nepal/v25/river-line-status-v1.js"
       - "floodsafe-nepal/v25/river-line-style-v1.js"
-      - "floodsafe-nepal/v25/map-stable-v2.js"
       - "floodsafe-nepal/v25/hydro-complete-v1.js"
-      - "floodsafe-nepal/v25/map-loader-v3.js"
       - "floodsafe-nepal/v25/index.html"
       - ".github/workflows/v25-river-line-status-smoke.yml"
 permissions:
@@ -24,22 +23,23 @@ jobs:
       - name: JavaScript syntax
         run: |
           set -euo pipefail
+          node --check floodsafe-nepal/v25/river-current-20m-v1.js
           node --check floodsafe-nepal/v25/river-line-status-v1.js
           node --check floodsafe-nepal/v25/river-line-style-v1.js
-          node --check floodsafe-nepal/v25/map-stable-v2.js
           node --check floodsafe-nepal/v25/hydro-complete-v1.js
           node --check floodsafe-nepal/v25/map-loader-v3.js
-      - name: Wiring and map color contracts
+      - name: Wiring and current-data contracts
         run: |
           set -euo pipefail
-          grep -Fq 'river-line-status-v1.js?v=1' floodsafe-nepal/v25/index.html
-          grep -Fq 'river-line-style-v1.js?v=1' floodsafe-nepal/v25/index.html
-          grep -Fq "FRESH_MS=60*1000,POLL_MS=1000" floodsafe-nepal/v25/river-line-status-v1.js
-          grep -Fq "'danger','#e63946'" floodsafe-nepal/v25/map-stable-v2.js
-          grep -Fq "'warning','#ff8c32'" floodsafe-nepal/v25/map-stable-v2.js
-          grep -Fq "'normal','#19b56b'" floodsafe-nepal/v25/map-stable-v2.js
-          grep -Fq "status_label" floodsafe-nepal/v25/hydro-complete-v1.js
-          grep -Fq "fsriverlinestatus" floodsafe-nepal/v25/hydro-complete-v1.js
+          grep -Fq 'river-current-20m-v1.js?v=1' floodsafe-nepal/v25/index.html
+          grep -Fq 'river-line-status-v1.js?v=2' floodsafe-nepal/v25/index.html
+          grep -Fq 'river-line-style-v1.js?v=2' floodsafe-nepal/v25/index.html
+          grep -Fq 'FRESH_MS=20*60*1000,POLL_MS=1000' floodsafe-nepal/v25/river-line-status-v1.js
+          grep -Fq 'MAX_AGE=20*60*1000' floodsafe-nepal/v25/river-current-20m-v1.js
+          grep -Fq "'danger','#ff2d20'" floodsafe-nepal/v25/river-line-style-v1.js
+          grep -Fq "'warning','#ff7a00'" floodsafe-nepal/v25/river-line-style-v1.js
+          grep -Fq "'normal','#22e7ff'" floodsafe-nepal/v25/river-line-style-v1.js
+          grep -Fq 'hydro-complete-flood-pulse' floodsafe-nepal/v25/hydro-complete-v1.js
       - name: Realtime status unit contract
         run: |
           node <<'JS'
@@ -59,8 +59,10 @@ jobs:
           check(station({waterLevel:6,warningLevel:5,dangerLevel:7}),'warning');
           check(station({waterLevel:4,warningLevel:5,dangerLevel:7}),'normal');
           check(station({waterLevel:4}),'unknown');
-          const stale=station({waterLevel:8,warningLevel:5,dangerLevel:7,waterLevelOn:new Date(Date.now()-61000).toISOString()});
-          window.FloodSafe.state.stations=[stale];window.FloodSafeRiverLine.rebuild(true);assert.equal(window.FloodSafeRiverLine.forWaterway(route),null,'stale reading must not color a river');
-          console.log('PASS realtime river line status contract');
+          const recent=station({waterLevel:6,warningLevel:5,dangerLevel:7,waterLevelOn:new Date(Date.now()-19*60*1000).toISOString()});
+          window.FloodSafe.state.stations=[recent];window.FloodSafeRiverLine.rebuild(true);assert.equal(window.FloodSafeRiverLine.forWaterway(route)?.status,'warning','19-minute reading should remain current');
+          const stale=station({waterLevel:8,warningLevel:5,dangerLevel:7,waterLevelOn:new Date(Date.now()-21*60*1000).toISOString()});
+          window.FloodSafe.state.stations=[stale];window.FloodSafeRiverLine.rebuild(true);assert.equal(window.FloodSafeRiverLine.forWaterway(route),null,'reading older than 20 minutes must not color a river');
+          console.log('PASS 20-minute realtime river status contract');
           process.exit(0);
           JS

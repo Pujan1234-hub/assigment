@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-30T03:52:55.321634+05:45",
-  "updated_at_npt": "30 Aug 03:52 NPT",
+  "generated_at": "2026-08-30T06:03:54.444300+05:45",
+  "updated_at_npt": "30 Aug 06:03 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -9,13 +9,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588447/pokhara-metropolitan-city-launches-relief-collection-campaign",
       "published_at": "2026-08-30T01:27:31+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवाका बाढी पीडितलाई पुष्पलाल स्मारक समितिद्वारा ५१ हजार सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588439/pushpalal-memorial-committee-provides-rs-51000-assistance-to-flood-victims-in-rasuwa",
-      "published_at": "2026-08-29T22:27:05+05:45",
       "flash": false
     }
   ],
@@ -36,7 +29,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 2
+      "recent": 1
     },
     "Kathmandu Post": {
       "ok": true,

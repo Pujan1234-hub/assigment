@@ -80,12 +80,17 @@ jobs:
               age=now-t.astimezone(timezone.utc)
               if timedelta(minutes=-5) <= age <= timedelta(minutes=20): fresh.append(r)
 
-          assert fresh, 'No genuinely timestamped official river observation <=20 minutes; keep last good but never fabricate realtime.'
           assert src.get('current_20m_count') == len(fresh), (src.get('current_20m_count'),len(fresh))
-          newest=max(parse_time(r).astimezone(timezone.utc) for r in fresh)
-          print('river snapshot',src.get('count'),'fresh<=20m',len(fresh),'newest',newest.isoformat())
-          for r in fresh[:10]:
-              print('CURRENT',r.get('title') or r.get('river_name') or r.get('name'),r.get('waterLevel') or r.get('water_level'),parse_time(r).isoformat(),r.get('_officialStatus'))
+          expected_health='current' if fresh else 'degraded_no_current_measurements'
+          assert src.get('mirror_health') == expected_health, (src.get('mirror_health'),expected_health)
+
+          if fresh:
+              newest=max(parse_time(r).astimezone(timezone.utc) for r in fresh)
+              print('river snapshot',src.get('count'),'fresh<=20m',len(fresh),'health',expected_health,'newest',newest.isoformat())
+              for r in fresh[:10]:
+                  print('CURRENT',r.get('title') or r.get('river_name') or r.get('name'),r.get('waterLevel') or r.get('water_level'),parse_time(r).isoformat(),r.get('_officialStatus'))
+          else:
+              print('river snapshot',src.get('count'),'fresh<=20m 0','health',expected_health,'newest',src.get('newest_trusted_measurement'))
           PY
 
       - name: Commit refreshed river snapshot immediately

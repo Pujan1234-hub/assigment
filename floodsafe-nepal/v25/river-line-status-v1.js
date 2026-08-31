@@ -1,6 +1,6 @@
 (()=>{'use strict';
-if(window.__fsRiverLineStatusV4)return;window.__fsRiverLineStatusV4=true;
-const FRESH_MS=20*60*1000,POLL_MS=1000,FUTURE_MS=5*60*1000;
+if(window.__fsRiverLineStatusV5)return;window.__fsRiverLineStatusV5=true;
+const FRESH_MS=20*60*1000,POLL_MS=5000,FUTURE_MS=5*60*1000;
 let lastSignature=null,lastCount=0,indexedNames=0;
 const num=v=>{const n=Number(String(v??'').replace(/[^0-9.+-]/g,''));return Number.isFinite(n)?n:null};
 const val=(o,ks)=>{for(const k of ks){const v=o?.[k];if(v!==undefined&&v!==null&&v!=='')return v}return null};
@@ -16,5 +16,5 @@ function forWaterway(w){const p=midpoint(w),g=window.FloodSafeGauge?.forWaterway
 function label(status,en=false){return en?({danger:'DANGER',warning:'WARNING',watch:'WATCH',normal:'NORMAL'}[status]||'NO CURRENT STATUS'):({danger:'खतरा',warning:'चेतावनी',watch:'निगरानी',normal:'सामान्य'}[status]||'हालको status छैन')}
 window.FloodSafeRiverLine={FRESH_MS,POLL_MS,rebuild,forWaterway,label,get stationCount(){return lastCount},get indexedRiverCount(){return indexedNames}};
 let tries=0,t=setInterval(()=>{if(window.FloodSafe?.state&&window.FloodSafeGauge){clearInterval(t);rebuild(true)}else if(++tries>240)clearInterval(t)},50);
-window.addEventListener('fsriverupdate',()=>rebuild(false));window.addEventListener('fstrustedriverupdate',()=>rebuild(true));window.addEventListener('online',()=>rebuild(true));window.addEventListener('focus',()=>rebuild(true));setInterval(()=>{if(!document.hidden)rebuild(false)},POLL_MS);
+window.addEventListener('fsriverupdate',()=>rebuild(false));window.addEventListener('fstrustedriverupdate',()=>rebuild(false));window.addEventListener('online',()=>rebuild(true));window.addEventListener('focus',()=>rebuild(false));setInterval(()=>{if(!document.hidden)rebuild(false)},POLL_MS);
 })();

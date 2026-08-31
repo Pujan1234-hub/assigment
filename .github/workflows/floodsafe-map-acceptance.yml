@@ -64,6 +64,7 @@ jobs:
             await p.goto(process.env.APP+'?mapaccept='+Date.now()+'#map',{waitUntil:'domcontentloaded'});
             await p.waitForFunction(()=>window.__fsMapRuntimeGuardLoaded&&window.FloodSafeMap?.initialized,{timeout:120000});
             await p.waitForFunction(()=>window.FloodSafeHydroComplete?.overviewCount>=1000&&window.FloodSafeGauge&&window.FloodSafeRiverLine&&window.FloodSafeRiverDetail&&window.FloodSafeRiverStyle,{timeout:120000});
+            await p.waitForFunction(()=>window.FloodSafeMap?.map?.getLayer?.('hydro-complete-lines')&&window.FloodSafeMap?.map?.getSource?.('hydro-complete'),{timeout:120000});
             await p.waitForFunction(()=>window.__fsRiverRealtimeState?.source==='BIPAD official direct',{timeout:90000});
             await wait(1800);
 
@@ -77,7 +78,8 @@ jobs:
               const stage=o=>{const l=num(o,['waterLevel','water_level']),w=num(o,['warningLevel','warning_level']),d=num(o,['dangerLevel','danger_level']),raw=String(val(flat(o),['_officialStatus','status'])||'').toUpperCase();if(l!==null&&d!==null&&d>0&&l>=d||/DANGER|RED/.test(raw)&&!/BELOW\s+DANGER/.test(raw))return'danger';if(l!==null&&w!==null&&w>0&&l>=w||/WARNING|ORANGE/.test(raw)&&!/BELOW\s+WARNING/.test(raw))return'warning';if(/WATCH|RISING|INCREASING|YELLOW/.test(raw))return'watch';return'normal'};
               const rows=(window.FloodSafe?.state?.stations||[]).filter(current),abnormal=rows.filter(x=>['warning','danger','watch'].includes(stage(x)));
               const map=window.FloodSafeMap.map,hfeatures=map.getSource('hydro-complete')?.serialize?.()?.data?.features||[],matched=hfeatures.filter(f=>['normal','watch','warning','danger'].includes(f.properties?.live_status)),abnormalMatched=hfeatures.filter(f=>['watch','warning','danger'].includes(f.properties?.live_status));
-              return{source:window.__fsRiverRealtimeState?.source,directRows:window.__fsRiverRealtimeState?.directRows,current:rows.length,abnormal:abnormal.map(x=>({name:x.title||x.name,level:x.waterLevel,warning:x.warningLevel,danger:x.dangerLevel,status:stage(x),time:stamp(x)})),districts:window.FloodSafeMap.districtCount,rivers:window.FloodSafeMap.nationalRiverCount,hydro:hfeatures.length,matched:matched.length,abnormalMatched:abnormalMatched.length,paint:JSON.stringify(map.getPaintProperty('hydro-complete-lines','line-color'))};
+              const layer=map.getLayer('hydro-complete-lines'),paint=layer?JSON.stringify(map.getPaintProperty('hydro-complete-lines','line-color')):'';
+              return{source:window.__fsRiverRealtimeState?.source,directRows:window.__fsRiverRealtimeState?.directRows,current:rows.length,abnormal:abnormal.map(x=>({name:x.title||x.name,level:x.waterLevel,warning:x.warningLevel,danger:x.dangerLevel,status:stage(x),time:stamp(x)})),districts:window.FloodSafeMap.districtCount,rivers:window.FloodSafeMap.nationalRiverCount,hydro:hfeatures.length,matched:matched.length,abnormalMatched:abnormalMatched.length,paint};
             });
             console.log('LIVE',JSON.stringify(live));
             if(live.source!=='BIPAD official direct')throw Error('direct source not active '+JSON.stringify(live));

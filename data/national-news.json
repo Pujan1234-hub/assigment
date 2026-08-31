@@ -1,42 +1,63 @@
 {
-  "generated_at": "2026-08-31T07:26:25.649847+05:45",
-  "updated_at_npt": "31 Aug 07:26 NPT",
+  "generated_at": "2026-08-31T13:26:41.811075+05:45",
+  "updated_at_npt": "31 Aug 13:26 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "किसानको राम्रो आम्दानीको स्रोत बन्दै रुद्राक्ष",
+      "title": "रसुवा बाढीः कांग्रेस र एमाले कर्णाली प्रदेश संसदीय दलद्वारा ३ लाख ७५ हजार सहयोग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588692/rudraksha-is-becoming-a-good-source-of-income-for-farmers",
-      "published_at": "2026-08-31T05:17:09+05:45",
+      "url": "https://www.ratopati.com/story/588780/rasuwa-flood-congress-and-uml-provide-rs-375000-assistance-from-karnali-province-parliamentary-party",
+      "published_at": "2026-08-31T13:17:21+05:45",
+      "flash": true
+    },
+    {
+      "title": "आमाछोदिङमो गाउँपालिका सडक सञ्जालबाट विच्छेद, बाढीपछि भोकमरीको जोखिम",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588763/amachodingmo-rural-municipality-disconnected-from-road-network-risk-of-starvation-after-flood",
+      "published_at": "2026-08-31T12:21:43+05:45",
       "flash": false
     },
     {
-      "title": "१ सय ६५ उद्योग–व्यवसाय थपिँदा ८२ बन्द",
+      "title": "बाढीमा ज्यान गुमाएका परिवारलाई ५० हजार राहत",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588690/165-industries-and-businesses-added-82-closed",
-      "published_at": "2026-08-31T05:06:43+05:45",
+      "url": "https://www.ratopati.com/story/588741/50000-relief-for-families-of-those-who-lost-their-lives-in-the-flood",
+      "published_at": "2026-08-31T10:40:30+05:45",
       "flash": false
     },
     {
-      "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा सहयोग गर्ने बढे",
+      "title": "भोटेकोशी बाढीमा रसुवामा कार्यरत दुई युवाको निधन, कोहलपुरको लोकनगर बस्ती शोकमा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588689/donations-to-the-prime-ministers-disaster-relief-fund-have-increased",
-      "published_at": "2026-08-31T05:03:54+05:45",
+      "url": "https://www.ratopati.com/story/588738/two-youths-working-in-rasuwa-die-in-bhotekoshi-flood-loknagar-settlement-in-kohalpur-in-mourning",
+      "published_at": "2026-08-31T10:12:28+05:45",
       "flash": false
     },
     {
-      "title": "खप्तडमा बिरामीको भरोसा बन्दै सेनाको मेडिकल",
+      "title": "रसुवागढी जलविद्युत् आयोजना स्थलमा उद्धार टोली परिचालन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588688/army-medical-facility-becomes-a-source-of-trust-for-patients-in-khaptad",
-      "published_at": "2026-08-31T03:30:49+05:45",
+      "url": "https://www.ratopati.com/story/588737/bhotekoshi-flood-rescue-teams-mobilized-at-rasuwagadhi-hydropower-project-site",
+      "published_at": "2026-08-31T10:08:29+05:45",
       "flash": false
     },
     {
-      "title": "भोटेकोशी बाढीः काभ्रेका ४१ अझै सम्पर्कविहीन, आठ जना परिवारको सम्पर्कमा",
+      "title": "भोटेकोशी बाढीपीडितका लागि पोखराका स‌ङ्घसंस्था र व्यवसायीको सहयोग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588687/bhotekoshi-flood-41-people-from-kavre-still-missing-eight-in-contact-with-family",
-      "published_at": "2026-08-31T01:46:57+05:45",
+      "url": "https://www.ratopati.com/story/588736/pokharas-ngos-and-businessmen-provide-support-for-bhotekoshi-flood-victims",
+      "published_at": "2026-08-31T10:05:14+05:45",
+      "flash": false
+    },
+    {
+      "title": "जेनजीको राहत टोली रसुवातर्फ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588726/genjis-relief-team-heads-towards-rasuwa",
+      "published_at": "2026-08-31T08:54:22+05:45",
+      "flash": false
+    },
+    {
+      "title": "रसुवागढी नाका बन्द भएपछि कोरलातर्फ बढे मालवाहक कन्टेनर",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588725/cargo-containers-move-towards-korala-after-rasuwagadhi-border-crossing-closed",
+      "published_at": "2026-08-31T08:45:16+05:45",
       "flash": false
     }
   ],
@@ -56,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 5
+      "flash": 1,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,

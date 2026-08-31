@@ -1,5 +1,5 @@
 (()=>{'use strict';
-if(window.__fsFloodResetV15)return;window.__fsFloodResetV15=true;
+if(window.__fsFloodResetV16)return;window.__fsFloodResetV16=true;
 try{
   if('serviceWorker'in navigator) navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{if((r.scope||'').includes('/floodsafe-nepal/'))r.unregister()}));
   if('caches'in window) caches.keys().then(ks=>ks.filter(k=>/floodsafe|v25|shell/i.test(k)).forEach(k=>caches.delete(k)));
@@ -7,14 +7,14 @@ try{
 
 async function recoverMap(){
   try{
-    if(window.FloodSafeMap?.map || window.__fsSmoothMapLoadingV8 || window.__fsSmoothMapLoaded || window.__fsStableMapLoading) return;
+    if(window.FloodSafeMap?.map || window.__fsSmoothMapLoadingV9 || window.__fsSmoothMapLoaded || window.__fsStableMapLoading) return;
     window.__fsStableMapLoading=true;
     if(!window.maplibregl){
       const mod=await import('https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.mjs');
       window.maplibregl=mod;
     }
     if(window.FloodSafeMap?.map){window.__fsStableMapLoading=false;return}
-    await import('./map-stable-v2.js?fallback=7');
+    await import('./map-stable-v2.js?fallback=8');
     window.__fsStableMapLoaded=true;
   }catch(e){
     window.__fsStableMapLoading=false;
@@ -25,7 +25,7 @@ async function recoverMap(){
 }
 
 setTimeout(()=>{
-  if(!window.FloodSafeMap?.map && !window.__fsSmoothMapLoadingV8 && !window.__fsSmoothMapLoaded) recoverMap();
+  if(!window.FloodSafeMap?.map && !window.__fsSmoothMapLoadingV9 && !window.__fsSmoothMapLoaded) recoverMap();
 },10000);
 
 let tries=0;

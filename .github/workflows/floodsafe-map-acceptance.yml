@@ -26,14 +26,15 @@ jobs:
           ok=0
           for i in $(seq 1 90); do
             html="$(curl --max-time 10 -fsSL "${U}?accept=${GITHUB_SHA}-${i}" || true)"
-            if printf '%s' "$html" | grep -Fq 'trusted-river-runtime-v1.js?v=2' && printf '%s' "$html" | grep -Fq 'map-loader-v3.js?v=4'; then ok=1; break; fi
+            if printf '%s' "$html" | grep -Eq 'trusted-river-runtime-v1\.js\?v=[0-9]+' && printf '%s' "$html" | grep -Fq 'map-loader-v3.js?v=4'; then ok=1; break; fi
             sleep 4
           done
           test "$ok" = 1
+          curl --max-time 10 -fsSL "${U}trusted-river-runtime-v1.js?accept=${GITHUB_SHA}" | grep -Fq 'MIRROR_MAX=5*60*1000'
           curl --max-time 10 -fsSL "${U}map-stable-v2.js?v=5&accept=${GITHUB_SHA}" | grep -Fq 'MAX_AGE=20*60*1000'
           curl --max-time 10 -fsSL "${U}map-runtime-fix-v1.js?v=2&accept=${GITHUB_SHA}" | grep -Fq '#22a7ff'
 
-      - name: Browser cross-check official feed and live map
+      - name: Browser cross-check official mirror and live map
         env:
           APP: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -55,17 +56,24 @@ jobs:
             await p.waitForFunction(()=>window.FloodSafeMap?.nationalRiverCount>=500,{timeout:90000});
             await wait(7000);
             const result=await p.evaluate(async()=>{
-              const MAX=20*60*1000,FUT=5*60*1000;
-              const rows=j=>Array.isArray(j)?j:(Array.isArray(j?.results)?j.results:[]);
+              const MAX=20*60*1000,FUT=5*60*1000,MIRROR_MAX=5*60*1000;
               const val=(o,ks)=>{for(const k of ks){const v=o?.[k];if(v!==undefined&&v!==null&&v!=='')return v}return null};
-              const st=o=>val(o,['waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime']);
-              const lv=o=>Number(val(o,['waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level']));
-              let official=[];
-              try{
-                const r=await fetch('https://bipadportal.gov.np/api/v1/river/?limit=2000&ordering=-waterLevelOn',{cache:'no-store'});
-                const j=await r.json();
-                official=rows(j).filter(o=>{const t=+new Date(st(o)||0),age=Date.now()-t;return t&&Number.isFinite(lv(o))&&age>=-FUT&&age<=MAX});
-              }catch(e){console.warn('independent BIPAD cross-check unavailable',String(e))}
+              const flat=o=>o&&typeof o==='object'&&o.fields&&typeof o.fields==='object'?Object.assign({},o.fields,o):o;
+              const st=o=>val(flat(o),['_measurementTime','waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime']);
+              const lv=o=>{const n=Number(val(flat(o),['waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level']));return Number.isFinite(n)?n:null};
+              const valid=o=>{o=flat(o);const t=+new Date(st(o)||0),age=Date.now()-t;return o&&o._measurementTimeTrusted!==false&&o._current20m!==false&&t&&lv(o)!==null&&age>=-FUT&&age<=MAX};
+              const key=o=>{o=flat(o);const id=val(o,['stationSeriesId','station_series_id','stationId','station_id','id']);if(id!==null)return 'id:'+id;const n=val(o,['title','river_name','riverName','station_name','stationName','name']);return n!==null?'name:'+String(n).toLowerCase().trim():''};
+              const r=await fetch(new URL('../../data/floodsafe-core.json?accept='+Date.now(),location.href),{cache:'no-store'});
+              if(!r.ok)throw Error('mirror HTTP '+r.status);
+              const mirror=await r.json();
+              const generated=+new Date(mirror?.generated_at||0),mirrorAge=generated?Date.now()-generated:Infinity;
+              const official=(Array.isArray(mirror?.rivers)?mirror.rivers:[]).filter(valid);
+              const state=(window.FloodSafe?.state?.stations||[]).filter(valid);
+              let sample=null;
+              if(official.length){
+                const a=official[0],k=key(a),s=state.find(x=>key(x)===k);
+                sample={key:k,mirrorLevel:lv(a),appLevel:s?lv(s):null,mirrorTime:st(a),appTime:s?st(s):null};
+              }
               const map=window.FloodSafeMap.map;
               const src=map.getSource('gauges');
               const serialized=src?src.serialize?.():null;
@@ -76,8 +84,7 @@ jobs:
               return {
                 districts:window.FloodSafeMap.districtCount,
                 rivers:window.FloodSafeMap.nationalRiverCount,
-                officialCurrent:official.length,
-                stateCurrent:(window.FloodSafe?.state?.stations||[]).filter(o=>{const t=+new Date(st(o)||0),a=Date.now()-t;return t&&Number.isFinite(lv(o))&&a>=-FUT&&a<=MAX}).length,
+                mirrorAge,mirrorCurrent:official.length,stateCurrent:state.length,sample,
                 gauges:features.length,staleGauges:stale.length,
                 riverPaint,gaugePaint,
                 feed:window.FloodSafe?.state?.feedSource||'',
@@ -87,11 +94,13 @@ jobs:
             console.log('MAP RESULT',JSON.stringify(result));
             if(result.districts<77)throw Error('districts '+result.districts);
             if(result.rivers<500)throw Error('river routes '+result.rivers);
+            if(result.mirrorAge<0||result.mirrorAge>5*60*1000)throw Error('official mirror stale '+result.mirrorAge+'ms');
+            if(result.mirrorCurrent!==result.stateCurrent)throw Error('mirror/app current count mismatch '+result.mirrorCurrent+' vs '+result.stateCurrent);
+            if(result.sample&&(result.sample.appLevel===null||Math.abs(result.sample.mirrorLevel-result.sample.appLevel)>1e-9||result.sample.mirrorTime!==result.sample.appTime))throw Error('mirror/app sample mismatch '+JSON.stringify(result.sample));
             if(result.staleGauges!==0)throw Error('stale gauges visible '+result.staleGauges);
             if(!result.riverPaint.includes('#22a7ff')||!result.riverPaint.includes('#ff8a00')||!result.riverPaint.includes('#ff2d20'))throw Error('river colours '+result.riverPaint);
             if(!result.gaugePaint.includes('#22a7ff'))throw Error('normal gauge not blue '+result.gaugePaint);
-            if(result.officialCurrent>0&&result.stateCurrent===0)throw Error('official feed has '+result.officialCurrent+' current rows but app has zero');
-            if(result.officialCurrent>0&&result.gauges===0)throw Error('official feed current but map has zero gauges');
+            if(result.mirrorCurrent>0&&result.gauges===0)throw Error('official mirror current but map has zero gauges');
             await p.evaluate(()=>window.FloodSafe.setFocus(27.7172,85.3240,'gps'));
             await wait(1800);
             const gps=await p.evaluate(()=>{const c=window.FloodSafeMap.map.getCenter(),s=window.FloodSafe.state;return{lat:c.lat,lon:c.lng,kind:s.kind,stateLat:s.lat,stateLon:s.lon}});

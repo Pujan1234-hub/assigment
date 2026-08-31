@@ -39,26 +39,57 @@ jobs:
           python - <<'PY'
           import json
           from datetime import datetime, timezone, timedelta
+
           j=json.load(open('data/floodsafe-core.json'))
           src=j.get('sources',{}).get('rivers',{})
+          rivers=j.get('rivers',[])
+          now=datetime.now(timezone.utc)
+
           assert j.get('schema_version',0) >= 4, j.get('schema_version')
           assert src.get('count',0) >= 120, src
-          assert src.get('live_60m_count',0) >= 5, src
-          assert src.get('dhm_live_page_count',0) >= 5, src
-          newest=datetime.fromisoformat(src['newest_measurement'].replace('Z','+00:00'))
-          assert datetime.now(timezone.utc)-newest.astimezone(timezone.utc) < timedelta(minutes=60), src
-          rivers=j.get('rivers',[])
-          def title(r): return str(r.get('title') or r.get('river_name') or r.get('name') or '').lower()
-          def is_live(r):
-              t=datetime.fromisoformat(str(r.get('waterLevelOn') or r.get('retrievedAt')).replace('Z','+00:00'))
-              return datetime.now(timezone.utc)-t.astimezone(timezone.utc) < timedelta(minutes=60)
-          kankai=[r for r in rivers if 'kankai' in title(r) and 'mainachuli' in title(r) and r.get('_officialLive') and is_live(r)]
-          karnali=[r for r in rivers if 'karnali' in title(r) and 'chisapani' in title(r) and r.get('_officialLive') and is_live(r)]
-          assert kankai, 'Fresh direct DHM Kankai at Mainachuli missing'
-          assert karnali, 'Fresh direct DHM Karnali at Chisapani missing'
-          print('river snapshot',src.get('count'),'live<=60m',src.get('live_60m_count'),'DHM live',src.get('dhm_live_page_count'),'newest',newest.isoformat())
-          print('Kankai LIVE',kankai[0].get('waterLevel'),'m',kankai[0].get('waterLevelOn'))
-          print('Karnali LIVE',karnali[0].get('waterLevel'),'m',karnali[0].get('waterLevelOn'))
+
+          def parse_time(row):
+              raw=(row.get('waterLevelOn') or row.get('water_level_on') or
+                   row.get('measuredOn') or row.get('measured_on') or
+                   row.get('updatedOn') or row.get('updated_at') or
+                   row.get('retrievedAt'))
+              if not raw: return None
+              try:
+                  d=datetime.fromisoformat(str(raw).replace('Z','+00:00'))
+                  return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+              except Exception:
+                  return None
+
+          def measured(row):
+              for k in ('waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level'):
+                  if row.get(k) not in (None,''):
+                      return True
+              return False
+
+          def official(row):
+              ds=str(row.get('dataSource') or row.get('data_source') or '').lower()
+              url=str(row.get('_officialLivePage') or '').lower()
+              return bool(row.get('_officialLive')) or 'dhm' in ds or 'hydrology.gov.np' in ds or 'bipad' in ds or 'dhm.gov.np' in url
+
+          fresh=[]
+          for r in rivers:
+              if not isinstance(r,dict) or not measured(r) or not official(r):
+                  continue
+              t=parse_time(r)
+              if not t: continue
+              age=now-t.astimezone(timezone.utc)
+              if timedelta(minutes=-5) <= age <= timedelta(minutes=20):
+                  fresh.append(r)
+
+          # The map is allowed to publish only when at least one genuinely
+          # timestamped official observation is current.  Do not require
+          # specific stations or the DHM homepage because those pages can be
+          # empty/dynamic while BIPAD's official DHM-backed river feed is live.
+          assert fresh, 'No official river observation <=20 minutes; preserve the last good snapshot instead of publishing fake current data.'
+          newest=max(parse_time(r).astimezone(timezone.utc) for r in fresh)
+          print('river snapshot',src.get('count'),'fresh<=20m',len(fresh),'newest',newest.isoformat())
+          for r in fresh[:10]:
+              print('LIVE',r.get('title') or r.get('river_name') or r.get('name'),r.get('waterLevel') or r.get('water_level'),parse_time(r).isoformat())
           PY
 
       - name: Commit refreshed river snapshot immediately

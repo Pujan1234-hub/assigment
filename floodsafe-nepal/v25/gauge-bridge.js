@@ -1,7 +1,7 @@
 (()=>{'use strict';
-if(window.__fsGaugeBridgeV17)return;window.__fsGaugeBridgeV17=true;
+if(window.__fsGaugeBridgeV19)return;window.__fsGaugeBridgeV19=true;
 const LIVE=60*1000,RECENT=20*60*1000,FUTURE=5*60*1000;
-const SAME_RIVER_LOCAL_KM=35,REGIONAL_KM=70,LINE_EXACT_KM=2.2;
+const SAME_RIVER_LOCAL_KM=35,REGIONAL_KM=70,LINE_EXACT_KM=2.2,UNNAMED_LINE_KM=.9;
 const num=v=>{const n=Number(String(v??'').replace(/[^0-9.+-]/g,''));return Number.isFinite(n)?n:null};
 const val=(o,ks)=>{for(const k of ks){const v=o?.[k];if(v!==undefined&&v!==null&&v!=='')return v}return null};
 const flat=o=>o&&typeof o==='object'&&o.fields&&typeof o.fields==='object'?Object.assign({},o.fields,o):o;
@@ -11,7 +11,6 @@ const basin=o=>String(val(flat(o),['basin','basin_name','basinName'])||'');
 const district=o=>String(val(flat(o),['districtName','district_name','district'])||'');
 const stationId=o=>String(val(flat(o),['stationSeriesId','station_series_id','stationId','station_id','stationIndex','id'])||'');
 const discharge=o=>num(val(flat(o),['discharge','currentDischarge','current_discharge','flow','flowRate','flow_rate']));
-// Hydrological observation time only. Fetch/retrieval/created timestamps never count.
 const stamp=o=>val(flat(o),['_measurementTime','waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime']);
 const km=(a,b,c,d)=>{const R=6371,p=x=>x*Math.PI/180,q=Math.sin(p(c-a)/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(p(d-b)/2)**2;return 2*R*Math.asin(Math.sqrt(q))};
 function ageMs(o){const t=+new Date(stamp(o)||0);return t?Date.now()-t:Infinity}
@@ -43,13 +42,13 @@ function pointSegKm(la,lo,a,b){const lat0=la*Math.PI/180,sc=Math.cos(lat0),x1=(a
 function lineDistanceKm(la,lo,pts){if(!Array.isArray(pts)||pts.length<2)return Infinity;let best=Infinity;for(let i=1;i<pts.length;i++)best=Math.min(best,pointSegKm(la,lo,pts[i-1],pts[i]));return best}
 function enrich(c,la,lo,names,pts){let ns=0;for(const n of names)ns=Math.max(ns,scoreName(n,c.name));const distanceKm=km(la,lo,c.lat,c.lon),lineKm=lineDistanceKm(c.lat,c.lon,pts);return{...c,distanceKm,lineDistanceKm:lineKm,nameScore:ns}}
 function confidence(x,method){if(method==='name+geometry'||x.nameScore>=98&&x.lineDistanceKm<=LINE_EXACT_KM)return'high';if(method==='geometry'&&x.lineDistanceKm<=1)return'high';if(x.nameScore>=93)return'high';return'medium'}
-function forWaterway(w,la,lo){const names=variants(w),pts=points(w);if((!Number.isFinite(la)||!Number.isFinite(lo))&&pts.length){const p=pts[Math.floor((pts.length-1)/2)];lo=p[0];la=p[1]}if(!Number.isFinite(la)||!Number.isFinite(lo))return null;const all=allBase().map(x=>enrich(x,la,lo,names,pts));if(!all.length)return null;
-  const local=[];for(const x of all){const byName=x.nameScore>=91,byGeom=x.lineDistanceKm<=LINE_EXACT_KM;if(!byName&&!byGeom)continue;const method=byName&&byGeom?'name+geometry':byGeom?'geometry':'name';const localEnough=x.distanceKm<=SAME_RIVER_LOCAL_KM||byGeom;local.push({...x,_method:method,_local:localEnough})}
+function forWaterway(w,la,lo){const names=variants(w),pts=points(w),named=names.length>0,geomLimit=named?LINE_EXACT_KM:UNNAMED_LINE_KM;if((!Number.isFinite(la)||!Number.isFinite(lo))&&pts.length){const p=pts[Math.floor((pts.length-1)/2)];lo=p[0];la=p[1]}if(!Number.isFinite(la)||!Number.isFinite(lo))return null;const all=allBase().map(x=>enrich(x,la,lo,names,pts));if(!all.length)return null;
+  const local=[];for(const x of all){const byName=named&&x.nameScore>=91,byGeom=x.lineDistanceKm<=geomLimit;if(!byName&&!byGeom)continue;const method=byName&&byGeom?'name+geometry':byGeom?'geometry':'name';const localEnough=x.distanceKm<=SAME_RIVER_LOCAL_KM||byGeom;local.push({...x,_method:method,_local:localEnough})}
   local.sort((a,b)=>(b._local-a._local)||(b.nameScore-a.nameScore)||(a.lineDistanceKm-b.lineDistanceKm)||(a.distanceKm-b.distanceKm)||(a.ageMs-b.ageMs));const best=local[0]||null;
   if(best){return{...best,sameRiver:true,local:!!best._local,reference:!best._local,sameRiverRemote:!best._local,archived:false,matchMethod:best._method,matchConfidence:confidence(best,best._method),coverage:best._local?(best.fresh?'same-river-live':'same-river-current'):'same-river-remote-reference'}}
   const regional=all.filter(x=>x.distanceKm<=REGIONAL_KM).sort((a,b)=>a.distanceKm-b.distanceKm||a.ageMs-b.ageMs)[0]||null;
   return regional?{...regional,sameRiver:false,local:false,reference:true,sameRiverRemote:false,archived:false,matchMethod:'regional-nearest',matchConfidence:'reference-only',coverage:'regional-reference'}:null
 }
 function nearby(la,lo,maxKm=40,limit=100){return allBase().map(x=>({...x,distanceKm:km(la,lo,x.lat,x.lon)})).filter(x=>x.distanceKm<=maxKm).sort((a,b)=>a.distanceKm-b.distanceKm||a.ageMs-b.ageMs).slice(0,limit)}
-window.FloodSafeGauge={forWaterway,nearby,SAME_RIVER_LOCAL_KM,REGIONAL_KM,LINE_EXACT_KM,LIVE_MS:LIVE,RECENT_MS:RECENT,scoreName,canonical,variants,lineDistanceKm};
+window.FloodSafeGauge={forWaterway,nearby,SAME_RIVER_LOCAL_KM,REGIONAL_KM,LINE_EXACT_KM,UNNAMED_LINE_KM,LIVE_MS:LIVE,RECENT_MS:RECENT,scoreName,canonical,variants,lineDistanceKm};
 })();

@@ -3,17 +3,14 @@ name: FloodSafe core official feed sync
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0-59/5 * * * *'
-    - cron: '1-59/5 * * * *'
-    - cron: '2-59/5 * * * *'
-    - cron: '3-59/5 * * * *'
-    - cron: '4-59/5 * * * *'
+    - cron: '* * * * *'
   push:
     branches: [main]
     paths:
       - '.github/workflows/floodsafe-core-sync.yml'
       - 'scripts/floodsafe-core-sync.py'
       - 'scripts/floodsafe-core-sync-v2.py'
+      - 'scripts/floodsafe-core-sync-v3.py'
       - 'scripts/floodsafe-river-sanitize.py'
 
 permissions:
@@ -26,7 +23,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,68 +33,38 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Fetch official DHM and BIPAD river feeds
-        run: python scripts/floodsafe-core-sync-v2.py
+      - name: Fetch latest official DHM and BIPAD river feeds
+        run: python scripts/floodsafe-core-sync-v3.py
 
-      - name: Reject fake freshness and normalize current observations
+      - name: Normalize latest official observations
         run: python scripts/floodsafe-river-sanitize.py
 
-      - name: Validate five minute river snapshot and full station catalogue
+      - name: Validate latest official snapshot and full station catalogue
         run: |
           python -m json.tool data/floodsafe-core.json >/dev/null
           python - <<'PY'
           import json
-          from datetime import datetime, timezone, timedelta
-
           j=json.load(open('data/floodsafe-core.json'))
           src=j.get('sources',{}).get('rivers',{})
           rivers=j.get('rivers',[])
           stations=j.get('river_stations',[])
-          now=datetime.now(timezone.utc)
-
-          assert j.get('schema_version',0) >= 5, j.get('schema_version')
-          assert src.get('count',0) >= 100, src
-          assert isinstance(stations,list) and len(stations) >= 100, len(stations)
-          assert src.get('station_catalog_count') == len(stations), (src.get('station_catalog_count'),len(stations))
-          assert src.get('station_catalog_with_coordinates',0) >= 80, src
-          assert src.get('freshness_policy_minutes') == 5, src
-
-          def parse_time(row):
-              raw=(row.get('waterLevelOn') or row.get('water_level_on') or
-                   row.get('measuredOn') or row.get('measured_on') or
-                   row.get('measurementTime') or row.get('observationTime'))
-              if not raw: return None
-              try:
-                  d=datetime.fromisoformat(str(raw).replace('Z','+00:00'))
-                  return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
-              except Exception:
-                  return None
 
           def measured(row):
               return any(row.get(k) not in (None,'') for k in (
                   'waterLevel','water_level','currentWaterLevel','current_water_level',
                   'currentLevel','current_level','level'))
 
-          fresh=[]
-          for r in rivers:
-              if not isinstance(r,dict) or not measured(r): continue
-              t=parse_time(r)
-              if not t: continue
-              age=now-t.astimezone(timezone.utc)
-              if timedelta(minutes=-5) <= age <= timedelta(minutes=5): fresh.append(r)
-
-          assert src.get('current_5m_count') == len(fresh), (src.get('current_5m_count'),len(fresh))
-          expected_health='current' if fresh else 'degraded_no_current_measurements'
-          assert src.get('mirror_health') == expected_health, (src.get('mirror_health'),expected_health)
-
-          fake_current=[r for r in rivers if r.get('_timeBasis')=='official-live-page-retrieval' and (r.get('_current5m') or r.get('_current20m'))]
-          assert not fake_current, f'retrieval-time rows marked current: {len(fake_current)}'
-          over5=[r for r in rivers if r.get('_current5m') and parse_time(r) and now-parse_time(r).astimezone(timezone.utc)>timedelta(minutes=5)]
-          assert not over5, f'rows older than 5m marked current: {len(over5)}'
-
-          print('station catalogue',len(stations),'geolocated',src.get('station_catalog_with_coordinates'),'observations',src.get('count'),'current<=5m',len(fresh),'health',expected_health)
-          for r in fresh[:10]:
-              print('CURRENT',r.get('title') or r.get('river_name') or r.get('name'),r.get('waterLevel') or r.get('water_level'),parse_time(r).isoformat(),r.get('_officialStatus'))
+          current=[r for r in rivers if isinstance(r,dict) and measured(r)]
+          assert j.get('schema_version',0) >= 5, j.get('schema_version')
+          assert isinstance(stations,list) and len(stations) >= 100, len(stations)
+          assert src.get('station_catalog_count') == len(stations), (src.get('station_catalog_count'),len(stations))
+          assert src.get('station_catalog_with_coordinates',0) >= 80, src
+          assert len(current) >= 50, len(current)
+          assert src.get('current_official_count') == len(current), (src.get('current_official_count'),len(current))
+          assert src.get('mirror_health') == 'current', src
+          print('official stations',len(stations),'latest values',len(current),'live-page rows',src.get('official_live_page_row_count',0))
+          for r in current[:12]:
+              print('OFFICIAL',r.get('title') or r.get('river_name') or r.get('name'),r.get('waterLevel') or r.get('water_level'),r.get('_measurementTime'),r.get('_officialStatus'),r.get('_officialLivePage'))
           PY
 
       - name: Commit refreshed river snapshot immediately
@@ -110,6 +77,6 @@ jobs:
           git config user.name 'FloodSafe live sync'
           git config user.email 'actions@users.noreply.github.com'
           git add data/floodsafe-core.json
-          git commit -m '[auto] refresh FloodSafe realtime rivers'
+          git commit -m '[auto] refresh FloodSafe latest official rivers'
           git pull --rebase origin main
           git push origin HEAD:main

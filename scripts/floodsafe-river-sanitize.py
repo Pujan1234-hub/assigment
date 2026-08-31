@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 PATH = Path('data/floodsafe-core.json')
-MAX_AGE = timedelta(minutes=20)
+MAX_AGE = timedelta(minutes=5)
 FUTURE = timedelta(minutes=5)
 MEASURE_KEYS = ('waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime')
 
@@ -28,8 +28,6 @@ def first(row, keys):
 
 
 def measurement_time(row):
-    # IMPORTANT: retrievedAt / modifiedOn / alert created time are transport or
-    # record timestamps, not hydrological observation timestamps.
     return first(row, MEASURE_KEYS)
 
 
@@ -79,16 +77,12 @@ def main():
     for row in data.get('rivers', []):
         if not isinstance(row, dict):
             continue
-
-        # Old DHM homepage/table fallback stamped fetch time as measurement time.
-        # It cannot be called current unless the page itself supplied a real
-        # observation/update timestamp. Mark these rows untrusted instead of
-        # inventing freshness.
         if row.get('_timeBasis') == 'official-live-page-retrieval':
             for k in MEASURE_KEYS:
                 row.pop(k, None)
             row['_measurementTimeTrusted'] = False
-            row['_current20m'] = False
+            row['_current5m'] = False
+            row['_current20m'] = False  # backwards-compatible fail-closed flag
             row['_officialStatus'] = 'UNKNOWN'
             rejected_fake += 1
             continue
@@ -104,18 +98,21 @@ def main():
                 newest = dt.astimezone(timezone.utc)
         row['_measurementTimeTrusted'] = bool(dt)
         row['_measurementTime'] = dt.astimezone(timezone.utc).isoformat().replace('+00:00','Z') if dt else None
-        row['_current20m'] = bool(ok and level(row) is not None)
-        row['_officialStatus'] = classify(row) if row['_current20m'] else 'STALE'
-        if row['_current20m']:
+        row['_current5m'] = bool(ok and level(row) is not None)
+        # Older clients must never re-expand the window to 20 minutes.
+        row['_current20m'] = row['_current5m']
+        row['_officialStatus'] = classify(row) if row['_current5m'] else 'STALE'
+        if row['_current5m']:
             current += 1
 
     src = data.setdefault('sources', {}).setdefault('rivers', {})
-    src['freshness_policy_minutes'] = 20
-    src['current_20m_count'] = current
+    src['freshness_policy_minutes'] = 5
+    src['current_5m_count'] = current
+    src['current_20m_count'] = current  # deprecated compatibility metric
     src['trusted_measurement_timestamp_count'] = trusted
     src['rejected_fetch_time_as_measurement_count'] = rejected_fake
     src['newest_trusted_measurement'] = newest.isoformat().replace('+00:00','Z') if newest else None
-    src['measurement_time_policy'] = 'Only official hydrological observation timestamps count; retrieved/modified/alert timestamps never make a reading current.'
+    src['measurement_time_policy'] = 'Only official hydrological observation timestamps count; retrieved/modified/alert timestamps never make a reading current. Current means observation age <=5 minutes.'
     src['has_current_measurements'] = current > 0
     src['mirror_health'] = 'current' if current > 0 else 'degraded_no_current_measurements'
     src['sanitized_at'] = now.isoformat().replace('+00:00','Z')
@@ -123,7 +120,7 @@ def main():
     tmp = PATH.with_suffix('.json.tmp')
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     tmp.replace(PATH)
-    print(f'sanitized rivers: current<=20m={current}, trusted timestamps={trusted}, rejected fake freshness={rejected_fake}, newest={newest}, health={src["mirror_health"]}')
+    print(f'sanitized rivers: current<=5m={current}, trusted timestamps={trusted}, rejected fake freshness={rejected_fake}, newest={newest}, health={src["mirror_health"]}')
 
 
 if __name__ == '__main__':

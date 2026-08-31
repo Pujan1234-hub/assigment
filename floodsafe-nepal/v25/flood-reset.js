@@ -1,4 +1,5 @@
 (()=>{'use strict';
+if(window.__fsFloodResetV15)return;window.__fsFloodResetV15=true;
 try{
   if('serviceWorker'in navigator) navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{if((r.scope||'').includes('/floodsafe-nepal/'))r.unregister()}));
   if('caches'in window) caches.keys().then(ks=>ks.filter(k=>/floodsafe|v25|shell/i.test(k)).forEach(k=>caches.delete(k)));
@@ -6,15 +7,14 @@ try{
 
 async function recoverMap(){
   try{
-    // Never start the legacy fallback while the smooth runtime exists or is loading.
-    if(window.FloodSafeMap?.map || window.__fsSmoothMapLoadingV7 || window.__fsSmoothMapLoaded || window.__fsStableMapLoading) return;
+    if(window.FloodSafeMap?.map || window.__fsSmoothMapLoadingV8 || window.__fsSmoothMapLoaded || window.__fsStableMapLoading) return;
     window.__fsStableMapLoading=true;
     if(!window.maplibregl){
       const mod=await import('https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.mjs');
       window.maplibregl=mod;
     }
     if(window.FloodSafeMap?.map){window.__fsStableMapLoading=false;return}
-    await import('./map-stable-v2.js?fallback=6');
+    await import('./map-stable-v2.js?fallback=7');
     window.__fsStableMapLoaded=true;
   }catch(e){
     window.__fsStableMapLoading=false;
@@ -24,10 +24,8 @@ async function recoverMap(){
   }
 }
 
-// Smooth MapLibre may still be loading district geometry on slower phones.
-// Only use the legacy recovery when no map instance exists at all after 10 seconds.
 setTimeout(()=>{
-  if(!window.FloodSafeMap?.map && !window.__fsSmoothMapLoadingV7 && !window.__fsSmoothMapLoaded) recoverMap();
+  if(!window.FloodSafeMap?.map && !window.__fsSmoothMapLoadingV8 && !window.__fsSmoothMapLoaded) recoverMap();
 },10000);
 
 let tries=0;

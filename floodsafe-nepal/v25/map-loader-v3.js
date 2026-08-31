@@ -6,7 +6,7 @@ if(!window.__fsStableMapLoading){
   window.__fsStableMapLoading=true;
   import('./map-stable-v2.js?v=5').then(()=>{
     window.__fsStableMapLoaded=true;
-    return import('./hydro-complete-v1.js?v=6');
+    return import('./hydro-complete-v1.js?v=7');
   }).then(()=>{
     window.__fsHydroCompleteLoaded=true;
     return import('./map-runtime-fix-v1.js?v=2');

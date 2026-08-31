@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-30T21:56:08.214690Z",
+  "generated_at": "2026-08-31T00:20:37.126477Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 30,
@@ -15,14 +15,14 @@
       "ok": true,
       "items": 55
     },
+    "Hamro Patro": {
+      "ok": true,
+      "items": 22
+    },
     "eKantipur": {
       "ok": false,
       "items": 0,
       "error": "no-verified-items"
-    },
-    "Hamro Patro": {
-      "ok": true,
-      "items": 18
     },
     "RONB Post": {
       "ok": true,
@@ -35,118 +35,125 @@
   },
   "items": [
     {
-      "title": "गृह मन्त्रालय",
-      "url": "https://moha.gov.np/accessibility-mode",
-      "published_at": "2026-08-30T21:56:07Z",
+      "title": "मातहतका कार्यालयहरु",
+      "url": "https://moha.gov.np/office-directory",
+      "published_at": "2026-08-31T00:20:36Z",
       "source": "Nepal Government"
     },
     {
-      "title": "बाढीपीडितको उद्धार र राहतमा रास्वपा २४ घण्टा खटिरहेको छ : प्रवक्ता खरेल",
-      "url": "https://www.hamropatro.com/news/detail/317882650150189-badhipiditako-uddhar-r-rahatama-rasvapa-24-ghanta-khatiraheko-chha-pravakta",
-      "published_at": "2026-08-30T21:43:46.079920Z",
+      "title": "भोटेकोसी बाढी : मृत्यु हुनेको संख्या ७८८ पुग्यो",
+      "url": "https://www.hamropatro.com/news/detail/326590848560386-bhotekosi-badhi-mrityu-huneko-sankhya-788-pugyo",
+      "published_at": "2026-08-31T00:09:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "पाकिस्तानमा शिशु वार्डमा १४ नवजातको मृत्युपछि आठ अधिकारी निलम्बित",
-      "url": "https://www.hamropatro.com/news/detail/317285365662129-pakistanama-shishu-vardama-14-navajatako-mrityupachhi-ath-adhikari-nilambit",
-      "published_at": "2026-08-30T21:33:46.079920Z",
+      "title": "भदौ १५ गते सोमबार, यस्तो छ तपाईंको राशिफल",
+      "url": "https://www.hamropatro.com/news/detail/326284922810943-bhadau-15-gate-somabar-yasto-chha-tapainko-rashiphal",
+      "published_at": "2026-08-31T00:04:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "लामो तैनाथीपछि अमेरिकी विमानवाहक लिङ्कन घर फर्कंदै",
-      "url": "https://www.hamropatro.com/news/detail/316686815711309-lamo-tainathipachhi-ameriki-vimanavahak-lingkan-ghar-pharkandai",
-      "published_at": "2026-08-30T21:23:46.079920Z",
+      "title": "छोराको प्रतीक्षामा वर्षौँ बिताएका आमाहरू...",
+      "url": "https://www.hamropatro.com/news/detail/326287189498461-chhorako-pratikshama-varshaun-bitaeka-amaharu",
+      "published_at": "2026-08-31T00:04:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "रसुवा विपत्तिबारे सद्गुरु र मनीषाबीच गहिरो संवाद, १ करोड सहयोग गर्ने घोषणा",
-      "url": "https://www.hamropatro.com/news/detail/313664399286852-rasuva-vipattibare-sadguru-r-manishabich-gahiro-sanvad-1-karod-sahayog",
-      "published_at": "2026-08-30T20:55:46.079920Z",
+      "title": "किसानको राम्रो आम्दानीको स्रोत बन्दै रुद्राक्ष",
+      "url": "https://www.hamropatro.com/news/detail/326287244424342-kisanako-ramro-amdaniko-srot-bandai-rudraksh",
+      "published_at": "2026-08-31T00:04:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "डब्लुएचओद्वारा एक लाख ५० हजार अमेरिकी डलर बराबरको सहयोग प्रदान",
-      "url": "https://www.hamropatro.com/news/detail/313664361451564-dabluechaodvara-ek-lakh-50-hajar-ameriki-dalar-barabarako-sahayog-pradan",
-      "published_at": "2026-08-30T20:55:46.079920Z",
+      "title": "जुम्लामा एक हजार ९०० क्विन्टल चामल मौज्दात",
+      "url": "https://www.hamropatro.com/news/detail/326284654969380-jumlama-ek-hajar-900-kvintal-chamal-maujdat",
+      "published_at": "2026-08-31T00:04:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "इरानका सर्वोच्च नेता खामेनीद्वारा मुस्लिम देशबीच एकताका लागि आह्वान",
-      "url": "https://www.hamropatro.com/news/detail/313664335625590-iranaka-sarvochch-neta-khamenidvara-muslim-deshabich-ekataka-lagi-ahvan",
-      "published_at": "2026-08-30T20:55:46.079920Z",
+      "title": "जुम्लामा १ हजार ९ सय क्विन्टल चामल मौज्दात",
+      "url": "https://www.hamropatro.com/news/detail/326263294388007-jumlama-1-hajar-9-say-kvintal-chamal-maujdat",
+      "published_at": "2026-08-31T00:03:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "देउखुरीमा पठन संस्कृतिको पुनर्जागरणको बहस दाङ– पुस्तक पढ्ने बानी कमजोर हुँदै जाँदा ज्ञान आर्जन गर्ने, विषयवस्तुको विश्लेषण गर्ने र समाजलाई गहिराइमा बुझ्ने संस्कृति ओझेलमा पर्न थालेको भन्दै देउखुरीमा पठन संस्कृतिको पुनर्जागरण आवश्यक रहेकोमा...",
-      "url": "https://www.hamropatro.com/news/detail/313664807061823-deukhurima-pathan-sanskritiko-punarjagaranako-bahas",
-      "published_at": "2026-08-30T20:55:46.079920Z",
+      "title": "ढोल–झ्याम्टासँगै जाग्दै छ पाल्पाको लाखे संस्कृति पाल्पा । हिजोआज साँझ पर्नासाथ तानसेनका चोकमा ढोल र झ्याम्टाको आवाज गुन्जिन थाल्छ । भीडको बिचबाट डरलाग्दो मुकुण्डो लगाएको लाखे निस्कन्छ । उसको चालसँगै भुच्चा पनि नाच्दै अघि बढ्छ । दर्शकका लागि यो म...",
+      "url": "https://www.hamropatro.com/news/detail/326263239481082-dhol-jhyamtasangai-jagdai-chha-palpako-lakhe-sanskriti",
+      "published_at": "2026-08-31T00:03:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "भोटेकोशी बाढीः काभ्रेका ४१ अझै सम्पर्कविहीन, आठ जना परिवारको सम्पर्कमा",
-      "url": "https://www.hamropatro.com/news/detail/312165478945808-bhotekoshi-badhih-kabhreka-41-ajhai-samparkavihin-ath-jana-parivarako-samparkama",
-      "published_at": "2026-08-30T19:55:46.079920Z",
+      "title": "पृथ्वी राजमार्ग ठप्प, काठमाडौँको आपूर्ति सङ्कटमा –हजारौँ ट्रक–कन्टेनर रोकिँदा अत्यावश्यक वस्तुको आपूर्तिमा दबाब –कृत्रिम अभाव र कालोबजारी रोक्न बजार अनुगमन चुनौतीपूर्ण काठमाडौँ। पृथ्वी राजमार्ग पूर्णरूपमा अवरुद्ध भएपछि काठमाडौँ उपत्यकाको आपूर्...",
+      "url": "https://www.hamropatro.com/news/detail/325983916520467-prithvi-rajamarg-thapp-kathamadaunko-apurti-sangkatama",
+      "published_at": "2026-08-30T23:59:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "नेलम्बोद्वारा पाँच लाख ५५ हजार सहयोग कास्की । पोखरामा रहेर शिक्षा, स्वास्थ्य र वातावरणका क्षेत्रमा क्रियाशील सामाजिक संस्था नेलम्बो नेपालले भोटेकोशी बाढी प्रभावितका लागि रु पाँच लाख ५५ हजार ५५५ सहयोग गरेको छ । विनासकारी बाढी तथा प्रा...",
-      "url": "https://www.hamropatro.com/news/detail/310364314240064-nelambodvara-panch-lakh-55-hajar-sahayog",
-      "published_at": "2026-08-30T19:55:46.079920Z",
+      "title": "आज २०८३ साल भदौ १५ गते सोमबारको राशिफल",
+      "url": "https://www.hamropatro.com/news/detail/325968471957800-aj-2083-sal-bhadau-15-gate-somabarako-rashiphal",
+      "published_at": "2026-08-30T23:58:15.301437Z",
+      "source": "Hamro Patro",
+      "time_exact": false
+    },
+    {
+      "title": "तातोले झरेको हिउँ चट्टान लामटाङ लिरुङ हिमालको टुप्पोबाट खसेको हिउँको ढिक्का विगत आठ महिनादेखि निरन्तर भासिँदै भदौ १० गते चोइटिएर खस्दा भोटेकोशी हुँदै नेपालमा ठुलो हिमबाढी निम्तिएको तथ्य सार्वजनिक भएको छ । संयुक्त राष्ट्रस...",
+      "url": "https://www.hamropatro.com/news/detail/325966658160171-tatole-jhareko-hiun-chattan",
+      "published_at": "2026-08-30T23:58:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
       "title": "टेलिफोन निर्देशिका",
       "url": "https://moha.gov.np/directory",
-      "published_at": "2026-08-30T19:18:54Z",
+      "published_at": "2026-08-30T23:33:55Z",
       "source": "Nepal Government"
     },
     {
-      "title": "मातहतका कार्यालयहरु",
-      "url": "https://moha.gov.np/office-directory",
-      "published_at": "2026-08-30T19:18:53Z",
+      "title": "एसिसी प्रिमियर कप : नेपालले आज बहराइनसँग पहिलो खेल खेल्दै",
+      "url": "https://www.hamropatro.com/news/detail/323889844630828-esisi-primiyar-kap-nepalale-aj-baharainasang-pahilo-khel-kheldai",
+      "published_at": "2026-08-30T23:24:15.301437Z",
+      "source": "Hamro Patro",
+      "time_exact": false
+    },
+    {
+      "title": "गृह मन्त्रालय",
+      "url": "https://moha.gov.np/switch-bandwidth",
+      "published_at": "2026-08-30T23:07:38Z",
       "source": "Nepal Government"
     },
     {
-      "title": "किएभनजिकै रुसी ड्रोन आक्रमणमा ३७ जनाको मृत्यु",
-      "url": "https://www.hamropatro.com/news/detail/309483349052649-kiebhanajikai-rusi-dron-akramanama-37-janako-mrityu",
-      "published_at": "2026-08-30T18:55:46.079920Z",
+      "title": "खप्तडमा बिरामीको भरोसा बन्दै सेनाको मेडिकल",
+      "url": "https://www.hamropatro.com/news/detail/320288942323160-khaptadama-biramiko-bharosa-bandai-senako-medikal",
+      "published_at": "2026-08-30T22:20:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "सप्तकोसीमा पानीको बहाव बढ्यो, ब्यारेजका २२ ढोका खोलिए",
-      "url": "https://www.hamropatro.com/news/detail/304393289442480-saptakosima-paniko-bahav-badhyo-byarejaka-22-dhoka-kholie",
-      "published_at": "2026-08-30T17:55:46.079920Z",
+      "title": "इरानका सर्वोच्च नेता मोज्तबा खामेनीले 'मुस्लिमहरूको वास्तविक शत्रु' कसलाई भने?",
+      "url": "https://www.hamropatro.com/news/detail/321486463792305-iranaka-sarvochch-neta-mojtaba-khamenile-muslimaharuko-vastavik-shatru-kasalai",
+      "published_at": "2026-08-30T22:20:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "भोटेकोशी बाढी अपडेट : दुई हजार ७४२ को उद्धार, ७८८ जनाको शव फेला",
-      "url": "https://www.hamropatro.com/news/detail/302572767296397-bhotekoshi-badhi-apadet-dui-hajar-742-ko-uddhar-788-janako",
-      "published_at": "2026-08-30T17:55:46.079920Z",
+      "title": "आइसल्याण्डवासीहरूले ईयूमा प्रवेश वार्ताको विपक्षमा मतदान गरे",
+      "url": "https://www.hamropatro.com/news/detail/320889244124334-aisalyandavasiharule-iyuma-pravesh-vartako-vipakshama-matadan-gare",
+      "published_at": "2026-08-30T22:20:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "४० जना फसेको माथिल्लो त्रिशूली-३ 'ए' सुरूङमा के-के भयो प्रगति? भोटेकोशी-त्रिशूली बाढीका कारण माथिल्लो त्रिशूली-३ 'ए' जलविद्युत आयोजनाको सुरूङमा फसेकाहरूको उद्धार सुरू गरिएको छ। नेपाल विद्युत प्राधिकरणद्वारा प्रवर्द्धित ६० मेगावाट क्षमताको उक्त आयोजनामा ३५ देख...",
-      "url": "https://www.hamropatro.com/news/detail/302572581485314-40-jana-phaseko-mathillo-trishuli-3-e-surungama-ke-ke",
-      "published_at": "2026-08-30T17:55:46.079920Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "कांग्रेसले क्रियाशील सदस्यता नवीकरण र अद्यावधिकका लागि थप पाँच दिन समय दिने नेपाली कांग्रेसले क्रियाशील सदस्यता नवीकरण तथा अद्यावधिक गर्न छुट भएका सदस्यका लागि थप पाँच दिनको समय दिने निर्णय गरेको छ । नेपाली कांग्रेसका सभापति गगनकुमार थापाको समुपस्थितिमा पार्टीका महामन्त्र...",
-      "url": "https://www.hamropatro.com/news/detail/302573035162879-kangresale-kriyashil-sadasyata-navikaran-r-adyavadhikaka-lagi-thap-panch-din",
-      "published_at": "2026-08-30T17:55:46.079920Z",
+      "title": "भारतको फोरेन्सिक टोली नेपाल पुग्यो, परराष्ट्र मन्त्रालयले विवरण साझा गर्‍यो",
+      "url": "https://www.hamropatro.com/news/detail/319681982445808-bharatako-phorensik-toli-nepal-pugyo-pararashtr-mantralayale-vivaran-sajha-gar",
+      "published_at": "2026-08-30T22:20:15.301437Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
@@ -364,6 +371,12 @@
       "title": "प्रधानमन्त्री राहत कोषमा अर्थमन्त्री मार्फत चीनको ३० करोड सहयोग",
       "url": "https://www.onlinekhabar.com/2026/08/2007280/chinas-contribution-of-300-million-rupees-to-the-prime-ministers-relief-fund-through-the-finance-minister",
       "published_at": "2026-08-30T14:14:54Z",
+      "source": "Onlinekhabar"
+    },
+    {
+      "title": "लामो तैनाथीपछि अमेरिकी विमानवाहक लिङ्कन घर फर्कंदै",
+      "url": "https://www.onlinekhabar.com/2026/08/2007250/us-aircraft-carrier-lincoln-returns-home-after-long-deployment",
+      "published_at": "2026-08-30T13:52:04Z",
       "source": "Onlinekhabar"
     },
     {

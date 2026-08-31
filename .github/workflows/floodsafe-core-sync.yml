@@ -3,7 +3,11 @@ name: FloodSafe core official feed sync
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0-59/5 * * * *'
+    - cron: '1-59/5 * * * *'
+    - cron: '2-59/5 * * * *'
+    - cron: '3-59/5 * * * *'
+    - cron: '4-59/5 * * * *'
   push:
     branches: [main]
     paths:
@@ -21,7 +25,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,8 +57,6 @@ jobs:
           assert src.get('count',0) >= 120, src
 
           def parse_time(row):
-              # ONLY hydrological observation timestamps. Never retrievedAt,
-              # modifiedOn, updatedAt or alert-created timestamps.
               raw=(row.get('waterLevelOn') or row.get('water_level_on') or
                    row.get('measuredOn') or row.get('measured_on') or
                    row.get('measurementTime') or row.get('observationTime'))
@@ -72,15 +74,13 @@ jobs:
 
           fresh=[]
           for r in rivers:
-              if not isinstance(r,dict) or not measured(r):
-                  continue
+              if not isinstance(r,dict) or not measured(r): continue
               t=parse_time(r)
               if not t: continue
               age=now-t.astimezone(timezone.utc)
-              if timedelta(minutes=-5) <= age <= timedelta(minutes=20):
-                  fresh.append(r)
+              if timedelta(minutes=-5) <= age <= timedelta(minutes=20): fresh.append(r)
 
-          assert fresh, 'No genuinely timestamped official river observation <=20 minutes; do not publish fake realtime data.'
+          assert fresh, 'No genuinely timestamped official river observation <=20 minutes; keep last good but never fabricate realtime.'
           assert src.get('current_20m_count') == len(fresh), (src.get('current_20m_count'),len(fresh))
           newest=max(parse_time(r).astimezone(timezone.utc) for r in fresh)
           print('river snapshot',src.get('count'),'fresh<=20m',len(fresh),'newest',newest.isoformat())

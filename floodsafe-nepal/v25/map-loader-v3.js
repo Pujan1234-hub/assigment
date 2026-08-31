@@ -2,15 +2,15 @@ import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-g
 
 window.maplibregl = maplibregl;
 
-if(!window.__fsSmoothMapLoading){
-  window.__fsSmoothMapLoading=true;
-  import('./map-smooth-v3.js?v=1').then(()=>{
+if(!window.__fsSmoothMapLoadingV2){
+  window.__fsSmoothMapLoadingV2=true;
+  import('./map-smooth-v3.js?v=2').then(()=>{
     window.__fsSmoothMapLoaded=true;
     return import('./hydro-smooth-v2.js?v=1');
   }).then(()=>{
     window.__fsHydroSmoothLoaded=true;
   }).catch((err)=>{
-    window.__fsSmoothMapLoading=false;
+    window.__fsSmoothMapLoadingV2=false;
     console.error('FloodSafe smooth map runtime failed', err);
     const hint=document.getElementById('mapHint');
     if(hint) hint.textContent='नक्सा runtime लोड हुन सकेन — फेरि reload गर्नुहोस्।';

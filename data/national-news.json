@@ -1,77 +1,42 @@
 {
-  "generated_at": "2026-08-31T21:14:26.821570+05:45",
-  "updated_at_npt": "31 Aug 21:14 NPT",
+  "generated_at": "2026-09-01T02:47:17.971285+05:45",
+  "updated_at_npt": "01 Sep 02:47 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बाढीको अवस्था निगरानी गर्न टिमुरेमा रियल–टाइम सीसी क्यामेरा जडान",
+      "title": "बाढी प्रभावित बस्ती जोड्न धमाधम तुइन निर्माण गरिँदै",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588903/real-time-cctv-cameras-installed-in-timure-to-monitor-flood-situation",
-      "published_at": "2026-08-31T20:33:53+05:45",
-      "flash": true
-    },
-    {
-      "title": "श्रीमतीसँग ३ मिनेट भिडिओ कल गरे, त्यसपछि सम्पर्कविहीन भए",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588894/had-a-3-minute-video-call-with-his-wife-then-lost-contact",
-      "published_at": "2026-08-31T20:01:19+05:45",
+      "url": "https://www.ratopati.com/story/588940/construction-of-bridges-is-underway-to-connect-flood-affected-settlements",
+      "published_at": "2026-09-01T00:56:40+05:45",
       "flash": false
     },
     {
-      "title": "कोशी प्रदेशका १९३ मध्ये १५९ जना अझै बेपत्ता",
+      "title": "राहत सङ्कलनका नाममा हुने दुरुपयोग रोक्न म्याग्दीमा कडाइ",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588892/159-out-of-193-people-in-koshi-province-still-missing",
-      "published_at": "2026-08-31T19:58:22+05:45",
+      "url": "https://www.ratopati.com/story/588938/strict-measures-in-myagdi-to-prevent-abuse-in-the-name-of-relief-collection",
+      "published_at": "2026-09-01T00:36:13+05:45",
       "flash": false
     },
     {
-      "title": "मुख्यमन्त्री र मन्त्रीहरूको आधा महिनाको तलब प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा राखिने",
+      "title": "तीज मनाउन सङ्कलित रकम बाढीपीडितलाई",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588891/half-a-months-salary-of-the-chief-minister-and-ministers-will-be-deposited-in-the-prime-ministers-disaster-relief-fund",
-      "published_at": "2026-08-31T19:55:58+05:45",
+      "url": "https://www.ratopati.com/story/588927/funds-collected-to-celebrate-teej-to-be-donated-to-flood-victims",
+      "published_at": "2026-08-31T23:06:05+05:45",
       "flash": false
     },
     {
-      "title": "बाढीले क्षतविक्षत नुवाकोटको विदुरका दुई वडा बाढी प्रभावित क्षेत्रमा परेनन्",
+      "title": "भोटेकोशी बाढी: गोरखामा थप सात शव व्यवस्थापन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588886/two-wards-of-bidur-nuwakot-which-were-damaged-by-floods-did-not-fall-into-the-flood-affected-areas",
-      "published_at": "2026-08-31T19:28:54+05:45",
+      "url": "https://www.ratopati.com/story/588925/bhotekoshi-flood-seven-more-bodies-disposed-of-in-gorkha",
+      "published_at": "2026-08-31T22:43:20+05:45",
       "flash": false
     },
     {
-      "title": "बाढीमा ज्यान गुमाएका र बेपत्ताका परिवारलाई गण्डकी सरकारले १ लाख दिने",
+      "title": "बाढीपीडितका लागि वीरगञ्ज उद्योग वाणिज्य सङ्घद्वारा रु १५ लाख सहयोग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588885/gandaki-government-to-provide-100000-rupees-to-families-of-those-who-lost-their-lives-and-went-missing-in-the-floods",
-      "published_at": "2026-08-31T19:26:52+05:45",
-      "flash": false
-    },
-    {
-      "title": "अदालतले गर्‍याे सिके राउतकाे विपक्षमा फैसला",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588881/court-rules-against-ck-raut",
-      "published_at": "2026-08-31T19:03:47+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी पीडितको सहयोगका लागि नोना कोइराला स्मृति प्रतिष्ठानद्वारा १ लाख रुपैयाँ सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588864/nona-koirala-memorial-foundation-donates-rs-100000-to-help-flood-victims",
-      "published_at": "2026-08-31T17:50:45+05:45",
-      "flash": false
-    },
-    {
-      "title": "कर्णाली प्रदेश सरकारका कर्मचारीले बाढी प्रभावितलाई सहयाेग गर्ने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588827/karnali-provincial-government-employees-to-assist-flood-victims",
-      "published_at": "2026-08-31T16:28:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवा बाढीमा बगेका शव नवलपरासीमा व्यवस्थापन सुरु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588826/management-of-bodies-washed-away-in-rasuwa-floods-begins-in-nawalparasi",
-      "published_at": "2026-08-31T16:26:31+05:45",
+      "url": "https://www.ratopati.com/story/588919/birgunj-chamber-of-commerce-and-industry-provides-rs-15-million-in-assistance-to-flood-victims",
+      "published_at": "2026-08-31T22:14:00+05:45",
       "flash": false
     }
   ],
@@ -91,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 10
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

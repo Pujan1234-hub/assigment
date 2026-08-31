@@ -1,0 +1,9 @@
+(()=>{'use strict';
+if(window.__fsMapHintSyncV1)return;window.__fsMapHintSyncV1=true;
+const en=()=>window.FloodSafe?.state?.lang==='en';
+function update(){const h=document.getElementById('mapHint');if(!h)return;const r=window.__fsRiverRealtimeState||{},m=window.__fsHydroMatchState||{},map=window.FloodSafeMap?.map,features=Number(m.features||0),catalog=Number(r.catalogWithCoordinates||window.FloodSafeMap?.stationCatalogCount||0),current=Number(r.currentCount||0),matched=Math.min(Number(m.currentStations||0),Number(m.features||0)),alerts=Number(m.abnormalMatched||0),local=!!(map&&window.FloodSafeHydroSmooth&&map.getZoom()>=Number(window.FloodSafeHydroSmooth.localZoom||7.8));if(!features&&!catalog)return;h.textContent=en()?(local?`📍 Full local network • ${features.toLocaleString()} rivers/streams • ${catalog} official stations • ${current} current ≤5m • ${matched} river matches • ${alerts} alerts`:`🇳🇵 77 districts • ${features.toLocaleString()} rivers/streams • ${catalog} official stations • ${current} current ≤5m • ${matched} river matches • ${alerts} alerts`):(local?`📍 स्थानीय full network • ${features.toLocaleString()} नदी/खोला • ${catalog} official station • ${current} current ≤५m • ${matched} river-match • ${alerts} alert`:`🇳🇵 ७७ जिल्ला • ${features.toLocaleString()} नदी/खोला • ${catalog} official station • ${current} current ≤५m • ${matched} river-match • ${alerts} alert`);window.__fsMapHintState={catalog,current,features,matched,alerts,checkedAt:new Date().toISOString()}}
+let timer=0;function schedule(){clearTimeout(timer);timer=setTimeout(update,40)}
+for(const ev of['fstrustedriverupdate','fsriverupdate','fsriverheartbeat','fsgaugesrendered','fsriverlinestatus','fsmapready','fslanguage'])window.addEventListener(ev,schedule);
+window.addEventListener('load',schedule,{once:true});setInterval(()=>{if(!document.hidden)update()},2000);
+window.FloodSafeMapHint={update,get state(){return window.__fsMapHintState||null}};
+})();

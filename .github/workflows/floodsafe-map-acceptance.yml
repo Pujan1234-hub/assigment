@@ -1,0 +1,103 @@
+name: FloodSafe Map Acceptance
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'floodsafe-nepal/v25/index.html'
+      - 'floodsafe-nepal/v25/map-*.js'
+      - 'floodsafe-nepal/v25/trusted-river-runtime-v1.js'
+      - 'floodsafe-nepal/v25/river-line-status-v1.js'
+      - '.github/workflows/floodsafe-map-acceptance.yml'
+permissions:
+  contents: read
+concurrency:
+  group: floodsafe-map-acceptance
+  cancel-in-progress: true
+jobs:
+  live-map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Wait for this map build on GitHub Pages
+        run: |
+          set -euo pipefail
+          U='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
+          ok=0
+          for i in $(seq 1 90); do
+            html="$(curl --max-time 10 -fsSL "${U}?accept=${GITHUB_SHA}-${i}" || true)"
+            if printf '%s' "$html" | grep -Fq 'trusted-river-runtime-v1.js?v=2' && printf '%s' "$html" | grep -Fq 'map-loader-v3.js?v=4'; then ok=1; break; fi
+            sleep 4
+          done
+          test "$ok" = 1
+          curl --max-time 10 -fsSL "${U}map-stable-v2.js?v=5&accept=${GITHUB_SHA}" | grep -Fq 'MAX_AGE=20*60*1000'
+          curl --max-time 10 -fsSL "${U}map-runtime-fix-v1.js?v=2&accept=${GITHUB_SHA}" | grep -Fq '#22a7ff'
+
+      - name: Browser cross-check official feed and live map
+        env:
+          APP: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$CHROME"
+          mkdir -p /tmp/mapaccept && cd /tmp/mapaccept
+          npm init -y >/dev/null 2>&1
+          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          APP="$APP" CHROME="$CHROME" node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          const wait=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
+            const p=await b.newPage();p.setDefaultTimeout(90000);
+            p.on('console',m=>console.log('PAGE',m.type(),m.text()));
+            await p.goto(process.env.APP+'?mapaccept='+Date.now()+'#map',{waitUntil:'domcontentloaded'});
+            await p.waitForFunction(()=>window.__fsMapRuntimeGuardLoaded&&window.FloodSafeMap?.initialized,{timeout:90000});
+            await p.waitForFunction(()=>window.FloodSafeMap?.nationalRiverCount>=500,{timeout:90000});
+            await wait(7000);
+            const result=await p.evaluate(async()=>{
+              const MAX=20*60*1000,FUT=5*60*1000;
+              const rows=j=>Array.isArray(j)?j:(Array.isArray(j?.results)?j.results:[]);
+              const val=(o,ks)=>{for(const k of ks){const v=o?.[k];if(v!==undefined&&v!==null&&v!=='')return v}return null};
+              const st=o=>val(o,['waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime']);
+              const lv=o=>Number(val(o,['waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level']));
+              let official=[];
+              try{
+                const r=await fetch('https://bipadportal.gov.np/api/v1/river/?limit=2000&ordering=-waterLevelOn',{cache:'no-store'});
+                const j=await r.json();
+                official=rows(j).filter(o=>{const t=+new Date(st(o)||0),age=Date.now()-t;return t&&Number.isFinite(lv(o))&&age>=-FUT&&age<=MAX});
+              }catch(e){console.warn('independent BIPAD cross-check unavailable',String(e))}
+              const map=window.FloodSafeMap.map;
+              const src=map.getSource('gauges');
+              const serialized=src?src.serialize?.():null;
+              const features=serialized?.data?.features||[];
+              const stale=features.filter(f=>{const t=+new Date(f.properties?.time||0),a=Date.now()-t;return !t||a<-FUT||a>MAX});
+              const riverPaint=JSON.stringify(map.getPaintProperty('river-base','line-color'));
+              const gaugePaint=JSON.stringify(map.getPaintProperty('gauges','circle-color'));
+              return {
+                districts:window.FloodSafeMap.districtCount,
+                rivers:window.FloodSafeMap.nationalRiverCount,
+                officialCurrent:official.length,
+                stateCurrent:(window.FloodSafe?.state?.stations||[]).filter(o=>{const t=+new Date(st(o)||0),a=Date.now()-t;return t&&Number.isFinite(lv(o))&&a>=-FUT&&a<=MAX}).length,
+                gauges:features.length,staleGauges:stale.length,
+                riverPaint,gaugePaint,
+                feed:window.FloodSafe?.state?.feedSource||'',
+                hint:document.getElementById('mapHint')?.textContent||''
+              };
+            });
+            console.log('MAP RESULT',JSON.stringify(result));
+            if(result.districts<77)throw Error('districts '+result.districts);
+            if(result.rivers<500)throw Error('river routes '+result.rivers);
+            if(result.staleGauges!==0)throw Error('stale gauges visible '+result.staleGauges);
+            if(!result.riverPaint.includes('#22a7ff')||!result.riverPaint.includes('#ff8a00')||!result.riverPaint.includes('#ff2d20'))throw Error('river colours '+result.riverPaint);
+            if(!result.gaugePaint.includes('#22a7ff'))throw Error('normal gauge not blue '+result.gaugePaint);
+            if(result.officialCurrent>0&&result.stateCurrent===0)throw Error('official feed has '+result.officialCurrent+' current rows but app has zero');
+            if(result.officialCurrent>0&&result.gauges===0)throw Error('official feed current but map has zero gauges');
+            await p.evaluate(()=>window.FloodSafe.setFocus(27.7172,85.3240,'gps'));
+            await wait(1800);
+            const gps=await p.evaluate(()=>{const c=window.FloodSafeMap.map.getCenter(),s=window.FloodSafe.state;return{lat:c.lat,lon:c.lng,kind:s.kind,stateLat:s.lat,stateLon:s.lon}});
+            console.log('GPS RESULT',JSON.stringify(gps));
+            if(gps.kind!=='gps'||Math.abs(gps.lat-27.7172)>.03||Math.abs(gps.lon-85.324)>.03)throw Error('GPS map follow failed '+JSON.stringify(gps));
+            console.log('PASS FloodSafe map acceptance');
+            await b.close();
+          })().catch(e=>{console.error(e);process.exit(3)});
+          JS

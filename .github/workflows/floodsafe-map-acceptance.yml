@@ -38,6 +38,7 @@ jobs:
             sleep 4
           done
           test "$ok" = 1
+          set +o pipefail
           curl --max-time 10 -fsSL "${U}gauge-bridge.js?v=17&accept=${GITHUB_SHA}" | grep -Fq 'LINE_EXACT_KM=2.2'
           curl --max-time 10 -fsSL "${U}river-line-status-v1.js?v=4&accept=${GITHUB_SHA}" | grep -Fq '__fsRiverLineStatusV4'
           curl --max-time 10 -fsSL "${U}river-map-detail-v2.js?v=17&accept=${GITHUB_SHA}" | grep -Fq '__fsRiverMapDetailV17'
@@ -95,7 +96,6 @@ jobs:
             if(!result.riverPaint.includes('#22a7ff')||!result.riverPaint.includes('#ff7a00')||!result.riverPaint.includes('#ff2d20'))throw Error('river colours '+result.riverPaint);
             if(!result.gaugePaint.includes('#22a7ff'))throw Error('normal gauge not blue '+result.gaugePaint);
 
-            // Real click: every mapped river must open a substantial detail sheet, even when no exact sensor exists.
             const clickPoint=await p.evaluate(()=>{const map=window.FloodSafeMap.map,src=map.getSource('hydro-complete')?.serialize?.()?.data?.features||[],canvas=map.getCanvas();for(const f of src){const line=f.geometry?.type==='LineString'?f.geometry.coordinates:null;if(!line?.length||!String(f.properties?.name||'').trim())continue;const c=line[Math.floor((line.length-1)/2)],pt=map.project(c);if(pt.x>20&&pt.y>20&&pt.x<canvas.clientWidth-20&&pt.y<canvas.clientHeight-20)return{x:pt.x,y:pt.y,name:f.properties.name}}return null});
             if(!clickPoint)throw Error('no visible named river to click');
             console.log('CLICK RIVER',clickPoint);
@@ -104,8 +104,7 @@ jobs:
             console.log('CLICK DETAIL',JSON.stringify(detail));
             if(detail.grid<8||detail.meta<10||!detail.state?.name)throw Error('river click is not showing full details '+JSON.stringify(detail));
 
-            // Deterministic UI reaction test using a current in-browser station on a real mapped river geometry.
-            const synthetic=await p.evaluate(()=>{const map=window.FloodSafeMap.map,features=map.getSource('hydro-complete')?.serialize?.()?.data?.features||[],f=features.find(x=>x.geometry?.type==='LineString'&&x.geometry.coordinates?.length>1&&String(x.properties?.name||'').trim());if(!f)throw Error('no river feature for synthetic status test');const c=f.geometry.coordinates[Math.floor((f.geometry.coordinates.length-1)/2)],name=f.properties.name_en||f.properties.name_raw||f.properties.name;window.__acceptOrigStations=(window.FloodSafe.state.stations||[]).slice();window.__acceptRiver={id:f.properties.id,name,feature:f,coord:c};const set=(level)=>{window.FloodSafe.state.stations=[{title:name,waterLevel:level,warningLevel:5,dangerLevel:8,waterLevelOn:new Date().toISOString(),_measurementTime:new Date().toISOString(),_measurementTimeTrusted:true,_current20m:true,point:{coordinates:c},dataSource:'DHM / BIPAD acceptance'}];window.dispatchEvent(new CustomEvent('fsriverupdate',{detail:{acceptance:true}}))};window.__acceptSetRiverLevel=set;set(4);return{id:f.properties.id,name}});
+            const synthetic=await p.evaluate(()=>{const map=window.FloodSafeMap.map,features=map.getSource('hydro-complete')?.serialize?.()?.data?.features||[],f=features.find(x=>x.geometry?.type==='LineString'&&x.geometry.coordinates?.length>1&&String(x.properties?.name||'').trim());if(!f)throw Error('no river feature for synthetic status test');const c=f.geometry.coordinates[Math.floor((f.geometry.coordinates.length-1)/2)],name=f.properties.name_en||f.properties.name_raw||f.properties.name;window.__acceptOrigStations=(window.FloodSafe.state.stations||[]).slice();window.__acceptRiver={id:f.properties.id,name,feature:f,coord:c};const set=(level)=>{const now=new Date().toISOString();window.FloodSafe.state.stations=[{title:name,waterLevel:level,warningLevel:5,dangerLevel:8,waterLevelOn:now,_measurementTime:now,_measurementTimeTrusted:true,_current20m:true,point:{coordinates:c},dataSource:'DHM / BIPAD acceptance'}];window.dispatchEvent(new CustomEvent('fsriverupdate',{detail:{acceptance:true}}))};window.__acceptSetRiverLevel=set;set(4);return{id:f.properties.id,name}});
             console.log('SYNTHETIC RIVER',synthetic);
             const expectStatus=async(status)=>p.waitForFunction((id,status)=>{const fs=window.FloodSafeMap.map.getSource('hydro-complete')?.serialize?.()?.data?.features||[];return fs.some(f=>String(f.properties?.id)===String(id)&&f.properties?.live_status===status)}, {timeout:15000}, synthetic.id,status);
             await expectStatus('normal');

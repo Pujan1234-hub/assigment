@@ -1,24 +1,115 @@
-(()=>{'use strict';
-if(window.__fsImpactFreshV10)return;window.__fsImpactFreshV10=true;
+(()=>{
+'use strict';
+if(window.__fsImpactFreshV11)return;window.__fsImpactFreshV11=true;
 const $=id=>document.getElementById(id);
-const POLL=5000;
-const SOURCES=[
-  'https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/floodsafe-people-status.json',
-  '../../data/floodsafe-people-status.json'
-];
-let current=null,lastSignature='';
+const PEOPLE='../../data/floodsafe-people-status.json',POLL=5000;
+let current=null,lastSignature='',busy=false,repairQueued=false,lastMirrorCheck=0;
 const lang=()=>window.FloodSafe?.state?.lang||localStorage.getItem('fs-flood-lang')||'ne';
 const tr=(ne,en)=>lang()==='en'?en:ne;
 const ts=v=>{const n=+new Date(v||0);return Number.isFinite(n)?n:0};
+const positive=v=>Number.isInteger(Number(v))&&Number(v)>0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const signature=j=>JSON.stringify([j?.recovered_bodies,j?.missing_minimum,j?.rescued_alive,j?.recovered_update_time,j?.missing_update_time,j?.rescued_update_time,j?.last_checked_utc,j?.recovered_source,j?.missing_source,j?.rescued_source]);
-function score(j){return Math.max(ts(j?.last_checked_utc),ts(j?.recovered_update_time),ts(j?.missing_update_time),ts(j?.rescued_update_time),ts(j?.recovered_update_iso))}
-async function get(u,ms=9000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const q=(u.includes('?')?'&':'?')+'human_live='+Date.now()+'_'+Math.random().toString(36).slice(2);const r=await fetch(u+q,{cache:'no-store',credentials:'omit',headers:{'Cache-Control':'no-cache','Pragma':'no-cache'},signal:c.signal});if(!r.ok)throw Error(r.status);return await r.json()}finally{clearTimeout(t)}}
-async function getLatest(){const rr=await Promise.allSettled(SOURCES.map(u=>get(u))),ok=rr.filter(x=>x.status==='fulfilled'&&x.value&&typeof x.value==='object').map(x=>x.value);if(!ok.length)throw Error('no Human Status snapshot');ok.sort((a,b)=>score(b)-score(a));return ok[0]}
-function fmt(t){if(!ts(t))return'—';try{return new Intl.DateTimeFormat(lang()==='en'?'en-GB':'ne-NP',{timeZone:'Asia/Kathmandu',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(t))+' NPT'}catch{return String(t)}}
-function sourceBox(parentId,source,url,time){const p=$(parentId)?.closest('.impactStat');if(!p)return;let e=p.querySelector('.impactSource');if(!e){e=document.createElement('div');e.className='impactSource';p.appendChild(e)}const label=tr('स्रोत','Source'),timeLabel=tr('समय','Time'),link=url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(source||'—')}</a>`:esc(source||'—');e.innerHTML=`${label}: ${link}${time?`<br>${timeLabel}: ${esc(fmt(time))}`:''}`}
-function apply(j){const old=current;current=j;const d=j?.recovered_bodies??null,m=j?.missing_minimum??null,r=j?.rescued_alive??null,metricTimes=[j?.recovered_update_time,j?.missing_update_time,j?.rescued_update_time].map(ts).filter(Boolean),newest=metricTimes.sort((a,b)=>b-a)[0]||0,checked=ts(j?.last_checked_utc),age=checked?Date.now()-checked:Infinity,delayed=age>15*60*1000;if($('impactDeaths'))$('impactDeaths').textContent=d??'—';if($('impactMissing'))$('impactMissing').textContent=m??'—';if($('impactRescued'))$('impactRescued').textContent=r??'—';if($('impactEvent'))$('impactEvent').textContent=lang()==='en'?(j?.event||'Bhotekoshi flash flood'):(j?.event_ne||j?.event||'भोटेकोशी आकस्मिक बाढी');if($('impactFresh'))$('impactFresh').textContent=tr(`पछिल्लो प्रमाणित आँकडा: ${newest?fmt(newest):'—'} • स्रोत जाँच: ${checked?fmt(checked):'—'} • हरेक ५ सेकेन्डमा स्वतः जाँच${delayed?' • स्रोत sync ढिलो':''}`,`Latest verified figures: ${newest?fmt(newest):'—'} • source scan: ${checked?fmt(checked):'—'} • auto-check every 5 seconds${delayed?' • source sync delayed':''}`);sourceBox('impactDeaths',j?.recovered_source,j?.recovered_source_url,j?.recovered_update_time);sourceBox('impactMissing',j?.missing_source,j?.missing_source_url,j?.missing_update_time);sourceBox('impactRescued',j?.rescued_source,j?.rescued_source_url,j?.rescued_update_time);if($('impactDetail')){const src=Array.isArray(j?.sync_sources)?j.sync_sources.join(' • '):'';$('impactDetail').textContent=tr(`स्वचालित स्रोत जाँच: ${src||'नेपाल प्रहरी • NDRRMA • रेडियो नेपाल • RONB • Hamro Patro'} • मृत्यु, सम्पर्कविहीन र उद्धार तीनै संख्या छुट्टाछुट्टै नयाँ प्रमाणित स्रोत भेटिएपछि आफैं बदलिन्छ।`,`Automatic source scan: ${src||'Nepal Police • NDRRMA • Radio Nepal • RONB • Hamro Patro'} • deaths, missing and rescued each update independently when a newer verified source is found.`)}const sig=signature(j);if(sig!==lastSignature){lastSignature=sig;window.dispatchEvent(new CustomEvent('fshumanupdate',{detail:{previous:old,current:j}}))}}
-async function sync(){try{const j=await getLatest(),sig=signature(j);if(!current||score(j)>score(current)||sig!==lastSignature)apply(j)}catch{if(!current&&$('impactFresh'))$('impactFresh').textContent=tr('मानवीय असरको स्रोत अहिले उपलब्ध छैन • फेरि स्वतः जाँच हुँदैछ','Human-impact source is currently unavailable • retrying automatically')}}
-function boot(){sync();setInterval(sync,POLL);document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});window.addEventListener('online',sync);window.addEventListener('focus',sync);window.addEventListener('fslanguage',()=>{if(current)apply(current)});window.FloodSafeImpact={sync,get current(){return current},get score(){return score(current)}}}
+const signature=j=>JSON.stringify([
+  j?.sync_schema,j?.status,j?.recovered_bodies,j?.missing_minimum,j?.rescued_alive,
+  j?.recovered_update_time,j?.missing_update_time,j?.rescued_update_time,
+  j?.recovered_source,j?.missing_source,j?.rescued_source
+]);
+function validUrl(u){try{const x=new URL(String(u||''),location.href);return x.protocol==='http:'||x.protocol==='https:'}catch{return false}}
+function validSnapshot(j){
+  if(!j||typeof j!=='object'||Number(j.sync_schema)<2||j.status!=='event_scoped_authority_mirror')return false;
+  const metrics=[
+    ['recovered_bodies','recovered_source','recovered_source_url','recovered_update_time','death_time_basis'],
+    ['missing_minimum','missing_source','missing_source_url','missing_update_time','missing_time_basis'],
+    ['rescued_alive','rescued_source','rescued_source_url','rescued_update_time','rescued_time_basis']
+  ];
+  for(const [v,s,u,t,b] of metrics){
+    if(!positive(j[v])||!String(j[s]||'').trim()||!validUrl(j[u])||!ts(j[t])||!String(j[b]||'').trim())return false;
+    if(String(j[t])===String(j.last_checked_utc||''))return false;
+  }
+  return true;
+}
+function metricScore(j){return Math.max(ts(j?.recovered_update_time),ts(j?.missing_update_time),ts(j?.rescued_update_time))}
+async function get(ms=8000){
+  const c=new AbortController(),to=setTimeout(()=>c.abort(),ms);
+  try{
+    const r=await fetch(PEOPLE+'?human_live='+Date.now()+'_'+Math.random().toString(36).slice(2),{
+      cache:'no-store',credentials:'same-origin',signal:c.signal,
+      headers:{'Cache-Control':'no-cache','Pragma':'no-cache','Accept':'application/json'}
+    });
+    if(!r.ok)throw Error('HTTP '+r.status);
+    const j=await r.json();
+    if(!validSnapshot(j))throw Error('Human Status mirror contract rejected');
+    return j;
+  }finally{clearTimeout(to)}
+}
+function fmt(t){
+  if(!ts(t))return'—';
+  try{return new Intl.DateTimeFormat(lang()==='en'?'en-GB':'ne-NP',{
+    timeZone:'Asia/Kathmandu',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false
+  }).format(new Date(t))+' NPT'}catch{return String(t)}
+}
+function sourceBox(parentId,source,url,time){
+  const p=$(parentId)?.closest('.impactStat');if(!p)return;
+  let e=p.querySelector('.impactSource');if(!e){e=document.createElement('div');e.className='impactSource';p.appendChild(e)}
+  const label=tr('स्रोत','Source'),timeLabel=tr('समय','Time');
+  const link=validUrl(url)?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(source||'—')}</a>`:esc(source||'—');
+  e.innerHTML=`${label}: ${link}${time?`<br>${timeLabel}: ${esc(fmt(time))}`:''}`;
+}
+function apply(j){
+  current=j;
+  const d=j.recovered_bodies,m=j.missing_minimum,r=j.rescued_alive;
+  if($('impactDeaths'))$('impactDeaths').textContent=d;
+  if($('impactMissing'))$('impactMissing').textContent=m;
+  if($('impactRescued'))$('impactRescued').textContent=r;
+  if($('impactEvent'))$('impactEvent').textContent=lang()==='en'?(j.event||'Bhotekoshi flash flood'):(j.event_ne||j.event||'भोटेकोशी आकस्मिक बाढी');
+  const newest=metricScore(j),checked=ts(j.last_checked_utc),delayed=checked?Date.now()-checked>15*60*1000:true;
+  if($('impactFresh'))$('impactFresh').textContent=tr(
+    `पछिल्लो प्रमाणित आँकडा: ${fmt(newest)} • mirror जाँच: ${checked?fmt(checked):'—'} • हरेक ५ सेकेन्डमा स्वतः जाँच${delayed?' • server sync ढिलो':''}`,
+    `Latest verified figures: ${fmt(newest)} • mirror checked: ${checked?fmt(checked):'—'} • auto-check every 5 seconds${delayed?' • server sync delayed':''}`
+  );
+  sourceBox('impactDeaths',j.recovered_source,j.recovered_source_url,j.recovered_update_time);
+  sourceBox('impactMissing',j.missing_source,j.missing_source_url,j.missing_update_time);
+  sourceBox('impactRescued',j.rescued_source,j.rescued_source_url,j.rescued_update_time);
+  if($('impactDetail'))$('impactDetail').textContent=tr(
+    'Server-side पुष्टि mirror मात्र • मृत्यु/उद्धार cumulative guard • सम्पर्कविहीन संख्या नयाँ authoritative report अनुसार घट्न वा बढ्न सक्छ • browserबाट बाहिरी Human Status API direct call हुँदैन।',
+    'Verified server-side mirror only • cumulative guards for deaths/rescued • missing may rise or fall with a newer authoritative report • no direct external Human Status API call from the browser.'
+  );
+  lastMirrorCheck=Date.now();lastSignature=signature(j);
+  window.__fsImpactHumanMirrorState={
+    schema:Number(j.sync_schema),status:j.status,deaths:d,missing:m,rescued:r,
+    deathTime:j.recovered_update_time,missingTime:j.missing_update_time,rescuedTime:j.rescued_update_time,
+    deathSource:j.recovered_source,missingSource:j.missing_source,rescuedSource:j.rescued_source,
+    lastChecked:j.last_checked_utc,mirrorCheckedAt:new Date(lastMirrorCheck).toISOString()
+  };
+  window.dispatchEvent(new CustomEvent('fshumanupdate',{detail:{current:j}}));
+}
+function repair(){if(current)apply(current)}
+function scheduleRepair(){if(repairQueued||!current)return;repairQueued=true;queueMicrotask(()=>{repairQueued=false;repair()})}
+function installLock(){
+  const roots=['impactDeaths','impactMissing','impactRescued','impactEvent','impactFresh'].map($).filter(Boolean);
+  if(!roots.length)return;
+  const obs=new MutationObserver(scheduleRepair);
+  for(const e of roots)obs.observe(e,{childList:true,subtree:true,characterData:true});
+  window.__fsImpactHumanLockObserver=obs;
+}
+async function sync(){
+  if(busy||document.hidden||!navigator.onLine)return;busy=true;
+  try{
+    const j=await get(),sig=signature(j);
+    if(!current||metricScore(j)>=metricScore(current)||sig!==lastSignature)apply(j);
+  }catch(e){
+    if(!current&&$('impactFresh'))$('impactFresh').textContent=tr(
+      'पुष्टि Human Status mirror अहिले उपलब्ध छैन • गलत/पुरानो संख्या देखाइँदैन • फेरि स्वतः जाँच हुँदैछ',
+      'Verified Human Status mirror unavailable • stale/untrusted figures are hidden • retrying automatically'
+    );
+  }finally{busy=false}
+}
+function boot(){
+  installLock();sync();setInterval(sync,POLL);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
+  window.addEventListener('online',sync);window.addEventListener('focus',sync);
+  window.addEventListener('fslanguage',()=>{if(current)apply(current)});
+  window.FloodSafeImpact={sync,get current(){return current},get score(){return metricScore(current)},validSnapshot};
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

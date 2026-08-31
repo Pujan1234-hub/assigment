@@ -4,7 +4,7 @@ window.maplibregl = maplibregl;
 
 if(!window.__fsSmoothMapLoadingV7){
   window.__fsSmoothMapLoadingV7=true;
-  import('./map-smooth-v3.js?v=4').then(()=>{
+  import('./map-smooth-v3.js?v=5').then(()=>{
     window.__fsSmoothMapLoaded=true;
     return import('./hydro-smooth-v2.js?v=6');
   }).then(()=>{

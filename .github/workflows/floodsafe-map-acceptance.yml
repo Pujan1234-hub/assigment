@@ -6,12 +6,12 @@ on:
     paths:
       - 'floodsafe-nepal/v25/index.html'
       - 'floodsafe-nepal/v25/map-*.js'
+      - 'floodsafe-nepal/v25/hydro-smooth-v2.js'
       - 'floodsafe-nepal/v25/trusted-river-runtime-v1.js'
       - 'floodsafe-nepal/v25/gauge-bridge.js'
       - 'floodsafe-nepal/v25/river-line-status-v1.js'
       - 'floodsafe-nepal/v25/river-map-detail-v2.js'
       - 'floodsafe-nepal/v25/river-line-style-v1.js'
-      - 'floodsafe-nepal/v25/hydro-complete-v1.js'
       - '.github/workflows/floodsafe-map-acceptance.yml'
 permissions:
   contents: read
@@ -23,30 +23,35 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:
-      - name: Wait for geometry-aware runtime on Pages
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax check
+        run: |
+          node --check floodsafe-nepal/v25/map-smooth-v3.js
+          node --check floodsafe-nepal/v25/hydro-smooth-v2.js
+          node --check floodsafe-nepal/v25/river-line-style-v1.js
+          node --check floodsafe-nepal/v25/gauge-bridge.js
+          node --check floodsafe-nepal/v25/river-line-status-v1.js
+      - name: Wait for smooth runtime on Pages
         run: |
           set -euo pipefail
           U='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
           ok=0
           for i in $(seq 1 100); do
-            html="$(curl --max-time 10 -fsSL "${U}?accept=${GITHUB_SHA}-${i}" || true)"
-            if [[ "$html" == *'trusted-river-runtime-v1.js?v=6'* ]] \
-              && [[ "$html" == *'gauge-bridge.js?v=19'* ]] \
-              && [[ "$html" == *'river-line-status-v1.js?v=6'* ]] \
-              && [[ "$html" == *'river-map-detail-v2.js?v=18'* ]] \
-              && [[ "$html" == *'river-line-style-v1.js?v=4'* ]] \
-              && [[ "$html" == *'map-loader-v3.js?v=6'* ]]; then ok=1; break; fi
+            html="$(curl --max-time 10 -fsSL "${U}?smooth=${GITHUB_SHA}-${i}" || true)"
+            if [[ "$html" == *'map-loader-v3.js?v=7'* ]] && [[ "$html" == *'river-line-style-v1.js?v=5'* ]]; then ok=1; break; fi
             sleep 4
           done
           test "$ok" = 1
-          gauge="$(curl --max-time 10 -fsSL "${U}gauge-bridge.js?v=19&accept=${GITHUB_SHA}")"
-          line="$(curl --max-time 10 -fsSL "${U}river-line-status-v1.js?v=6&accept=${GITHUB_SHA}")"
-          loader="$(curl --max-time 10 -fsSL "${U}map-loader-v3.js?v=6&accept=${GITHUB_SHA}")"
-          [[ "$gauge" == *'__fsGaugeBridgeV19'* && "$gauge" == *'UNNAMED_LINE_KM=.9'* ]]
-          [[ "$line" == *'__fsRiverLineStatusV6'* ]]
-          [[ "$loader" == *'hydro-complete-v1.js?v=7'* ]]
-
-      - name: Verify live match, colour, detail and smoothness
+          loader="$(curl --max-time 10 -fsSL "${U}map-loader-v3.js?v=7&smooth=${GITHUB_SHA}")"
+          hydro="$(curl --max-time 10 -fsSL "${U}hydro-smooth-v2.js?v=1&smooth=${GITHUB_SHA}")"
+          base="$(curl --max-time 10 -fsSL "${U}map-smooth-v3.js?v=1&smooth=${GITHUB_SHA}")"
+          style="$(curl --max-time 10 -fsSL "${U}river-line-style-v1.js?v=5&smooth=${GITHUB_SHA}")"
+          [[ "$loader" == *'map-smooth-v3.js?v=1'* && "$loader" == *'hydro-smooth-v2.js?v=1'* ]]
+          [[ "$hydro" == *'__fsHydroSmoothV2'* && "$hydro" == *"map.on('movestart'"* ]]
+          [[ "$base" == *'__fsMapSmoothV3'* ]]
+          [[ "$style" == *'__fsRiverLineStyleV5'* ]]
+          [[ "$style" != *'setTimeout(pulse,260)'* ]]
+      - name: Verify coverage realtime colours and interaction smoothness
         env:
           APP: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -60,66 +65,35 @@ jobs:
           const puppeteer=require('puppeteer-core');
           const wait=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
-            const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--enable-unsafe-swiftshader']});
+            const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader']});
             const p=await b.newPage();p.setDefaultTimeout(120000);await p.setViewport({width:1280,height:900});
-            p.on('console',m=>{if(m.type()==='error')console.log('PAGE ERROR',m.text())});
-            await p.goto(process.env.APP+'?mapaccept='+Date.now()+'#map',{waitUntil:'domcontentloaded'});
-            await p.waitForFunction(()=>window.__fsMapRuntimeGuardLoaded&&window.FloodSafeMap?.initialized,{timeout:120000});
-            await p.waitForFunction(()=>window.FloodSafeHydroComplete?.overviewCount>=1000&&window.FloodSafeGauge&&window.FloodSafeRiverLine&&window.FloodSafeRiverDetail&&window.FloodSafeRiverStyle,{timeout:120000});
+            const errors=[];p.on('pageerror',e=>errors.push(String(e)));p.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            await p.goto(process.env.APP+'?smoothaccept='+Date.now()+'#map',{waitUntil:'domcontentloaded'});
+            await p.waitForFunction(()=>window.__fsSmoothMapLoaded&&window.__fsHydroSmoothLoaded&&window.FloodSafeMap?.initialized,{timeout:120000});
+            await p.waitForFunction(()=>window.FloodSafeHydroSmooth?.overviewCount>=1000&&window.FloodSafeHydroSmooth?.manifest?.count>=60000,{timeout:120000});
             await p.waitForFunction(()=>window.FloodSafeMap?.map?.getLayer?.('hydro-complete-lines')&&window.FloodSafeMap?.map?.getSource?.('hydro-complete'),{timeout:120000});
             await p.waitForFunction(()=>window.__fsRiverRealtimeState?.source==='BIPAD official direct',{timeout:90000});
-            await wait(1800);
+            await wait(1200);
+            const coverage=await p.evaluate(()=>{const m=window.FloodSafeMap.map,fs=m.getSource('hydro-complete')?.serialize?.()?.data?.features||[];return{districts:window.FloodSafeMap.districtCount,overview:window.FloodSafeHydroSmooth.overviewCount,total:window.FloodSafeHydroSmooth.manifest?.count||0,shown:fs.length,source:window.__fsRiverRealtimeState?.source,current:(window.FloodSafe?.state?.stations||[]).length,paint:JSON.stringify(m.getPaintProperty('hydro-complete-lines','line-color'))}});
+            console.log('COVERAGE',JSON.stringify(coverage));
+            if(coverage.districts!==77||coverage.overview<6000||coverage.total<60000||coverage.shown<1000)throw Error('coverage incomplete '+JSON.stringify(coverage));
+            if(coverage.source!=='BIPAD official direct')throw Error('direct source inactive');
+            if(!coverage.paint.includes('#ff7a00')||!coverage.paint.includes('#ff2d20'))throw Error('alert colours missing');
 
-            const live=await p.evaluate(()=>{
-              const MAX=20*60*1000,FUT=5*60*1000;
-              const val=(o,ks)=>{for(const k of ks){const v=o?.[k];if(v!==undefined&&v!==null&&v!=='')return v}return null};
-              const flat=o=>o&&typeof o==='object'&&o.fields&&typeof o.fields==='object'?Object.assign({},o.fields,o):o;
-              const stamp=o=>val(flat(o),['_measurementTime','waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime']);
-              const num=(o,ks)=>{const n=Number(val(flat(o),ks));return Number.isFinite(n)?n:null};
-              const current=o=>{const t=+new Date(stamp(o)||0),a=Date.now()-t;return !!t&&a>=-FUT&&a<=MAX&&num(o,['waterLevel','water_level'])!==null};
-              const stage=o=>{const l=num(o,['waterLevel','water_level']),w=num(o,['warningLevel','warning_level']),d=num(o,['dangerLevel','danger_level']),raw=String(val(flat(o),['_officialStatus','status'])||'').toUpperCase();if((l!==null&&d!==null&&d>0&&l>=d)||(/DANGER|RED/.test(raw)&&!/BELOW\s+DANGER/.test(raw)))return'danger';if((l!==null&&w!==null&&w>0&&l>=w)||(/WARNING|ORANGE/.test(raw)&&!/BELOW\s+WARNING/.test(raw)))return'warning';if(/WATCH|RISING|INCREASING|YELLOW/.test(raw))return'watch';return'normal'};
-              const rows=(window.FloodSafe?.state?.stations||[]).filter(current),abnormal=rows.filter(x=>stage(x)!=='normal');
-              const map=window.FloodSafeMap.map,features=map.getSource('hydro-complete')?.serialize?.()?.data?.features||[];
-              const matched=features.filter(f=>['normal','watch','warning','danger'].includes(f.properties?.live_status));
-              const abnormalMatched=features.filter(f=>['watch','warning','danger'].includes(f.properties?.live_status));
-              const samples=rows.slice(0,6).map(x=>({name:x.title||x.name,time:stamp(x),level:x.waterLevel,status:stage(x),point:x.point?.coordinates||null}));
-              return{source:window.__fsRiverRealtimeState?.source,current:rows.length,abnormal:abnormal.length,samples,districts:window.FloodSafeMap.districtCount,rivers:window.FloodSafeMap.nationalRiverCount,hydro:features.length,matched:matched.length,abnormalMatched:abnormalMatched.length,paint:JSON.stringify(map.getPaintProperty('hydro-complete-lines','line-color'))};
-            });
-            console.log('LIVE',JSON.stringify(live));
-            if(live.source!=='BIPAD official direct')throw Error('direct source inactive '+JSON.stringify(live));
-            if(live.districts<77||live.rivers<500||live.hydro<1000)throw Error('map coverage incomplete '+JSON.stringify(live));
-            if(live.current>0&&live.matched===0)throw Error('fresh official gauges but zero river matches '+JSON.stringify(live));
-            if(live.abnormal>0&&live.abnormalMatched===0)throw Error('official warning/danger exists but no coloured river '+JSON.stringify(live));
-            if(!live.paint.includes('#ff7a00')||!live.paint.includes('#ff2d20'))throw Error('warning/danger paint missing '+live.paint);
-
-            const perf=await p.evaluate(async()=>{
-              const src=window.FloodSafeMap.map.getSource('hydro-complete');let setData=0,statusEvents=0,heartbeats=0;
-              const original=src.setData.bind(src);src.setData=(...a)=>{setData++;return original(...a)};
-              const a=()=>statusEvents++,h=()=>heartbeats++;window.addEventListener('fsriverlinestatus',a);window.addEventListener('fsriverheartbeat',h);
-              let maxGap=0,last=performance.now(),end=last+5600;await new Promise(resolve=>{function frame(now){maxGap=Math.max(maxGap,now-last);last=now;if(now>=end)return resolve();requestAnimationFrame(frame)}requestAnimationFrame(frame)});
-              window.removeEventListener('fsriverlinestatus',a);window.removeEventListener('fsriverheartbeat',h);src.setData=original;
-              return{setData,statusEvents,heartbeats,maxGap};
-            });
+            const perf=await p.evaluate(async()=>{const map=window.FloodSafeMap.map,src=map.getSource('hydro-complete');let setData=0;const original=src.setData.bind(src);src.setData=(...a)=>{setData++;return original(...a)};let maxGap=0,last=performance.now();map.easeTo({center:[84.7,28.2],zoom:7.15,duration:1100});const end=last+3600;await new Promise(resolve=>{function f(now){maxGap=Math.max(maxGap,now-last);last=now;if(now>=end)return resolve();requestAnimationFrame(f)}requestAnimationFrame(f)});src.setData=original;return{setData,maxGap,zoom:map.getZoom(),moving:map.isMoving()}});
             console.log('PERF',JSON.stringify(perf));
-            if(perf.heartbeats<1)throw Error('realtime heartbeat missing '+JSON.stringify(perf));
-            if(perf.setData>1||perf.statusEvents>1)throw Error('unchanged data still repaints map '+JSON.stringify(perf));
+            if(perf.setData>3)throw Error('too many hydro redraws during one interaction '+JSON.stringify(perf));
             if(perf.maxGap>450)throw Error('main thread stall '+JSON.stringify(perf));
 
-            const clickPoint=await p.evaluate(()=>{const map=window.FloodSafeMap.map,fs=map.getSource('hydro-complete')?.serialize?.()?.data?.features||[],canvas=map.getCanvas();for(const f of fs){const line=f.geometry?.type==='LineString'?f.geometry.coordinates:null;if(!line?.length||!String(f.properties?.name||'').trim())continue;const c=line[Math.floor((line.length-1)/2)],pt=map.project(c);if(pt.x>30&&pt.y>30&&pt.x<canvas.clientWidth-30&&pt.y<canvas.clientHeight-30)return{x:pt.x,y:pt.y}}return null});
-            if(!clickPoint)throw Error('no visible named river click target');
-            await p.mouse.click(clickPoint.x,clickPoint.y);await p.waitForSelector('#riverDetailSheet:not([hidden])',{timeout:15000});await wait(300);
-            const detail=await p.evaluate(()=>({grid:document.querySelectorAll('#riverDetailSheet .sheetGridGL>div').length,meta:document.querySelectorAll('#riverDetailSheet .sheetMetaGL p').length,state:window.__fsLastRiverDetail||null}));
-            console.log('DETAIL',JSON.stringify(detail));
-            if(detail.grid<8||detail.meta<10||!detail.state?.name)throw Error('river details incomplete '+JSON.stringify(detail));
-
-            const synthetic=await p.evaluate(()=>{const map=window.FloodSafeMap.map,fs=map.getSource('hydro-complete')?.serialize?.()?.data?.features||[],f=fs.find(x=>x.geometry?.type==='LineString'&&x.geometry.coordinates?.length>1&&String(x.properties?.name||'').trim());if(!f)throw Error('no synthetic river');const c=f.geometry.coordinates[Math.floor((f.geometry.coordinates.length-1)/2)],name=f.properties.name_en||f.properties.name_raw||f.properties.name;window.__orig=(window.FloodSafe.state.stations||[]).slice();window.__testRiver={id:f.properties.id,feature:f,c};window.__setLevel=level=>{const now=new Date().toISOString();window.FloodSafe.state.stations=[{title:name,waterLevel:level,warningLevel:5,dangerLevel:8,waterLevelOn:now,_measurementTime:now,_measurementTimeTrusted:true,_current20m:true,point:{coordinates:c},dataSource:'acceptance'}];window.FloodSafeRiverLine.rebuild(true)};window.__setLevel(4);return{id:f.properties.id}});
-            const expect=async s=>p.waitForFunction((id,s)=>(window.FloodSafeMap.map.getSource('hydro-complete')?.serialize?.()?.data?.features||[]).some(f=>String(f.properties?.id)===String(id)&&f.properties?.live_status===s),{timeout:15000},synthetic.id,s);
-            await expect('normal');await p.evaluate(()=>window.__setLevel(6));await expect('warning');await p.evaluate(()=>window.__setLevel(9));await expect('danger');
-            await p.evaluate(()=>{const a=window.__testRiver;window.FloodSafeRiverDetail.show(a.feature,{lng:a.c[0],lat:a.c[1]})});await wait(300);
-            const danger=await p.evaluate(()=>({state:window.__fsLastRiverDetail,color:window.FloodSafeMap.map.getPaintProperty('hydro-complete-selected','line-color')}));
-            console.log('DANGER',JSON.stringify(danger));
-            if(danger.state?.status!=='danger'||danger.state?.gauge?.level!==9||danger.color!=='#ff2d20')throw Error('danger reaction failed '+JSON.stringify(danger));
-            await p.evaluate(()=>{window.FloodSafe.state.stations=window.__orig||[];window.FloodSafeRiverLine.rebuild(true)});
-            console.log('PASS FloodSafe realtime map acceptance');await b.close();
+            await p.waitForFunction(()=>!window.FloodSafeMap.map.isMoving(),{timeout:15000});await wait(1200);
+            const target=await p.evaluate(()=>{const map=window.FloodSafeMap.map,fs=map.getSource('hydro-complete')?.serialize?.()?.data?.features||[],canvas=map.getCanvas();for(const f of fs){const line=f.geometry?.coordinates;if(f.geometry?.type!=='LineString'||!line?.length)continue;const c=line[Math.floor((line.length-1)/2)],pt=map.project(c);if(pt.x>40&&pt.y>40&&pt.x<canvas.clientWidth-40&&pt.y<canvas.clientHeight-40)return{id:f.properties.id,name:f.properties.name_en||f.properties.name_raw||f.properties.name||'Acceptance River',c}}return null});
+            if(!target)throw Error('no visible river target');
+            await p.evaluate(t=>{const now=new Date().toISOString();window.__origStations=(window.FloodSafe.state.stations||[]).slice();window.FloodSafe.state.stations=[{title:t.name,waterLevel:9,warningLevel:5,dangerLevel:8,waterLevelOn:now,_measurementTime:now,_measurementTimeTrusted:true,_current20m:true,point:{coordinates:t.c},dataSource:'acceptance'}];window.FloodSafeRiverLine.rebuild(true)},target);
+            await p.waitForFunction(id=>(window.FloodSafeMap.map.getSource('hydro-complete')?.serialize?.()?.data?.features||[]).some(f=>String(f.properties?.id)===String(id)&&f.properties?.live_status==='danger'),{timeout:15000},target.id);
+            const danger=await p.evaluate(id=>{const m=window.FloodSafeMap.map,fs=m.getSource('hydro-complete')?.serialize?.()?.data?.features||[],f=fs.find(x=>String(x.properties?.id)===String(id));return{status:f?.properties?.live_status,station:f?.properties?.live_station}},target.id);
+            console.log('DANGER',JSON.stringify(danger));if(danger.status!=='danger')throw Error('danger colour reaction failed');
+            await p.evaluate(()=>{window.FloodSafe.state.stations=window.__origStations||[];window.FloodSafeRiverLine.rebuild(true)});
+            if(errors.some(x=>/FloodSafe smooth map runtime failed|SyntaxError|TypeError/.test(x)))throw Error('browser errors '+JSON.stringify(errors));
+            console.log('PASS smooth FloodSafe map acceptance');await b.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

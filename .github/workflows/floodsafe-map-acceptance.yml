@@ -33,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           for f in floodsafe-nepal/v25/{flood-reset.js,trusted-river-runtime-v1.js,realtime-guard-v1.js,river-current-20m-v1.js,map-smooth-v3.js,map-hint-sync-v1.js,hydro-smooth-v2.js,gauge-bridge.js,river-line-status-v1.js,river-map-detail-v2.js,river-line-style-v1.js,live-official-label-lock.js}; do node --check "$f"; done
-          grep -Fq '__fsTrustedRiverRuntimeV13' floodsafe-nepal/v25/trusted-river-runtime-v1.js
+          grep -Fq '__fsTrustedRiverRuntimeV14' floodsafe-nepal/v25/trusted-river-runtime-v1.js
           grep -Fq 'S.latestRiverStations=latest' floodsafe-nepal/v25/trusted-river-runtime-v1.js
           grep -Fq 'dedupeCatalogStrict(directCatalog)' floodsafe-nepal/v25/trusted-river-runtime-v1.js
           grep -Fq '__fsMapSmoothV10' floodsafe-nepal/v25/map-smooth-v3.js
@@ -82,7 +82,6 @@ jobs:
               print(label,'OFFICIAL_BOX_COUNT',len(hits))
               for h in hits:print(label,'STATION',h)
           assert len(rows)>=200 and len(geo)>=100
-          with open('/tmp/bipad_counts.json','w') as f:json.dump({'raw':len(rows),'geo':len(geo),'latest':len(latest)},f)
           PY
 
       - name: Wait for exact deployed latest-official build
@@ -93,7 +92,7 @@ jobs:
           for i in $(seq 1 120); do
             h="$(curl --max-time 12 -fsSL "${U}?accept=${GITHUB_SHA}-${i}" || true)"
             if [[ "$h" == *'flood-reset.js?v=16'* \
-              && "$h" == *'trusted-river-runtime-v1.js?v=13'* \
+              && "$h" == *'trusted-river-runtime-v1.js?v=14'* \
               && "$h" == *'river-current-20m-v1.js?v=6'* \
               && "$h" == *'realtime-guard-v1.js?v=7'* \
               && "$h" == *'gauge-bridge.js?v=23'* \
@@ -107,7 +106,9 @@ jobs:
           done
           test "$ok" = 1
           loader="$(curl --max-time 12 -fsSL "${U}map-loader-v3.js?v=17&accept=${GITHUB_SHA}")"
+          runtime="$(curl --max-time 12 -fsSL "${U}trusted-river-runtime-v1.js?v=14&accept=${GITHUB_SHA}")"
           [[ "$loader" == *'map-smooth-v3.js?v=10'* && "$loader" == *'hydro-smooth-v2.js?v=9'* ]]
+          [[ "$runtime" == *'__fsTrustedRiverRuntimeV14'* && "$runtime" == *'S.latestRiverStations=latest'* ]]
 
       - name: Browser acceptance exact station parity latest colours clicks and smoothness
         env:

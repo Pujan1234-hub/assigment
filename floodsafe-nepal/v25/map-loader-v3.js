@@ -6,7 +6,7 @@ if(!window.__fsSmoothMapLoadingV9){
   window.__fsSmoothMapLoadingV9=true;
   import('./map-smooth-v3.js?v=11').then(()=>{
     window.__fsSmoothMapLoaded=true;
-    return import('./hydro-smooth-v2.js?v=9');
+    return import('./hydro-smooth-v2.js?v=10');
   }).then(()=>{
     window.__fsHydroSmoothLoaded=true;
   }).catch((err)=>{

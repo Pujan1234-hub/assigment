@@ -11,41 +11,56 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
-      - name: Probe official source freshness and CORS
+      - name: Probe current official observations and flood alerts
         shell: bash
         run: |
-          set -u
+          set -euo pipefail
           python - <<'PY'
-          import json, urllib.request, urllib.error
-          urls=[
-            'https://bipadportal.gov.np/api/v1/river/?limit=20&ordering=-waterLevelOn',
-            'https://bipadportal.gov.np/api/v1/river-trimed/?limit=20',
-            'https://bipadportal.gov.np/api/v1/river-stations/?limit=20',
-            'https://www.dhm.gov.np/hydrology/river-watch',
-            'https://www.dhm.gov.np/'
-          ]
-          for u in urls:
-            print('\n===',u)
-            try:
-              req=urllib.request.Request(u,headers={
-                'User-Agent':'Mozilla/5.0 FloodSafe-Nepal-source-probe',
-                'Accept':'application/json,text/html,*/*',
-                'Origin':'https://pujan1234-hub.github.io'
-              })
-              with urllib.request.urlopen(req,timeout=25) as r:
-                print('HTTP',r.status)
-                for h in ['Access-Control-Allow-Origin','Access-Control-Allow-Methods','Content-Type','Cache-Control','Date']:
-                  print(h+':',r.headers.get(h))
-                raw=r.read(12000).decode('utf-8','replace')
-                print('BODY',raw[:8000].replace('\n',' ')[:8000])
-                if 'json' in str(r.headers.get('Content-Type','')).lower():
-                  try:
-                    j=json.loads(raw)
-                    arr=j if isinstance(j,list) else next((j[k] for k in ('results','data','objects') if isinstance(j,dict) and isinstance(j.get(k),list)),[])
-                    print('ROWS',len(arr))
-                    for x in arr[:5]:
-                      print('ROW',json.dumps(x,ensure_ascii=False)[:2500])
-                  except Exception as e: print('JSON_PARSE',repr(e))
-            except Exception as e:
-              print('ERROR',repr(e))
+          import json, urllib.request
+          from datetime import datetime, timezone
+          ORIGIN='https://pujan1234-hub.github.io'
+          def get(url):
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 FloodSafe-Nepal-source-probe','Accept':'application/json','Origin':ORIGIN})
+              with urllib.request.urlopen(req,timeout=35) as r:
+                  print('HTTP',r.status,url,'CORS=',r.headers.get('Access-Control-Allow-Origin'),'DATE=',r.headers.get('Date'))
+                  return json.loads(r.read().decode('utf-8-sig'))
+          def rows(j):
+              if isinstance(j,list): return j
+              for k in ('results','data','objects'):
+                  if isinstance(j,dict) and isinstance(j.get(k),list): return j[k]
+              return []
+          def dt(v):
+              if not v:return None
+              try:return datetime.fromisoformat(str(v).replace('Z','+00:00')).astimezone(timezone.utc)
+              except:return None
+          now=datetime.now(timezone.utc)
+          stations=rows(get('https://bipadportal.gov.np/api/v1/river-stations/?limit=2000&ordering=-waterLevelOn'))
+          print('STATIONS',len(stations))
+          current=[]
+          for x in stations:
+              t=dt(x.get('waterLevelOn') or x.get('measuredOn') or x.get('measurementTime'))
+              lv=x.get('waterLevel')
+              if t and lv is not None:
+                  age=(now-t).total_seconds()/60
+                  if -5<=age<=20: current.append((age,x))
+          current.sort(key=lambda z:z[0])
+          print('CURRENT_20M',len(current))
+          for age,x in current[:30]:
+              lv=x.get('waterLevel'); w=x.get('warningLevel'); d=x.get('dangerLevel'); raw=x.get('status')
+              stage='normal'
+              try:
+                  if d is not None and float(d)>0 and float(lv)>=float(d): stage='danger'
+                  elif w is not None and float(w)>0 and float(lv)>=float(w): stage='warning'
+              except: pass
+              if isinstance(raw,str):
+                  r=raw.upper()
+                  if ('DANGER' in r or 'RED' in r) and 'BELOW DANGER' not in r: stage='danger'
+                  elif ('WARNING' in r or 'ORANGE' in r) and 'BELOW WARNING' not in r: stage='warning'
+              print('CURRENT',round(age,1),stage,x.get('title'),lv,'W',w,'D',d,x.get('waterLevelOn'),x.get('point'))
+          alerts=rows(get('https://bipadportal.gov.np/api/v1/alert/?limit=300&ordering=-createdOn'))
+          print('ALERTS',len(alerts))
+          for x in alerts[:25]:
+              blob=json.dumps(x,ensure_ascii=False).lower()
+              if any(k in blob for k in ('flood','river','बाढी','नदी','खोला')):
+                  print('FLOOD_ALERT',json.dumps(x,ensure_ascii=False)[:5000])
           PY

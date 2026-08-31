@@ -32,7 +32,7 @@ jobs:
           ok=0
           for i in $(seq 1 90); do
             html="$(curl --max-time 15 -fsSL "${BASE}?mapci=${GITHUB_SHA}-${i}" || true)"
-            if printf '%s' "$html" | grep -Fq 'trusted-river-runtime-v1.js?v=18' && ! printf '%s' "$html" | grep -Fq 'bipad-realtime-overlay-v1.js'; then
+            if printf '%s' "$html" | grep -Fq 'trusted-river-runtime-v1.js?v=18' && printf '%s' "$html" | grep -Fq 'map-loader-v3.js?v=23' && ! printf '%s' "$html" | grep -Fq 'bipad-realtime-overlay-v1.js'; then
               ok=1; break
             fi
             sleep 4
@@ -107,6 +107,7 @@ jobs:
               await sleep(800);
               const pop=await page.$eval('.maplibregl-popup',e=>e.innerText).catch(()=> '');
               if(!/Water level|पानीको सतह/.test(pop)||!/Danger level|खतरा तह/.test(pop)||!/Warning level|चेतावनी तह/.test(pop)||!/Station series ID/.test(pop))throw Error('river detail popup incomplete: '+pop);
+              if(!/latest=true/.test(pop))throw Error('popup source is not labelled as BIPAD realtime latest=true: '+pop);
             }
             if(errors.length)throw Error('page errors '+JSON.stringify(errors.slice(0,6)));
             console.log('PASS BIPAD REALTIME LATEST',JSON.stringify({stations:app.all.length,source:app.state.source,newest:app.state.newestMeasurement}));

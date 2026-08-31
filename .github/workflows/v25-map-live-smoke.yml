@@ -9,7 +9,6 @@ on:
       - 'floodsafe-nepal/v25/trusted-river-runtime-v1.js'
       - 'floodsafe-nepal/v25/ui-simple-v1.css'
       - 'floodsafe-nepal/v25/river-*.js'
-      - 'data/floodsafe-core.json'
       - '.github/workflows/v25-map-live-smoke.yml'
   workflow_dispatch:
 permissions:
@@ -23,21 +22,22 @@ jobs:
     timeout-minutes: 15
     env:
       BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
+      BIPAD: https://bipadportal.gov.np/api/v1/river-stations/?limit=2000&ordering=-waterLevelOn
     steps:
-      - name: Wait for deployed upgraded build
+      - name: Wait for deployed river-only build
         run: |
           set -euo pipefail
           ok=0
-          for i in $(seq 1 70); do
+          for i in $(seq 1 80); do
             html="$(curl --max-time 15 -fsSL "${BASE}?mapci=${GITHUB_SHA}-${i}" || true)"
-            if printf '%s' "$html" | grep -Fq 'ui-simple-v1.css?v=1' && printf '%s' "$html" | grep -Fq 'trusted-river-runtime-v1.js?v=15' && printf '%s' "$html" | grep -Fq 'map-loader-v3.js?v=20'; then
+            if printf '%s' "$html" | grep -Fq 'trusted-river-runtime-v1.js?v=16' && printf '%s' "$html" | grep -Fq 'map-loader-v3.js?v=22' && ! printf '%s' "$html" | grep -Fq 'bipad-realtime-overlay-v1.js' && ! printf '%s' "$html" | grep -Fq 'latest-official-semantics-v1.js'; then
               ok=1; break
             fi
             sleep 4
           done
           test "$ok" = 1
 
-      - name: Verify Nepal map, all-station catalogue and river network
+      - name: Verify direct BIPAD parity in live browser
         run: |
           set -euo pipefail
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
@@ -45,30 +45,52 @@ jobs:
           mkdir -p /tmp/mapgate && cd /tmp/mapgate
           npm init -y >/dev/null 2>&1
           npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
-          BASE="$BASE" CHROME="$CHROME" node <<'JS'
+          BASE="$BASE" BIPAD="$BIPAD" CHROME="$CHROME" node <<'JS'
           const puppeteer=require('puppeteer-core');
           const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          const val=(o,ks)=>{for(const k of ks){const v=o?.[k];if(v!==undefined&&v!==null&&v!=='')return v}return null};
+          const num=v=>{const n=Number(String(v??'').replace(/[^0-9.+-]/g,''));return Number.isFinite(n)?n:null};
+          const stamp=o=>val(o,['_measurementTime','waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime']);
+          const level=o=>num(val(o,['waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level','_lastWaterLevel']));
+          const warning=o=>num(val(o,['warningLevel','warning_level','warningThreshold','warning_threshold','_lastWarningLevel']));
+          const danger=o=>num(val(o,['dangerLevel','danger_level','dangerThreshold','danger_threshold','_lastDangerLevel']));
+          const ids=o=>['stationSeriesId','station_series_id','stationId','station_id','stationIndex','station_index'].map(k=>o?.[k]).filter(v=>v!==undefined&&v!==null&&v!=='').map(String);
+          const key=o=>ids(o)[0]?`sid:${ids(o)[0]}`:(o?.id!=null?`id:${o.id}`:null);
+          const rows=j=>Array.isArray(j)?j:Array.isArray(j?.results)?j.results:Array.isArray(j?.data)?j.data:Array.isArray(j?.data?.results)?j.data.results:[];
+          async function fetchBipad(){let next=process.env.BIPAD,out=[],seen=new Set(),n=0;while(next&&n++<24){if(seen.has(next))break;seen.add(next);const r=await fetch(next+(next.includes('?')?'&':'?')+'_ci='+Date.now(),{headers:{accept:'application/json'}});if(!r.ok)throw Error('BIPAD HTTP '+r.status);const j=await r.json(),batch=rows(j);out.push(...batch);const x=j?.next||j?.data?.next||null;if(!x||!batch.length)break;next=/^https?:/i.test(x)?x:new URL(x,process.env.BIPAD).href}return out}
           (async()=>{
+            const official=await fetchBipad();
+            if(!official.length)throw Error('BIPAD returned no river stations');
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
             const page=await browser.newPage();
             await page.setViewport({width:412,height:915,deviceScaleFactor:1});
-            const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
-            await page.goto(process.env.BASE+'?mapci='+Date.now(),{waitUntil:'domcontentloaded',timeout:70000});
-            await page.waitForFunction(()=>window.FloodSafeMap?.map && document.getElementById('riverMapGL'),{timeout:70000});
+            const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto(process.env.BASE+'?mapci='+Date.now()+'#map',{waitUntil:'domcontentloaded',timeout:70000});
+            await page.waitForFunction(()=>window.FloodSafeMap?.map&&window.__fsRiverRealtimeState?.connected===true&&Number(window.__fsRiverRealtimeState?.catalogCount||0)>0,{timeout:70000});
             await page.waitForFunction(()=>window.FloodSafeMap.map.isStyleLoaded(),{timeout:70000});
-            await page.waitForFunction(()=>Number(window.__fsRiverRealtimeState?.catalogCount||0)>0,{timeout:70000});
-            await page.waitForFunction(()=>Number(window.FloodSafeMap?.districtCount||0)===77,{timeout:70000});
-            await sleep(8000);
-            const state=await page.evaluate(()=>{
-              const map=window.FloodSafeMap.map,src=map.getSource('gauges'),d=src?._data,features=Array.isArray(d?.features)?d.features:[];
-              return {catalog:Number(window.__fsRiverRealtimeState?.catalogCount||0),latest:Number(window.__fsRiverRealtimeState?.latestCount||0),fresh:Number(window.__fsRiverRealtimeState?.updatedWithin5mCount||0),districts:Number(window.FloodSafeMap?.districtCount||0),gauges:features.length,hydro:Number(window.__fsHydroMatchState?.features||0),overlay:document.getElementById('fsMapSimpleStatus')?.textContent||'',pageErrors:errors};
-            });
-            if(state.catalog<1) throw Error('Official catalogue missing '+JSON.stringify(state));
-            if(state.districts!==77) throw Error('77 districts missing '+JSON.stringify(state));
-            if(state.gauges<1) throw Error('Official gauges missing '+JSON.stringify(state));
-            if(!state.overlay) throw Error('Simple live map status missing '+JSON.stringify(state));
-            if(state.pageErrors.length) throw Error('Page errors '+JSON.stringify(state.pageErrors.slice(0,6)));
-            console.log('PASS MAP V25',JSON.stringify(state));
+            await sleep(5000);
+            const app=await page.evaluate(()=>({state:window.__fsRiverRealtimeState,all:window.FloodSafe?.state?.allRiverStations||[],latest:window.FloodSafe?.state?.latestRiverStations||[],current:window.FloodSafe?.state?.currentRiverStations||[],text:document.body.innerText,overlay:document.getElementById('fsMapSimpleStatus')?.innerText||'',otherBipad:!!document.getElementById('fsBipadLayerControl')}));
+            if(app.state.source!=='BIPAD river-stations direct')throw Error('Wrong source '+JSON.stringify(app.state));
+            if(app.otherBipad)throw Error('Non-river BIPAD layer control still present');
+            if(/५ मिनेटभित्र|updated\s*[≤<]=?\s*5\s*min/i.test(app.text))throw Error('Old 5-minute semantics still visible');
+            if(app.current.length!==app.latest.length)throw Error(`current/latest mismatch ${app.current.length}/${app.latest.length}`);
+            const appMap=new Map(app.all.map(o=>[key(o),o]).filter(x=>x[0]));
+            let checked=0;
+            for(const o of official){const k=key(o),a=k&&appMap.get(k);if(!a||level(o)===null||!stamp(o))continue;
+              const fail=[];
+              if(level(a)!==level(o))fail.push(`waterLevel ${level(a)} != ${level(o)}`);
+              if(+new Date(stamp(a))!==+new Date(stamp(o)))fail.push(`time ${stamp(a)} != ${stamp(o)}`);
+              const ow=warning(o),aw=warning(a);if(ow!==null&&aw!==ow)fail.push(`warning ${aw} != ${ow}`);
+              const od=danger(o),ad=danger(a);if(od!==null&&ad!==od)fail.push(`danger ${ad} != ${od}`);
+              for(const f of ['basin','elevation','steady','description','status']){if(o[f]!==undefined&&o[f]!==null&&String(a[f]??'')!==String(o[f]))fail.push(`${f} mismatch`)}
+              if(fail.length)throw Error(`BIPAD parity failed ${k}: ${fail.join(', ')}`);
+              if(++checked>=12)break;
+            }
+            if(checked<3)throw Error('Too few exact station parity matches: '+checked);
+            const gauge=await page.evaluate(()=>{const s=window.FloodSafeMap.map.getSource('gauges');return s?._data?.features?.[0]||null});
+            if(gauge){await page.evaluate(f=>{const m=window.FloodSafeMap.map,c=f.geometry.coordinates;m.fire('click',{lngLat:{lng:c[0],lat:c[1]},point:m.project(c),features:[f]})},gauge);await sleep(800);const pop=await page.$eval('.maplibregl-popup',e=>e.innerText).catch(()=> '');if(!/Water level|पानीको सतह/.test(pop)||!/Danger level|खतरा तह/.test(pop)||!/Warning level|चेतावनी तह/.test(pop)||!/Station series ID/.test(pop))throw Error('BIPAD detail popup incomplete: '+pop)}
+            if(errors.length)throw Error('Page errors '+JSON.stringify(errors.slice(0,6)));
+            console.log('PASS BIPAD RIVER PARITY',JSON.stringify({officialRows:official.length,appRows:app.all.length,latest:app.latest.length,checked,source:app.state.source,overlay:app.overlay}));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

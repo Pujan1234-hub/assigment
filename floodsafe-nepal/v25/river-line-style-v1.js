@@ -1,12 +1,11 @@
 (()=>{'use strict';
-if(window.__fsRiverLineStyleV5)return;window.__fsRiverLineStyleV5=true;
-const COLOR=['match',['get','live_status'],'danger','#ff2d20','warning','#ff7a00','watch','#ffd166','normal','#22a7ff','#22a7ff'];
-const OPACITY=['match',['get','live_status'],'unknown',0.78,0.99];
-let lastAppliedMap=null;
+if(window.__fsRiverLineStyleV6)return;window.__fsRiverLineStyleV6=true;
+const COLOR=['match',['get','live_status'],'danger','#ff2d20','warning','#ff7a00','watch','#ffd166','normal','#22a7ff','#557b8b'];
+const OPACITY=['match',['get','live_status'],'unknown',0.72,0.99];
 function ensurePulse(map,source,id,beforeId){if(!map?.getSource(source)||map.getLayer(id))return;try{map.addLayer({id,type:'line',source,filter:['in',['get','live_status'],['literal',['warning','danger']]],paint:{'line-color':['match',['get','live_status'],'danger','#ff2d20','#ff7a00'],'line-width':['interpolate',['linear'],['zoom'],5,2.4,10,5.8,16,10.5],'line-opacity':.96,'line-dasharray':[1,2]}},beforeId&&map.getLayer(beforeId)?beforeId:undefined)}catch{}}
-function apply(){const map=window.FloodSafeMap?.map;if(!map||!map.isStyleLoaded?.()||map.isMoving?.())return false;try{if(map.getLayer('hydro-complete-lines')){map.setPaintProperty('hydro-complete-lines','line-color',COLOR);map.setPaintProperty('hydro-complete-lines','line-opacity',OPACITY)}ensurePulse(map,'hydro-complete','hydro-complete-flood-pulse','hydro-complete-selected');if(map.getLayer('hydro-complete-flood-pulse')){map.setFilter('hydro-complete-flood-pulse',['in',['get','live_status'],['literal',['warning','danger']]]);map.setPaintProperty('hydro-complete-flood-pulse','line-color',['match',['get','live_status'],'danger','#ff2d20','#ff7a00']);map.setPaintProperty('hydro-complete-flood-pulse','line-opacity',.96)}lastAppliedMap=map;return true}catch(e){console.warn('FloodSafe river colour apply failed',e);return false}}
+function apply(){const map=window.FloodSafeMap?.map;if(!map||!map.isStyleLoaded?.()||map.isMoving?.())return false;try{if(map.getLayer('hydro-complete-lines')){map.setPaintProperty('hydro-complete-lines','line-color',COLOR);map.setPaintProperty('hydro-complete-lines','line-opacity',OPACITY)}ensurePulse(map,'hydro-complete','hydro-complete-flood-pulse','hydro-complete-selected');if(map.getLayer('hydro-complete-flood-pulse')){map.setFilter('hydro-complete-flood-pulse',['in',['get','live_status'],['literal',['warning','danger']]]);map.setPaintProperty('hydro-complete-flood-pulse','line-color',['match',['get','live_status'],'danger','#ff2d20','#ff7a00']);map.setPaintProperty('hydro-complete-flood-pulse','line-opacity',.96)}return true}catch(e){console.warn('FloodSafe river colour apply failed',e);return false}}
 let timer=0;function schedule(){clearTimeout(timer);timer=setTimeout(apply,180)}
 for(const ev of['fsriverlinestatus','fsriverupdate','fstrustedriverupdate','fslanguage','fsmapready'])window.addEventListener(ev,schedule);
 let tries=0;const ready=setInterval(()=>{tries++;if(apply()||tries>60)clearInterval(ready)},250);
-window.FloodSafeRiverStyle={apply,COLOR,get dangerColor(){return'#ff2d20'},get warningColor(){return'#ff7a00'},get normalColor(){return'#22a7ff'}};
+window.FloodSafeRiverStyle={apply,COLOR,get dangerColor(){return'#ff2d20'},get warningColor(){return'#ff7a00'},get normalColor(){return'#22a7ff'},get unknownColor(){return'#557b8b'}};
 })();

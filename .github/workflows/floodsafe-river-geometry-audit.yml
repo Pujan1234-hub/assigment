@@ -1,0 +1,115 @@
+name: FloodSafe River Geometry Audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/floodsafe-river-geometry-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit fresh BIPAD gauges against overview and full tiles
+        run: |
+          python - <<'PY'
+          import json, math, re, unicodedata, urllib.request
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+
+          URL='https://bipadportal.gov.np/api/v1/river-stations/?limit=500&ordering=-waterLevelOn'
+          req=urllib.request.Request(URL,headers={'User-Agent':'Mozilla/5.0 FloodSafe-geometry-audit','Accept':'application/json'})
+          with urllib.request.urlopen(req,timeout=35) as r: payload=json.load(r)
+          rows=payload.get('results',[])
+          now=datetime.now(timezone.utc)
+          def dt(s):
+            try:
+              d=datetime.fromisoformat(str(s).replace('Z','+00:00')); return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+            except: return None
+          def current(x):
+            d=dt(x.get('waterLevelOn')); lv=x.get('waterLevel')
+            if not d or lv is None:return False
+            age=now-d.astimezone(timezone.utc)
+            return timedelta(minutes=-5)<=age<=timedelta(minutes=20)
+          fresh=[x for x in rows if current(x)]
+          def status(x):
+            l=x.get('waterLevel');w=x.get('warningLevel');d=x.get('dangerLevel');raw=str(x.get('status') or '').upper()
+            if l is not None and d not in (None,0) and l>=d:return 'danger'
+            if 'DANGER' in raw and 'BELOW DANGER' not in raw:return 'danger'
+            if l is not None and w not in (None,0) and l>=w:return 'warning'
+            if 'WARNING' in raw and 'BELOW WARNING' not in raw:return 'warning'
+            if any(k in raw for k in ('WATCH','RISING','INCREASING','YELLOW')):return 'watch'
+            return 'normal'
+
+          manifest=json.load(open('data/nepal-waterways-tiles/manifest.json'))
+          overview=json.load(open('data/nepal-waterways-tiles/overview.json')).get('waterways',[])
+          tile_cache={}
+          def clean(s):
+            s=unicodedata.normalize('NFD',str(s or '').lower())
+            s=''.join(c for c in s if unicodedata.category(c)!='Mn')
+            s=re.sub(r'\s+(?:at|near)\s+.*',' ',s)
+            s=re.sub(r'\b(river|khola|nadi|stream|station|gauge|bridge|rls|hs)\b',' ',s)
+            s=re.sub(r'[^a-z0-9\u0900-\u097f]+',' ',s)
+            return re.sub(r'\s+',' ',s).strip()
+          def name_score(a,b):
+            A=clean(a);B=clean(b)
+            if not A or not B:return 0
+            if A==B:return 100
+            aa=set(x for x in A.split() if len(x)>=3);bb=set(x for x in B.split() if len(x)>=3)
+            if not aa or not bb:return 0
+            ratio=len(aa&bb)/max(len(aa),len(bb))
+            return 93 if ratio>=.75 else 88 if ratio>=.5 else 0
+          def segkm(lat,lon,a,b):
+            lat0=math.radians(lat); sc=math.cos(lat0)
+            x1=(a[0]-lon)*111.32*sc; y1=(a[1]-lat)*110.574
+            x2=(b[0]-lon)*111.32*sc; y2=(b[1]-lat)*110.574
+            dx=x2-x1;dy=y2-y1;den=dx*dx+dy*dy
+            t=max(0,min(1,-(x1*dx+y1*dy)/den)) if den else 0
+            x=x1+t*dx;y=y1+t*dy
+            return math.hypot(x,y)
+          def linekm(lat,lon,w):
+            pts=w.get('pts') or []
+            if len(pts)<2:return 1e9
+            return min(segkm(lat,lon,pts[i-1],pts[i]) for i in range(1,len(pts)))
+          def nearest(lat,lon,ways,station_name):
+            best=[]
+            for w in ways:
+              d=linekm(lat,lon,w)
+              if d>12:continue
+              n=w.get('name_en') or w.get('name') or w.get('name_ne') or ''
+              ns=name_score(station_name,n)
+              best.append((d,-ns,n,w.get('type'),w.get('id')))
+            best.sort()
+            return best[:5]
+          def tile_keys(lon,lat):
+            x=int(math.floor((lon-manifest['minLon'])/manifest['stepLon']))
+            y=int(math.floor((lat-manifest['minLat'])/manifest['stepLat']))
+            out=[]
+            for xx in range(max(0,x-1),min(manifest['nx']-1,x+1)+1):
+              for yy in range(max(0,y-1),min(manifest['ny']-1,y+1)+1):
+                k=f'{xx}-{yy}'
+                if k in manifest.get('tiles',{}):out.append(k)
+            return out
+          def tile_ways(keys):
+            out=[]
+            for k in keys:
+              if k not in tile_cache:
+                p=Path('data/nepal-waterways-tiles')/(k+'.json')
+                tile_cache[k]=json.load(open(p)).get('waterways',[]) if p.exists() else []
+              out.extend(tile_cache[k])
+            return out
+
+          print('NOW',now.isoformat(),'fresh',len(fresh),'abnormal',sum(status(x)!='normal' for x in fresh))
+          for x in fresh:
+            c=(x.get('point') or {}).get('coordinates') or []
+            if len(c)<2:continue
+            lon,lat=map(float,c[:2]);name=x.get('title') or ''
+            ov=nearest(lat,lon,overview,name)
+            keys=tile_keys(lon,lat); full=nearest(lat,lon,tile_ways(keys),name)
+            print('\nSTATION',json.dumps({'name':name,'status':status(x),'level':x.get('waterLevel'),'warning':x.get('warningLevel'),'danger':x.get('dangerLevel'),'time':x.get('waterLevelOn'),'coord':[lon,lat],'keys':keys},ensure_ascii=False))
+            print('OVERVIEW',json.dumps(ov[:3],ensure_ascii=False))
+            print('FULL',json.dumps(full[:5],ensure_ascii=False))
+          PY

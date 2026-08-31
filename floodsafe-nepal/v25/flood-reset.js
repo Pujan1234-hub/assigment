@@ -6,15 +6,15 @@ try{
 
 async function recoverMap(){
   try{
-    if(window.__fsStableMapLoading) return;
+    // Never start the legacy fallback while the smooth runtime exists or is loading.
+    if(window.FloodSafeMap?.map || window.__fsSmoothMapLoadingV7 || window.__fsSmoothMapLoaded || window.__fsStableMapLoading) return;
     window.__fsStableMapLoading=true;
     if(!window.maplibregl){
       const mod=await import('https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.mjs');
       window.maplibregl=mod;
     }
-    const api=window.FloodSafeMap;
-    if(api?.map && api?.initialized){window.__fsStableMapLoaded=true;return;}
-    await import('./map-stable-v2.js?fallback=5');
+    if(window.FloodSafeMap?.map){window.__fsStableMapLoading=false;return}
+    await import('./map-stable-v2.js?fallback=6');
     window.__fsStableMapLoaded=true;
   }catch(e){
     window.__fsStableMapLoading=false;
@@ -24,24 +24,25 @@ async function recoverMap(){
   }
 }
 
+// Smooth MapLibre may still be loading district geometry on slower phones.
+// Only use the legacy recovery when no map instance exists at all after 10 seconds.
 setTimeout(()=>{
-  const api=window.FloodSafeMap;
-  if(!api?.map || !api?.initialized) recoverMap();
-},900);
+  if(!window.FloodSafeMap?.map && !window.__fsSmoothMapLoadingV7 && !window.__fsSmoothMapLoaded) recoverMap();
+},10000);
 
 let tries=0;
 const timer=setInterval(()=>{
   tries++;
   try{
     const api=window.FloodSafeMap,m=api?.map;
-    if(!m){if(tries>100)clearInterval(timer);return}
-    if(!api?.initialized){if(tries>100)clearInterval(timer);return}
+    if(!m){if(tries>120)clearInterval(timer);return}
+    if(!api?.initialized){if(tries>120)clearInterval(timer);return}
     api.set3D?.(false);
     m.stop?.();m.setPitch?.(0);m.setBearing?.(0);
     m.fitBounds?.([[80.0,26.2],[88.35,30.5]],{padding:window.innerWidth<620?16:34,pitch:0,bearing:0,duration:0});
     const hint=document.getElementById('mapHint');
-    if(hint && api.districtCount>=70) hint.textContent=(window.FloodSafe?.state?.lang==='en')?'🇳🇵 Nepal • 77 districts • live river gauges':'🇳🇵 नेपाल • ७७ जिल्ला • प्रत्यक्ष नदी मापन केन्द्र';
+    if(hint && api.districtCount>=70 && !window.FloodSafeHydroSmooth) hint.textContent=(window.FloodSafe?.state?.lang==='en')?'🇳🇵 Nepal • 77 districts • live river gauges':'🇳🇵 नेपाल • ७७ जिल्ला • प्रत्यक्ष नदी मापन केन्द्र';
     clearInterval(timer);
-  }catch(e){if(tries>100)clearInterval(timer)}
+  }catch(e){if(tries>120)clearInterval(timer)}
 },250);
 })();

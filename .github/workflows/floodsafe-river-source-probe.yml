@@ -1,0 +1,51 @@
+name: FloodSafe River Source Probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/floodsafe-river-source-probe.yml']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Probe official source freshness and CORS
+        shell: bash
+        run: |
+          set -u
+          python - <<'PY'
+          import json, urllib.request, urllib.error
+          urls=[
+            'https://bipadportal.gov.np/api/v1/river/?limit=20&ordering=-waterLevelOn',
+            'https://bipadportal.gov.np/api/v1/river-trimed/?limit=20',
+            'https://bipadportal.gov.np/api/v1/river-stations/?limit=20',
+            'https://www.dhm.gov.np/hydrology/river-watch',
+            'https://www.dhm.gov.np/'
+          ]
+          for u in urls:
+            print('\n===',u)
+            try:
+              req=urllib.request.Request(u,headers={
+                'User-Agent':'Mozilla/5.0 FloodSafe-Nepal-source-probe',
+                'Accept':'application/json,text/html,*/*',
+                'Origin':'https://pujan1234-hub.github.io'
+              })
+              with urllib.request.urlopen(req,timeout=25) as r:
+                print('HTTP',r.status)
+                for h in ['Access-Control-Allow-Origin','Access-Control-Allow-Methods','Content-Type','Cache-Control','Date']:
+                  print(h+':',r.headers.get(h))
+                raw=r.read(12000).decode('utf-8','replace')
+                print('BODY',raw[:8000].replace('\n',' ')[:8000])
+                if 'json' in str(r.headers.get('Content-Type','')).lower():
+                  try:
+                    j=json.loads(raw)
+                    arr=j if isinstance(j,list) else next((j[k] for k in ('results','data','objects') if isinstance(j,dict) and isinstance(j.get(k),list)),[])
+                    print('ROWS',len(arr))
+                    for x in arr[:5]:
+                      print('ROW',json.dumps(x,ensure_ascii=False)[:2500])
+                  except Exception as e: print('JSON_PARSE',repr(e))
+            except Exception as e:
+              print('ERROR',repr(e))
+          PY

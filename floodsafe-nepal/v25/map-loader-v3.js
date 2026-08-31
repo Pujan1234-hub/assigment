@@ -1,7 +1,7 @@
 import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.mjs';
 window.maplibregl = maplibregl;
-if(!window.__fsSmoothMapLoadingV14){
-  window.__fsSmoothMapLoadingV14=true;
+if(!window.__fsSmoothMapLoadingV15){
+  window.__fsSmoothMapLoadingV15=true;
   import('./map-smooth-v3.js?v=11').then(()=>{
     window.__fsSmoothMapLoaded=true;
     return import('./hydro-smooth-v2.js?v=10');
@@ -10,8 +10,11 @@ if(!window.__fsSmoothMapLoadingV14){
     return import('./map-core-v4.js?v=8');
   }).then(()=>{
     window.__fsMapCoreV4Loaded=true;
+    return import('./river-rain-fallback-v1.js?v=1');
+  }).then(()=>{
+    window.__fsRiverRainFallbackLoaded=true;
   }).catch((err)=>{
-    window.__fsSmoothMapLoadingV14=false;
+    window.__fsSmoothMapLoadingV15=false;
     console.error('FloodSafe map runtime failed',err);
     const hint=document.getElementById('mapHint');
     if(hint)hint.textContent='नक्सा लोड हुन सकेन — एकपटक reload गर्नुहोस्।';

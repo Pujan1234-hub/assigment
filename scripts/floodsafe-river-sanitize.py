@@ -116,13 +116,14 @@ def main():
     src['rejected_fetch_time_as_measurement_count'] = rejected_fake
     src['newest_trusted_measurement'] = newest.isoformat().replace('+00:00','Z') if newest else None
     src['measurement_time_policy'] = 'Only official hydrological observation timestamps count; retrieved/modified/alert timestamps never make a reading current.'
+    src['has_current_measurements'] = current > 0
+    src['mirror_health'] = 'current' if current > 0 else 'degraded_no_current_measurements'
+    src['sanitized_at'] = now.isoformat().replace('+00:00','Z')
 
     tmp = PATH.with_suffix('.json.tmp')
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     tmp.replace(PATH)
-    print(f'sanitized rivers: current<=20m={current}, trusted timestamps={trusted}, rejected fake freshness={rejected_fake}, newest={newest}')
-    if current == 0:
-        raise SystemExit('No genuinely timestamped official river observation <=20 minutes; refusing to publish a fake realtime snapshot.')
+    print(f'sanitized rivers: current<=20m={current}, trusted timestamps={trusted}, rejected fake freshness={rejected_fake}, newest={newest}, health={src["mirror_health"]}')
 
 
 if __name__ == '__main__':

@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 import json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 
 PATH = Path('data/floodsafe-core.json')
-MAX_AGE = timedelta(minutes=5)
-FUTURE = timedelta(minutes=5)
 MEASURE_KEYS = ('waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime')
 
 
@@ -44,83 +42,77 @@ def threshold(row, keys):
 
 
 def classify(row):
+    raw = str(first(row, ('status','status_name','alertStatus','alert_status','riskLevel','risk_level')) or '').upper()
+    if raw:
+        if ('ABOVE DANGER' in raw or 'DANGER LEVEL' in raw or raw == 'RED') and 'BELOW DANGER' not in raw:
+            return 'DANGER'
+        if ('ABOVE WARNING' in raw or 'WARNING LEVEL' in raw or raw == 'ORANGE') and 'BELOW WARNING' not in raw:
+            return 'WARNING'
+        if any(x in raw for x in ('WATCH','RISING','INCREASING','YELLOW')):
+            return 'WATCH'
     try:
         wl = float(level(row))
     except Exception:
         wl = None
     warning = threshold(row, ('warningLevel','warning_level','warningThreshold','warning_threshold'))
     danger = threshold(row, ('dangerLevel','danger_level','dangerThreshold','danger_threshold'))
-    raw = str(first(row, ('status','status_name','alertStatus','alert_status','riskLevel','risk_level')) or '').upper()
     if wl is not None and danger is not None and danger > 0 and wl >= danger:
         return 'DANGER'
     if wl is not None and warning is not None and warning > 0 and wl >= warning:
         return 'WARNING'
-    if ('ABOVE DANGER' in raw or 'DANGER LEVEL' in raw or raw == 'RED') and 'BELOW DANGER' not in raw:
-        return 'DANGER'
-    if ('ABOVE WARNING' in raw or 'WARNING LEVEL' in raw or raw == 'ORANGE') and 'BELOW WARNING' not in raw:
-        return 'WARNING'
-    if any(x in raw for x in ('WATCH','RISING','INCREASING','YELLOW')):
-        return 'WATCH'
-    if raw or wl is not None:
-        return 'NORMAL'
-    return 'UNKNOWN'
+    return 'NORMAL' if wl is not None or raw else 'UNKNOWN'
 
 
 def main():
     data = json.loads(PATH.read_text(encoding='utf-8'))
     now = datetime.now(timezone.utc)
     current = 0
-    rejected_fake = 0
     trusted = 0
     newest = None
+    live_page_rows = 0
 
     for row in data.get('rivers', []):
         if not isinstance(row, dict):
             continue
-        if row.get('_timeBasis') == 'official-live-page-retrieval':
-            for k in MEASURE_KEYS:
-                row.pop(k, None)
-            row['_measurementTimeTrusted'] = False
-            row['_current5m'] = False
-            row['_current20m'] = False  # backwards-compatible fail-closed flag
-            row['_officialStatus'] = 'UNKNOWN'
-            rejected_fake += 1
-            continue
-
-        raw_time = measurement_time(row)
-        dt = parse_dt(raw_time)
-        ok = False
+        dt = parse_dt(measurement_time(row))
         if dt:
-            age = now - dt.astimezone(timezone.utc)
-            ok = -FUTURE <= age <= MAX_AGE
             trusted += 1
-            if newest is None or dt.astimezone(timezone.utc) > newest:
-                newest = dt.astimezone(timezone.utc)
-        row['_measurementTimeTrusted'] = bool(dt)
-        row['_measurementTime'] = dt.astimezone(timezone.utc).isoformat().replace('+00:00','Z') if dt else None
-        row['_current5m'] = bool(ok and level(row) is not None)
-        # Older clients must never re-expand the window to 20 minutes.
-        row['_current20m'] = row['_current5m']
-        row['_officialStatus'] = classify(row) if row['_current5m'] else 'STALE'
-        if row['_current5m']:
+            u = dt.astimezone(timezone.utc)
+            if newest is None or u > newest:
+                newest = u
+            row['_measurementTime'] = u.isoformat().replace('+00:00','Z')
+            row['_measurementTimeTrusted'] = True
+        else:
+            row['_measurementTime'] = None
+            row['_measurementTimeTrusted'] = False
+
+        has_value = level(row) is not None
+        row['_currentOfficial'] = bool(has_value)
+        row['_current5m'] = bool(has_value)
+        row['_current20m'] = bool(has_value)
+        row['_officialStatus'] = classify(row) if has_value else 'UNKNOWN'
+        if row.get('_timeBasis') == 'official-live-page-retrieval':
+            live_page_rows += 1
+        if has_value:
             current += 1
 
     src = data.setdefault('sources', {}).setdefault('rivers', {})
-    src['freshness_policy_minutes'] = 5
+    src['current_official_count'] = current
     src['current_5m_count'] = current
-    src['current_20m_count'] = current  # deprecated compatibility metric
+    src['current_20m_count'] = current
     src['trusted_measurement_timestamp_count'] = trusted
-    src['rejected_fetch_time_as_measurement_count'] = rejected_fake
+    src['official_live_page_row_count'] = live_page_rows
     src['newest_trusted_measurement'] = newest.isoformat().replace('+00:00','Z') if newest else None
-    src['measurement_time_policy'] = 'Only official hydrological observation timestamps count; retrieved/modified/alert timestamps never make a reading current. Current means observation age <=5 minutes.'
+    src['freshness_policy'] = 'latest-official-value'
+    src['measurement_time_policy'] = 'Show an official observation time only when the source supplies one. Never invent a station observation time from retrieval time.'
     src['has_current_measurements'] = current > 0
-    src['mirror_health'] = 'current' if current > 0 else 'degraded_no_current_measurements'
+    src['mirror_health'] = 'current' if current > 0 else 'degraded_no_official_values'
     src['sanitized_at'] = now.isoformat().replace('+00:00','Z')
 
     tmp = PATH.with_suffix('.json.tmp')
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     tmp.replace(PATH)
-    print(f'sanitized rivers: current<=5m={current}, trusted timestamps={trusted}, rejected fake freshness={rejected_fake}, newest={newest}, health={src["mirror_health"]}')
+    print(f'sanitized rivers: latest-official={current}, trusted-times={trusted}, live-page={live_page_rows}, newest={newest}')
 
 
 if __name__ == '__main__':

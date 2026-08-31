@@ -6,6 +6,7 @@ on:
     paths:
       - 'floodsafe-nepal/v25/trusted-river-runtime-v1.js'
       - 'floodsafe-nepal/v25/trusted-rain-runtime-v1.js'
+      - 'floodsafe-nepal/v25/river-map-detail-v2.js'
       - 'floodsafe-nepal/v25/index.html'
       - '.github/workflows/floodsafe-national-realtime-audit.yml'
 permissions:
@@ -20,6 +21,7 @@ jobs:
         run: |
           node --check floodsafe-nepal/v25/trusted-river-runtime-v1.js
           node --check floodsafe-nepal/v25/trusted-rain-runtime-v1.js
+          node --check floodsafe-nepal/v25/river-map-detail-v2.js
       - name: Audit all official BIPAD river and rain station pages
         run: |
           python - <<'PY'

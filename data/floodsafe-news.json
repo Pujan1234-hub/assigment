@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-31T19:11:04.127818Z",
+  "generated_at": "2026-08-31T23:13:22.836734Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 30,
@@ -15,14 +15,14 @@
       "ok": true,
       "items": 55
     },
-    "Hamro Patro": {
-      "ok": true,
-      "items": 38
-    },
     "eKantipur": {
       "ok": false,
       "items": 0,
       "error": "no-verified-items"
+    },
+    "Hamro Patro": {
+      "ok": true,
+      "items": 14
     },
     "RONB Post": {
       "ok": true,
@@ -36,132 +36,104 @@
   "items": [
     {
       "title": "गृह मन्त्रालय",
-      "url": "https://moha.gov.np/accessibility-mode",
-      "published_at": "2026-08-31T19:11:03Z",
+      "url": "https://moha.gov.np/switch-bandwidth",
+      "published_at": "2026-08-31T23:13:21Z",
       "source": "Nepal Government"
     },
     {
       "title": "मातहतका कार्यालयहरु",
       "url": "https://moha.gov.np/office-directory",
-      "published_at": "2026-08-31T19:11:02Z",
+      "published_at": "2026-08-31T23:13:20Z",
       "source": "Nepal Government"
     },
     {
-      "title": "राहत सङ्कलनका नाममा हुने दुरुपयोग रोक्न म्याग्दीमा कडाइ",
-      "url": "https://www.hamropatro.com/news/detail/394363816542895-rahat-sangkalanaka-namama-hune-durupayog-rokn-myagdima-kadai",
-      "published_at": "2026-08-31T18:57:41.178853Z",
+      "title": "टेलिकमले बाढी प्रभावित क्षेत्रका थप सात स्थानमा सेवा सुचारु",
+      "url": "https://www.hamropatro.com/news/detail/409384927399208-telikamale-badhi-prabhavit-kshetraka-thap-sat-sthanama-seva-sucharu",
+      "published_at": "2026-08-31T23:06:02.335171Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "बाढीपीडितका लागि मिस नेपाल दीपमाला ढकालद्वारा १ लाख सहयोग काठमाडौँ । मिस नेपाल २०२६ तथा गैरआवासीय नेपाली संघकी दोस्रो पुस्ता संयोजक दीपमाला ढकालले बाढीपीडितको राहतका लागि आर्थिक सहयोग प्रदान गरेकी छन् । ढकालले गत भदौ १० गते रसुवा–भोटेकोशी क्षेत्रमा आएको ...",
-      "url": "https://www.hamropatro.com/news/detail/394063338676829-badhipiditaka-lagi-mis-nepal-dipamala-dhakaladvara-1-lakh-sahayog",
-      "published_at": "2026-08-31T18:52:41.178853Z",
+      "title": "चीनद्वारा तातोपानी नाका अनिश्चितकालका लागि बन्द बाढी र पहिरोको जोखिम बढेको भन्दै चीनले नेपालसँगको प्रमुख व्यापारिक नाका तातोपानी अनिश्चितकालका लागि बन्द गरेको छ । भोटेकोशी नदीमा आएको विनाशकारी बाढीले अर्को मुख्य नाका रसुवागढीको टिमुरे बजार, भन्...",
+      "url": "https://www.hamropatro.com/news/detail/409385097351334-chinadvara-tatopani-naka-anishchitakalaka-lagi-band",
+      "published_at": "2026-08-31T23:06:02.335171Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "इरान र अमेरिकाले गरे एक अर्कामाथि हमला",
-      "url": "https://www.hamropatro.com/news/detail/391996441326454-iran-r-amerikale-gare-ek-arkamathi-hamala",
-      "published_at": "2026-08-31T18:17:41.178853Z",
+      "title": "राफिन्हा र लामिने यमलको दुई–दुई गोलः बार्सिलोनाको सानदार जित",
+      "url": "https://www.hamropatro.com/news/detail/404863042580224-raphinha-r-lamine-yamalako-dui-dui-golah-barsilonako-sanadar-jit",
+      "published_at": "2026-08-31T22:13:02.335171Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "प्रधानमन्त्री राहत कोषका लागि सोमबार एकै दिन दाताले अर्थमन्त्रीमार्फत दिए ६० करोड",
-      "url": "https://www.hamropatro.com/news/detail/391985824218988-pradhanamantri-rahat-koshaka-lagi-somabar-ekai-din-datale-arthamantrimarphat-die",
-      "published_at": "2026-08-31T18:17:41.178853Z",
+      "title": "एस्टन भिल्लामाथि आर्सनलको जित, साकाको निर्णायक गोल",
+      "url": "https://www.hamropatro.com/news/detail/402162766256414-estan-bhillamathi-arsanalako-jit-sakako-nirnayak-gol",
+      "published_at": "2026-08-31T21:13:02.335171Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "'चारवटा एक्स्काभेटर र एउटा ब्रेकर भइदिएको उद्धार सफल भइसक्थ्यो'",
-      "url": "https://www.hamropatro.com/news/detail/390774943421266-charavata-ekskabhetar-r-euta-brekar-bhaidieko-uddhar-saphal-bhaisakthyo",
-      "published_at": "2026-08-31T18:10:41.178853Z",
+      "title": "बडीमालिका स्वास्थ्य शिविरबाट ९ सयभन्दा बढी तीर्थयात्री लाभान्वित",
+      "url": "https://www.hamropatro.com/news/detail/400966226361498-badimalika-svasthy-shivirabat-9-sayabhanda-badhi-tirthayatri-labhanvit",
+      "published_at": "2026-08-31T21:13:02.335171Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
-      "title": "बेत्रावतीको एउटै घरमा २० भन्दा बढी शव फेला",
-      "url": "https://www.hamropatro.com/news/detail/390473692972612-betravatiko-eutai-gharama-20-bhanda-badhi-shav-phela",
-      "published_at": "2026-08-31T18:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "बाढीको विषय अन्तर्राष्ट्रिय मञ्चमा उठाउँछौं",
-      "url": "https://www.hamropatro.com/news/detail/390478748048713-badhiko-vishay-antarrashtriy-manychama-uthaunchhaun",
-      "published_at": "2026-08-31T18:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "तातोपानी नाका अनिश्चितकालका लागि बन्द",
-      "url": "https://www.hamropatro.com/news/detail/390173585142532-tatopani-naka-anishchitakalaka-lagi-band",
-      "published_at": "2026-08-31T18:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "जलविद्युत् आयोजनाका ९०० जना ६ दिनदेखि सम्पर्कविहीन जलविद्युत् आयोजनाका ९०० जना ६ दिनदेखि सम्पर्कविहीन आयोजनाको भूमिगत विद्युत् गृहभित्र उद्धार टोली पुग्न सकेन, बाहिर परिवार छट्पटाउँदै छन् । भाद्र १५, २०८३ होम कार्की, सीमा तामाङ काठमाडौँ — मोबाइ...",
-      "url": "https://www.hamropatro.com/news/detail/390774772913231-jalavidyut-ayojanaka-900-jana-6-dinadekhi-samparkavihin",
-      "published_at": "2026-08-31T18:10:41.178853Z",
+      "title": "न्युजिल्यान्डमा इन्धन कर वृद्धि स्थगित, सन् २०२८ देखि चरणबद्ध रूपमा लागू हुने",
+      "url": "https://www.hamropatro.com/news/detail/403381633264317-nyujilyandama-indhan-kar-vriddhi-sthagit-san-2028-dekhi-charanabaddh-rupama",
+      "published_at": "2026-08-31T21:13:02.335171Z",
       "source": "Hamro Patro",
       "time_exact": false
     },
     {
       "title": "टेलिफोन निर्देशिका",
       "url": "https://moha.gov.np/directory",
-      "published_at": "2026-08-31T17:15:16Z",
+      "published_at": "2026-08-31T21:12:44Z",
       "source": "Nepal Government"
+    },
+    {
+      "title": "तस्बिरमा बाढीले नामेट बनाएको नुवाकोटदेखि रसुवाका बस्तीहरू",
+      "url": "https://www.hamropatro.com/news/detail/400065182931168-tasbirama-badhile-namet-banaeko-nuvakotadekhi-rasuvaka-bastiharu",
+      "published_at": "2026-08-31T20:13:02.335171Z",
+      "source": "Hamro Patro",
+      "time_exact": false
+    },
+    {
+      "title": "जापानले ५५.६ अर्ब डलरको रक्षा बजेट प्रस्ताव, एआइ विकासमा जोड दिने",
+      "url": "https://www.hamropatro.com/news/detail/400065222810349-japanale-55-6-arb-dalarako-raksha-bajet-prastav-eai-vikasama",
+      "published_at": "2026-08-31T20:13:02.335171Z",
+      "source": "Hamro Patro",
+      "time_exact": false
+    },
+    {
+      "title": "विराटनगर रानी अस्पतालमा अत्याधुनिक प्रयोगशाला सेवा सुरु",
+      "url": "https://www.hamropatro.com/news/detail/400065355100251-viratanagar-rani-aspatalama-atyadhunik-prayogashala-seva-suru",
+      "published_at": "2026-08-31T20:13:02.335171Z",
+      "source": "Hamro Patro",
+      "time_exact": false
+    },
+    {
+      "title": "सुरुङभित्र फसेकाहरूको खोजीका लागि त्रिशूली-३ ‘बी’मा हेलिकप्टरबाट लगियो मिनी एस्काभेटर (तस्बिरहरू) काठमाडौँ- माथिल्लो त्रशूली ३ ‘बी’ (३७ मेगावाट)जलविद्युत आयोजनाको सुरूङभित्र फसेकाहरूको खोजीका लागि हेलिकप्टरबाट मिनी एस्काभेटर लगिएको छ।",
+      "url": "https://www.hamropatro.com/news/detail/400065158603684-surungabhitr-phasekaharuko-khojika-lagi-trishuli-3-bi-ma-helikaptarabat-lagiyo",
+      "published_at": "2026-08-31T20:13:02.335171Z",
+      "source": "Hamro Patro",
+      "time_exact": false
+    },
+    {
+      "title": "विपन्नलाई उपचारमा छुट",
+      "url": "https://www.hamropatro.com/news/detail/396163466307291-vipannalai-upacharama-chhut",
+      "published_at": "2026-08-31T19:13:02.335171Z",
+      "source": "Hamro Patro",
+      "time_exact": false
     },
     {
       "title": "बेत्रावतीको एउटै घरमा भेटिए २० भन्दा बढी शव",
       "url": "https://www.onlinekhabar.com/2026/08/2008206/more-than-20-bodies-found-in-a-single-house-in-betravati",
       "published_at": "2026-08-31T17:12:27Z",
       "source": "Onlinekhabar"
-    },
-    {
-      "title": "बेत्रावतीको एउटै घरमा भेटिए २० भन्दा बढी शव १५ भदौ, काठमाडौं । नुवाकोटको विदुर नगरपालिका-१० स्थित एउटै घरभित्र २० वटाभन्दा बढी शव फेला परेका छन्। भदौ १० गते बुधबारको रसुवाको भोटेकोशी हुँदै त्रिशूली नदीमा आएको भीषण बाढीबाट ज्यान गुमाएहरूको ठू...",
-      "url": "https://www.hamropatro.com/news/detail/388672428274672-betravatiko-eutai-gharama-bhetie-20-bhanda-badhi-shav",
-      "published_at": "2026-08-31T17:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "विष्णुमतीपछि बागमती नदीले पनि जल सतह सतर्कता तह पार गर्‍यो, बिहानसम्म उच्च सतर्क रहन अनुरोध काठमाडौं । बाढी पूर्वानुमान महाशाखाले काठमाडौंको विष्णुमतीपछि बागमती नदीमा पनि जल सतह सतर्कता तह पार गरेको भन्दै नदीको तल्लो तटीय क्षेत्रका बासिन्दालाई भोलि बिहानसम्मै उच्च सतर्कता अपनाउन भनेको छ ।...",
-      "url": "https://www.hamropatro.com/news/detail/388662730334956-vishnumatipachhi-bagamati-nadile-pani-jal-satah-satarkata-tah-par-gar",
-      "published_at": "2026-08-31T17:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : सम्पर्कविहीनको खोज तथा उद्धार तीव्र काठमाडौं – रसुवास्थित भोटेकोशी बाढीका कारण सुरक्षाकर्मी, कर्मचारी, जलविद्युत् आयोजनाको मजदुर र विदेशी पर्यटक गरी अझै तीन हजार ९०० भन्दा बढी व्यक्ति सम्पर्कविहीन छन् । यही भदौ १० गतेको उक्त बाढीमा ...",
-      "url": "https://www.hamropatro.com/news/detail/387780709042965-bhotekoshi-badhi-samparkavihinako-khoj-tatha-uddhar-tivr",
-      "published_at": "2026-08-31T17:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : पर्यटन क्षेत्रमा अर्को ठूलो धक्का",
-      "url": "https://www.hamropatro.com/news/detail/389576420152570-bhotekoshi-badhi-paryatan-kshetrama-arko-thulo-dhakka",
-      "published_at": "2026-08-31T17:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "सुरुङमा फसेकाको उद्धारमा ढिलाइप्रति इन्जिनियर्स एसोसिएसन आक्रोशित काठमाडौं । सरकारले सुरुङमा फसेका इन्जिनियर तथा प्राविधिकहरूको उद्धारमा ढिलाइ गरेको भन्दै नेपाल इन्जिनियर्स एसोसिएसनले आक्रोश व्यक्त गरेको छ । सोमबार एसोसिएसनको ललितपुरस्थित कार्यालयमा आयोजित पत्रक...",
-      "url": "https://www.hamropatro.com/news/detail/388091763546624-surungama-phasekako-uddharama-dhilaiprati-injiniyars-esosiesan-akroshit",
-      "published_at": "2026-08-31T17:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "रसुवा बाढी : सोमबार राति ८ बजेसम्म ९७४ शव फेला १५ भदौ, काठमाडौं । रसुवा बाढीका कारण सोमबार रातिसम्म ९७४ जनाको शव फेला परेको छ । नेपाल प्रहरीको सूचनाअनुसार राति ८ बजेसम्म ९७४ शव फेला परेका हुन् । फेला परेका शवमध्ये २८ बालक, ३५ बालिका, २०९ महिला...",
-      "url": "https://www.hamropatro.com/news/detail/387769830776425-rasuva-badhi-somabar-rati-8-bajesamm-974-shav-phela",
-      "published_at": "2026-08-31T17:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
     },
     {
       "title": "रसुवा बाढी : सोमबार राति ८ बजेसम्म ९७४ शव फेला",
@@ -266,13 +238,6 @@
       "source": "Onlinekhabar"
     },
     {
-      "title": "इरानी ड्रोन आक्रमणमा ‘खतरनाक वृद्धि’ दुबई – संयुक्त अरब एमिरेट्सले सोमबार आफ्नो क्षेत्रीय जलक्षेत्रमाथि रोक्का गरिएको इरानी ड्रोन आक्रमणको निन्दा गर्दै यसलाई ‘खतरनाक वृद्धि’ भनेको छ । यूएईमा सापेक्षिक शान्तिको केही हप्तापछि यो घटना भए...",
-      "url": "https://www.hamropatro.com/news/detail/383269911707058-irani-dron-akramanama-khataranak-vriddhi",
-      "published_at": "2026-08-31T16:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
       "title": "टिमुरेमा बाढीको अवस्था प्रत्यक्ष निगरानी गर्न रियल- टाइम सीसी क्यामेरा जडान",
       "url": "https://www.ronbpost.com/2026/08/19558/",
       "published_at": "2026-08-31T16:09:00Z",
@@ -301,90 +266,6 @@
       "url": "https://www.onlinekhabar.com/2026/08/2008159/messi-announces-retirement-from-international-football",
       "published_at": "2026-08-31T15:20:58Z",
       "source": "Onlinekhabar"
-    },
-    {
-      "title": "सरकार, अब प्रतीक्षाको पीडा नदेऊ भोटेकोशीमा बाढी आएको सोमबार ६ दिन भएको छ। यो बीचमा राज्यले विभिन्न प्रभावित स्थानबाट उद्धार, घाइतेहरुको उपचार, राहत वितरण, प्रभावित क्षेत्रका मानिसहरुलाई आफन्तसँग पुर्नमिलनलगायतका कामहरु पनि गरिरहे...",
-      "url": "https://www.hamropatro.com/news/detail/382064340791427-sarakar-ab-pratikshako-pida-nadeu",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "नारायणी नदीबाट निकालिएका ग्यास सिलिण्डर फिर्ता गर्न थालियो चितवन । भरतपुर महानगरपालिका–१ का वडाध्यक्ष केशव महर्जनको सक्रियतामा नारायणी नदीबाट उद्धार गरी सुरक्षित स्थानमा राखिएका ग्यास सिलिण्डर सम्बन्धित व्यक्तिलाई फिर्ता गर्न थालिएको छ। भोटेकोशी नदीमा आए...",
-      "url": "https://www.hamropatro.com/news/detail/381785047016671-narayani-nadibat-nikalieka-gyas-silindar-phirta-garn-thaliyo",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "रसुवा बाढी : मृत्यु हुनेको संख्या ९३९ पुग्यो, अझै ४ हजार बेपत्ता रसुवा बाढीका कारण मृतकको संख्या ९३९ पुगेको छ । राष्ट्रिय विपद् जोखिम न्यूनीकरण तथा व्यवस्थापन प्राधिकरणका अनुसार अहिले साँझ ६ बजेसम्म ९३९ शव फेला परेका छन् । प्राधिकरणका अुनसार हालसम्म सबैभन्दा बढ...",
-      "url": "https://www.hamropatro.com/news/detail/381784673645872-rasuva-badhi-mrityu-huneko-sankhya-939-pugyo-ajhai-4-hajar",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : गोरखामा थप ७ शव व्यवस्थापन गोरखा : गोरखामा थप ७ शव व्यवस्थापन गरिएको छ। गोरखामा फेला परेकाहरुमध्ये तत्काल पहिचान हुन नसक्ने थप ७ शव सोमबार व्यवस्थापन गरिएको प्रहरीले जनाएको छ। गोरखामा गत शनिबारदेखि शव व्यवस्थापन गर्न सुरु ग...",
-      "url": "https://www.hamropatro.com/news/detail/381781497740385-bhotekoshi-badhi-gorakhama-thap-7-shav-vyavasthapan",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "परराष्ट्रमन्त्री खनाल र कतारका राज्यमन्त्री अल–मिसनदबिच टेलिफोन वार्ता काठमाण्डु – परराष्ट्रमन्त्री शिशिर खनाल र कतारका अन्तर्राष्ट्रिय सहयोग सम्बन्धी राज्यमन्त्री डा. मरियम बिन्त अली बिन नासेर अल–मिसनदबिच टेलिफोन वार्ता भएको छ । परराष्ट्रमन्त्री खनाललाई राज्यमन्त्री...",
-      "url": "https://www.hamropatro.com/news/detail/381770716039245-pararashtramantri-khanal-r-kataraka-rajyamantri-al-misanadabich-teliphon-varta",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "चीनले पठायो ताताेपानी भन्सार बन्द गरेकाे सूचना",
-      "url": "https://www.hamropatro.com/news/detail/381473629545509-chinale-pathayo-tata-pani-bhansar-band-gareka-suchana",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "अर्जेन्टिनी सुपरस्टार मेसीले गरे अन्तर्राष्ट्रिय फुटबलबाट सन्यासको घोषणा",
-      "url": "https://www.hamropatro.com/news/detail/382074595745495-arjentini-suparastar-mesile-gare-antarrashtriy-phutabalabat-sanyasako-ghoshana",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "मेस्सीले लिए अन्तर्राष्ट्रिय फुटबलबाट सन्न्यास",
-      "url": "https://www.hamropatro.com/news/detail/381764740293114-messile-lie-antarrashtriy-phutabalabat-sannyas",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "‘हिमालय क्षेत्रमा जलवायु परिवर्तनसँगै हामीले खेप्नुपर्ने जोखिम बढ्दै गएको छ’ काठमाडौँ- प्रधानमन्त्री वालेन्द्र शाहले सरकार बाढी प्रभावितहरुको खोज, उद्धार, उपचार, राहत र नागरिकको सुरक्षित व्यवस्थापनमा दृढता तथा सक्रियताका साथ लागिरहेको बताएका छन्। सामाजिक सञ्जालमार्फत सोमबा...",
-      "url": "https://www.hamropatro.com/news/detail/381471533016573-himalay-kshetrama-jalavayu-parivartanasangai-hamile-khepnuparne-jokhim-badhdai",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "हिमाली क्षेत्रमा आउने आकस्मिक बाढीको जोखिम : ‘निगरानीदेखि पूर्वसूचनासम्म सुधार आवश्यक’ हिमाली क्षेत्रमा आउने आकस्मिक बाढीको जोखिम नेपालका लागि नयाँ होइन । तर यस्ता विपद् आउनुअघि त्यसको संकेत पहिचान गर्ने, जोखिमको आँकलन गर्ने र तल्लो तटीय क्षेत्रमा समयमै सूचना दिने प्रणाली अझै चुस्त ब...",
-      "url": "https://www.hamropatro.com/news/detail/381470476924249-himali-kshetrama-aune-akasmik-badhiko-jokhim-nigaranidekhi-purvasuchanasamm",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "बाढीपीडितको राहत, उद्धार र पुनर्निर्माणका लागि एमालेद्वारा समिति गठन काठमाडौं – नेपाल कम्युनिष्ट पार्टी (एमाले)ले रसुवाको भोटेकोशीमा आएको बाढीबाट प्रभावित क्षेत्रमा राहत, उद्धार, पुनःस्थापना तथा पुनःनिर्माणका लागि केन्द्रीय राहत, उद्धार तथा पुनःनिर्माण सहयोग समिति ग...",
-      "url": "https://www.hamropatro.com/news/detail/382069619065773-badhipiditako-rahat-uddhar-r-punarnirmanaka-lagi-emaledvara-samiti-gathan",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
-    },
-    {
-      "title": "भोटेकोशी बाढीपछि शव खोजी र व्यवस्थापनमा सेना परिचालन चितवन । रसुवाको भोटेकोशी नदीमा आएको भीषण बाढीका कारण रसुवा, नुवाकोट र धादिङ हुँदै चितवनसम्म प्रभावित क्षेत्रका नदी तथा तटीय क्षेत्रमा बेपत्ता व्यक्तिको खोजी, उद्धार तथा शव व्यवस्थापनका लागि नेपाली...",
-      "url": "https://www.hamropatro.com/news/detail/381192584807176-bhotekoshi-badhipachhi-shav-khoji-r-vyavasthapanama-sena-parichalan",
-      "published_at": "2026-08-31T15:10:41.178853Z",
-      "source": "Hamro Patro",
-      "time_exact": false
     },
     {
       "title": "रसुवा बाढी : शव पहिचान गर्न आफन्तले कसरी दिने डीएनए नमुना ?",

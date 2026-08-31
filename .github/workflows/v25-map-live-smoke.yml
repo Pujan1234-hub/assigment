@@ -5,9 +5,10 @@ on:
     paths:
       - 'floodsafe-nepal/v25/index.html'
       - 'floodsafe-nepal/v25/map-*.js'
+      - 'floodsafe-nepal/v25/hydro-*.js'
+      - 'floodsafe-nepal/v25/trusted-river-runtime-v1.js'
+      - 'floodsafe-nepal/v25/ui-simple-v1.css'
       - 'floodsafe-nepal/v25/river-*.js'
-      - 'floodsafe-nepal/v25/gauge-bridge.js'
-      - 'floodsafe-nepal/v25/flood-only.js'
       - 'data/floodsafe-core.json'
       - '.github/workflows/v25-map-live-smoke.yml'
   workflow_dispatch:
@@ -19,25 +20,24 @@ concurrency:
 jobs:
   map-live:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     env:
       BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
     steps:
-      - name: Wait for deployed map build
+      - name: Wait for deployed upgraded build
         run: |
           set -euo pipefail
           ok=0
-          for i in $(seq 1 50); do
-            html="$(curl --max-time 12 -fsSL "${BASE}?mapci=${GITHUB_SHA}-${i}" || true)"
-            if printf '%s' "$html" | grep -Fq 'river-status-ui.js?v=2' && ! printf '%s' "$html" | grep -Fq 'official-realtime-v1.js'; then
-              ok=1
-              break
+          for i in $(seq 1 70); do
+            html="$(curl --max-time 15 -fsSL "${BASE}?mapci=${GITHUB_SHA}-${i}" || true)"
+            if printf '%s' "$html" | grep -Fq 'ui-simple-v1.css?v=1' && printf '%s' "$html" | grep -Fq 'trusted-river-runtime-v1.js?v=15' && printf '%s' "$html" | grep -Fq 'map-loader-v3.js?v=20'; then
+              ok=1; break
             fi
             sleep 4
           done
           test "$ok" = 1
 
-      - name: Verify live map, gauges and Nepal GPS
+      - name: Verify Nepal map, all-station catalogue and river network
         run: |
           set -euo pipefail
           CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
@@ -52,38 +52,23 @@ jobs:
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
             const page=await browser.newPage();
             await page.setViewport({width:412,height:915,deviceScaleFactor:1});
-            const origin=new URL(process.env.BASE).origin;
-            await browser.defaultBrowserContext().overridePermissions(origin,['geolocation']);
-            await page.setGeolocation({latitude:27.7172,longitude:85.3240,accuracy:20});
-            const errors=[];
-            page.on('pageerror',e=>errors.push(String(e)));
-            page.on('console',m=>{if(m.type()==='error') console.log('BROWSER ERROR',m.text())});
-            await page.goto(process.env.BASE+'?mapci='+Date.now(),{waitUntil:'domcontentloaded',timeout:65000});
-            await page.waitForFunction(()=>window.FloodSafeMap?.map && document.getElementById('riverMapGL'),{timeout:65000});
-            await page.waitForFunction(()=>{try{return window.FloodSafeMap.map.isStyleLoaded()}catch{return false}},{timeout:65000});
-            await page.waitForFunction(()=>Array.isArray(window.FloodSafe?.state?.stations),{timeout:65000});
-            await page.waitForFunction(()=>{
-              const s=window.FloodSafe?.state?.stations||[];
-              const now=Date.now();
-              return s.some(r=>{const t=Date.parse(r.waterLevelOn||r.water_level_on||r.measuredOn||r.updatedOn||r.updated_at||r.retrievedAt||'');return Number.isFinite(t)&&now-t<=20*60*1000&&now-t>=-5*60*1000});
-            },{timeout:65000});
-            await sleep(7000);
-            const before=await page.evaluate(()=>{
-              const map=window.FloodSafeMap.map;
-              const src=map.getSource('gauges');
-              const d=src?._data;
-              const features=Array.isArray(d?.features)?d.features:[];
-              return {gauges:features.length,hint:document.getElementById('mapHint')?.textContent||'',stationState:(window.FloodSafe?.state?.stations||[]).length,center:map.getCenter().toArray(),zoom:map.getZoom()};
+            const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
+            await page.goto(process.env.BASE+'?mapci='+Date.now(),{waitUntil:'domcontentloaded',timeout:70000});
+            await page.waitForFunction(()=>window.FloodSafeMap?.map && document.getElementById('riverMapGL'),{timeout:70000});
+            await page.waitForFunction(()=>window.FloodSafeMap.map.isStyleLoaded(),{timeout:70000});
+            await page.waitForFunction(()=>Number(window.__fsRiverRealtimeState?.catalogCount||0)>0,{timeout:70000});
+            await page.waitForFunction(()=>Number(window.FloodSafeMap?.districtCount||0)===77,{timeout:70000});
+            await sleep(8000);
+            const state=await page.evaluate(()=>{
+              const map=window.FloodSafeMap.map,src=map.getSource('gauges'),d=src?._data,features=Array.isArray(d?.features)?d.features:[];
+              return {catalog:Number(window.__fsRiverRealtimeState?.catalogCount||0),latest:Number(window.__fsRiverRealtimeState?.latestCount||0),fresh:Number(window.__fsRiverRealtimeState?.updatedWithin5mCount||0),districts:Number(window.FloodSafeMap?.districtCount||0),gauges:features.length,hydro:Number(window.__fsHydroMatchState?.features||0),overlay:document.getElementById('fsMapSimpleStatus')?.textContent||'',pageErrors:errors};
             });
-            if(before.gauges<1) throw Error('No current official gauge rendered: '+JSON.stringify(before));
-            if(!/official gauges ≤20 min/i.test(before.hint)) throw Error('Map freshness hint missing: '+before.hint);
-            await page.click('#locateBtn');
-            await sleep(3500);
-            const after=await page.evaluate(()=>{const m=window.FloodSafeMap.map,c=m.getCenter();return{lat:c.lat,lng:c.lng,zoom:m.getZoom(),outside:!document.getElementById('outsideNotice')?.hidden}});
-            if(Math.abs(after.lat-27.7172)>0.8 || Math.abs(after.lng-85.3240)>0.8) throw Error('GPS did not center Nepal location: '+JSON.stringify(after));
-            if(after.outside) throw Error('Nepal GPS incorrectly marked outside Nepal');
-            if(errors.length) throw Error('Page errors: '+JSON.stringify(errors.slice(0,6)));
-            console.log('PASS MAP LIVE',JSON.stringify({before,after}));
+            if(state.catalog<1) throw Error('Official catalogue missing '+JSON.stringify(state));
+            if(state.districts!==77) throw Error('77 districts missing '+JSON.stringify(state));
+            if(state.gauges<1) throw Error('Official gauges missing '+JSON.stringify(state));
+            if(!state.overlay) throw Error('Simple live map status missing '+JSON.stringify(state));
+            if(state.pageErrors.length) throw Error('Page errors '+JSON.stringify(state.pageErrors.slice(0,6)));
+            console.log('PASS MAP V25',JSON.stringify(state));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

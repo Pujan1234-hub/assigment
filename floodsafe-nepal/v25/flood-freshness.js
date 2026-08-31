@@ -9,6 +9,7 @@ const tr=(ne,en)=>lang()==='en'?en:ne;
 const ts=v=>{const n=+new Date(v||0);return Number.isFinite(n)?n:0};
 const positive=v=>Number.isInteger(Number(v))&&Number(v)>0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const put=(id,v)=>{const e=$(id),s=String(v??'—');if(e&&e.textContent!==s)e.textContent=s};
 const signature=j=>JSON.stringify([
   j?.sync_schema,j?.status,j?.recovered_bodies,j?.missing_minimum,j?.rescued_alive,
   j?.recovered_update_time,j?.missing_update_time,j?.rescued_update_time,
@@ -53,27 +54,26 @@ function sourceBox(parentId,source,url,time){
   let e=p.querySelector('.impactSource');if(!e){e=document.createElement('div');e.className='impactSource';p.appendChild(e)}
   const label=tr('स्रोत','Source'),timeLabel=tr('समय','Time');
   const link=validUrl(url)?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(source||'—')}</a>`:esc(source||'—');
-  e.innerHTML=`${label}: ${link}${time?`<br>${timeLabel}: ${esc(fmt(time))}`:''}`;
+  const h=`${label}: ${link}${time?`<br>${timeLabel}: ${esc(fmt(time))}`:''}`;
+  if(e.innerHTML!==h)e.innerHTML=h;
 }
 function apply(j){
   current=j;
   const d=j.recovered_bodies,m=j.missing_minimum,r=j.rescued_alive;
-  if($('impactDeaths'))$('impactDeaths').textContent=d;
-  if($('impactMissing'))$('impactMissing').textContent=m;
-  if($('impactRescued'))$('impactRescued').textContent=r;
-  if($('impactEvent'))$('impactEvent').textContent=lang()==='en'?(j.event||'Bhotekoshi flash flood'):(j.event_ne||j.event||'भोटेकोशी आकस्मिक बाढी');
+  put('impactDeaths',d);put('impactMissing',m);put('impactRescued',r);
+  put('impactEvent',lang()==='en'?(j.event||'Bhotekoshi flash flood'):(j.event_ne||j.event||'भोटेकोशी आकस्मिक बाढी'));
   const newest=metricScore(j),checked=ts(j.last_checked_utc),delayed=checked?Date.now()-checked>15*60*1000:true;
-  if($('impactFresh'))$('impactFresh').textContent=tr(
+  put('impactFresh',tr(
     `पछिल्लो प्रमाणित आँकडा: ${fmt(newest)} • mirror जाँच: ${checked?fmt(checked):'—'} • हरेक ५ सेकेन्डमा स्वतः जाँच${delayed?' • server sync ढिलो':''}`,
     `Latest verified figures: ${fmt(newest)} • mirror checked: ${checked?fmt(checked):'—'} • auto-check every 5 seconds${delayed?' • server sync delayed':''}`
-  );
+  ));
   sourceBox('impactDeaths',j.recovered_source,j.recovered_source_url,j.recovered_update_time);
   sourceBox('impactMissing',j.missing_source,j.missing_source_url,j.missing_update_time);
   sourceBox('impactRescued',j.rescued_source,j.rescued_source_url,j.rescued_update_time);
-  if($('impactDetail'))$('impactDetail').textContent=tr(
+  put('impactDetail',tr(
     'Server-side पुष्टि mirror मात्र • मृत्यु/उद्धार cumulative guard • सम्पर्कविहीन संख्या नयाँ authoritative report अनुसार घट्न वा बढ्न सक्छ • browserबाट बाहिरी Human Status API direct call हुँदैन।',
     'Verified server-side mirror only • cumulative guards for deaths/rescued • missing may rise or fall with a newer authoritative report • no direct external Human Status API call from the browser.'
-  );
+  ));
   lastMirrorCheck=Date.now();lastSignature=signature(j);
   window.__fsImpactHumanMirrorState={
     schema:Number(j.sync_schema),status:j.status,deaths:d,missing:m,rescued:r,
@@ -81,10 +81,8 @@ function apply(j){
     deathSource:j.recovered_source,missingSource:j.missing_source,rescuedSource:j.rescued_source,
     lastChecked:j.last_checked_utc,mirrorCheckedAt:new Date(lastMirrorCheck).toISOString()
   };
-  window.dispatchEvent(new CustomEvent('fshumanupdate',{detail:{current:j}}));
 }
-function repair(){if(current)apply(current)}
-function scheduleRepair(){if(repairQueued||!current)return;repairQueued=true;queueMicrotask(()=>{repairQueued=false;repair()})}
+function scheduleRepair(){if(repairQueued||!current)return;repairQueued=true;queueMicrotask(()=>{repairQueued=false;apply(current)})}
 function installLock(){
   const roots=['impactDeaths','impactMissing','impactRescued','impactEvent','impactFresh'].map($).filter(Boolean);
   if(!roots.length)return;
@@ -96,12 +94,12 @@ async function sync(){
   if(busy||document.hidden||!navigator.onLine)return;busy=true;
   try{
     const j=await get(),sig=signature(j);
-    if(!current||metricScore(j)>=metricScore(current)||sig!==lastSignature)apply(j);
-  }catch(e){
-    if(!current&&$('impactFresh'))$('impactFresh').textContent=tr(
+    if(!current||metricScore(j)>=metricScore(current)||sig!==lastSignature){apply(j);window.dispatchEvent(new CustomEvent('fshumanupdate',{detail:{current:j}}))}
+  }catch{
+    if(!current)put('impactFresh',tr(
       'पुष्टि Human Status mirror अहिले उपलब्ध छैन • गलत/पुरानो संख्या देखाइँदैन • फेरि स्वतः जाँच हुँदैछ',
       'Verified Human Status mirror unavailable • stale/untrusted figures are hidden • retrying automatically'
-    );
+    ));
   }finally{busy=false}
 }
 function boot(){

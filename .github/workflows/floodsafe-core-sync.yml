@@ -42,7 +42,7 @@ jobs:
       - name: Reject fake freshness and normalize current observations
         run: python scripts/floodsafe-river-sanitize.py
 
-      - name: Validate current river snapshot
+      - name: Validate five minute river snapshot and full station catalogue
         run: |
           python -m json.tool data/floodsafe-core.json >/dev/null
           python - <<'PY'
@@ -52,10 +52,15 @@ jobs:
           j=json.load(open('data/floodsafe-core.json'))
           src=j.get('sources',{}).get('rivers',{})
           rivers=j.get('rivers',[])
+          stations=j.get('river_stations',[])
           now=datetime.now(timezone.utc)
 
-          assert j.get('schema_version',0) >= 4, j.get('schema_version')
-          assert src.get('count',0) >= 120, src
+          assert j.get('schema_version',0) >= 5, j.get('schema_version')
+          assert src.get('count',0) >= 100, src
+          assert isinstance(stations,list) and len(stations) >= 100, len(stations)
+          assert src.get('station_catalog_count') == len(stations), (src.get('station_catalog_count'),len(stations))
+          assert src.get('station_catalog_with_coordinates',0) >= 80, src
+          assert src.get('freshness_policy_minutes') == 5, src
 
           def parse_time(row):
               raw=(row.get('waterLevelOn') or row.get('water_level_on') or
@@ -79,22 +84,20 @@ jobs:
               t=parse_time(r)
               if not t: continue
               age=now-t.astimezone(timezone.utc)
-              if timedelta(minutes=-5) <= age <= timedelta(minutes=20): fresh.append(r)
+              if timedelta(minutes=-5) <= age <= timedelta(minutes=5): fresh.append(r)
 
-          assert src.get('current_20m_count') == len(fresh), (src.get('current_20m_count'),len(fresh))
+          assert src.get('current_5m_count') == len(fresh), (src.get('current_5m_count'),len(fresh))
           expected_health='current' if fresh else 'degraded_no_current_measurements'
           assert src.get('mirror_health') == expected_health, (src.get('mirror_health'),expected_health)
 
-          fake_current=[r for r in rivers if r.get('_timeBasis')=='official-live-page-retrieval' and r.get('_current20m')]
+          fake_current=[r for r in rivers if r.get('_timeBasis')=='official-live-page-retrieval' and (r.get('_current5m') or r.get('_current20m'))]
           assert not fake_current, f'retrieval-time rows marked current: {len(fake_current)}'
+          over5=[r for r in rivers if r.get('_current5m') and parse_time(r) and now-parse_time(r).astimezone(timezone.utc)>timedelta(minutes=5)]
+          assert not over5, f'rows older than 5m marked current: {len(over5)}'
 
-          if fresh:
-              newest=max(parse_time(r).astimezone(timezone.utc) for r in fresh)
-              print('river snapshot',src.get('count'),'fresh<=20m',len(fresh),'health',expected_health,'newest',newest.isoformat())
-              for r in fresh[:10]:
-                  print('CURRENT',r.get('title') or r.get('river_name') or r.get('name'),r.get('waterLevel') or r.get('water_level'),parse_time(r).isoformat(),r.get('_officialStatus'))
-          else:
-              print('river snapshot',src.get('count'),'fresh<=20m 0','health',expected_health,'newest',src.get('newest_trusted_measurement'))
+          print('station catalogue',len(stations),'geolocated',src.get('station_catalog_with_coordinates'),'observations',src.get('count'),'current<=5m',len(fresh),'health',expected_health)
+          for r in fresh[:10]:
+              print('CURRENT',r.get('title') or r.get('river_name') or r.get('name'),r.get('waterLevel') or r.get('water_level'),parse_time(r).isoformat(),r.get('_officialStatus'))
           PY
 
       - name: Commit refreshed river snapshot immediately

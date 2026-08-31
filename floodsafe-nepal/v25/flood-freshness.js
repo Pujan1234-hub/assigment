@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-if(window.__fsImpactFreshV11)return;window.__fsImpactFreshV11=true;
+if(window.__fsImpactFreshV12)return;window.__fsImpactFreshV12=true;
 const $=id=>document.getElementById(id);
 const PEOPLE='../../data/floodsafe-people-status.json',POLL=5000;
 let current=null,lastSignature='',busy=false,repairQueued=false,lastMirrorCheck=0;

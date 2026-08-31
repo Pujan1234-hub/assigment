@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-31T05:33:08.194422+05:45",
-  "updated_at_npt": "31 Aug 05:33 NPT",
+  "generated_at": "2026-08-31T07:26:25.649847+05:45",
+  "updated_at_npt": "31 Aug 07:26 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -9,21 +9,28 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588692/rudraksha-is-becoming-a-good-source-of-income-for-farmers",
       "published_at": "2026-08-31T05:17:09+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "१ सय ६५ उद्योग–व्यवसाय थपिँदा ८२ बन्द",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588690/165-industries-and-businesses-added-82-closed",
       "published_at": "2026-08-31T05:06:43+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा सहयोग गर्ने बढे",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588689/donations-to-the-prime-ministers-disaster-relief-fund-have-increased",
       "published_at": "2026-08-31T05:03:54+05:45",
-      "flash": true
+      "flash": false
+    },
+    {
+      "title": "खप्तडमा बिरामीको भरोसा बन्दै सेनाको मेडिकल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588688/army-medical-facility-becomes-a-source-of-trust-for-patients-in-khaptad",
+      "published_at": "2026-08-31T03:30:49+05:45",
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढीः काभ्रेका ४१ अझै सम्पर्कविहीन, आठ जना परिवारको सम्पर्कमा",
@@ -49,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 4
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

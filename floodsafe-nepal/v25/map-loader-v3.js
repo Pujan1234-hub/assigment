@@ -8,7 +8,7 @@ if(!window.__fsSmoothMapLoadingV17){
     try{
       hint('🇳🇵 नक्सा जोडिँदैछ…');
       if(!await ensureMapLibre())throw Error('MapLibre unavailable');
-      await import('./map-smooth-v3.js?v=12');
+      await import('./map-smooth-v3.js?v=13');
       window.__fsSmoothMapLoaded=true;
       await import('./hydro-smooth-v2.js?v=11');
       window.__fsHydroSmoothLoaded=true;

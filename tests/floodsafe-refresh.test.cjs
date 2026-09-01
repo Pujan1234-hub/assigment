@@ -28,6 +28,16 @@ function runtime(file) {
 }
 const observation=(id,t,level=2)=>({stationSeriesId:id,title:'Station '+id,waterLevel:level,waterLevelOn:t,longitude:85,latitude:28});
 
+test('human parser binds numbers to outcomes, not years or deployed personnel',async()=>{
+  const {extract}=await import('../supabase/functions/human-status-safe-live/human-counts.mjs');
+  assert.equal(extract('The death toll has reached 1010, with 8791 personnel mobilized.','death'),1010);
+  assert.equal(extract('Bodies of 939 people who died in the disaster have been found, including 23 in Rasuwa.','death'),939);
+  assert.equal(extract('More than 3,900 people, including security personnel, are still missing.','missing'),3900);
+  assert.equal(extract('11,379 people affected by the floods have been rescued.','rescued'),11379);
+  assert.equal(extract('In 2026, 8791 personnel searched for missing people.','missing'),null);
+  assert.equal(extract('The death toll is 12. The death toll is 15.','death'),null);
+});
+
 test('river values, time boundary and per-station preservation',async()=>{
   const r=runtime('trusted-river-runtime-v3.js'),api=r.window.FloodSafeRiverRealtime,t=new Date(r.now()-60000).toISOString();
   for(const value of [null,'','N/A',true,{},'unknown'])assert.equal(api.level({waterLevel:value}),null);
@@ -50,6 +60,46 @@ test('river values, time boundary and per-station preservation',async()=>{
   r.boot();await r.advance(300);assert.equal(r.window.FloodSafe.state.currentRiverStations.length,2);
   await r.advance(600001);assert.equal(r.window.FloodSafe.state.currentRiverStations.length,0);
   assert.equal(r.window.FloodSafe.state.allRiverStations.length,2);
+  assert.equal(r.window.FloodSafe.state.allRiverStations[0]._lastKnownObservation.level,2);
+  assert.equal(r.window.FloodSafe.state.allRiverStations[0]._lastKnownObservation.time,t);
+  assert.equal(r.window.FloodSafe.state.allRiverStations[0]._lastWaterLevel,null,'historical values must not enter live risk');
+});
+
+test('missing and expired observations never paint blue',()=>{
+  const r=runtime('official-stale-safety-v1.js'),paint={};
+  r.window.FloodSafeMap={map:{getLayer:()=>true,setPaintProperty:(_,key,value)=>{paint[key]=value}}};
+  r.window.FloodSafeStaleSafety.apply();
+  function evaluate(x,p){
+    if(!Array.isArray(x))return x;
+    const [op,...a]=x,ev=v=>evaluate(v,p);
+    if(op==='get')return p[a[0]];
+    if(op==='has')return Object.hasOwn(p,a[0]);
+    if(op==='all')return a.every(ev);
+    if(op==='==')return ev(a[0])===ev(a[1]);
+    if(op==='!=')return ev(a[0])!==ev(a[1]);
+    if(op==='>=')return ev(a[0])>=ev(a[1]);
+    if(op==='<=')return ev(a[0])<=ev(a[1]);
+    if(op==='to-number'){const n=Number(ev(a[0]));return Number.isFinite(n)?n:ev(a[1]);}
+    if(op==='case')return ev(a[0])?ev(a[1]):ev(a[2]);
+    if(op==='match'){for(let i=1;i<a.length-1;i+=2)if(ev(a[0])===a[i])return a[i+1];return a.at(-1);}
+    throw Error(op);
+  }
+  const color=p=>evaluate(paint['circle-color'],p);
+  for(const p of [{has_latest:0,age_ms:'',status:'normal'},{has_latest:1,age_ms:'',status:'normal'},{has_latest:1,status:'normal'},{has_latest:1,age_ms:600001,status:'normal'},{has_latest:1,age_ms:-300001,status:'normal'},{has_latest:1,age_ms:0,status:'unknown'}])assert.equal(color(p),'#94a3b8',JSON.stringify(p));
+  assert.equal(color({has_latest:1,age_ms:60000,status:'normal'}),'#20b8ff');
+  assert.equal(color({has_latest:1,age_ms:60000,status:'danger'}),'#ff2d20');
+});
+
+test('station panel shows last known level and date without claiming current safety',()=>{
+  const r=runtime('map-side-panel-v1.js'),panel=r.node('fsMapSidePanel');
+  panel.classList={add(){},remove(){},contains(){return true}};panel.querySelector=()=>null;
+  r.context.document.querySelector=()=>({style:{}});r.context.document.querySelectorAll=()=>[];
+  r.context.getComputedStyle=()=>({position:'relative'});
+  r.window.FloodSafeRiverRealtime={findStation:()=>({_catalogueOnly:true,_lastKnownObservation:{time:'2026-09-01T10:00:00Z',level:2.5,status:'normal'},_lastWarningLevel:5,_lastDangerLevel:6})};
+  r.window.FloodSafeMapPanel.show('Test river',{station_id:'1',has_latest:0},28,85);
+  assert.match(panel.innerHTML,/2.5 m/);assert.match(panel.innerHTML,/Last known observation — not current/);
+  assert.match(panel.innerHTML,/01 Sept 2026|01 Sep 2026/);
+  assert.doesNotMatch(panel.innerHTML,/Current official river status/);
 });
 
 test('human data rejects nulls and old fallback cannot overwrite newer report',()=>{

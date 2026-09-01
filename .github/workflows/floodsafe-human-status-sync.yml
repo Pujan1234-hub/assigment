@@ -25,7 +25,11 @@ jobs:
       - name: Install parser dependencies
         run: pip install --quiet requests beautifulsoup4
       - name: Sync event-scoped Human Status fallback
-        run: python3 scripts/update_floodsafe_people_v4.py
+        run: |
+          # Nepal Police is still a trusted/supporting source, but its Nepali word-number pages
+          # must not be parsed as numeric totals until that parser is proven safe.
+          sed -i "/listing(best,'https:\/\/www.nepalpolice.gov.np\/news\/archive-news/d" scripts/update_floodsafe_people_v4.py
+          python3 scripts/update_floodsafe_people_v4.py
       - name: Validate Human Status safety contract
         run: |
           python3 - <<'PY'

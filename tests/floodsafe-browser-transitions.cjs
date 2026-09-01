@@ -41,11 +41,11 @@ module.exports=async function verifyTransitions(browser,base){
     // Wait for gauges/districts too so that initial fit cannot undo our test zoom.
     await page.waitForFunction(()=>window.FloodSafeHydroSmooth&&window.FloodSafeMap?.initialized&&window.FloodSafeMap?.map?.getSource('gauges')&&window.FloodSafeMap.map.getSource('hydro-complete'),{timeout:45000});
     await page.$eval('#riverMapGL',e=>e.scrollIntoView({block:'center',behavior:'instant'}));
-    await page.evaluate(()=>{window.FloodSafeMap.map.resize();window.FloodSafeMap.map.jumpTo({center:[85,28],zoom:9})});
+    await page.evaluate(()=>{window.FloodSafeMap.map.on('error',e=>console.error('FIXTURE MAP ERROR',e.error?.message||String(e.error)));window.FloodSafeMap.map.resize();window.FloodSafeMap.map.jumpTo({center:[85,28],zoom:9})});
     try{await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===1,{timeout:20000})}
     catch(e){console.log('RIVER TILE DIAGNOSTICS',JSON.stringify({tileFailures,state:await page.evaluate(()=>({loading:window.FloodSafeHydroSmooth?.loadingState,zoom:window.FloodSafeMap?.map?.getZoom(),manifest:window.FloodSafeHydroSmooth?.manifest,visible:!document.hidden}))}));throw e}
     try{await page.waitForFunction(()=>window.FloodSafeMap.map.querySourceFeatures('hydro-complete').some(f=>f.properties.id==='overview'),{timeout:10000})}
-    catch(e){console.log('RIVER RENDER DIAGNOSTICS',JSON.stringify(await page.evaluate(()=>({zoom:window.FloodSafeMap.map.getZoom(),center:window.FloodSafeMap.map.getCenter(),canvas:window.FloodSafeMap.map.getCanvas().getBoundingClientRect().toJSON(),loading:window.FloodSafeHydroSmooth.loadingState,data:window.FloodSafeMap.map.getStyle().sources['hydro-complete'].data,rendered:window.FloodSafeMap.map.querySourceFeatures('hydro-complete')}))));throw e}
+    catch(e){console.log('RIVER RENDER DIAGNOSTICS',JSON.stringify(await page.evaluate(()=>{const m=window.FloodSafeMap.map,c=m.style.sourceCaches['hydro-complete'];return{zoom:m.getZoom(),center:m.getCenter(),canvas:m.getCanvas().getBoundingClientRect().toJSON(),loading:window.FloodSafeHydroSmooth.loadingState,data:m.getStyle().sources['hydro-complete'].data,rendered:m.querySourceFeatures('hydro-complete'),sourceLoaded:m.isSourceLoaded('hydro-complete'),sourceUsed:c.used,tiles:Object.values(c._tiles).map(t=>({state:t.state,id:t.tileID})),layers:m.getStyle().layers.filter(l=>l.source==='hydro-complete')}})));throw e}
     assert.ok(tileFailures>=1);
     tileRecoveryAllowed=true; // No refresh or pan: the scheduled retry must recover it.
     await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.loadedVisibleTiles===2&&window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===0,{timeout:65000});

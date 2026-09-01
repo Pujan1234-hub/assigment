@@ -38,13 +38,16 @@ const assert=require('node:assert/strict');
       if(!o)return null;
       const api=window.FloodSafeRiverRealtime,c=api.coords(o);
       window.FloodSafeMapPanel.show(api.name(o),{station_id:api.ids(o)[0],has_latest:0},c?.[1]||28,c?.[0]||85);
-      const p=document.getElementById('fsMapSidePanel');const archive=p.querySelector('details');if(archive)archive.open=true;
+      const p=document.getElementById('fsMapSidePanel');const archive=p.querySelector('details');if(archive&&!archive.open)throw Error('Last-known river reading must be visible without another click');
       const text=p.innerText;p.querySelector('.fsSideClose').click();
       return text;
     });
     if(historicalPanel){assert.match(historicalPanel,/पछिल्लो उपलब्ध मापन|Last known observation/);assert.match(historicalPanel,/NPT/);console.log('PASS last-known panel',historicalPanel);}
     await page.waitForFunction((first)=>window.__fsRiverRealtimeState?.checkedAt>first.river&&window.__fsImpactLiveState?.checkedAt>first.impact&&window.__fsNewsLiveState?.checkedAt>first.news,{timeout:60000},{river:before.river.checkedAt,impact:before.impact.checkedAt,news:before.news.checkedAt});
     await page.click('#langBtn');await page.waitForFunction(()=>window.FloodSafe.state.lang==='en',{timeout:10000});
+    const archives=await page.evaluate(()=>['newsArchive','impactArchive'].map(id=>({id,exists:!!document.getElementById(id),open:document.getElementById(id)?.open})));
+    for(const archive of archives)if(archive.exists)assert.equal(archive.open,true,archive.id+' must show dated reports by default');
+    console.log('PASS dated older news and human reports visible by default',JSON.stringify(archives));
     await page.waitForFunction(()=>((window.FloodSafeMap?.map?.querySourceFeatures?.('gauges')?.length||window.__fsStaticMapFallback?.stations||0)>=100),{timeout:15000});
     const after=await read();assert.ok(after.gauges>=100);assert.equal(errors.length,0,errors.join('\n'));
     assert.equal(after.river.connected,true,'a failed poll is not a successful river refresh');

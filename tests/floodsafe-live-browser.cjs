@@ -33,6 +33,14 @@ const assert=require('node:assert/strict');
       assert.ok(JSON.stringify(mapSafety.paint).includes('age_ms'),'paint must check observation age');
     }
     console.log('PASS mobile bounds and map safety',JSON.stringify({layout,mapSafety}));
+    assert.equal(await page.$('#sourceReadingList'),null,'no duplicate long station list');
+    await page.setViewport({width:980,height:915});
+    await page.click('#fsOpenMapBtn');
+    assert.equal(await page.evaluate(()=>window.FloodSafeMobileMap.isOpen),false);
+    await page.click('#fsOpenMapBtn');
+    assert.equal(await page.evaluate(()=>window.FloodSafeMobileMap.isOpen),true);
+    await page.setViewport({width:412,height:915});
+    console.log('PASS compact district UI and wide-screen map open/close');
     const historicalPanel=await page.evaluate(()=>{
       const o=window.FloodSafe.state.allRiverStations.find(x=>x._catalogueOnly&&x._lastKnownObservation);
       if(!o)return null;

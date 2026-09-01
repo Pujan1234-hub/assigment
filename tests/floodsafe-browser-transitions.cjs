@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 // Browser-only intercepted fixtures. Never written to the live data services.
 module.exports=async function verifyTransitions(browser,base){
   const page=await browser.newPage();await page.setViewport({width:412,height:915});
-  let phase='old';const now=Date.now(),fresh=new Date(now-60000).toISOString(),old=new Date(now-3600000).toISOString();
+  let phase='old';const now=Date.now(),fresh=new Date(now-60000).toISOString(),old=new Date(now-86400000).toISOString();
   await page.setRequestInterception(true);
   page.on('request',req=>{
     const url=req.url(),edge=url.includes('.supabase.co/functions/v1/');
@@ -36,7 +36,7 @@ module.exports=async function verifyTransitions(browser,base){
     // successful check must not make those now-expired observations fresh.
     await page.evaluate(()=>{const RealDate=Date;window.Date=class extends RealDate{constructor(...a){super(...(a.length?a:[RealDate.now()+11*60000]))}static now(){return RealDate.now()+11*60000}}});
     await page.evaluate(()=>{window.FloodSafeNews.refresh();window.FloodSafeRiverRealtime.refresh();void window.FloodSafeImpact.sync()});
-    await page.waitForFunction(()=>window.__fsRiverRealtimeState?.currentCount===0&&window.__fsNewsLiveState?.freshCount===0&&window.__fsImpactLiveState?.reportedCount===1,{timeout:30000});
+    await page.waitForFunction(()=>window.__fsRiverRealtimeState?.currentCount===1&&window.__fsNewsLiveState?.freshCount===0&&window.__fsImpactLiveState?.reportedCount===1,{timeout:30000});
     assert.equal(await page.$eval('#impactDeaths',e=>e.innerText),'13');
     assert.match(await page.$eval('#liveNews',e=>e.innerText),/No fresh data/);
     assert.equal(await page.$eval('#impactDeaths',e=>e.textContent),'13');

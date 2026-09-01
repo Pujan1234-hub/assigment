@@ -45,8 +45,11 @@ test('river values, time boundary and per-station preservation',async()=>{
   assert.equal(api.level({waterLevel:0}),0);
   assert.equal(api.hasObservation(observation(1,t)),true);
   assert.equal(api.hasObservation({...observation(1,t),waterLevelOn:null,retrievedAt:t}),false);
-  assert.equal(api.isCurrentTime(new Date(r.now()-600001).toISOString()),false);
+  assert.equal(api.isCurrentTime(new Date(r.now()-600001).toISOString()),true);
   assert.equal(api.isCurrentTime(new Date(r.now()+300001).toISOString()),false);
+  assert.equal(api.isCurrentTime('2022-09-01T10:00:00Z'),false);
+  assert.equal(api.isCurrentTime('2026-08-31T18:14:59Z'),false,'before Nepal midnight is yesterday');
+  assert.equal(api.isCurrentTime('2026-08-31T18:15:00Z'),true,'Nepal midnight starts today');
   const old=[observation(1,t),observation(2,t)];
   assert.equal(api.retain(old,[]).length,2);
   const next=api.retain(old,[observation(1,new Date(r.now()).toISOString(),3)]);
@@ -59,11 +62,14 @@ test('river values, time boundary and per-station preservation',async()=>{
   assert.equal(api.level(api.retain(old,[observation(1,new Date(r.now()+3600000).toISOString(),9)])[0]),2);
   r.respond(url=>url.includes('floodsafe-core')?{river_stations:[],rivers:[]}:{results:old,fetched_at:t});
   r.boot();await r.advance(300);assert.equal(r.window.FloodSafe.state.currentRiverStations.length,2);
-  await r.advance(600001);assert.equal(r.window.FloodSafe.state.currentRiverStations.length,0);
+  await r.advance(600001);assert.equal(r.window.FloodSafe.state.currentRiverStations.length,2);
   assert.equal(r.window.FloodSafe.state.allRiverStations.length,2);
   assert.equal(r.window.FloodSafe.state.allRiverStations[0]._lastKnownObservation.level,2);
   assert.equal(r.window.FloodSafe.state.allRiverStations[0]._lastKnownObservation.time,t);
-  assert.equal(r.window.FloodSafe.state.allRiverStations[0]._lastWaterLevel,null,'historical values must not enter live risk');
+  assert.equal(r.window.FloodSafe.state.allRiverStations[0]._lastWaterLevel,2,'today readings remain available');
+  await r.advance(24*60*60*1000);
+  assert.equal(r.window.FloodSafe.state.currentRiverStations.length,0);
+  assert.equal(r.window.FloodSafe.state.allRiverStations[0]._lastKnownObservation,null,'yesterday readings must not leak into panels');
 });
 
 test('missing and expired observations never paint blue',()=>{

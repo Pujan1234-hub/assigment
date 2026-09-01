@@ -29,6 +29,18 @@ function runtime(file) {
 }
 const observation=(id,t,level=2)=>({stationSeriesId:id,title:'Station '+id,waterLevel:level,waterLevelOn:t,longitude:85,latitude:28});
 
+test('river clicks choose nearest geometry and never borrow Bagmati gauge name',()=>{
+  const r=runtime('map-side-panel-v1.js'),api=r.window.FloodSafeMapPanel;
+  const line=(name,y)=>({properties:{name,live_station:'Bagmati at Khokana'},geometry:{type:'LineString',coordinates:[[0,y],[100,y]]}});
+  const bagmati=line('Bagmati',10),bishnumati=line('Bishnumati',0),dhobikhola=line('Dhobi Khola',20);
+  const map={project:([x,y])=>({x,y})};
+  for(const [y,name]of [[0,'Bishnumati'],[10,'Bagmati'],[20,'Dhobi Khola']]){
+    assert.equal(api.riverName(api.pickFeature([bagmati,dhobikhola,bishnumati],{x:50,y},map)),name);
+  }
+  assert.equal(api.riverName(line('',0)),'Unnamed river/stream');
+  assert.equal(api.riverName({properties:{name_ne:'विष्णुमती',live_station:'Bagmati'}}),'विष्णुमती');
+});
+
 test('human parser binds numbers to outcomes, not years or deployed personnel',async()=>{
   const {extract}=await import('../supabase/functions/human-status-safe-live/human-counts.mjs');
   assert.equal(extract('The death toll has reached 1010, with 8791 personnel mobilized.','death'),1010);

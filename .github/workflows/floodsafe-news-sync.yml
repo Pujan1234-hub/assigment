@@ -1,4 +1,4 @@
-name: FloodSafe Five Source Live News Sync
+name: FloodSafe Three Source Live News Sync
 on:
   schedule:
     - cron: '*/5 * * * *'
@@ -6,7 +6,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'scripts/floodsafe-news-sync.py'
+      - 'scripts/floodsafe-news-sync-v2.py'
       - '.github/workflows/floodsafe-news-sync.yml'
 permissions:
   contents: write
@@ -16,7 +16,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
@@ -25,19 +25,21 @@ jobs:
           python-version: '3.12'
       - name: Install news parser dependencies
         run: pip install --quiet requests beautifulsoup4
-      - name: Fetch requested five news sources
-        run: python3 scripts/floodsafe-news-sync.py
-      - name: Validate requested source contract
+      - name: Fetch RONB Radio Nepal and News24 Nepal
+        run: python3 scripts/floodsafe-news-sync-v2.py
+      - name: Validate three source contract
         run: |
           python3 - <<'PY'
           import json
-          p='data/floodsafe-news.json'
-          j=json.load(open(p,encoding='utf-8'))
-          want=['RONB Post','Onlinekhabar','Hamro Patro','eKantipur','Nepal Government']
+          j=json.load(open('data/floodsafe-news.json',encoding='utf-8'))
+          want=['RONB Post','Radio Nepal','News24 Nepal']
           assert j.get('allowed_sources') == want, j.get('allowed_sources')
+          assert j.get('latest_window_minutes') == 10
+          assert j.get('archive_window_minutes') == 20
+          assert j.get('max_age_minutes') == 30
           assert isinstance(j.get('items'),list)
           bad=sorted({x.get('source') for x in j['items'] if x.get('source') not in want})
-          assert not bad, bad
+          assert not bad,bad
           print('news items',len(j['items']))
           print('source status',j.get('sources'))
           PY
@@ -45,10 +47,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          if git diff --quiet -- data/floodsafe-news.json; then echo 'No headline change'; exit 0; fi
+          if git diff --quiet -- data/floodsafe-news.json; then echo 'No news snapshot change'; exit 0; fi
           git config user.name 'FloodSafe news sync'
           git config user.email 'actions@users.noreply.github.com'
           git add data/floodsafe-news.json
-          git commit -m '[auto] refresh FloodSafe five-source live news'
+          git commit -m '[auto] refresh FloodSafe three-source live news'
           git pull --rebase origin main
           git push origin HEAD:main

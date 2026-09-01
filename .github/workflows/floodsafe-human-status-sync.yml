@@ -1,5 +1,4 @@
 name: FloodSafe Human Status Sync
-
 on:
   schedule:
     - cron: '*/5 * * * *'
@@ -7,80 +6,52 @@ on:
   push:
     branches: [main]
     paths:
-      - 'scripts/update_floodsafe_people_v2.py'
-      - 'data/floodsafe-police.json'
+      - 'scripts/update_floodsafe_people_v3.py'
       - '.github/workflows/floodsafe-human-status-sync.yml'
-
 permissions:
   contents: write
-
 concurrency:
   group: floodsafe-human-status
-  cancel-in-progress: false
-
+  cancel-in-progress: true
 jobs:
   sync:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Sync latest event-scoped Human Status metrics
-        run: python scripts/update_floodsafe_people_v2.py
-
-      - name: Validate Human Status authority contract
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install parser dependencies
+        run: pip install --quiet requests beautifulsoup4
+      - name: Sync requested-source Human Status
+        run: python3 scripts/update_floodsafe_people_v3.py
+      - name: Validate source allowlist
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           import json
-          from datetime import datetime, timezone, timedelta
           from urllib.parse import urlparse
-
-          j=json.load(open('data/floodsafe-people-status.json'))
-          assert int(j.get('sync_schema') or 0) >= 2, j.get('sync_schema')
-          assert j.get('status') == 'event_scoped_authority_mirror', j.get('status')
-
-          metrics=(
-              ('recovered_bodies','recovered_source','recovered_source_url','recovered_update_time','death_time_basis'),
-              ('missing_minimum','missing_source','missing_source_url','missing_update_time','missing_time_basis'),
-              ('rescued_alive','rescued_source','rescued_source_url','rescued_update_time','rescued_time_basis'),
-          )
-          now=datetime.now(timezone.utc)
-          checked=j.get('last_checked_utc')
-          assert str(checked or '').strip(), 'missing last_checked_utc'
-
-          def parsed(v):
-              d=datetime.fromisoformat(str(v).replace('Z','+00:00'))
-              return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
-
-          for value_key,source_key,url_key,time_key,basis_key in metrics:
-              value=j.get(value_key)
-              assert isinstance(value,int) and value>0, (value_key,value)
-              assert str(j.get(source_key) or '').strip(), source_key
-              u=str(j.get(url_key) or '')
-              p=urlparse(u)
-              assert p.scheme in ('http','https') and p.netloc, (url_key,u)
-              t=parsed(j.get(time_key))
-              assert t <= now + timedelta(minutes=10), (time_key,t.isoformat())
-              assert str(j.get(basis_key) or '').strip(), basis_key
-              assert str(j.get(time_key)) != str(checked), (time_key,'must not use last_checked as observation')
-
-          policy=str(j.get('sync_policy') or '')
-          assert 'missing may' in policy.lower() and 'decrease' in policy.lower(), policy
-          print('Human Status contract PASS',j['recovered_bodies'],j['missing_minimum'],j['rescued_alive'])
+          j=json.load(open('data/floodsafe-people-status.json',encoding='utf-8'))
+          assert int(j.get('sync_schema') or 0) >= 3
+          assert j.get('status') == 'requested_sources_only'
+          allowed=('ronb','radio nepal','nepal police','ndrrma','government of nepal')
+          specs=(('recovered_bodies','recovered_source','recovered_source_url'),('missing_minimum','missing_source','missing_source_url'),('rescued_alive','rescued_source','rescued_source_url'))
+          for vk,sk,uk in specs:
+            v,s,u=j.get(vk),str(j.get(sk) or ''),str(j.get(uk) or '')
+            if v is None:
+              continue
+            assert isinstance(v,int) and v>0,(vk,v)
+            assert any(a in s.lower() for a in allowed),(sk,s)
+            p=urlparse(u);assert p.scheme in ('http','https') and p.netloc,(uk,u)
+          print('Human Status source contract PASS',j.get('last_winning_sources'))
           PY
-
       - name: Commit changed Human Status
         shell: bash
         run: |
-          if git diff --quiet -- data/floodsafe-people-status.json; then
-            echo 'No Human Status change'
-            exit 0
-          fi
+          if git diff --quiet -- data/floodsafe-people-status.json; then echo 'No Human Status change'; exit 0; fi
           git config user.name 'FloodSafe Human Status Bot'
           git config user.email 'actions@users.noreply.github.com'
           git add data/floodsafe-people-status.json
-          git commit -m 'Update Human Status metrics'
+          git commit -m '[auto] refresh requested-source Human Status'
           git pull --rebase origin main
           git push origin HEAD:main

@@ -1,0 +1,62 @@
+name: FloodSafe GPS News Smoke
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "floodsafe-nepal/v25/location-runtime-v2.js"
+      - "floodsafe-nepal/v25/location-click-lock-v1.js"
+      - "floodsafe-nepal/v25/news-live-v5.js"
+      - "floodsafe-nepal/v25/index.html"
+      - ".github/workflows/v25-gps-news-smoke.yml"
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          node --check floodsafe-nepal/v25/location-runtime-v2.js
+          node --check floodsafe-nepal/v25/news-live-v5.js
+      - name: Wait for Pages and verify Nepal GPS plus news UI
+        env:
+          BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            curl --max-time 12 -fsSL "${BASE}?gpsnews=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
+            if grep -Fq 'location-click-lock-v1.js?v=3' /tmp/index.html && grep -Fq 'news-live-v5.js?v=9' /tmp/index.html; then break; fi
+            sleep 3
+          done
+          grep -Fq 'location-click-lock-v1.js?v=3' /tmp/index.html
+          grep -Fq 'news-live-v5.js?v=9' /tmp/index.html
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"; test -n "$CHROME"
+          mkdir -p /tmp/fs-gps-news && cd /tmp/fs-gps-news
+          npm init -y >/dev/null 2>&1
+          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
+          BASE="$BASE" CHROME="$CHROME" node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          (async()=>{
+            const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+            const ctx=browser.defaultBrowserContext();
+            await ctx.overridePermissions('https://pujan1234-hub.github.io',['geolocation','notifications']);
+            const page=await browser.newPage();
+            await page.setViewport({width:412,height:915,deviceScaleFactor:2});
+            await page.setGeolocation({latitude:27.7172,longitude:85.3240,accuracy:18});
+            page.setDefaultTimeout(45000);
+            await page.goto(process.env.BASE+'?gpsnews='+Date.now(),{waitUntil:'domcontentloaded',timeout:20000});
+            await page.waitForFunction(()=>!!window.FloodSafeCurrentLocation&&!!window.FloodSafeNews,{timeout:20000});
+            await page.evaluate(()=>window.FloodSafeCurrentLocation.locate());
+            await page.waitForFunction(()=>window.FloodSafe?.state?.kind==='gps'&&Math.abs(Number(window.FloodSafe.state.lat)-27.7172)<0.02&&Math.abs(Number(window.FloodSafe.state.lon)-85.3240)<0.02,{timeout:20000});
+            await page.waitForFunction(()=>window.__fsNewsLiveState?.connected===true,{timeout:25000});
+            const r=await page.evaluate(()=>{
+              const now=Date.now(),items=window.FloodSafeNews?.items||[];
+              return {gps:window.FloodSafeCurrentLocation.last,kind:window.FloodSafe?.state?.kind,newsV9:!!window.__fsNewsV9,newsCount:items.length,badNews:items.filter(x=>{const t=+new Date(x.published_at||0);return !t||now-t>600000||now-t< -300000||!['RONB Post','Radio Nepal','News24 Nepal'].includes(x.source)}).length,newsText:document.querySelector('#liveNews')?.textContent||''};
+            });
+            if(!r.gps||r.kind!=='gps')throw Error('GPS failed '+JSON.stringify(r));
+            if(!r.newsV9||r.badNews)throw Error('News freshness failed '+JSON.stringify(r));
+            if(r.newsCount===0&&!/१० मिनेट|10 minutes/i.test(r.newsText))throw Error('No-news safety fallback failed '+JSON.stringify(r));
+            console.log('PASS GPS NEWS',r);
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(3)});
+          JS

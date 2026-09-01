@@ -135,7 +135,10 @@ test('news retains dated recent stories, dedupes and refreshes without page relo
 
 test('one human renderer and no competing map lock are loaded',()=>{
   const html=fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/index.html'),'utf8');
-  assert.match(html,/impact-live-v1.js\?v=4/);
+  assert.match(html,/impact-live-v1.js\?v=\d+/);
+  for(const file of ['trusted-river-runtime-v3.js','trusted-rain-runtime-v1.js','news-live-v5.js','impact-live-v1.js','official-stale-safety-v1.js']){
+    assert.equal(html.split('src="./'+file+'?v=').length-1,1,file+' must be loaded exactly once');
+  }
   assert.doesNotMatch(html,/flood-freshness.js|final-map-lock-v1.js|map-hint-sync-v1.js/);
 });
 

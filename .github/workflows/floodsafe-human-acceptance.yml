@@ -1,134 +1,34 @@
 name: FloodSafe Human Status Acceptance
-
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - 'data/floodsafe-people-status.json'
-      - 'scripts/update_floodsafe_people_v2.py'
-      - 'floodsafe-nepal/v25/flood-freshness.js'
-      - 'floodsafe-nepal/v25/index.html'
-      - '.github/workflows/floodsafe-human-status-sync.yml'
+      - 'tests/floodsafe-browser-transitions.cjs'
       - '.github/workflows/floodsafe-human-acceptance.yml'
-
+  workflow_run:
+    workflows: ['Deploy Portfolio to GitHub Pages']
+    types: [completed]
 permissions:
   contents: read
-
 concurrency:
   group: floodsafe-human-acceptance
   cancel-in-progress: true
-
 jobs:
   live-human-status:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 7
     steps:
-      - name: Wait for verified Human Status runtime on GitHub Pages
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source count parsing and stale-report handling
+        run: node --test --test-name-pattern='human|one human' tests/floodsafe-refresh.test.cjs
+      - name: Verify live UI and intercepted fresh/expired/offline transitions
         run: |
-          set -euo pipefail
-          APP='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
-          DATA='https://pujan1234-hub.github.io/assigment/data/floodsafe-people-status.json'
-          ok=0
-          for i in $(seq 1 100); do
-            html="$(curl --max-time 10 -fsSL "${APP}?humanaccept=${GITHUB_SHA}-${i}" || true)"
-            js="$(curl --max-time 10 -fsSL "${APP}flood-freshness.js?humanaccept=${GITHUB_SHA}-${i}" || true)"
-            json="$(curl --max-time 10 -fsSL "${DATA}?humanaccept=${GITHUB_SHA}-${i}" || true)"
-            if printf '%s' "$html" | grep -Fq 'flood-freshness.js?v=11' \
-              && printf '%s' "$js" | grep -Fq '__fsImpactFreshV11' \
-              && printf '%s' "$json" | grep -Fq '"sync_schema": 2' \
-              && printf '%s' "$json" | grep -Fq '"status": "event_scoped_authority_mirror"'; then
-              ok=1; break
-            fi
-            sleep 4
-          done
-          test "$ok" = 1
-          js="$(curl --max-time 10 -fsSL "${APP}flood-freshness.js?humanaccept=${GITHUB_SHA}-final")"
-          ! printf '%s' "$js" | grep -Fq 'raw.githubusercontent.com'
-          ! printf '%s' "$js" | grep -Fq 'kchakhabar.com'
-          printf '%s' "$js" | grep -Fq "const PEOPLE='../../data/floodsafe-people-status.json'"
-
-      - name: Validate live Human Status mirror contract
-        run: |
-          set -euo pipefail
-          curl --max-time 10 -fsSL 'https://pujan1234-hub.github.io/assigment/data/floodsafe-people-status.json?humancontract=1' > /tmp/human.json
-          python - <<'PY'
-          import json
-          from datetime import datetime, timezone, timedelta
-          from urllib.parse import urlparse
-          j=json.load(open('/tmp/human.json'))
-          assert int(j.get('sync_schema') or 0) >= 2
-          assert j.get('status') == 'event_scoped_authority_mirror'
-          now=datetime.now(timezone.utc)
-          checked=datetime.fromisoformat(str(j['last_checked_utc']).replace('Z','+00:00'))
-          assert now-checked.astimezone(timezone.utc) <= timedelta(minutes=20), (now,checked)
-          metrics=(
-            ('recovered_bodies','recovered_source','recovered_source_url','recovered_update_time','death_time_basis'),
-            ('missing_minimum','missing_source','missing_source_url','missing_update_time','missing_time_basis'),
-            ('rescued_alive','rescued_source','rescued_source_url','rescued_update_time','rescued_time_basis'),
-          )
-          for v,s,u,t,b in metrics:
-            assert isinstance(j.get(v),int) and j[v]>0, (v,j.get(v))
-            assert str(j.get(s) or '').strip(), s
-            p=urlparse(str(j.get(u) or ''))
-            assert p.scheme in ('http','https') and p.netloc, (u,j.get(u))
-            dt=datetime.fromisoformat(str(j[t]).replace('Z','+00:00'))
-            assert dt.astimezone(timezone.utc) <= now+timedelta(minutes=10), (t,j[t])
-            assert str(j.get(b) or '').strip(), b
-            assert str(j[t]) != str(j['last_checked_utc']), (t,'fetch/check time used as metric time')
-          print('MIRROR PASS',j['recovered_bodies'],j['missing_minimum'],j['rescued_alive'],j['last_checked_utc'])
-          PY
-
-      - name: Browser cross-check mirror, DOM, sources and UI lock
-        env:
-          APP: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
-        run: |
-          set -euo pipefail
-          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
-          test -n "$CHROME"
-          mkdir -p /tmp/humanaccept && cd /tmp/humanaccept
-          npm init -y >/dev/null 2>&1
-          npm install --no-save puppeteer-core@24.31.0 >/dev/null 2>&1
-          APP="$APP" CHROME="$CHROME" node <<'JS'
-          const puppeteer=require('puppeteer-core');
-          const wait=ms=>new Promise(r=>setTimeout(r,ms));
-          (async()=>{
-            const b=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
-            const p=await b.newPage();p.setDefaultTimeout(90000);
-            p.on('console',m=>console.log('PAGE',m.type(),m.text()));
-            await p.goto(process.env.APP+'?humanaccept='+Date.now()+'#impact',{waitUntil:'domcontentloaded'});
-            await p.waitForFunction(()=>window.__fsImpactHumanMirrorState?.schema>=2,{timeout:90000});
-            await wait(1500);
-            const result=await p.evaluate(async()=>{
-              const r=await fetch(new URL('../../data/floodsafe-people-status.json?browseraccept='+Date.now(),location.href),{cache:'no-store'});
-              if(!r.ok)throw Error('mirror HTTP '+r.status);
-              const m=await r.json(),s=window.__fsImpactHumanMirrorState;
-              const txt=id=>document.getElementById(id)?.textContent?.trim()||'';
-              const href=id=>document.getElementById(id)?.closest('.impactStat')?.querySelector('.impactSource a')?.href||'';
-              const scripts=[...document.scripts].map(x=>x.src).filter(Boolean);
-              return {
-                mirror:{schema:m.sync_schema,status:m.status,deaths:m.recovered_bodies,missing:m.missing_minimum,rescued:m.rescued_alive,
-                  deathUrl:m.recovered_source_url,missingUrl:m.missing_source_url,rescuedUrl:m.rescued_source_url},
-                state:s,
-                dom:{deaths:txt('impactDeaths'),missing:txt('impactMissing'),rescued:txt('impactRescued'),fresh:txt('impactFresh')},
-                links:{death:href('impactDeaths'),missing:href('impactMissing'),rescued:href('impactRescued')},
-                runtime:scripts.find(x=>x.includes('/flood-freshness.js'))||''
-              };
-            });
-            console.log('HUMAN RESULT',JSON.stringify(result));
-            const m=result.mirror,s=result.state,d=result.dom;
-            if(m.schema<2||m.status!=='event_scoped_authority_mirror')throw Error('mirror schema/status '+JSON.stringify(m));
-            if(s.schema!==m.schema||s.status!==m.status)throw Error('state contract mismatch');
-            if(s.deaths!==m.deaths||s.missing!==m.missing||s.rescued!==m.rescued)throw Error('mirror/state values mismatch '+JSON.stringify({m,s}));
-            if(d.deaths!==String(m.deaths)||d.missing!==String(m.missing)||d.rescued!==String(m.rescued))throw Error('mirror/DOM mismatch '+JSON.stringify({m,d}));
-            if(result.links.death!==m.deathUrl||result.links.missing!==m.missingUrl||result.links.rescued!==m.rescuedUrl)throw Error('source link mismatch '+JSON.stringify(result.links));
-            if(!result.runtime.includes('flood-freshness.js?v=11'))throw Error('wrong Human Status runtime '+result.runtime);
-            await p.evaluate(()=>{document.getElementById('impactMissing').textContent='999999'});
-            await wait(700);
-            const repaired=await p.evaluate(()=>document.getElementById('impactMissing')?.textContent?.trim());
-            console.log('LOCK RESULT',repaired);
-            if(repaired!==String(m.missing))throw Error('Human Status UI lock failed '+repaired+' expected '+m.missing);
-            console.log('PASS FloodSafe Human Status acceptance');
-            await b.close();
-          })().catch(e=>{console.error(e);process.exit(3)});
-          JS
+          npm install --prefix /tmp/floodsafe-browser --no-save puppeteer-core@24.31.0
+          export NODE_PATH=/tmp/floodsafe-browser/node_modules
+          export CHROME="$(command -v google-chrome || command -v chromium)"
+          node tests/floodsafe-live-browser.cjs

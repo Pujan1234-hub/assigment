@@ -15,3 +15,5 @@ html{scroll-behavior:smooth}body{font-size:16px}.app{max-width:1180px;margin:aut
 
 /* Keep content and all navigation items reachable on narrow screens. */
 @media(max-width:680px){.top,.actions{position:static!important}.bottom{left:0!important;right:0!important;transform:none!important;width:100%!important}.brand h1{font-size:21px}.actions .action{padding:11px;font-size:14px}html{scroll-padding-bottom:90px}}
+
+.noFreshData{padding:14px;border:1px solid #d4dee6;border-radius:14px;background:#f3f6f9;color:#334155}.noFreshData strong{display:block;font-size:17px}.noFreshData p{margin:7px 0 0;font-size:13px;line-height:1.5}.lastKnownData{margin-top:12px;padding:12px;border:1px solid #d4dee6;border-radius:12px}.lastKnownData summary{cursor:pointer;font-weight:750;color:#526778}.card,.head,.dashboard,.newsList,.newsFreshBox,.newsItem{min-width:0;max-width:100%}.newsItem h4,.newsItem .meta,.lastKnownData{overflow-wrap:anywhere;white-space:normal}

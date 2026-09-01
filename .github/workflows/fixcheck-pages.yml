@@ -100,7 +100,7 @@ jobs:
             if [ "$deployed" = "$GITHUB_SHA" ]; then
               curl --max-time 15 -fsSL "$BASE/floodsafe-nepal/v25/?check=$GITHUB_SHA" -o /tmp/v25.html
               grep -Fq 'trusted-river-runtime-v3.js?v=34' /tmp/v25.html
-              grep -Fq 'impact-live-v1.js?v=3' /tmp/v25.html
+              grep -Fq 'impact-live-v1.js?v=4' /tmp/v25.html
               ! grep -Fq 'flood-freshness.js' /tmp/v25.html
               exit 0
             fi

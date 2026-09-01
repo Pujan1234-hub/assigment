@@ -38,7 +38,8 @@ const assert=require('node:assert/strict');
       if(!o)return null;
       const api=window.FloodSafeRiverRealtime,c=api.coords(o);
       window.FloodSafeMapPanel.show(api.name(o),{station_id:api.ids(o)[0],has_latest:0},c?.[1]||28,c?.[0]||85);
-      const p=document.getElementById('fsMapSidePanel'),text=p.innerText;p.querySelector('.fsSideClose').click();
+      const p=document.getElementById('fsMapSidePanel');const archive=p.querySelector('details');if(archive)archive.open=true;
+      const text=p.innerText;p.querySelector('.fsSideClose').click();
       return text;
     });
     if(historicalPanel){assert.match(historicalPanel,/पछिल्लो उपलब्ध मापन|Last known observation/);assert.match(historicalPanel,/NPT/);console.log('PASS last-known panel',historicalPanel);}
@@ -46,6 +47,10 @@ const assert=require('node:assert/strict');
     await page.click('#langBtn');await page.waitForFunction(()=>window.FloodSafe.state.lang==='en',{timeout:10000});
     await page.waitForFunction(()=>((window.FloodSafeMap?.map?.querySourceFeatures?.('gauges')?.length||window.__fsStaticMapFallback?.stations||0)>=100),{timeout:15000});
     const after=await read();assert.ok(after.gauges>=100);assert.equal(errors.length,0,errors.join('\n'));
+    const freshnessUI=await page.evaluate(()=>({newsCount:window.__fsNewsLiveState.freshCount,news:document.getElementById('liveNews').innerText,humanCount:window.__fsImpactLiveState.freshCount,human:document.getElementById('impactFresh').innerText,deaths:document.getElementById('impactDeaths').innerText}));
+    if(freshnessUI.newsCount===0)assert.match(freshnessUI.news,/No fresh data/);
+    if(freshnessUI.humanCount===0){assert.match(freshnessUI.human,/No fresh data/);assert.equal(freshnessUI.deaths,'—');}
+    console.log('PASS explicit no-fresh-data UI',JSON.stringify(freshnessUI));
     console.log('PASS mobile map, single human renderer, independent river/news/human refresh, language interaction',JSON.stringify({before,after}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});

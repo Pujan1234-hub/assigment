@@ -14,8 +14,8 @@ const fmt=t=>t?new Intl.DateTimeFormat(lang()==='en'?'en-GB':'ne-NP',{timeZone:'
 text('mapSub',tr('स्टेशन थिचेर मापन हेर्नुहोस्। निलो: सामान्य • सुन्तला: चेतावनी • रातो: खतरा • खैरो: ताजा मापन छैन।','Tap a station for readings. Blue: normal • orange: warning • red: danger • grey: no fresh reading.'));
 const health=r.connected?tr('स्वतः जाँच जारी','Auto-check active'):tr('जडान पुनः प्रयास हुँदैछ','Reconnecting');
 const summary=tr(`${all} स्टेशन • ${current} ताजा मापन (१० मिनेटभित्र) • ${health}`,`${all} stations • ${current} fresh readings (within 10 min) • ${health}`);
-text('mapHint',summary);
-text('feedFresh',summary+' • '+tr('अन्तिम सफल जाँच: ','Last successful check: ')+fmt(r.lastGoodAt));
+const availability=current?summary:tr('नयाँ तथ्याङ्क उपलब्ध छैन','No fresh data')+' • '+summary;const badge=$('map')?.querySelector?.('.badge');if(badge){badge.textContent=current?tr('ताजा मापन','Fresh readings'):tr('नयाँ छैन','No fresh data');badge.className='badge '+(current?'green':'amber')}text('mapHint',availability);
+text('feedFresh',availability+' • '+tr('अन्तिम सफल जाँच: ','Last successful check: ')+fmt(r.lastGoodAt));
 text('nationalRiverFresh',tr('पछिल्लो स्रोत मापन: ','Newest source observation: ')+fmt(r.newestMeasurement)+' • '+tr('अन्तिम प्रयास: ','Last attempt: ')+fmt(r.checkedAt));
 const x=$('nationalRealtimeCoverage');if(x)x.style.display='none';text('newsSub','RONB Post • Radio Nepal • News24 Nepal');
 }finally{locking=false}}

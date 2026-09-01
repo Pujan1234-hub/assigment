@@ -14,6 +14,7 @@ function runtime(file) {
   class Clock extends Date { constructor(...a) {super(...(a.length?a:[now]));} static now(){return now;} }
   const context = {Date:Clock, URL, Intl, Map, Set, AbortController, console:{warn(){},log(){}},
     setTimeout:(fn,ms=0)=>{timers.set(++id,{fn,at:now+ms});return id;}, clearTimeout:id=>timers.delete(id),
+    setInterval:(fn,ms)=>{timers.set(++id,{fn,at:now+ms,repeat:ms});return id;},
     document:{readyState:'loading',hidden:false,getElementById:node,addEventListener:(e,f)=>events.set(e,f)},
     localStorage:{getItem:()=>null}, navigator:{onLine:true},
     CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail;}},
@@ -23,7 +24,7 @@ function runtime(file) {
   vm.createContext(context);
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25',file),'utf8'),context);
   return {context,node,window:context.window,boot:()=>events.get('DOMContentLoaded')?.(),
-    now:()=>now, advance:async(ms)=>{now+=ms;const due=[...timers].filter(([,x])=>x.at<=now);for(const[i,x]of due){timers.delete(i);await x.fn();}await new Promise(resolve=>setImmediate(resolve));},
+    now:()=>now, advance:async(ms)=>{now+=ms;const due=[...timers].filter(([,x])=>x.at<=now);for(const[i,x]of due){if(x.repeat)x.at=now+x.repeat;else timers.delete(i);await x.fn();}await new Promise(resolve=>setImmediate(resolve));},
     respond:fn=>{context.fetch=async(url,options)=>({ok:true,json:async()=>fn(url,options)});},timers};
 }
 const observation=(id,t,level=2)=>({stationSeriesId:id,title:'Station '+id,waterLevel:level,waterLevelOn:t,longitude:85,latitude:28});
@@ -120,15 +121,36 @@ test('news retains dated recent stories, dedupes and refreshes without page relo
   r.respond(()=>({items:++count>1?[item,{...item,title:'अर्को समाचार',url:item.url+'2',published_at:'2026-09-01T11:59:00Z'}]:[item,item],sources:{}}));
   r.boot();await r.advance(300);
   assert.equal(r.window.FloodSafeNews.items.length,1);
+  assert.match(r.node('liveNews').innerHTML,/No fresh data/);
+  assert.match(r.node('liveNews').innerHTML,/<details class="lastKnownData"/);
+  assert.equal(r.window.FloodSafeNews.state.freshCount,0);
   assert.match(r.node('liveNews').innerHTML,/Latest published story/);
   assert.doesNotMatch(r.node('liveNews').innerHTML,/>NEW</);
   await r.advance(10001);assert.equal(r.window.FloodSafeNews.items.length,2);
+  assert.equal(r.window.FloodSafeNews.state.freshCount,1);
+  assert.doesNotMatch(r.node('liveNews').innerHTML,/No fresh data/);
   r.context.fetch=async()=>{throw Error('offline');};await r.advance(10001);
   assert.equal(r.window.FloodSafeNews.items.length,2);assert.equal(r.window.FloodSafeNews.state.connected,false);
 });
 
 test('one human renderer and no competing map lock are loaded',()=>{
   const html=fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/index.html'),'utf8');
-  assert.match(html,/impact-live-v1.js\?v=3/);
+  assert.match(html,/impact-live-v1.js\?v=4/);
   assert.doesNotMatch(html,/flood-freshness.js|final-map-lock-v1.js|map-hint-sync-v1.js/);
+});
+
+test('human stale figures stay in archive; newly received source report appears without reload',async()=>{
+  const r=runtime('impact-live-v1.js');
+  let row={event:'Bhotekoshi flash flood',recovered_bodies:12,recovered_source:'Radio Nepal',recovered_source_url:'https://radionepalonline.com/report',recovered_update_time:'2026-09-01T10:00:00Z'};
+  r.respond(()=>row);r.boot();await r.advance(0);
+  assert.equal(r.node('impactDeaths').textContent,'—');
+  assert.match(r.node('impactFresh').textContent,/No fresh data/);
+  assert.match(r.node('impactDetail').innerHTML,/Deaths: 12/);
+  row={...row,recovered_bodies:13,recovered_update_time:new Date(r.now()).toISOString()};
+  await r.window.FloodSafeImpact.sync();
+  assert.equal(r.node('impactDeaths').textContent,'13');
+  assert.equal(r.window.__fsImpactLiveState.freshCount,1);
+  await r.advance(600001);
+  assert.equal(r.node('impactDeaths').textContent,'—','successful recheck cannot make an expired report fresh');
+  assert.match(r.node('impactFresh').textContent,/No fresh data/);
 });

@@ -117,7 +117,7 @@ test('human data rejects nulls and old fallback cannot overwrite newer report',(
 
 test('news retains dated recent stories, dedupes and refreshes without page reload',async()=>{
   const r=runtime('news-live-v5.js');let count=0;
-  const item={title:'नदीको नयाँ समाचार',source:'Radio Nepal',url:'https://radionepalonline.com/report',published_at:'2026-09-01T11:30:00Z'};
+  const item={title:'नदीको नयाँ समाचार',source:'Radio Nepal',url:'https://radionepalonline.com/report',published_at:'2026-09-01T11:40:00Z'};
   r.respond(()=>({items:++count>1?[item,{...item,title:'अर्को समाचार',url:item.url+'2',published_at:'2026-09-01T11:59:00Z'}]:[item,item],sources:{}}));
   r.boot();await r.advance(300);
   assert.equal(r.window.FloodSafeNews.items.length,1);
@@ -142,18 +142,29 @@ test('one human renderer and no competing map lock are loaded',()=>{
   assert.doesNotMatch(html,/flood-freshness.js|final-map-lock-v1.js|map-hint-sync-v1.js/);
 });
 
-test('human stale figures stay in archive; newly received source report appears without reload',async()=>{
+test('human reports remain visible without expiry; newer source report updates them',async()=>{
   const r=runtime('impact-live-v1.js');
   let row={event:'Bhotekoshi flash flood',recovered_bodies:12,recovered_source:'Radio Nepal',recovered_source_url:'https://radionepalonline.com/report',recovered_update_time:'2026-09-01T10:00:00Z'};
   r.respond(()=>row);r.boot();await r.advance(0);
-  assert.equal(r.node('impactDeaths').textContent,'—');
-  assert.match(r.node('impactFresh').textContent,/No fresh data/);
-  assert.match(r.node('impactDetail').innerHTML,/Deaths: 12/);
+  assert.equal(r.node('impactDeaths').textContent,'12');
+  assert.match(r.node('impactFresh').textContent,/Latest reported figures/);
+  assert.match(r.node('impactDetail').innerHTML,/Radio Nepal/);
   row={...row,recovered_bodies:13,recovered_update_time:new Date(r.now()).toISOString()};
   await r.window.FloodSafeImpact.sync();
   assert.equal(r.node('impactDeaths').textContent,'13');
   assert.equal(r.window.__fsImpactLiveState.freshCount,1);
   await r.advance(600001);
-  assert.equal(r.node('impactDeaths').textContent,'—','successful recheck cannot make an expired report fresh');
-  assert.match(r.node('impactFresh').textContent,/No fresh data/);
+  assert.equal(r.node('impactDeaths').textContent,'13','published figures must not expire');
+  assert.match(r.node('impactFresh').textContent,/Latest reported figures/);
+});
+test('news moves below at 10 minutes and disappears at 30 minutes',async()=>{
+  const r=runtime('news-live-v5.js');
+  const item={title:'Boundary story',source:'Radio Nepal',url:'https://radionepalonline.com/boundary',published_at:new Date(r.now()-9*60000).toISOString()};
+  r.respond(()=>({items:[item],sources:{}}));r.boot();await r.advance(300);
+  assert.equal(r.window.FloodSafeNews.state.freshCount,1);
+  await r.advance(60001);
+  assert.equal(r.window.FloodSafeNews.state.freshCount,0);
+  assert.equal(r.window.FloodSafeNews.state.archiveCount,1);
+  await r.advance(20*60000);
+  assert.equal(r.window.FloodSafeNews.items.length,0);
 });

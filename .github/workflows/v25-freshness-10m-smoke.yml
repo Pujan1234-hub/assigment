@@ -27,7 +27,7 @@ jobs:
           grep -Fq 'FRESH_MS=10*60*1000' floodsafe-nepal/v25/trusted-river-runtime-v3.js
           grep -Fq 'MAX=10*60*1000' floodsafe-nepal/v25/trusted-rain-runtime-v1.js
           grep -Fq 'MAX=10*60*1000' floodsafe-nepal/v25/news-live-v5.js
-          grep -Fq 'FRESH_MS=10*60*1000' floodsafe-nepal/v25/impact-live-v1.js
+          grep -Fq 'expiryMinutes:null' floodsafe-nepal/v25/impact-live-v1.js
           grep -Fq 'FRESH10_MS=10*60*1000' floodsafe-nepal/v25/realtime-guard-v1.js
           grep -Fq 'CURRENT_MS=10*60*1000' floodsafe-nepal/v25/official-stale-safety-v1.js
       - name: Verify freshness boundaries, empty states, new arrivals and retention

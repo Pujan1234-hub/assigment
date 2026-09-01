@@ -54,7 +54,7 @@ const assert=require('node:assert/strict');
     assert.equal(after.news.connected,true);assert.equal(after.impact.connected,true);
     const freshnessUI=await page.evaluate(()=>({newsCount:window.__fsNewsLiveState.freshCount,news:document.getElementById('liveNews').innerText,humanCount:window.__fsImpactLiveState.freshCount,human:document.getElementById('impactFresh').innerText,deaths:document.getElementById('impactDeaths').innerText}));
     if(freshnessUI.newsCount===0)assert.match(freshnessUI.news,/No fresh data/);
-    if(freshnessUI.humanCount===0){assert.match(freshnessUI.human,/No fresh data/);assert.equal(freshnessUI.deaths,'—');}
+    if(freshnessUI.humanCount===0){assert.match(freshnessUI.human,/No reported data/);assert.equal(freshnessUI.deaths,'—');}
     console.log('PASS explicit no-fresh-data UI',JSON.stringify(freshnessUI));
     console.log('PASS mobile map, single human renderer, independent river/news/human refresh, language interaction',JSON.stringify({before,after}));
     await require('./floodsafe-browser-transitions.cjs')(browser,process.env.FLOODSAFE_URL||'https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/');

@@ -22,8 +22,8 @@ module.exports=async function verifyTransitions(browser,base){
     await page.goto(base+'?fixture-transition='+now,{waitUntil:'domcontentloaded',timeout:60000});
     await page.waitForFunction(()=>window.__fsRiverRealtimeState?.connected&&window.__fsNewsLiveState?.lastSuccess&&window.__fsImpactLiveState?.lastSuccess,{timeout:45000});
     await page.evaluate(()=>{window.FloodSafe.state.lang='en';window.dispatchEvent(new Event('fslanguage'))});
-    await page.waitForFunction(()=>document.getElementById('liveNews').innerText.includes('No fresh data')&&document.getElementById('impactFresh').innerText.includes('No fresh data'));
-    assert.equal(await page.$eval('#impactDeaths',e=>e.innerText),'—');
+    await page.waitForFunction(()=>document.getElementById('liveNews').innerText.includes('No fresh data')&&document.getElementById('impactFresh').innerText.includes('Latest reported figures'));
+    assert.equal(await page.$eval('#impactDeaths',e=>e.innerText),'12');
     assert.equal(await page.evaluate(()=>window.__fsRiverRealtimeState.currentCount),0);
 
     phase='fresh';
@@ -36,17 +36,17 @@ module.exports=async function verifyTransitions(browser,base){
     // successful check must not make those now-expired observations fresh.
     await page.evaluate(()=>{const RealDate=Date;window.Date=class extends RealDate{constructor(...a){super(...(a.length?a:[RealDate.now()+11*60000]))}static now(){return RealDate.now()+11*60000}}});
     await page.evaluate(()=>{window.FloodSafeNews.refresh();window.FloodSafeRiverRealtime.refresh();void window.FloodSafeImpact.sync()});
-    await page.waitForFunction(()=>window.__fsRiverRealtimeState?.currentCount===0&&window.__fsNewsLiveState?.freshCount===0&&window.__fsImpactLiveState?.freshCount===0,{timeout:30000});
-    assert.equal(await page.$eval('#impactDeaths',e=>e.innerText),'—');
+    await page.waitForFunction(()=>window.__fsRiverRealtimeState?.currentCount===0&&window.__fsNewsLiveState?.freshCount===0&&window.__fsImpactLiveState?.reportedCount===1,{timeout:30000});
+    assert.equal(await page.$eval('#impactDeaths',e=>e.innerText),'13');
     assert.match(await page.$eval('#liveNews',e=>e.innerText),/No fresh data/);
-    assert.match(await page.$eval('#impactDetail',e=>e.textContent),/13/);
+    assert.equal(await page.$eval('#impactDeaths',e=>e.textContent),'13');
     assert.equal(await page.evaluate(()=>window.FloodSafe.state.allRiverStations[0]._lastKnownObservation.level),6);
 
     phase='offline';
     await page.evaluate(()=>{window.FloodSafeNews.refresh();window.FloodSafeRiverRealtime.refresh();void window.FloodSafeImpact.sync()});
     await page.waitForFunction(()=>window.__fsRiverRealtimeState?.connected===false&&window.__fsNewsLiveState?.connected===false&&window.__fsImpactLiveState?.connected===false,{timeout:30000});
     assert.equal(await page.evaluate(()=>window.FloodSafe.state.allRiverStations[0]._lastKnownObservation.level),6);
-    assert.match(await page.$eval('#impactDetail',e=>e.textContent),/13/);
+    assert.equal(await page.$eval('#impactDeaths',e=>e.textContent),'13');
     console.log('PASS intercepted browser transitions: stale -> fresh -> expired -> offline; source times and last-good values preserved');
   }finally{await page.close()}
 };

@@ -1,5 +1,5 @@
 (()=>{'use strict';
-if(window.__fsNewsV8)return;window.__fsNewsV8=true;
+if(window.__fsNewsV9)return;window.__fsNewsV9=true;
 const MAX=10*60*1000,FUTURE=5*60*1000,POLL_FRESH=10000,POLL_STALE=3000,POLL_HIDDEN=60000;
 const LIVE='https://camkoacuokffryyrygda.supabase.co/functions/v1/news-live-three';
 const SNAP=['https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/data/floodsafe-news.json','../../data/floodsafe-news.json'];
@@ -7,9 +7,10 @@ const ALLOWED=new Set(['RONB Post','Radio Nepal','News24 Nepal']);
 let live=[],fallback=[],sourceState={},lastOk=0,busy=false,timer=0,expiryTimer=0,lastHtml='';
 const $=id=>document.getElementById(id),lang=()=>window.FloodSafe?.state?.lang||localStorage.getItem('fs-flood-lang')||'ne',tr=(ne,en)=>lang()==='en'?en:ne,ts=t=>+new Date(t||0)||0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]||c));
+const titleKey=s=>String(s??'').normalize('NFKC').toLocaleLowerCase('ne-NP').replace(/\s+/g,' ').trim();
 function age(t){const m=Math.max(0,Math.floor((Date.now()-ts(t))/60000));if(m<1)return tr('अहिले','Now');return tr(`${m} मिनेट अघि`,`${m} min ago`)}
 function valid(x){const t=ts(x?.published_at),d=Date.now()-t;return ALLOWED.has(x?.source)&&!!x?.title&&!!x?.url&&t&&d>=-FUTURE&&d<=MAX}
-function merged(){const out=[],seenUrl=new Set(),seenTitle=new Set();for(const x of[...live,...fallback].filter(valid).sort((a,b)=>ts(b.published_at)-ts(a.published_at))){const u=String(x.url||'').split('#')[0],k=String(x.title||'').toLowerCase().replace(/\W+/g,' ').trim();if(!k||seenUrl.has(u)||seenTitle.has(k))continue;seenUrl.add(u);seenTitle.add(k);out.push(x)}return out}
+function merged(){const out=[],seenUrl=new Set(),seenTitle=new Set();for(const x of[...live,...fallback].filter(valid).sort((a,b)=>ts(b.published_at)-ts(a.published_at))){const u=String(x.url||'').split('#')[0],k=titleKey(x.title);if(!k||seenUrl.has(u)||seenTitle.has(k))continue;seenUrl.add(u);seenTitle.add(k);out.push(x)}return out}
 function card(x){return `<article class="newsItem"><h4>${esc(x.title)}</h4><div class="meta">${esc(x.source)} • ${esc(age(x.published_at))} • <b class="liveDot">NEW</b></div><a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${tr('खोल्नुहोस्','Open')} ↗</a></article>`}
 function waiting(){return `<div class="newsFreshBox"><div class="newsBoxTitle"><strong>${tr('🔄 पछिल्लो १० मिनेटमा नयाँ verified समाचार छैन','🔄 No new verified story in the last 10 minutes')}</strong></div><article class="newsItem"><h4>${tr('पुरानो समाचार देखाइँदैन। RONB Post, Radio Nepal र News24 Nepal लगातार जाँच भइरहेका छन्।','Older stories are hidden. RONB Post, Radio Nepal and News24 Nepal are being checked continuously.')}</h4></article><div class="newsSafety"><strong>${tr('बाढी बेला तुरुन्त याद राख्नुहोस्','Flood safety while waiting for updates')}</strong><p>${tr('नदी/खोलाको किनार र डुबान भएको सडकबाट टाढा बस्नुहोस्। पानी बढ्दै छ भने अग्लो सुरक्षित स्थानतर्फ जानुहोस्। बगेको पानी पार नगर्नुहोस्।','Stay away from riverbanks and flooded roads. Move to higher safe ground if water is rising. Never cross moving floodwater.')}</p><a href="https://bipadportal.gov.np/" target="_blank" rel="noopener noreferrer">${tr('Official BIPAD disaster information','Official BIPAD disaster information')} ↗</a></div></div>`}
 function armExpiry(items){clearTimeout(expiryTimer);let wait=Infinity;for(const x of items){const left=ts(x.published_at)+MAX-Date.now();if(left>0&&left<wait)wait=left}if(Number.isFinite(wait))expiryTimer=setTimeout(()=>{render();schedule(0)},Math.max(80,wait+40))}

@@ -3,6 +3,8 @@ const assert=require('node:assert/strict');
 // Browser-only intercepted fixtures. Never written to the live data services.
 module.exports=async function verifyTransitions(browser,base){
   const page=await browser.newPage();await page.setViewport({width:412,height:915});
+  page.on('pageerror',e=>console.log('TRANSITION PAGE ERROR',String(e)));
+  page.on('console',m=>{if(m.type()==='error')console.log('TRANSITION CONSOLE',m.text())});
   let phase='old';const now=Date.now(),fresh=new Date(now-60000).toISOString(),old=new Date(now-86400000).toISOString();
   let tileRecoveryAllowed=false,tileFailures=0;
   const river=id=>({id,name:'TEST ONLY '+id,type:'stream',pts:id==='overview'?[[84.5,27.8],[85.5,28.2]]:id==='right'?[[85.01,28.02],[85.05,28.03]]:[[84.95,28.02],[84.99,28.03]]});
@@ -38,11 +40,12 @@ module.exports=async function verifyTransitions(browser,base){
     // The hydro source can exist before map initialisation's final Nepal fitBounds.
     // Wait for gauges/districts too so that initial fit cannot undo our test zoom.
     await page.waitForFunction(()=>window.FloodSafeHydroSmooth&&window.FloodSafeMap?.initialized&&window.FloodSafeMap?.map?.getSource('gauges')&&window.FloodSafeMap.map.getSource('hydro-complete'),{timeout:45000});
-    await page.evaluate(()=>window.FloodSafeMap.map.jumpTo({center:[85,28],zoom:9}));
+    await page.$eval('#riverMapGL',e=>e.scrollIntoView({block:'center',behavior:'instant'}));
+    await page.evaluate(()=>{window.FloodSafeMap.map.resize();window.FloodSafeMap.map.jumpTo({center:[85,28],zoom:9})});
     try{await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===1,{timeout:20000})}
     catch(e){console.log('RIVER TILE DIAGNOSTICS',JSON.stringify({tileFailures,state:await page.evaluate(()=>({loading:window.FloodSafeHydroSmooth?.loadingState,zoom:window.FloodSafeMap?.map?.getZoom(),manifest:window.FloodSafeHydroSmooth?.manifest,visible:!document.hidden}))}));throw e}
     try{await page.waitForFunction(()=>window.FloodSafeMap.map.querySourceFeatures('hydro-complete').some(f=>f.properties.id==='overview'),{timeout:10000})}
-    catch(e){console.log('RIVER RENDER DIAGNOSTICS',await page.evaluate(()=>({zoom:window.FloodSafeMap.map.getZoom(),loading:window.FloodSafeHydroSmooth.loadingState,data:window.FloodSafeMap.map.getStyle().sources['hydro-complete'].data,rendered:window.FloodSafeMap.map.querySourceFeatures('hydro-complete')})));throw e}
+    catch(e){console.log('RIVER RENDER DIAGNOSTICS',JSON.stringify(await page.evaluate(()=>({zoom:window.FloodSafeMap.map.getZoom(),center:window.FloodSafeMap.map.getCenter(),canvas:window.FloodSafeMap.map.getCanvas().getBoundingClientRect().toJSON(),loading:window.FloodSafeHydroSmooth.loadingState,data:window.FloodSafeMap.map.getStyle().sources['hydro-complete'].data,rendered:window.FloodSafeMap.map.querySourceFeatures('hydro-complete')}))));throw e}
     assert.ok(tileFailures>=1);
     tileRecoveryAllowed=true; // No refresh or pan: the scheduled retry must recover it.
     await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.loadedVisibleTiles===2&&window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===0,{timeout:65000});

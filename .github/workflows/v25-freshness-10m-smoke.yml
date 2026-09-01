@@ -8,6 +8,7 @@ on:
       - 'floodsafe-nepal/v25/trusted-river-runtime-v3.js'
       - 'floodsafe-nepal/v25/trusted-rain-runtime-v1.js'
       - 'floodsafe-nepal/v25/news-live-v5.js'
+      - 'floodsafe-nepal/v25/realtime-guard-v1.js'
       - 'floodsafe-nepal/v25/official-stale-safety-v1.js'
       - '.github/workflows/v25-freshness-10m-smoke.yml'
 permissions:
@@ -27,6 +28,7 @@ jobs:
           node --check floodsafe-nepal/v25/trusted-river-runtime-v3.js
           node --check floodsafe-nepal/v25/trusted-rain-runtime-v1.js
           node --check floodsafe-nepal/v25/news-live-v5.js
+          node --check floodsafe-nepal/v25/realtime-guard-v1.js
           node --check floodsafe-nepal/v25/official-stale-safety-v1.js
       - name: Enforce 10-minute freshness contract
         run: |
@@ -34,21 +36,24 @@ jobs:
           grep -Fq 'FRESH_MS=10*60*1000' floodsafe-nepal/v25/trusted-river-runtime-v3.js
           grep -Fq 'MAX=10*60*1000' floodsafe-nepal/v25/trusted-rain-runtime-v1.js
           grep -Fq 'MAX=10*60*1000' floodsafe-nepal/v25/news-live-v5.js
+          grep -Fq 'FRESH10_MS=10*60*1000' floodsafe-nepal/v25/realtime-guard-v1.js
           grep -Fq 'CURRENT_MS=10*60*1000' floodsafe-nepal/v25/official-stale-safety-v1.js
           grep -Fq 'trusted-river-runtime-v3.js?v=31' floodsafe-nepal/v25/index.html
           grep -Fq 'trusted-rain-runtime-v1.js?v=4' floodsafe-nepal/v25/index.html
           grep -Fq 'news-live-v5.js?v=7' floodsafe-nepal/v25/index.html
+          grep -Fq 'realtime-guard-v1.js?v=8' floodsafe-nepal/v25/index.html
           grep -Fq 'official-stale-safety-v1.js?v=2' floodsafe-nepal/v25/index.html
       - name: Reject stale river and news UI semantics
         run: |
           set -euo pipefail
-          grep -Fq "_staleDiscarded" floodsafe-nepal/v25/trusted-river-runtime-v3.js
-          grep -Fq "NO_CURRENT_OFFICIAL_READING" floodsafe-nepal/v25/trusted-river-runtime-v3.js
-          grep -Fq "Older stories are not shown here" floodsafe-nepal/v25/news-live-v5.js
-          grep -Fq "updates automatically when a new verified reading arrives" floodsafe-nepal/v25/official-stale-safety-v1.js
+          grep -Fq '_staleDiscarded' floodsafe-nepal/v25/trusted-river-runtime-v3.js
+          grep -Fq 'NO_CURRENT_OFFICIAL_READING' floodsafe-nepal/v25/trusted-river-runtime-v3.js
+          grep -Fq 'Older stories are not shown here' floodsafe-nepal/v25/news-live-v5.js
+          grep -Fq 'filterLive:a=>(Array.isArray(a)?a:[]).filter(current)' floodsafe-nepal/v25/realtime-guard-v1.js
+          grep -Fq 'updates automatically when a new verified reading arrives' floodsafe-nepal/v25/official-stale-safety-v1.js
       - name: Verify anti-flicker update guards
         run: |
           set -euo pipefail
-          grep -Fq "if(html!==lastHtml)" floodsafe-nepal/v25/news-live-v5.js
-          grep -Fq "if(sig!==lastSig)" floodsafe-nepal/v25/trusted-river-runtime-v3.js
-          grep -Fq "if(changed)window.dispatchEvent" floodsafe-nepal/v25/trusted-rain-runtime-v1.js
+          grep -Fq 'if(html!==lastHtml)' floodsafe-nepal/v25/news-live-v5.js
+          grep -Fq 'if(sig!==lastSig)' floodsafe-nepal/v25/trusted-river-runtime-v3.js
+          grep -Fq 'if(changed)window.dispatchEvent' floodsafe-nepal/v25/trusted-rain-runtime-v1.js

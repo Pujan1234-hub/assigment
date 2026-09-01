@@ -35,9 +35,12 @@ module.exports=async function verifyTransitions(browser,base){
     assert.equal(await page.$eval('#impactDeaths',e=>e.innerText),'12');
     assert.equal(await page.evaluate(()=>window.__fsRiverRealtimeState.currentCount),0);
 
-    await page.waitForFunction(()=>window.FloodSafeHydroSmooth&&window.FloodSafeMap?.map?.getSource('hydro-complete'),{timeout:45000});
+    // The hydro source can exist before map initialisation's final Nepal fitBounds.
+    // Wait for gauges/districts too so that initial fit cannot undo our test zoom.
+    await page.waitForFunction(()=>window.FloodSafeHydroSmooth&&window.FloodSafeMap?.initialized&&window.FloodSafeMap?.map?.getSource('gauges')&&window.FloodSafeMap.map.getSource('hydro-complete'),{timeout:45000});
     await page.evaluate(()=>window.FloodSafeMap.map.jumpTo({center:[85,28],zoom:9}));
-    await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===1,{timeout:20000});
+    try{await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===1,{timeout:20000})}
+    catch(e){console.log('RIVER TILE DIAGNOSTICS',JSON.stringify({tileFailures,state:await page.evaluate(()=>({loading:window.FloodSafeHydroSmooth?.loadingState,zoom:window.FloodSafeMap?.map?.getZoom(),manifest:window.FloodSafeHydroSmooth?.manifest,visible:!document.hidden}))}));throw e}
     await page.waitForFunction(()=>window.FloodSafeMap.map.querySourceFeatures('hydro-complete').some(f=>f.properties.id==='overview'),{timeout:10000});
     assert.ok(tileFailures>=1);
     tileRecoveryAllowed=true; // No refresh or pan: the scheduled retry must recover it.

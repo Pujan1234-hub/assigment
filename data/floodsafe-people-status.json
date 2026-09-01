@@ -7,7 +7,8 @@
   "recovered_source_url": "https://radionepalonline.com/en/2026/08/31/435175.html",
   "recovered_update_time": "2026-08-31T16:47:35Z",
   "recovered_update_iso": "2026-08-31T16:47:35Z",
-  "missing_minimum": 3925,
+  "missing_minimum": 3900,
+  "missing_is_minimum": true,
   "missing_source": "Radio Nepal / NDRRMA",
   "missing_source_url": "https://radionepalonline.com/en/2026/08/31/435175.html",
   "missing_update_time": "2026-08-31T16:47:35Z",
@@ -16,18 +17,13 @@
   "rescued_source_url": "https://radionepalonline.com/en/2026/08/31/435175.html",
   "rescued_update_time": "2026-08-31T16:47:35Z",
   "status": "event_scoped_requested_sources",
-  "last_checked_utc": "2026-09-01T00:24:27.456558Z",
-  "sync_sources": [
-    "NDRRMA",
-    "Nepal Police",
-    "Radio Nepal",
-    "RONB"
-  ],
+  "last_checked_utc": "2026-09-01T00:27:13Z",
+  "sync_sources": ["NDRRMA", "Nepal Police", "Radio Nepal", "RONB"],
   "last_winning_sources": {
     "death": "Radio Nepal / NDRRMA",
     "missing": "Radio Nepal / NDRRMA",
     "rescued": "Radio Nepal / NDRRMA"
   },
   "sync_schema": 4,
-  "sync_policy": "Event-scoped aggregate figures only. Reject subgroup counts. Death/rescued never roll backward without explicit correction; missing changes only on a newer aggregate same-event report. Supabase live mirror is primary; this job maintains the fallback snapshot."
+  "sync_policy": "Strict Bhotekoshi/Rasuwa/Trishuli event scope. Subgroup counts are rejected. Large missing-count drops are rejected unless an explicit correction is published. Death/rescued never roll backward without an explicit correction. The missing figure is displayed as a lower bound when the source says more than/over."
 }

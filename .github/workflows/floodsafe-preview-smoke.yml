@@ -5,6 +5,7 @@ on:
     paths:
       - 'floodsafe-nepal/v25/**'
       - 'tests/floodsafe-live-browser.cjs'
+      - 'tests/floodsafe-browser-transitions.cjs'
       - '.github/workflows/floodsafe-preview-smoke.yml'
   workflow_dispatch:
 permissions:

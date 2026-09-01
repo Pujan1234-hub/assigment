@@ -1,9 +1,23 @@
 {
-  "generated_at": "2026-09-02T00:13:32.320410+05:45",
-  "updated_at_npt": "02 Sep 00:13 NPT",
+  "generated_at": "2026-09-02T03:01:09.548712+05:45",
+  "updated_at_npt": "02 Sep 03:01 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढी: बाँकेमा सहयोग जुट्दै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589193/bhotekoshi-flood-help-is-being-mobilized-in-banke",
+      "published_at": "2026-09-02T02:37:24+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढी: समुदायले नै जुटाउँदैछ सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589192/bhotekoshi-flood-community-is-raising-funds",
+      "published_at": "2026-09-02T02:15:55+05:45",
+      "flash": true
+    },
     {
       "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा पर्वतबाट २१ लाख रकम सहयोग",
       "source": "Ratopati",
@@ -45,27 +59,6 @@
       "url": "https://www.ratopati.com/story/589174/matihani-provides-rs-500000-assistance-to-flood-victims",
       "published_at": "2026-09-01T22:28:08+05:45",
       "flash": false
-    },
-    {
-      "title": "नारायणीमा भेटिएका शव व्यवस्थापनका लागि पश्चिम नवलपरासीमा दुई स्थान तोकिए",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589146/two-locations-designated-in-west-nawalparasi-for-management-of-bodies-found-in-narayani",
-      "published_at": "2026-09-01T20:20:07+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रलोपाद्वारा नुवाकोटका बाढीपीडितलाई औषधि वितरण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589144/pralopa-distributes-medicines-to-flood-victims-in-nuwakot",
-      "published_at": "2026-09-01T20:06:15+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा १२ लाख ५१ हजार सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589136/1251-million-contribution-to-the-prime-ministers-disaster-relief-fund",
-      "published_at": "2026-09-01T19:26:54+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -84,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 9
+      "flash": 2,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,

@@ -12,7 +12,7 @@ function add(map,source){if(!map?.getSource(source))return;try{
  if(!map.getLayer('hydro-complete-flood-glow'))map.addLayer({id:'hydro-complete-flood-glow',type:'line',source,filter:FRESH_ALERT,paint:{'line-color':['match',['get','live_status'],'danger','#ff0000','#ff7900'],'line-width':['interpolate',['linear'],['zoom'],5,14,8,20,11,28,16,42],'line-opacity':.72,'line-blur':11}});
  if(!map.getLayer('hydro-complete-flood-pulse'))map.addLayer({id:'hydro-complete-flood-pulse',type:'line',source,filter:FRESH_ALERT,paint:{'line-color':['match',['get','live_status'],'danger','#ff0a0a','#ff8a00'],'line-width':['interpolate',['linear'],['zoom'],5,4,8,6.5,11,10,16,16],'line-opacity':1,'line-blur':.35,'line-dasharray':[.45,1.1]}})
 }catch(e){console.warn('FloodSafe river glow layer failed',e)}}
-function apply(){const map=window.FloodSafeMap?.map;if(!map||!map.isStyleLoaded?.())return false;try{
+function apply(){const map=window.FloodSafeMap?.map;if(!map||!map.getSource('hydro-complete')||!map.getLayer('hydro-complete-lines'))return false;try{
  if(map.getLayer('hydro-complete-lines')){map.setPaintProperty('hydro-complete-lines','line-color',COLOR);map.setPaintProperty('hydro-complete-lines','line-opacity',BASE_OPACITY);map.setPaintProperty('hydro-complete-lines','line-width',['interpolate',['linear'],['zoom'],5,.9,8,1.5,11,2.7,16,5])}
  add(map,'hydro-complete');
  for(const id of['hydro-complete-status-glow','hydro-complete-live-flow'])if(map.getLayer(id))map.setFilter(id,KNOWN);

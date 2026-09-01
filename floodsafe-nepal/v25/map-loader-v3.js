@@ -19,7 +19,7 @@ if(!window.__fsSmoothMapLoadingV17){
       if(!await ensureMapLibre())throw Error('MapLibre unavailable');
       await import('./map-smooth-v3.js?v=13');
       window.__fsSmoothMapLoaded=true;
-      await import('./hydro-smooth-v2.js?v=12');
+      await import('./hydro-smooth-v2.js?v=13');
       window.__fsHydroSmoothLoaded=true;
       await import('./map-core-v4.js?v=9');
       window.__fsMapCoreV4Loaded=true;

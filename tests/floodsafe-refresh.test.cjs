@@ -72,6 +72,15 @@ test('river metadata retries and returning from overview still loads local detai
   assert.equal(r.data().length,2);assert.equal(r.window.FloodSafeHydroSmooth.loadingState.loadedVisibleTiles,2);
 });
 
+test('river detail does not wait for satellite or other map sources to finish loading',async()=>{
+  const r=hydroRuntime();r.respond(r.payload);r.move(6);r.boot();
+  await r.advance(100);await r.advance(100);assert.equal(r.data()[0].properties.id,'overview');
+  r.map.isStyleLoaded=()=>false; // Own layers exist; background tiles are still loading.
+  r.move(9);await r.advance(300);await r.advance(100);
+  assert.equal(r.window.FloodSafeHydroSmooth.loadingState.loadedVisibleTiles,2);
+  assert.deepEqual(Array.from(r.data(),f=>f.properties.id).sort(),['left','right']);
+});
+
 test('valid empty tiles cache, malformed tiles back off, and requests time out',async()=>{
   const r=hydroRuntime();let calls=0;
   r.respond(()=>{calls++;return{waterways:[]}});

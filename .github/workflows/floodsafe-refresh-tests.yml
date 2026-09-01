@@ -1,0 +1,20 @@
+name: FloodSafe refresh regression tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'floodsafe-nepal/v25/**'
+      - 'tests/floodsafe-refresh.test.cjs'
+      - '.github/workflows/floodsafe-refresh-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/floodsafe-refresh.test.cjs

@@ -3,7 +3,7 @@ name: FloodSafe core official feed sync
 on:
   workflow_dispatch:
   schedule:
-    - cron: '* * * * *'
+    - cron: '*/5 * * * *'
   push:
     branches: [main]
     paths:

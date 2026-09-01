@@ -1,15 +1,71 @@
 {
-  "generated_at": "2026-09-01T11:22:47.348935+05:45",
-  "updated_at_npt": "01 Sep 11:22 NPT",
+  "generated_at": "2026-09-01T16:12:18.876648+05:45",
+  "updated_at_npt": "01 Sep 16:12 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "घर भत्किँदा दुई जनाकाे मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589072/two-people-die-in-house-collapse",
+      "published_at": "2026-09-01T16:07:17+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढीमा बेपत्ता बाह्रबिसेका परिवारलाई १ लाख १५ हजारका दरले राहत",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589064/relief-of-rs-115000-to-the-family-of-barhabise-who-disappeared-in-the-bhotekoshi-flood",
+      "published_at": "2026-09-01T15:31:40+05:45",
+      "flash": true
+    },
+    {
+      "title": "रसुवा बाढीमा कर्णालीका १ जनाको मृत्यु, १९४ जनाको अवस्था अझै अज्ञात",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589049/1-person-from-karnali-dies-in-rasuwa-floods-condition-of-194-still-unknown",
+      "published_at": "2026-09-01T14:46:10+05:45",
+      "flash": false
+    },
+    {
+      "title": "राप्ती स्वास्थ्य विज्ञान प्रतिष्ठानका कर्मचारीको दुई दिनको तलब प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा जम्मा गरिने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589048/two-days-salary-of-rapti-institute-of-health-sciences-employees-to-be-deposited-in-prime-ministers-disaster-relief-fund",
+      "published_at": "2026-09-01T14:45:51+05:45",
+      "flash": false
+    },
+    {
+      "title": "देवघाट गाउँपालिकामा स्थिति सामान्य बन्दै, ‘महामारी’ फैलिन नदिन चुनौती",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589043/situation-returning-to-normal-in-devghat-rural-municipality-challenge-to-prevent-spread-of-epidemic",
+      "published_at": "2026-09-01T14:33:10+05:45",
+      "flash": false
+    },
+    {
+      "title": "रसुवा बाढीमा बेपत्ता भएकाको परिवार भन्छन्– सास त कुन्नि, लास पनि नपाइने पो हो कि !",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589039/the-families-of-those-who-went-missing-in-the-rasuwa-floods-say-they-wont-even-find-their-bodies-let-alone-their-breath",
+      "published_at": "2026-09-01T14:15:41+05:45",
+      "flash": false
+    },
+    {
+      "title": "मध्यपश्चिम विश्वविद्यालयका पदाधिकारीदेखि कर्मचारीले प्रधानमन्त्री दैवीप्रकोप उद्धार कोषमा रकम जम्मा गर्ने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589012/officials-and-employees-of-midwestern-university-will-donate-money-to-the-prime-ministers-disaster-relief-fund",
+      "published_at": "2026-09-01T12:07:14+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढीपीडितका लागि मधेस सरकारले आज दोस्रो चरणको राहत पुर्‍याउँदै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589008/madhesh-government-delivering-second-phase-of-relief-to-flood-victims-today",
+      "published_at": "2026-09-01T11:57:56+05:45",
+      "flash": false
+    },
     {
       "title": "कर्णाली प्रदेश सरकारले प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा दुई करोड रुपैयाँ जम्मा गर्ने",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588994/karnali-provincial-government-to-deposit-rs-20-million-in-prime-ministers-disaster-relief-fund",
       "published_at": "2026-09-01T11:12:08+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "झापा गाउँपालिकाद्वारा उद्धार कोषमा २५ लाख सहयोग",
@@ -23,20 +79,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588983/madhes-province-ncp-mps-and-employees-donate-15-days-salary-to-flood-victims-in-rasuwa",
       "published_at": "2026-09-01T10:15:17+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीप्रभावित महिला तथा किशोरीलाई ‘डिग्निटी कीट’ वितरण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588973/dignity-kit-distributed-to-flood-affected-women-and-girls",
-      "published_at": "2026-09-01T08:53:23+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीमा भाग्यले बाँचेका एउटै गाउँका पाँच जना अटो चढेर घर फर्किए",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588958/five-people-from-the-same-village-who-survived-the-flood-returned-home-in-an-auto",
-      "published_at": "2026-09-01T06:21:00+05:45",
       "flash": false
     }
   ],
@@ -56,8 +98,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 5
+      "flash": 2,
+      "recent": 11
     },
     "Kathmandu Post": {
       "ok": true,

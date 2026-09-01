@@ -33,7 +33,7 @@ jobs:
           ok=0
           for i in $(seq 1 80); do
             curl --max-time 15 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'map-loader-v3.js?v=26' /tmp/index.html && grep -Fq 'map-mobile-recovery-v1.js?v=2' /tmp/index.html; then ok=1; break; fi
+            if grep -Fq 'map-loader-v3.js?v=27' /tmp/index.html && grep -Fq 'map-mobile-recovery-v1.js?v=2' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
@@ -65,7 +65,7 @@ jobs:
             await page.setViewport({width:412,height:915,deviceScaleFactor:2});
             page.setDefaultTimeout(90000);
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));
-            await page.goto(process.env.BASE+'?ci='+Date.now()+'#map',{waitUntil:'domcontentloaded'});
+            await page.goto(process.env.BASE+'?ci='+Date.now()+'#map',{waitUntil:'domcontentloaded',timeout:30000});
             await page.waitForFunction(()=>Number(window.__fsRiverRealtimeState?.catalogCount||0)>=281,{timeout:45000});
             await page.waitForFunction(()=>{
               const real=!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines'));

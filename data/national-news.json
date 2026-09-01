@@ -1,63 +1,70 @@
 {
-  "generated_at": "2026-09-01T20:52:06.369695+05:45",
-  "updated_at_npt": "01 Sep 20:52 NPT",
+  "generated_at": "2026-09-02T00:13:32.320410+05:45",
+  "updated_at_npt": "02 Sep 00:13 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा पर्वतबाट २१ लाख रकम सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589181/parbat-contributes-rs-21-million-to-prime-ministers-disaster-relief-fund",
+      "published_at": "2026-09-01T22:56:39+05:45",
+      "flash": false
+    },
+    {
+      "title": "पहिरोले अवरुद्ध कालीगण्डकी कोरिडोर सडक सञ्चालन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589179/kaligandaki-corridor-road-operation-disrupted-by-landslide",
+      "published_at": "2026-09-01T22:40:48+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढीपीडितका लागि गुठीचौर गाउँपालिकाद्वारा १२ लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589178/guthichaur-rural-municipality-provides-rs-12-million-assistance-to-bhotekoshi-flood-victims",
+      "published_at": "2026-09-01T22:38:08+05:45",
+      "flash": false
+    },
+    {
+      "title": "मन्दिरको पाँच लाख ५५ हजार भेटी बाढीपीडितलाई",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589177/temple-donates-rs-555000-to-flood-victims",
+      "published_at": "2026-09-01T22:35:28+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढी छिरेपछि धोबीघाट ढल प्रशोधन केन्द्रको काम रोकियो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589176/work-at-dhobighat-sewage-treatment-plant-halted-after-flooding",
+      "published_at": "2026-09-01T22:33:43+05:45",
+      "flash": false
+    },
+    {
+      "title": "मटिहानीद्वारा बाढीपीडितलाई पाँच लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589174/matihani-provides-rs-500000-assistance-to-flood-victims",
+      "published_at": "2026-09-01T22:28:08+05:45",
+      "flash": false
+    },
     {
       "title": "नारायणीमा भेटिएका शव व्यवस्थापनका लागि पश्चिम नवलपरासीमा दुई स्थान तोकिए",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589146/two-locations-designated-in-west-nawalparasi-for-management-of-bodies-found-in-narayani",
       "published_at": "2026-09-01T20:20:07+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "प्रलोपाद्वारा नुवाकोटका बाढीपीडितलाई औषधि वितरण",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589144/pralopa-distributes-medicines-to-flood-victims-in-nuwakot",
       "published_at": "2026-09-01T20:06:15+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा १२ लाख ५१ हजार सहयोग",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589136/1251-million-contribution-to-the-prime-ministers-disaster-relief-fund",
       "published_at": "2026-09-01T19:26:54+05:45",
-      "flash": false
-    },
-    {
-      "title": "५७ जना बेपत्ता भएको गाउँको कथा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589121/the-story-of-a-village-where-57-people-went-missing",
-      "published_at": "2026-09-01T19:00:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपीडितका लागि बेथानचोक गाउँपालिकाद्वारा ३५ लाख सहयोगको घोषणा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589124/bethanchowk-rural-municipality-announces-rs-35-million-in-assistance-for-flood-victims",
-      "published_at": "2026-09-01T18:31:55+05:45",
-      "flash": false
-    },
-    {
-      "title": "गैरसरकारी विधेयक टेबुल नभएपछि सदन अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589093/house-blocked-after-non-government-bill-not-tabled",
-      "published_at": "2026-09-01T17:10:52+05:45",
-      "flash": false
-    },
-    {
-      "title": "घर भत्किँदा दुई जनाकाे मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589072/two-people-die-in-house-collapse",
-      "published_at": "2026-09-01T16:07:17+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीमा बेपत्ता बाह्रबिसेका परिवारलाई १ लाख १५ हजारका दरले राहत",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589064/relief-of-rs-115000-to-the-family-of-barhabise-who-disappeared-in-the-bhotekoshi-flood",
-      "published_at": "2026-09-01T15:31:40+05:45",
       "flash": false
     }
   ],
@@ -77,8 +84,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 8
+      "flash": 0,
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,

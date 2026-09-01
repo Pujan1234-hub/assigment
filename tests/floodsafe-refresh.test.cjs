@@ -111,6 +111,20 @@ test('overlapping river refreshes share a two-request limit and reject stale pan
   assert.equal(r.data().length,1);assert.equal(r.data()[0].properties.id,'overview','old local response cannot overwrite zoomed-out view');
 });
 
+test('river flow events coalesce and never rebroadcast themselves forever',async()=>{
+  const listeners=new Map();let rebuilds=0,now=0;const timers=[];
+  const c={document:{readyState:'complete'},setTimeout:fn=>timers.push(fn),window:{
+    addEventListener:(name,fn)=>listeners.set(name,fn),
+    FloodSafeRiverLine:{rebuild:()=>{rebuilds++;listeners.get('fsriverlinestatus')?.()}},
+    FloodSafeRiverStyle:{apply(){}},FloodSafeStaleSafety:{apply(){}}
+  }};
+  vm.createContext(c);vm.runInContext(fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/river-flow-freshness-v1.js'),'utf8'),c);
+  while(timers.length&&now++<10)timers.shift()();
+  assert.equal(rebuilds,1);assert.equal(timers.length,0,'no self-triggered loop');
+  for(const e of ['fsriverupdate','fstrustedriverupdate','fsriverheartbeat'])listeners.get(e)();
+  assert.equal(timers.length,1);timers.shift()();assert.equal(rebuilds,2);assert.equal(timers.length,0);
+});
+
 test('unmeasured streams are visible grey, and static recovery reads the real waterways format',()=>{
   const code=fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/river-line-style-v1.js'),'utf8');
   assert.match(code,/'#cbd5e1'/);assert.match(code,/BASE_OPACITY=\['case',KNOWN,\['case',FRESH,.98,.72\],.88\]/);

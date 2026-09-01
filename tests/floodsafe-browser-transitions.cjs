@@ -5,7 +5,7 @@ module.exports=async function verifyTransitions(browser,base){
   const page=await browser.newPage();await page.setViewport({width:412,height:915});
   let phase='old';const now=Date.now(),fresh=new Date(now-60000).toISOString(),old=new Date(now-86400000).toISOString();
   let tileRecoveryAllowed=false,tileFailures=0;
-  const river=id=>({id,name:'TEST ONLY '+id,type:'stream',pts:id==='right'?[[85.01,28.02],[85.05,28.03]]:[[84.95,28.02],[84.99,28.03]]});
+  const river=id=>({id,name:'TEST ONLY '+id,type:'stream',pts:id==='overview'?[[84.5,27.8],[85.5,28.2]]:id==='right'?[[85.01,28.02],[85.05,28.03]]:[[84.95,28.02],[84.99,28.03]]});
   await page.setRequestInterception(true);
   page.on('request',req=>{
     const url=req.url(),edge=url.includes('.supabase.co/functions/v1/');
@@ -41,7 +41,8 @@ module.exports=async function verifyTransitions(browser,base){
     await page.evaluate(()=>window.FloodSafeMap.map.jumpTo({center:[85,28],zoom:9}));
     try{await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===1,{timeout:20000})}
     catch(e){console.log('RIVER TILE DIAGNOSTICS',JSON.stringify({tileFailures,state:await page.evaluate(()=>({loading:window.FloodSafeHydroSmooth?.loadingState,zoom:window.FloodSafeMap?.map?.getZoom(),manifest:window.FloodSafeHydroSmooth?.manifest,visible:!document.hidden}))}));throw e}
-    await page.waitForFunction(()=>window.FloodSafeMap.map.querySourceFeatures('hydro-complete').some(f=>f.properties.id==='overview'),{timeout:10000});
+    try{await page.waitForFunction(()=>window.FloodSafeMap.map.querySourceFeatures('hydro-complete').some(f=>f.properties.id==='overview'),{timeout:10000})}
+    catch(e){console.log('RIVER RENDER DIAGNOSTICS',await page.evaluate(()=>({zoom:window.FloodSafeMap.map.getZoom(),loading:window.FloodSafeHydroSmooth.loadingState,data:window.FloodSafeMap.map.getStyle().sources['hydro-complete'].data,rendered:window.FloodSafeMap.map.querySourceFeatures('hydro-complete')})));throw e}
     assert.ok(tileFailures>=1);
     tileRecoveryAllowed=true; // No refresh or pan: the scheduled retry must recover it.
     await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.loadedVisibleTiles===2&&window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===0,{timeout:65000});

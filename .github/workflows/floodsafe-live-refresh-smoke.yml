@@ -1,0 +1,25 @@
+name: FloodSafe deployed auto-refresh verification
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tests/floodsafe-live-browser.cjs'
+      - '.github/workflows/floodsafe-live-refresh-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test independent live updates on mobile
+        run: |
+          npm install --prefix /tmp/floodsafe-browser --no-save puppeteer-core@24.31.0
+          export NODE_PATH=/tmp/floodsafe-browser/node_modules
+          export CHROME="$(command -v google-chrome || command -v chromium)"
+          node tests/floodsafe-live-browser.cjs

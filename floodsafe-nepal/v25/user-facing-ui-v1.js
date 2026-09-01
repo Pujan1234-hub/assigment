@@ -16,7 +16,10 @@ const health=r.connected?tr('स्वतः जाँच जारी','Auto-ch
 const summary=tr(`${all} स्टेशन • ${current} ताजा मापन (१० मिनेटभित्र) • ${health}`,`${all} stations • ${current} fresh readings (within 10 min) • ${health}`);
 const availability=current?summary:tr('नयाँ तथ्याङ्क उपलब्ध छैन','No fresh data')+' • '+summary;const badge=$('map')?.querySelector?.('.badge');if(badge){badge.textContent=current?tr('ताजा मापन','Fresh readings'):tr('नयाँ छैन','No fresh data');badge.className='badge '+(current?'green':'amber')}text('mapHint',availability);
 text('feedFresh',availability+' • '+tr('अन्तिम सफल जाँच: ','Last successful check: ')+fmt(r.lastGoodAt));
-text('nationalRiverFresh',tr('पछिल्लो स्रोत मापन: ','Newest source observation: ')+fmt(r.newestMeasurement)+' • '+tr('अन्तिम प्रयास: ','Last attempt: ')+fmt(r.checkedAt));
+text('nationalRiverFresh',tr('पछिल्लो स्रोत मापन: ','Newest source observation: ')+fmt(r.newestKnownMeasurement||r.newestMeasurement)+' • '+tr('अन्तिम प्रयास: ','Last attempt: ')+fmt(r.checkedAt));
+for(const card of [$('nationalRivers'),$('nearTitle')?.closest('.card')]){const b=card?.querySelector('.badge');if(b){b.textContent=tr('स्वतः जाँच','Auto-check');b.className='badge '+(current?'green':'amber')}}
+text('nearSub',tr('ताजा मापन भएका नजिकका स्टेशन मात्र यहाँ देखिन्छन्। पुरानो मापन नक्सामा स्टेशन थिचेर हेर्नुहोस्।','Only nearby fresh readings appear here. Tap a map station for its dated last-known reading.'));
+text('riverStatusSub',tr('सबै official स्टेशन • ताजा र पुरानो मापन छुट्टाछुट्टै • स्वतः जाँच','All official stations • fresh and last-known readings kept separate • automatic checks'));
 const x=$('nationalRealtimeCoverage');if(x)x.style.display='none';text('newsSub','RONB Post • Radio Nepal • News24 Nepal');
 }finally{locking=false}}
 function queueFriendly(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;friendly()})}

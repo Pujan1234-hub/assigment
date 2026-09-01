@@ -4,12 +4,21 @@ const assert=require('node:assert/strict');
 module.exports=async function verifyTransitions(browser,base){
   const page=await browser.newPage();await page.setViewport({width:412,height:915});
   let phase='old';const now=Date.now(),fresh=new Date(now-60000).toISOString(),old=new Date(now-86400000).toISOString();
+  let tileRecoveryAllowed=false,tileFailures=0;
+  const river=id=>({id,name:'TEST ONLY '+id,type:'stream',pts:id==='right'?[[85.01,28.02],[85.05,28.03]]:[[84.95,28.02],[84.99,28.03]]});
   await page.setRequestInterception(true);
   page.on('request',req=>{
     const url=req.url(),edge=url.includes('.supabase.co/functions/v1/');
     if(phase==='offline'&&(edge||url.includes('bipadportal.gov.np/api/')))return void req.abort();
     const time=phase==='old'?old:fresh;
     let payload;
+    if(url.includes('/nepal-waterways-tiles/')){
+      if(url.includes('manifest.json'))payload={minLon:80,minLat:26,stepLon:5,stepLat:5,nx:2,ny:1,tiles:{'0-0':{},'1-0':{}}};
+      else if(url.includes('overview.json'))payload={waterways:[river('overview')]};
+      else if(url.includes('/0-0.json')&&!tileRecoveryAllowed){tileFailures++;return void req.abort()}
+      else payload={waterways:[river(url.includes('/0-0.json')?'left':'right')]};
+      return void req.respond({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(payload)});
+    }
     if(url.includes('/functions/v1/sync-bipad-rivers'))payload={fetched_at:new Date(now).toISOString(),results:[{stationSeriesId:987654,title:'TEST ONLY river',waterLevel:phase==='old'?2:6,waterLevelOn:time,warningLevel:5,dangerLevel:7,longitude:85,latitude:28}]};
     else if(url.includes('/functions/v1/news-live-three'))payload={items:[{title:'TEST ONLY timestamped flood report',source:'Radio Nepal',url:'https://radionepalonline.com/floodsafe-test-only',published_at:time}],sources:{'Radio Nepal':{ok:true,items:1,newest:time}}};
     else if(url.includes('/functions/v1/human-status-safe-live'))payload={event:'TEST ONLY flood',recovered_bodies:phase==='old'?12:13,recovered_source:'Radio Nepal',recovered_source_url:'https://radionepalonline.com/floodsafe-test-only',recovered_update_time:time};
@@ -25,6 +34,25 @@ module.exports=async function verifyTransitions(browser,base){
     await page.waitForFunction(()=>document.getElementById('newsTip')&&document.getElementById('impactFresh').innerText.includes('Latest reported figures'));
     assert.equal(await page.$eval('#impactDeaths',e=>e.innerText),'12');
     assert.equal(await page.evaluate(()=>window.__fsRiverRealtimeState.currentCount),0);
+
+    await page.waitForFunction(()=>window.FloodSafeHydroSmooth&&window.FloodSafeMap?.map?.getSource('hydro-complete'),{timeout:45000});
+    await page.evaluate(()=>window.FloodSafeMap.map.jumpTo({center:[85,28],zoom:9}));
+    await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===1,{timeout:20000});
+    await page.waitForFunction(()=>window.FloodSafeMap.map.querySourceFeatures('hydro-complete').some(f=>f.properties.id==='overview'),{timeout:10000});
+    assert.ok(tileFailures>=1);
+    tileRecoveryAllowed=true; // No refresh or pan: the scheduled retry must recover it.
+    await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.loadedVisibleTiles===2&&window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles===0,{timeout:65000});
+    await page.waitForFunction(()=>['left','right'].every(id=>window.FloodSafeMap.map.querySourceFeatures('hydro-complete').some(f=>f.properties.id===id)),{timeout:15000});
+    const streamStyle=await page.evaluate(()=>({
+      color:window.FloodSafeMap.map.getPaintProperty('hydro-complete-lines','line-color'),
+      opacity:window.FloodSafeMap.map.getPaintProperty('hydro-complete-lines','line-opacity'),
+      states:window.FloodSafeMap.map.querySourceFeatures('hydro-complete').map(f=>f.properties.live_status)
+    }));
+    assert.equal(streamStyle.color.at(-1),'#cbd5e1');assert.equal(streamStyle.opacity.at(-1),.88);
+    assert.ok(streamStyle.states.every(s=>s==='unknown'));
+    await page.evaluate(()=>{const m=window.FloodSafeMap.map;m.jumpTo({center:[84.4,28.2],zoom:10});m.jumpTo({center:[85,28],zoom:6})});
+    await page.waitForFunction(()=>window.FloodSafeHydroSmooth.loadingState.mode==='overview'&&window.FloodSafeMap.map.querySourceFeatures('hydro-complete').some(f=>f.properties.id==='overview'),{timeout:15000});
+    console.log('PASS mobile river detail: failed tile retries without refresh, overview retained, recovered streams visible grey, pan/zoom still responds');
 
     await page.evaluate(()=>{window.FloodSafe.state.lat=28;window.FloodSafe.state.lon=85});
     const firstTip=await page.$eval('#newsTip',e=>e.dataset.tipIndex);

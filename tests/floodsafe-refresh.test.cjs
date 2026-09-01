@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
 
-function runtime(file) {
+function runtime(file, transform=code=>code) {
   let now = Date.parse('2026-09-01T12:00:00Z'), id = 0;
   const timers = new Map(), events = new Map(), nodes = new Map();
   const node = id => {
@@ -22,12 +22,94 @@ function runtime(file) {
   };
   context.window={FloodSafe:{state:{lang:'en'}},addEventListener(){},dispatchEvent(){}};
   vm.createContext(context);
-  vm.runInContext(fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25',file),'utf8'),context);
+  vm.runInContext(transform(fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25',file),'utf8')),context);
   return {context,node,window:context.window,boot:()=>events.get('DOMContentLoaded')?.(),
     now:()=>now, advance:async(ms)=>{now+=ms;const due=[...timers].filter(([,x])=>x.at<=now);for(const[i,x]of due){if(x.repeat)x.at=now+x.repeat;else timers.delete(i);await x.fn();}await new Promise(resolve=>setImmediate(resolve));},
     respond:fn=>{context.fetch=async(url,options)=>({ok:true,json:async()=>fn(url,options)});},timers};
 }
 const observation=(id,t,level=2)=>({stationSeriesId:id,title:'Station '+id,waterLevel:level,waterLevelOn:t,longitude:85,latitude:28});
+
+function hydroRuntime() {
+  const r=runtime('hydro-smooth-v2.js',code=>code.replace(/\}\)\(\);\s*$/, 'window.__hydroTest={loadTile,bootData,json,visibleData,FAILURES,CACHE};})();'));
+  const sources=new Map(),layers=new Map(),events=new Map();let zoom=9;
+  r.bounds={west:80.1,east:81.8,south:26.1,north:26.8};
+  r.map={isStyleLoaded:()=>true,getZoom:()=>zoom,getBounds:()=>({getWest:()=>r.bounds.west,getEast:()=>r.bounds.east,getSouth:()=>r.bounds.south,getNorth:()=>r.bounds.north}),
+    getSource:k=>sources.get(k),addSource:(k,v)=>sources.set(k,{data:v.data,setData(data){this.data=data}}),
+    getLayer:k=>layers.get(k),addLayer:v=>layers.set(v.id,v),on:(e,f)=>events.set(e,f),once:(e,f)=>events.set(e,f)};
+  r.window.FloodSafeMap={map:r.map};r.api=r.window.__hydroTest;
+  r.manifest={minLon:80,minLat:26,stepLon:1,stepLat:1,nx:2,ny:1,tiles:{'0-0':{},'1-0':{}}};
+  r.water=id=>({id,pts:[[80.2,26.2],[80.4,26.4]],type:'stream',name:'Stream '+id});
+  r.payload=url=>url.includes('manifest')?r.manifest:{waterways:[r.water(url.includes('overview')?'overview':url.includes('0-0')?'left':'right')]};
+  r.data=()=>sources.get('hydro-complete')?.data?.features||[];
+  r.move=z=>{events.get('movestart')?.();zoom=z;events.get('moveend')?.()};
+  return r;
+}
+
+test('river tiles retry automatically, retain overview, and render recovered detail',async()=>{
+  const r=hydroRuntime();let failedCalls=0;
+  r.respond(url=>{if(url.includes('0-0')&&++failedCalls===1)throw Error('temporary outage');return r.payload(url)});
+  r.boot();await r.advance(100);await r.advance(100);
+  assert.equal(r.api.CACHE.has('0-0'),false,'failed fetch must not be cached as empty');
+  assert.equal(r.window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles,1);
+  assert.ok(r.data().some(f=>f.properties.id==='overview'),'overview remains during partial failure');
+  assert.ok(r.data().some(f=>f.properties.id==='right'),'successful neighbour remains visible');
+  await r.advance(3000);await r.advance(100);await r.advance(100);
+  assert.equal(failedCalls,2,'retry occurs without moving or reloading');
+  assert.equal(r.window.FloodSafeHydroSmooth.loadingState.failedVisibleTiles,0);
+  assert.deepEqual(Array.from(r.data(),f=>f.properties.id).sort(),['left','right']);
+  assert.ok(r.data().every(f=>f.properties.live_status==='unknown'),'geometry must not invent a reading');
+});
+
+test('river metadata retries and returning from overview still loads local detail',async()=>{
+  const r=hydroRuntime();let calls=0;
+  r.respond(url=>{if(url.includes('manifest')&&++calls===1)throw Error('manifest offline');return r.payload(url)});
+  r.boot();await r.advance(100);
+  await r.advance(5100);await r.advance(100);await r.advance(100);
+  assert.equal(calls,2);assert.equal(r.data().length,2);
+  r.move(6);await r.advance(300);await r.advance(100);
+  assert.equal(r.data()[0].properties.id,'overview');
+  r.move(9);await r.advance(300);await r.advance(100);
+  assert.equal(r.data().length,2);assert.equal(r.window.FloodSafeHydroSmooth.loadingState.loadedVisibleTiles,2);
+});
+
+test('valid empty tiles cache, malformed tiles back off, and requests time out',async()=>{
+  const r=hydroRuntime();let calls=0;
+  r.respond(()=>{calls++;return{waterways:[]}});
+  await r.api.loadTile('empty');await r.api.loadTile('empty');assert.equal(calls,1);
+  r.respond(()=>({error:'not a tile'}));await r.api.loadTile('bad');
+  assert.equal(r.api.CACHE.has('bad'),false);assert.equal(r.api.FAILURES.get('bad').attempts,1);
+  await r.api.loadTile('bad');assert.equal(r.api.FAILURES.get('bad').attempts,1);
+  await r.advance(3000);await r.api.loadTile('bad');
+  assert.equal(r.api.FAILURES.get('bad').retryAt-r.now(),6000,'exponential retry avoids a request storm');
+  r.context.fetch=(_url,{signal})=>new Promise((_,reject)=>signal.addEventListener('abort',()=>reject(Error('timeout'))));
+  const hanging=r.api.loadTile('slow');await r.advance(12001);await hanging;
+  assert.equal(r.api.CACHE.has('slow'),false);assert.match(r.api.FAILURES.get('slow').error,/timeout/);
+});
+
+test('overlapping river refreshes share a two-request limit and reject stale pan results',async()=>{
+  const r=hydroRuntime();let active=0,maxActive=0;const release=[];
+  r.context.fetch=async url=>{
+    if(/manifest|overview/.test(url))return{ok:true,json:async()=>r.payload(url)};
+    active++;maxActive=Math.max(maxActive,active);
+    await new Promise(resolve=>release.push(resolve));active--;
+    return{ok:true,json:async()=>r.payload(url)};
+  };
+  r.boot();const initial=r.advance(100);await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(active,2);const api=r.window.FloodSafeHydroSmooth;
+  await Promise.all([api.refresh(),api.refresh(),api.refresh()]);assert.equal(maxActive,2);
+  r.move(6);release.splice(0).forEach(fn=>fn());
+  await initial;await r.advance(400);await r.advance(100);
+  assert.equal(r.data().length,1);assert.equal(r.data()[0].properties.id,'overview','old local response cannot overwrite zoomed-out view');
+});
+
+test('unmeasured streams are visible grey, and static recovery reads the real waterways format',()=>{
+  const code=fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/river-line-style-v1.js'),'utf8');
+  assert.match(code,/'#cbd5e1'/);assert.match(code,/BASE_OPACITY=\['case',KNOWN,\['case',FRESH,.98,.72\],.88\]/);
+  for(const colour of ['#ff1616','#ff7a00','#ffd43b','#12b8ff'])assert.ok(code.includes(colour));
+  const recovery=fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/map-mobile-recovery-v1.js'),'utf8');
+  const c={};vm.createContext(c);vm.runInContext(recovery.match(/function waterways[^\n]+/)[0],c);
+  const list=[{id:'stream',pts:[[84,28],[84.1,28.1]]}];assert.equal(c.waterways({waterways:list}),list);
+});
 
 test('tips rotate every ten minutes, never repeat before a full cycle and yield to all news',async()=>{
   const r=runtime('news-live-v5.js');r.respond(()=>({items:[]}));r.boot();

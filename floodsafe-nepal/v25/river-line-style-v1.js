@@ -4,8 +4,8 @@ const FRESH=['==',['get','live_updated_5m'],1];
 const KNOWN=['in',['get','live_status'],['literal',['normal','watch','warning','danger']]];
 const ALERT=['in',['get','live_status'],['literal',['warning','danger']]];
 const FRESH_ALERT=['all',FRESH,ALERT];
-const COLOR=['match',['get','live_status'],'danger','#ff1616','warning','#ff7a00','watch','#ffd43b','normal','#12b8ff','#667d88'];
-const BASE_OPACITY=['case',KNOWN,['case',FRESH,.98,.72],.42];
+const COLOR=['match',['get','live_status'],'danger','#ff1616','warning','#ff7a00','watch','#ffd43b','normal','#12b8ff','#cbd5e1'];
+const BASE_OPACITY=['case',KNOWN,['case',FRESH,.98,.72],.88];
 function add(map,source){if(!map?.getSource(source))return;try{
  if(!map.getLayer('hydro-complete-status-glow'))map.addLayer({id:'hydro-complete-status-glow',type:'line',source,filter:KNOWN,paint:{'line-color':COLOR,'line-width':['interpolate',['linear'],['zoom'],5,5.5,8,8,11,12,16,20],'line-opacity':['case',FRESH,.58,.26],'line-blur':['case',FRESH,4,2.2]}});
  if(!map.getLayer('hydro-complete-live-flow'))map.addLayer({id:'hydro-complete-live-flow',type:'line',source,filter:KNOWN,paint:{'line-color':COLOR,'line-width':['interpolate',['linear'],['zoom'],5,1.7,8,2.5,11,4.2,16,7],'line-opacity':['case',FRESH,.98,.68],'line-blur':.15,'line-dasharray':[.25,2.2]}});
@@ -30,5 +30,5 @@ function start(){if(anim)return;anim=setInterval(()=>{if(document.hidden)return;
 let timer=0;function schedule(){clearTimeout(timer);timer=setTimeout(()=>{apply();start()},40)}
 for(const ev of['fsriverlinestatus','fsriverupdate','fstrustedriverupdate','fsriverheartbeat','fslanguage','fsmapready'])window.addEventListener(ev,schedule);
 let tries=0;const ready=setInterval(()=>{tries++;if(apply()){start();clearInterval(ready)}else if(tries>160)clearInterval(ready)},120);
-window.FloodSafeRiverStyle={apply,COLOR,get dangerColor(){return'#ff1616'},get warningColor(){return'#ff7a00'},get watchColor(){return'#ffd43b'},get normalColor(){return'#12b8ff'},get unknownColor(){return'#667d88'}};
+window.FloodSafeRiverStyle={apply,COLOR,get dangerColor(){return'#ff1616'},get warningColor(){return'#ff7a00'},get watchColor(){return'#ffd43b'},get normalColor(){return'#12b8ff'},get unknownColor(){return'#cbd5e1'}};
 })();

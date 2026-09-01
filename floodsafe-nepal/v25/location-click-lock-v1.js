@@ -1,0 +1,1 @@
+(()=>{'use strict';if(window.__fsLocationClickLockV1)return;window.__fsLocationClickLockV1=true;document.getElementById('locateBtn')?.addEventListener('click',e=>{e.stopImmediatePropagation()},true)})();

@@ -24,26 +24,31 @@ jobs:
         with: {python-version: '3.12'}
       - name: Install parser dependencies
         run: pip install --quiet requests beautifulsoup4
-      - name: Sync requested-source Human Status
+      - name: Sync event-scoped Human Status fallback
         run: python3 scripts/update_floodsafe_people_v3.py
-      - name: Validate source allowlist
+      - name: Validate Human Status safety contract
         run: |
           python3 - <<'PY'
           import json
           from urllib.parse import urlparse
           j=json.load(open('data/floodsafe-people-status.json',encoding='utf-8'))
-          assert int(j.get('sync_schema') or 0) >= 3
-          assert j.get('status') == 'requested_sources_only'
+          assert int(j.get('sync_schema') or 0) >= 4
+          assert j.get('status') == 'event_scoped_requested_sources'
+          assert 'Bhotekoshi' in str(j.get('event') or '')
           allowed=('ronb','radio nepal','nepal police','ndrrma','government of nepal')
           specs=(('recovered_bodies','recovered_source','recovered_source_url'),('missing_minimum','missing_source','missing_source_url'),('rescued_alive','rescued_source','rescued_source_url'))
           for vk,sk,uk in specs:
             v,s,u=j.get(vk),str(j.get(sk) or ''),str(j.get(uk) or '')
-            if v is None:
-              continue
+            if v is None: continue
             assert isinstance(v,int) and v>0,(vk,v)
             assert any(a in s.lower() for a in allowed),(sk,s)
             p=urlparse(u);assert p.scheme in ('http','https') and p.netloc,(uk,u)
-          print('Human Status source contract PASS',j.get('last_winning_sources'))
+          # Critical regression guard: the current Bhotekoshi event is already far above subgroup counts.
+          # A parser must never replace cumulative figures with values such as 15 officials/personnel.
+          assert int(j.get('recovered_bodies') or 0) >= 939, j.get('recovered_bodies')
+          assert int(j.get('missing_minimum') or 0) >= 3900, j.get('missing_minimum')
+          assert int(j.get('rescued_alive') or 0) >= 11379, j.get('rescued_alive')
+          print('Human Status contract PASS',j.get('recovered_bodies'),j.get('missing_minimum'),j.get('rescued_alive'))
           PY
       - name: Commit changed Human Status
         shell: bash
@@ -52,6 +57,6 @@ jobs:
           git config user.name 'FloodSafe Human Status Bot'
           git config user.email 'actions@users.noreply.github.com'
           git add data/floodsafe-people-status.json
-          git commit -m '[auto] refresh requested-source Human Status'
+          git commit -m '[auto] refresh event-scoped Human Status fallback'
           git pull --rebase origin main
           git push origin HEAD:main

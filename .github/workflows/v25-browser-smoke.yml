@@ -43,7 +43,7 @@ jobs:
                grep -Fq 'user-facing-ui-v1.js?v=2' /tmp/index.html && \
                grep -Fq 'official-stale-safety-v1.js?v=3' /tmp/index.html && \
                grep -Fq 'location-click-lock-v1.js?v=3' /tmp/index.html && \
-               grep -Fq 'news-live-v5.js?v=8' /tmp/index.html && \
+               grep -Fq 'news-live-v5.js?v=9' /tmp/index.html && \
                grep -Fq 'river-status-ui.js?v=4' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
@@ -88,7 +88,7 @@ jobs:
               const fb=!!window.__fsStaticMapFallback?.active;
               return real||fb;
             },{timeout:35000});
-            await page.click('#locateBtn');
+            window.FloodSafeCurrentLocation.locate();
             await page.waitForFunction(()=>window.FloodSafe?.state?.kind==='gps'&&Math.abs(Number(window.FloodSafe.state.lat)-27.7172)<0.02&&Math.abs(Number(window.FloodSafe.state.lon)-85.3240)<0.02,{timeout:20000});
             await page.waitForFunction(()=>window.__fsNewsLiveState?.connected===true,{timeout:25000});
             await sleep(4000);
@@ -101,13 +101,13 @@ jobs:
                 catalog:Number(window.__fsRiverRealtimeState?.catalogCount||0),current:Number(window.__fsRiverRealtimeState?.currentCount||0),stateRows:Array.isArray(window.FloodSafe?.state?.allRiverStations)?window.FloodSafe.state.allRiverStations.length:0,badFresh,
                 gps:{lat:window.FloodSafe?.state?.lat,lon:window.FloodSafe?.state?.lon,kind:window.FloodSafe?.state?.kind,last:window.FloodSafeCurrentLocation?.last||null,place:document.querySelector('#place')?.textContent||''},
                 newsState:window.__fsNewsLiveState||null,newsCount:news.length,badNews,newsText:document.querySelector('#liveNews')?.textContent||'',
-                real:!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines')),hydroLayer:!!window.FloodSafeMap?.map?.getLayer?.('hydro-complete-lines'),hydroFeatures:Number(window.__fsHydroMatchState?.features||0),fallback:window.__fsStaticMapFallback||null,canvas:!!document.querySelector('#riverMapGL canvas.maplibregl-canvas'),svg:!!document.querySelector('#fsStaticMapFallback svg'),uiV2:!!window.__fsUserFacingUIV2,staleV3:!!window.__fsOfficialStaleSafetyV3,locationV3:!!window.__fsLocationClickLockV3,locationRuntime:!!window.__fsLocationRuntimeV2,newsV8:!!window.__fsNewsV8
+                real:!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines')),hydroLayer:!!window.FloodSafeMap?.map?.getLayer?.('hydro-complete-lines'),hydroFeatures:Number(window.__fsHydroMatchState?.features||0),fallback:window.__fsStaticMapFallback||null,canvas:!!document.querySelector('#riverMapGL canvas.maplibregl-canvas'),svg:!!document.querySelector('#fsStaticMapFallback svg'),uiV2:!!window.__fsUserFacingUIV2,staleV3:!!window.__fsOfficialStaleSafetyV3,locationV3:!!window.__fsLocationClickLockV3,locationRuntime:!!window.__fsLocationRuntimeV2,newsV9:!!window.__fsNewsV9
               };
             });
             if(result.catalog<281||result.stateRows<281)throw Error('Official station catalogue missing '+JSON.stringify(result));
             if(result.badFresh)throw Error('River rows older than 10 minutes leaked into live state '+JSON.stringify(result));
-            if(result.gps.kind!=='gps'||!result.gps.last)throw Error('Current location button failed '+JSON.stringify(result));
-            if(!result.newsState?.connected||!result.newsV8||result.badNews)throw Error('Fresh-news runtime failed '+JSON.stringify(result));
+            if(result.gps.kind!=='gps'||!result.gps.last)throw Error('Current location runtime failed '+JSON.stringify(result));
+            if(!result.newsState?.connected||!result.newsV9||result.badNews)throw Error('Fresh-news runtime failed '+JSON.stringify(result));
             if(result.newsCount===0&&!/१० मिनेट|10 minutes/i.test(result.newsText))throw Error('No-news safety fallback missing '+JSON.stringify(result));
             if(!result.uiV2||!result.staleV3||!result.locationV3||!result.locationRuntime)throw Error('Latest UI guards missing '+JSON.stringify(result));
             if(!result.real && !(result.fallback?.active&&result.svg&&result.fallback.stations>=200))throw Error('Mobile map blank '+JSON.stringify(result));

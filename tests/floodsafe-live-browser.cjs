@@ -69,6 +69,20 @@ const assert=require('node:assert/strict');
     if(freshnessUI.humanCount===0){assert.match(freshnessUI.human,/No reported data/);assert.equal(freshnessUI.deaths,'—');}
     console.log('PASS explicit no-fresh-data UI',JSON.stringify(freshnessUI));
     console.log('PASS mobile map, single human renderer, independent river/news/human refresh, language interaction',JSON.stringify({before,after}));
+    const cleanupUI=await page.evaluate(()=>({mapBar:getComputedStyle(document.getElementById('mapHint')).display,news:document.getElementById('liveNews').innerText,clock:document.getElementById('newsCheck').innerText}));
+    assert.equal(cleanupUI.mapBar,'none');
+    assert.doesNotMatch(cleanupUI.news,/No news published within the last 10 minutes/);
+    assert.match(cleanupUI.clock,/^[\d:]+ NPT$/);
+    await page.waitForFunction(()=>window.FloodSafeCurrentLocation);
+    const notice=await page.evaluate(()=>{
+      const gps=(latitude,longitude)=>{navigator.geolocation.getCurrentPosition=ok=>ok({coords:{latitude,longitude,accuracy:10}});window.FloodSafeCurrentLocation.locate();return !document.getElementById('outsideNotice').hidden};
+      const london=gps(51.5074,-0.1278),kathmandu=gps(27.7172,85.324);
+      const nepalDisplay=getComputedStyle(document.getElementById('outsideNotice')).display;
+      navigator.geolocation.getCurrentPosition=(_ok,fail)=>fail({message:'test permission denied'});window.FloodSafeCurrentLocation.locate();
+      return {london,kathmandu,nepalDisplay,denied:!document.getElementById('outsideNotice').hidden};
+    });
+    assert.deepEqual(notice,{london:true,kathmandu:false,nepalDisplay:'none',denied:false});
+    console.log('PASS GPS notice: London shown, Kathmandu hidden, permission denied not labelled abroad; UI cleanup',JSON.stringify(cleanupUI));
     await require('./floodsafe-browser-transitions.cjs')(browser,process.env.FLOODSAFE_URL||'https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/');
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});

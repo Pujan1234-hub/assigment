@@ -26,6 +26,8 @@ jobs:
           node --check floodsafe-nepal/v25/trusted-river-runtime-v3.js
           node --check floodsafe-nepal/v25/trusted-rain-runtime-v1.js
           node --check floodsafe-nepal/v25/news-live-v5.js
+          node --check floodsafe-nepal/v25/user-facing-ui-v1.js
+          node --check floodsafe-nepal/v25/official-stale-safety-v1.js
       - name: Wait for current GitHub Pages build
         run: |
           set -euo pipefail
@@ -33,7 +35,10 @@ jobs:
           ok=0
           for i in $(seq 1 80); do
             curl --max-time 15 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'map-loader-v3.js?v=27' /tmp/index.html && grep -Fq 'map-mobile-recovery-v1.js?v=2' /tmp/index.html; then ok=1; break; fi
+            if grep -Fq 'map-loader-v3.js?v=27' /tmp/index.html && \
+               grep -Fq 'map-mobile-recovery-v1.js?v=2' /tmp/index.html && \
+               grep -Fq 'user-facing-ui-v1.js?v=2' /tmp/index.html && \
+               grep -Fq 'official-stale-safety-v1.js?v=3' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
@@ -66,16 +71,33 @@ jobs:
             await page.setViewport({width:412,height:915,deviceScaleFactor:2});
             page.setDefaultTimeout(60000);
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('requestfailed',r=>errors.push('REQ '+r.url()+' '+r.failure()?.errorText));
-            await page.goto(process.env.BASE+'?ci='+Date.now()+'#map',{waitUntil:'domcontentloaded',timeout:7000}).catch(e=>console.log('goto diagnostic',String(e)));
-            await sleep(9000);
-            const diag=await page.evaluate(()=>({readyState:document.readyState,title:document.title,scripts:[...document.scripts].map(s=>s.src.split('/').pop()),globals:{FloodSafe:!!window.FloodSafe,river:window.__fsRiverRealtimeState||null,mapLoader:!!window.__fsSmoothMapLoadingV17,map:!!window.FloodSafeMap,recovery:!!window.__fsMapMobileRecoveryV2,fallback:window.__fsStaticMapFallback||null},html:document.documentElement.outerHTML.length}));
-            console.log('startup diagnostic',JSON.stringify(diag),'errors',errors.slice(0,12));
+            await page.goto(process.env.BASE+'?restore='+Date.now()+'#map',{waitUntil:'domcontentloaded',timeout:15000});
             await page.waitForFunction(()=>Number(window.__fsRiverRealtimeState?.catalogCount||0)>=281,{timeout:30000});
-            await page.waitForFunction(()=>!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines'))||!!window.__fsStaticMapFallback?.active,{timeout:30000});
-            const result=await page.evaluate(()=>({catalog:Number(window.__fsRiverRealtimeState?.catalogCount||0),current:Number(window.__fsRiverRealtimeState?.currentCount||0),stateRows:Array.isArray(window.FloodSafe?.state?.allRiverStations)?window.FloodSafe.state.allRiverStations.length:0,real:!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines')),fallback:window.__fsStaticMapFallback||null,canvas:!!document.querySelector('#riverMapGL canvas.maplibregl-canvas'),svg:!!document.querySelector('#fsStaticMapFallback svg')}));
+            await page.waitForFunction(()=>{
+              const real=!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines'));
+              const fb=!!window.__fsStaticMapFallback?.active;
+              return real||fb;
+            },{timeout:30000});
+            await sleep(5000);
+            const result=await page.evaluate(()=>({
+              catalog:Number(window.__fsRiverRealtimeState?.catalogCount||0),
+              current:Number(window.__fsRiverRealtimeState?.currentCount||0),
+              stateRows:Array.isArray(window.FloodSafe?.state?.allRiverStations)?window.FloodSafe.state.allRiverStations.length:0,
+              real:!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines')),
+              hydroLayer:!!window.FloodSafeMap?.map?.getLayer?.('hydro-complete-lines'),
+              hydroFeatures:Number(window.__fsHydroMatchState?.features||0),
+              fallback:window.__fsStaticMapFallback||null,
+              canvas:!!document.querySelector('#riverMapGL canvas.maplibregl-canvas'),
+              svg:!!document.querySelector('#fsStaticMapFallback svg'),
+              uiV2:!!window.__fsUserFacingUIV2,
+              staleV3:!!window.__fsOfficialStaleSafetyV3
+            }));
             if(result.catalog<281||result.stateRows<281)throw Error('Official station catalogue missing '+JSON.stringify(result));
+            if(!result.uiV2||!result.staleV3)throw Error('Latest anti-freeze UI guards missing '+JSON.stringify(result));
             if(!result.real && !(result.fallback?.active&&result.svg&&result.fallback.stations>=200))throw Error('Mobile map blank '+JSON.stringify(result));
-            console.log('PASS mobile map + official catalogue',result);
+            if(result.real && (!result.hydroLayer||result.hydroFeatures<5000))throw Error('River network missing '+JSON.stringify(result));
+            if(result.fallback?.active&&Number(result.fallback.rivers||0)<5000)throw Error('Fallback river network missing '+JSON.stringify(result));
+            console.log('PASS restored mobile map + 281 stations + river network',result,'requestErrors',errors.filter(x=>!x.includes('MapServer')).slice(0,8));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

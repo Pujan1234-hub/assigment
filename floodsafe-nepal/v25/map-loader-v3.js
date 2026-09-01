@@ -1,22 +1,25 @@
-import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.mjs';
-window.maplibregl = maplibregl;
-if(!window.__fsSmoothMapLoadingV15){
-  window.__fsSmoothMapLoadingV15=true;
-  import('./map-smooth-v3.js?v=11').then(()=>{
-    window.__fsSmoothMapLoaded=true;
-    return import('./hydro-smooth-v2.js?v=10');
-  }).then(()=>{
-    window.__fsHydroSmoothLoaded=true;
-    return import('./map-core-v4.js?v=8');
-  }).then(()=>{
-    window.__fsMapCoreV4Loaded=true;
-    return import('./river-rain-fallback-v1.js?v=1');
-  }).then(()=>{
-    window.__fsRiverRainFallbackLoaded=true;
-  }).catch((err)=>{
-    window.__fsSmoothMapLoadingV15=false;
-    console.error('FloodSafe map runtime failed',err);
-    const hint=document.getElementById('mapHint');
-    if(hint)hint.textContent='नक्सा लोड हुन सकेन — एकपटक reload गर्नुहोस्।';
-  });
+const hint=t=>{const e=document.getElementById('mapHint');if(e&&t)e.textContent=t};
+function loadScript(url,timeout=7000){return new Promise((resolve,reject)=>{const s=document.createElement('script');let done=false;const finish=(ok,e)=>{if(done)return;done=true;clearTimeout(to);s.onload=s.onerror=null;ok?resolve():reject(e||Error('map library failed'))};const to=setTimeout(()=>finish(false,Error('map library timeout')),timeout);s.src=url;s.async=true;s.crossOrigin='anonymous';s.onload=()=>finish(true);s.onerror=()=>finish(false,Error('map library network error'));document.head.appendChild(s)})}
+async function ensureMapLibre(){if(window.maplibregl?.Map)return true;for(const url of['https://cdn.jsdelivr.net/npm/maplibre-gl@6.6.0/dist/maplibre-gl.js','https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.js']){try{await loadScript(url);if(window.maplibregl?.Map)return true}catch{}}try{const m=await import('https://cdn.jsdelivr.net/npm/maplibre-gl@6.6.0/dist/maplibre-gl.mjs');window.maplibregl=m;if(window.maplibregl?.Map)return true}catch{}try{const m=await import('https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.mjs');window.maplibregl=m;if(window.maplibregl?.Map)return true}catch{}return false}
+if(!window.__fsSmoothMapLoadingV16){
+  window.__fsSmoothMapLoadingV16=true;
+  (async()=>{
+    try{
+      hint('🇳🇵 नक्सा जोडिँदैछ…');
+      if(!await ensureMapLibre())throw Error('MapLibre unavailable');
+      await import('./map-smooth-v3.js?v=12');
+      window.__fsSmoothMapLoaded=true;
+      await import('./hydro-smooth-v2.js?v=11');
+      window.__fsHydroSmoothLoaded=true;
+      await import('./map-core-v4.js?v=9');
+      window.__fsMapCoreV4Loaded=true;
+      await import('./river-rain-fallback-v1.js?v=2').catch(()=>{});
+      window.__fsRiverRainFallbackLoaded=true;
+    }catch(err){
+      window.__fsSmoothMapLoadingV16=false;
+      console.error('FloodSafe map runtime failed',err);
+      hint('नक्सा जोडिँदैछ…');
+      window.dispatchEvent(new CustomEvent('fsmaploadfailed',{detail:{message:String(err?.message||err)}}));
+    }
+  })();
 }

@@ -1,187 +1,80 @@
 #!/usr/bin/env python3
-import json,re,html
-from pathlib import Path
-from datetime import datetime,timezone
-from urllib.parse import urljoin,urlparse
-import requests
+import html,json,re,requests
 from bs4 import BeautifulSoup
-
+from datetime import datetime,timezone
+from pathlib import Path
+from urllib.parse import urljoin,urlparse
 OUT=Path('data/floodsafe-people-status.json')
-NEWS=Path('data/floodsafe-news.json')
-UA='Mozilla/5.0 (compatible; FloodSafeNepal-Human/3.0; +https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/)'
+UA='Mozilla/5.0 (compatible; FloodSafeNepal-Human/5.0)'
 H={'User-Agent':UA,'Cache-Control':'no-cache','Pragma':'no-cache','Accept-Language':'ne,en;q=0.8'}
-EVENT=re.compile(r'(bhotekoshi|bhote\s*koshi|rasuwa|trishuli|भोटेकोशी|भोटेकोसी|रसुवा|त्रिशूली|त्रिशुली)',re.I)
-FLOOD=re.compile(r'(flood|flash\s*flood|बाढी|आकस्मिक\s*बाढी)',re.I)
-AUTH=re.compile(r'(nepal\s*police|ndrrma|national\s*disaster\s*risk\s*reduction|नेपाल\s*प्रहरी|विपद्\s*जोखिम|प्राधिकरण|government\s*(?:figure|update)|authority)',re.I)
-CORR=re.compile(r'(corrected|correction|revised|revision|संशोधित|सच्याइएको)',re.I)
-NP=str.maketrans('०१२३४५६७८९','0123456789')
-
-WP=[
- ('OnlineKhabar','https://english.onlinekhabar.com/wp-json/wp/v2/posts?per_page=100&_fields=date,date_gmt,modified,modified_gmt,link,title,excerpt,content'),
- ('RONB','https://www.ronbpost.com/wp-json/wp/v2/posts?per_page=80&_fields=date,date_gmt,modified,modified_gmt,link,title,excerpt,content'),
-]
-LISTINGS=[
- ('Nepal News','https://english.nepalnews.com/'),
- ('Radio Nepal','https://radionepalonline.com/en/'),
- ('Hamro Patro','https://www.hamropatro.com/news'),
-]
-KCHA='https://kchakhabar.com/api/v1/today.json?limit=100'
-
+ALLOWED=('RONB','Radio Nepal','Nepal Police','NDRRMA','Government of Nepal')
+EVENT=re.compile(r'(bhotekoshi|bhote\s*koshi|rasuwa|trishuli|flood|flash flood|भोटेकोशी|भोटेकोसी|रसुवा|त्रिशूली|बाढी)',re.I)
+CORR=re.compile(r'(corrected|revised|correction|सच्याइएको|संशोधित)',re.I)
 def clean(s):return re.sub(r'\s+',' ',html.unescape(re.sub(r'<[^>]+>',' ',str(s or '')))).strip()
-def relevant_title(t):return bool(EVENT.search(t or '') and FLOOD.search(t or ''))
-def numtext(s):return str(s or '').translate(NP).replace(',','')
-def iso(v):
- if not v:return None
- try:
-  s=str(v).strip();d=datetime.fromisoformat(s.replace('Z','+00:00'))
-  if d.tzinfo is None:d=d.replace(tzinfo=timezone.utc)
-  return d.astimezone(timezone.utc).isoformat().replace('+00:00','Z')
- except:return None
-def stamp(v):
- x=iso(v)
- return datetime.fromisoformat(x.replace('Z','+00:00')).timestamp() if x else 0
-
-def metrics(text):
- t=numtext(text);out={}
- pats={
-  'death':[
-   r'(?:death\s*toll|confirmed\s*deaths?|bodies\s*(?:recovered|found)|मृत्यु|मृतक|शव)[^0-9]{0,70}(\d{1,6})',
-   r'(\d{1,6})\s+(?:people|persons|जना)?[^.।]{0,70}(?:dead|died|deaths?|bodies\s*recovered|शव\s*फेला|मृत्यु)',
-  ],
-  'missing':[
-   r'(\d{1,6})\s+(?:people|persons|जना)?[^.।]{0,90}(?:remain(?:s)?\s+)?(?:missing|unaccounted\s*for|सम्पर्कविहीन|बेपत्ता)',
-   r'(?:missing|unaccounted\s*for|सम्पर्कविहीन|बेपत्ता)[^0-9]{0,70}(\d{1,6})',
-  ],
-  'rescued':[
-   r'(\d{1,6})\s+(?:people|persons|जना)?[^.।]{0,90}(?:have\s+)?(?:so\s+far\s+)?(?:been\s+)?rescued',
-   r'(?:rescued|उद्धार)[^0-9]{0,70}(\d{1,6})',
-  ]
- }
- for k,pp in pats.items():
-  for p in pp:
-   m=re.search(p,t,re.I)
-   if m:
-    v=int(m.group(1))
-    if 0<v<100000:out[k]=v;break
- return out
-
-def get(url,timeout=14):
- r=requests.get(url,headers=H,timeout=timeout);r.raise_for_status();return r
-
-def soup_article(raw):
- s=BeautifulSoup(raw,'html.parser')
- h=s.find('h1');title=clean(h.get_text(' ',strip=True)) if h else clean((s.find('title') or {}).get_text(' ',strip=True) if s.find('title') else '')
- body=s.find('article') or s.find(attrs={'itemprop':'articleBody'}) or s.find('main')
- text=clean(body.get_text(' ',strip=True) if body else '')
- if not text:text=clean(s.get_text(' ',strip=True))[:12000]
- when=None
- for attrs in ({'property':'article:modified_time'},{'property':'article:published_time'},{'name':'datePublished'},{'itemprop':'datePublished'}):
-  x=s.find('meta',attrs=attrs)
-  if x and iso(x.get('content')):when=iso(x.get('content'));break
- if not when:
-  tm=s.find('time');when=iso(tm.get('datetime') if tm else None)
- return title,text,when
-
-def add(best,kind,value,when,source,url,authority,correction=False):
- st=stamp(when)
- if not st or not value:return
- c={'value':int(value),'stamp':st,'iso':iso(when),'source':source,'url':url,'authority':authority,'correction':correction}
- old=best.get(kind)
- key=(st,1 if authority else 0,1 if correction else 0,int(value))
- oldkey=(-1,0,0,0) if not old else (old['stamp'],1 if old['authority'] else 0,1 if old['correction'] else 0,old['value'])
- if key>oldkey:best[kind]=c
-
-def inspect_doc(best,title,text,when,source,url):
- title=clean(title);text=clean(text)
- # Critical guard: do not harvest a flood number from an unrelated page/sidebar.
- if not relevant_title(title):return
- joined=title+' '+text
- if not AUTH.search(joined):return
- mm=metrics(joined)
- for k,v in mm.items():add(best,k,v,when,source,url,True,bool(CORR.search(joined)))
-
-def fetch_wp(best,source,url):
- try:j=get(url).json()
- except Exception as e:print(source,'WP failed',repr(e));return
- for p in j if isinstance(j,list) else []:
-  title=clean((p.get('title') or {}).get('rendered',''))
-  if not relevant_title(title):continue
-  body=clean((p.get('content') or {}).get('rendered','')+' '+(p.get('excerpt') or {}).get('rendered',''))
-  raw=p.get('modified_gmt') or p.get('date_gmt') or p.get('modified') or p.get('date')
-  if raw and 'T' in str(raw) and not re.search(r'(?:Z|[+-]\d\d:\d\d)$',str(raw)):raw=str(raw)+'Z'
-  inspect_doc(best,title,body,raw,source,p.get('link') or url)
-
-def listing_links(base):
- try:r=get(base);s=BeautifulSoup(r.text,'html.parser')
- except Exception:return []
- host=urlparse(base).netloc.replace('www.','');out=[]
- for a in s.find_all('a',href=True):
-  title=clean(' '.join(a.stripped_strings));u=urljoin(base,a.get('href')).split('#')[0]
-  if host not in urlparse(u).netloc.replace('www.',''):continue
-  if relevant_title(title) and u not in [x[1] for x in out]:out.append((title,u))
-  if len(out)>=20:break
- return out
-
-def fetch_listing(best,source,base):
- for _,u in listing_links(base):
-  try:r=get(u,10);title,text,when=soup_article(r.text);inspect_doc(best,title,text,when,source,u)
-  except Exception:continue
-
-def fetch_news_snapshot(best):
- if not NEWS.exists():return
- try:j=json.loads(NEWS.read_text(encoding='utf-8'))
+def digits(s):return str(s or '').translate(str.maketrans('०१२३४५६७८९','0123456789')).replace(',','')
+def stamp(s):
+ if not s:return 0
+ try:return datetime.fromisoformat(str(s).replace('Z','+00:00')).timestamp()
+ except:return 0
+def iso(t):return datetime.fromtimestamp(t,timezone.utc).isoformat().replace('+00:00','Z') if t else None
+def get(u,timeout=18):r=requests.get(u,headers=H,timeout=timeout);r.raise_for_status();return r
+def source_allowed(s):return any(x.lower() in str(s or '').lower() for x in ALLOWED)
+def page_time(soup):
+ for attrs in ({'property':'article:published_time'},{'property':'article:modified_time'},{'itemprop':'datePublished'}):
+  x=soup.find('meta',attrs=attrs)
+  if x and stamp(x.get('content')):return x.get('content')
+ for t in soup.find_all('time',limit=15):
+  if stamp(t.get('datetime')):return t.get('datetime')
+ for sc in soup.find_all('script',type='application/ld+json',limit=15):
+  m=re.search(r'"datePublished"\s*:\s*"([^"]+)',sc.string or sc.get_text(' ',strip=True))
+  if m and stamp(m.group(1)):return m.group(1)
+ return None
+def metric(text,kind):
+ s=digits(text);pats={'death':[r'(?:death toll|deaths?|dead|killed|मृत्यु|मृतक|शव)[^0-9]{0,45}(\d{1,6})',r'(\d{1,6})\s*(?:people|persons|जना)?[^.।]{0,35}(?:dead|killed|मृत्यु|मृतक)'],'missing':[r'(?:missing|unaccounted|सम्पर्कविहीन|बेपत्ता)[^0-9]{0,45}(\d{1,6})',r'(\d{1,6})\s*(?:people|persons|जना)?[^.।]{0,40}(?:missing|unaccounted|सम्पर्कविहीन|बेपत्ता)'],'rescued':[r'(?:rescued|evacuated|found safe|उद्धार|सकुशल|सुरक्षित भेट)[^0-9]{0,45}(\d{1,6})',r'(\d{1,6})\s*(?:people|persons|जना)?[^.।]{0,45}(?:rescued|evacuated|found safe|उद्धार|सकुशल|सुरक्षित)']}
+ for p in pats[kind]:
+  m=re.search(p,s,re.I)
+  if m:
+   v=int(m.group(1))
+   if 0<v<100000:return v
+ return None
+def add(best,kind,value,t,source,url,correction=False):
+ if value is None or not t or not source_allowed(source):return
+ c={'value':int(value),'t':float(t),'time':iso(t),'source':source,'url':url,'correction':bool(correction)};old=best.get(kind)
+ if not old or c['t']>old['t']:best[kind]=c
+def story(best,title,body,t,source,url):
+ text=clean(title+' '+body)
+ if not EVENT.search(text):return
+ for kind in ('death','missing','rescued'):add(best,kind,metric(text,kind),t,source,url,bool(CORR.search(text)))
+def ronb(best):
+ try:j=get('https://www.ronbpost.com/wp-json/wp/v2/posts?per_page=80&_fields=date_gmt,modified_gmt,link,title,excerpt,content').json()
+ except Exception as e:print('RONB',e);return
+ for x in j if isinstance(j,list) else []:
+  raw=x.get('date_gmt') or x.get('modified_gmt') or ''
+  if raw and not re.search(r'(?:Z|[+-]\d\d:\d\d)$',raw):raw+='Z'
+  title=clean((x.get('title') or {}).get('rendered',''));body=clean((x.get('content') or {}).get('rendered','')+' '+(x.get('excerpt') or {}).get('rendered',''));story(best,title,body,stamp(raw),'RONB',x.get('link') or '')
+def crawl(best,listing,host,source,limit=80):
+ try:soup=BeautifulSoup(get(listing).text,'html.parser')
+ except Exception as e:print(source,e);return
+ links=[]
+ for a in soup.find_all('a',href=True):
+  u=urljoin(listing,a['href']);p=urlparse(u);title=clean(' '.join(a.stripped_strings))
+  if not (p.netloc==host or p.netloc.endswith('.'+host)) or len(title)<12 or u in [z[1] for z in links]:continue
+  if re.search(r'/(tag|category|author|page|search|programs|audio)(?:/|$)',p.path,re.I):continue
+  links.append((title,u))
+  if len(links)>=limit:break
+ for title,u in links:
+  try:
+   s=BeautifulSoup(get(u,8).text,'html.parser');raw=s.find('article') or s.find('main');body=clean(raw.get_text(' ',strip=True) if raw else '');t=stamp(page_time(s));h=s.find('h1');story(best,clean(h.get_text(' ',strip=True)) if h else title,body,t,source,u)
+  except:pass
+def old_allowed(best):
+ try:j=json.loads(OUT.read_text(encoding='utf-8'))
  except:return
- for x in j.get('items',[])[:100]:
-  title=clean(x.get('title'))
-  if not relevant_title(title):continue
-  u=x.get('url');source=x.get('source') or 'Verified national media';when=x.get('published_at')
-  if not u:continue
-  try:r=get(u,10);pt,body,pwhen=soup_article(r.text);inspect_doc(best,pt or title,body,pwhen or when,source,u)
-  except Exception:continue
-
-def fetch_kcha(best):
- try:j=get(KCHA).json()
- except Exception as e:print('KCHA failed',repr(e));return
- stories=j.get('stories',[]) if isinstance(j,dict) else []
- for s in stories:
-  title=clean((s.get('topic_en') or '')+' '+(s.get('topic_ne') or ''))
-  if not relevant_title(title):continue
-  sources=s.get('sources') or []
-  for src in sources[:8]:
-   u=src.get('url');name=src.get('publisher') or 'Verified national media'
-   if not u:continue
-   try:r=get(u,10);pt,body,when=soup_article(r.text);inspect_doc(best,pt or title,body,when or s.get('updated_at') or s.get('first_reported'),name,u)
-   except Exception:continue
-
+ specs=[('death','recovered_bodies','recovered_source','recovered_source_url','recovered_update_iso','recovered_update_time'),('missing','missing_minimum','missing_source','missing_source_url','missing_update_time',None),('rescued','rescued_alive','rescued_source','rescued_source_url','rescued_update_time',None)]
+ for kind,vk,sk,uk,tk,tk2 in specs:
+  v=j.get(vk);s=j.get(sk);u=j.get(uk);tm=j.get(tk) or (j.get(tk2) if tk2 else None)
+  if source_allowed(s) and isinstance(v,int) and v>0:add(best,kind,v,stamp(tm),s,u)
 def main():
- old=json.loads(OUT.read_text(encoding='utf-8')) if OUT.exists() else {}
- best={}
- for src,url in WP:fetch_wp(best,src,url)
- fetch_news_snapshot(best)
- fetch_kcha(best)
- for src,url in LISTINGS:fetch_listing(best,src,url)
- fields={
-  'death':('recovered_bodies','recovered_update_time','recovered_source','recovered_source_url','recovered_update_iso'),
-  'missing':('missing_minimum','missing_update_time','missing_source','missing_source_url',None),
-  'rescued':('rescued_alive','rescued_update_time','rescued_source','rescued_source_url',None),
- }
- changed=False;winners={}
- for kind,c in best.items():
-  vf,tf,sf,uf,extra=fields[kind];ov=int(old.get(vf) or 0);ot=stamp(old.get(tf))
-  if c['stamp']<ot:continue
-  if c['value']<ov and not c['correction']:continue
-  if c['value']!=ov or c['stamp']>ot or old.get(sf)!=c['source'] or old.get(uf)!=c['url']:
-   old[vf]=c['value'];old[tf]=c['iso'];old[sf]=c['source'];old[uf]=c['url'];changed=True
-   if extra:old[extra]=c['iso']
-  winners[kind]=c['source']
- if not changed:
-  print('No newer verified Human Status metric');return
- old['event']='Bhotekoshi flash flood';old['event_ne']='भोटेकोशी आकस्मिक बाढी';old['updated_date']=datetime.now(timezone.utc).date().isoformat()
- old['status']='auto_multisource_strict_nepal_only';old['last_checked_utc']=datetime.now(timezone.utc).isoformat().replace('+00:00','Z')
- old['sync_policy']='Newest credible Nepal-side authority-attributed cumulative figure independently per metric. Reject unrelated-page/sidebar matches, subgroup-only counts and Nepal+China combined totals; never roll backward without an explicit correction.'
- old['sync_sources']=['Nepal Police','NDRRMA','Radio Nepal','RONB','Hamro Patro','OnlineKhabar','Nepal News','verified national media via K cha khabar']
- old['last_winning_sources']=winners
- OUT.write_text(json.dumps(old,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
- print('Updated Human Status',old.get('recovered_bodies'),old.get('missing_minimum'),old.get('rescued_alive'),winners)
-
+ best={};old_allowed(best);ronb(best);crawl(best,'https://radionepalonline.com/','radionepalonline.com','Radio Nepal',100);crawl(best,'https://www.nepalpolice.gov.np/news/','nepalpolice.gov.np','Nepal Police',80);crawl(best,'https://ndrrma.gov.np/','ndrrma.gov.np','NDRRMA',80)
+ d,m,r=best.get('death'),best.get('missing'),best.get('rescued');payload={'event':'Current Nepal flood event','event_ne':'नेपालको हालको बाढी घटना','updated_date':datetime.now(timezone.utc).date().isoformat(),'recovered_bodies':d['value'] if d else None,'recovered_source':d['source'] if d else None,'recovered_source_url':d['url'] if d else None,'recovered_update_time':d['time'] if d else None,'recovered_update_iso':d['time'] if d else None,'missing_minimum':m['value'] if m else None,'missing_source':m['source'] if m else None,'missing_source_url':m['url'] if m else None,'missing_update_time':m['time'] if m else None,'rescued_alive':r['value'] if r else None,'rescued_source':r['source'] if r else None,'rescued_source_url':r['url'] if r else None,'rescued_update_time':r['time'] if r else None,'status':'requested_sources_only','last_checked_utc':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),'sync_sources':['RONB','Radio Nepal','Nepal Police','NDRRMA'],'last_winning_sources':{'death':d['source'] if d else None,'missing':m['source'] if m else None,'rescued':r['source'] if r else None},'sync_schema':3,'sync_policy':'Only RONB, Radio Nepal, Nepal Police and NDRRMA/Government official sources. Never substitute an unapproved source. Missing may decrease when a newer approved report changes the count; death/rescued can decrease only on an explicit correction.'}
+ OUT.write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8');print(payload['last_winning_sources'])
 if __name__=='__main__':main()

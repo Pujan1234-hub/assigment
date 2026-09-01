@@ -116,9 +116,14 @@ test('missing and expired observations never paint blue',()=>{
     if(op==='match'){for(let i=1;i<a.length-1;i+=2)if(ev(a[0])===a[i])return a[i+1];return a.at(-1);}
     throw Error(op);
   }
-  const color=p=>evaluate(paint['circle-color'],p);
-  for(const p of [{has_latest:0,age_ms:'',status:'normal'},{has_latest:1,age_ms:'',status:'normal'},{has_latest:1,status:'normal'},{has_latest:1,age_ms:600001,status:'normal'},{has_latest:1,age_ms:-300001,status:'normal'},{has_latest:1,age_ms:0,status:'unknown'}])assert.equal(color(p),'#94a3b8',JSON.stringify(p));
+  const color=p=>evaluate(paint['circle-color'],{observed_ms:r.now()-Number(p.age_ms||0),...p});
+  for(const p of [{has_latest:0,age_ms:'',status:'normal'},{has_latest:1,age_ms:'',status:'normal'},{has_latest:1,status:'normal'},{has_latest:1,age_ms:86400000,status:'normal'},{has_latest:1,age_ms:-300001,status:'normal'},{has_latest:1,age_ms:0,status:'unknown'}])assert.equal(color(p),'#94a3b8',JSON.stringify(p));
   assert.equal(color({has_latest:1,age_ms:60000,status:'normal'}),'#20b8ff');
+  assert.equal(color({has_latest:1,age_ms:1200000,status:'normal'}),'#20b8ff','today reading over 10 minutes must remain coloured');
+  assert.equal(color({has_latest:1,age_ms:3600000,status:'warning'}),'#ff8a00');
+  assert.equal(color({has_latest:1,age_ms:3600000,status:'watch'}),'#ffd43b');
+  assert.equal(color({has_latest:1,age_ms:3600000,status:'danger'}),'#ff2d20');
+  assert.equal(color({has_latest:1,age_ms:60000,observed_ms:0,status:'normal'}),'#94a3b8');
   assert.equal(color({has_latest:1,age_ms:60000,status:'danger'}),'#ff2d20');
 });
 

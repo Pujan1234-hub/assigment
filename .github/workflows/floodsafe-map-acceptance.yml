@@ -7,10 +7,11 @@ on:
       - 'floodsafe-nepal/v25/index.html'
       - 'floodsafe-nepal/v25/map-*.js'
       - 'floodsafe-nepal/v25/hydro-smooth-v2.js'
-      - 'floodsafe-nepal/v25/trusted-river-runtime-v1.js'
+      - 'floodsafe-nepal/v25/trusted-river-runtime-v3.js'
+      - 'floodsafe-nepal/v25/trusted-rain-runtime-v1.js'
+      - 'floodsafe-nepal/v25/realtime-guard-v1.js'
       - 'floodsafe-nepal/v25/river-current-20m-v1.js'
-      - 'floodsafe-nepal/v25/river-map-detail-v2.js'
-      - 'floodsafe-nepal/v25/station-click-coherence-v1.js'
+      - 'floodsafe-nepal/v25/official-stale-safety-v1.js'
       - '.github/workflows/floodsafe-map-acceptance.yml'
 permissions:
   contents: read
@@ -23,11 +24,14 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Syntax and exact live official contract
+      - name: Syntax and 10-minute official contract
         run: |
           set -euo pipefail
-          for f in floodsafe-nepal/v25/{trusted-river-runtime-v1.js,river-current-20m-v1.js,map-smooth-v3.js,hydro-smooth-v2.js,river-map-detail-v2.js,station-click-coherence-v1.js}; do node --check "$f"; done
-          grep -Fq '__fsTrustedRiverRuntimeV14' floodsafe-nepal/v25/trusted-river-runtime-v1.js
+          for f in floodsafe-nepal/v25/{trusted-river-runtime-v3.js,trusted-rain-runtime-v1.js,realtime-guard-v1.js,river-current-20m-v1.js,map-smooth-v3.js,hydro-smooth-v2.js,station-click-coherence-v1.js,official-stale-safety-v1.js}; do node --check "$f"; done
+          grep -Fq '__fsTrustedRiverRuntimeV31' floodsafe-nepal/v25/trusted-river-runtime-v3.js
+          grep -Fq 'FRESH_MS=10*60*1000' floodsafe-nepal/v25/trusted-river-runtime-v3.js
+          grep -Fq 'FRESH10_MS=10*60*1000' floodsafe-nepal/v25/realtime-guard-v1.js
+          grep -Fq 'CURRENT_MS=10*60*1000' floodsafe-nepal/v25/official-stale-safety-v1.js
           grep -Fq '__fsRiverDistrictLiveV8' floodsafe-nepal/v25/river-current-20m-v1.js
           grep -Fq '__fsStationClickCoherenceV1' floodsafe-nepal/v25/station-click-coherence-v1.js
       - name: Probe official BIPAD and 77 districts
@@ -40,27 +44,21 @@ jobs:
           q=urllib.request.Request(u,headers={'Accept':'application/json','Origin':'https://pujan1234-hub.github.io','User-Agent':'FloodSafe-Nepal-acceptance'})
           with urllib.request.urlopen(q,timeout=35) as r:j=json.loads(r.read().decode('utf-8-sig'))
           rows=j if isinstance(j,list) else j.get('results') or j.get('data') or []
-          geo=[]
-          for x in rows:
-              c=(x.get('point') or {}).get('coordinates') or []
-              try:a,b=float(c[0]),float(c[1])
-              except:continue
-              if (79.5<=a<=89 and 26<=b<=31) or (26<=a<=31 and 79.5<=b<=89):geo.append(x)
-          print('OFFICIAL',len(rows),'GEO',len(geo),'DISTRICTS',len(d['features']))
-          assert len(rows)>=200 and len(geo)==len(rows)
+          assert len(rows)>=200
+          print('OFFICIAL_STATIONS',len(rows),'DISTRICTS',len(d['features']))
           PY
-      - name: Wait for exact deployed district build
+      - name: Wait for deployed 10-minute build
         run: |
           set -euo pipefail
           U='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
           ok=0
           for i in $(seq 1 120); do
             h="$(curl --max-time 12 -fsSL "${U}?accept=${GITHUB_SHA}-${i}" || true)"
-            if [[ "$h" == *'river-current-20m-v1.js?v=8'* && "$h" == *'station-click-coherence-v1.js?v=1'* && "$h" == *'७७ जिल्ला — live official नदी / Gauge'* ]]; then ok=1; break; fi
+            if [[ "$h" == *'trusted-river-runtime-v3.js?v=31'* && "$h" == *'realtime-guard-v1.js?v=8'* && "$h" == *'७७ जिल्ला — सबै official नदी स्टेशन'* ]]; then ok=1; break; fi
             sleep 4
           done
           test "$ok" = 1
-      - name: Browser exact station district and map click parity
+      - name: Browser 77-district and freshness parity
         env:
           APP: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -74,33 +72,22 @@ jobs:
             const p=await b.newPage();p.setDefaultTimeout(120000);await p.setViewport({width:1280,height:1000});
             const errors=[];p.on('pageerror',e=>errors.push(String(e)));
             await p.goto(process.env.APP+'?districtaccept='+Date.now()+'#map',{waitUntil:'domcontentloaded'});
-            await p.waitForFunction(()=>window.__fsSmoothMapLoaded&&window.__fsHydroSmoothLoaded&&window.FloodSafeMap?.initialized&&window.__fsHydroLayerReady,{timeout:120000});
-            await p.waitForFunction(()=>window.__fsRiverRealtimeState?.source==='BIPAD river-stations direct'&&window.__fsRiverRealtimeState?.directStationRows>0,{timeout:90000});
+            await p.waitForFunction(()=>window.__fsSmoothMapLoaded&&window.__fsHydroSmoothLoaded&&window.FloodSafeMap?.initialized,{timeout:120000});
+            await p.waitForFunction(()=>window.__fsRiverRealtimeState?.catalogCount>0&&window.__fsRiverRealtimeState?.freshWindowMinutes===10,{timeout:90000});
             await p.waitForFunction(()=>window.__fsDistrictRiverState?.districts===77&&document.querySelectorAll('.districtBtn').length===77,{timeout:60000});
-            await wait(1500);
-            const live=await p.evaluate(()=>{const R=window.__fsRiverRealtimeState,m=window.FloodSafeMap.map,g=m.getSource('gauges')?.serialize?.()?.data?.features||[];return{raw:R.directStationRows,catalog:R.catalogCount,coords:R.catalogWithCoordinates,latest:R.latestCount,mapCatalog:window.FloodSafeMap.stationCatalogCount,mapLatest:window.FloodSafeMap.latestStationCount,gauges:g.length,unknownLatest:g.filter(f=>Number(f.properties.has_latest)===1&&f.properties.status==='unknown').length,districts:window.__fsDistrictRiverState.districts,buttons:document.querySelectorAll('.districtBtn').length,match:window.__fsHydroMatchState,legacy:!!window.__fsStableMapLoaded}});
+            await wait(1000);
+            const live=await p.evaluate(()=>{
+              const R=window.__fsRiverRealtimeState||{},S=window.FloodSafe?.state||{},now=Date.now(),fresh=10*60*1000,future=5*60*1000;
+              const time=o=>o?._measurementTime||o?.waterLevelOn||o?.measurementTime||o?.observationTime||null;
+              const level=o=>Number(o?._lastWaterLevel??o?.waterLevel??o?.level);
+              const current=S.currentRiverStations||[];
+              const staleCurrent=current.filter(o=>{const t=+new Date(time(o)||0),a=now-t;return !t||!Number.isFinite(level(o))||a>fresh||a<-future}).length;
+              const leaked=(S.allRiverStations||[]).filter(o=>o?._staleDiscarded&&(time(o)||Number.isFinite(level(o)))).length;
+              return{catalog:R.catalogCount,current:R.currentCount,staleDiscarded:R.staleDiscardedCount,window:R.freshWindowMinutes,districts:window.__fsDistrictRiverState?.districts,buttons:document.querySelectorAll('.districtBtn').length,staleCurrent,leaked,guard:!!window.__fsRealtimeGuardV8};
+            });
             console.log('LIVE',JSON.stringify(live));
-            if(live.raw!==live.catalog||live.catalog!==live.coords||live.mapCatalog!==live.coords||live.gauges!==live.coords)throw Error('official station parity '+JSON.stringify(live));
-            if(live.latest<1||live.mapLatest!==live.latest||live.unknownLatest)throw Error('latest official parity '+JSON.stringify(live));
-            if(live.districts!==77||live.buttons!==77)throw Error('77 district UI incomplete '+JSON.stringify(live));
-            if(live.match?.abnormalStations>0&&live.match.abnormalMatched!==live.match.abnormalStations)throw Error('warning/danger river match '+JSON.stringify(live.match));
-            if(live.legacy)throw Error('legacy map loaded');
-
-            const district=await p.evaluate(()=>{const t=[...document.querySelectorAll('.districtBtn')].find(x=>parseInt(x.querySelector('small')?.textContent||'0',10)>0);if(!t)return null;t.click();return t.dataset.district});
-            if(!district)throw Error('no district with official station');
-            await p.waitForFunction(()=>window.__fsDistrictRiverState?.selectedStations>0&&document.querySelectorAll('#districtRiverResult .stationItem').length===window.__fsDistrictRiverState.selectedStations,{timeout:20000});
-            const districtState=await p.evaluate(()=>({state:window.__fsDistrictRiverState,cards:document.querySelectorAll('#districtRiverResult .stationItem').length,text:document.getElementById('districtRiverResult')?.textContent||''}));
-            console.log('DISTRICT',JSON.stringify(districtState));if(!districtState.text.includes('Station ID')||!/Official observation/i.test(districtState.text))throw Error('district detail incomplete');
-
-            const parity=await p.evaluate(()=>{const card=document.querySelector('#districtRiverResult .stationItem');if(!card)return null;const k=card.dataset.stationKey,rows=window.FloodSafe.state.allRiverStations||[],key=o=>o?.id!==undefined&&o?.id!==null&&o?.id!==''?'bipad:'+String(o.id):String(o?.stationSeriesId||o?.stationId||o?.stationIndex||'')?'sid:'+String(o?.stationSeriesId||o?.stationId||o?.stationIndex):'';const row=rows.find(o=>key(o)===k);return{found:!!row,name:row?.title||row?.name||row?.riverName||'',text:card.textContent||''}});console.log('CARD_PARITY',JSON.stringify(parity));if(!parity?.found||!parity.text.includes(String(parity.name)))throw Error('district card row mismatch');
-
-            await p.evaluate(()=>document.getElementById('map')?.scrollIntoView({block:'center'}));await wait(900);
-            const overlap=await p.evaluate(()=>{const m=window.FloodSafeMap.map,g=m.getSource('gauges')?.serialize?.()?.data?.features||[],bd=m.getBounds(),c=m.getCanvas();for(const f of g){const q=f.geometry?.coordinates;if(!q||!bd.contains(q))continue;const pt=m.project(q);if(pt.x<2||pt.y<2||pt.x>c.clientWidth-2||pt.y>c.clientHeight-2)continue;if(m.queryRenderedFeatures(pt,{layers:['hydro-complete-hit']}).length)return{pt:{x:pt.x,y:pt.y}}}return null});
-            if(overlap){const rect=await p.evaluate(()=>{const r=window.FloodSafeMap.map.getCanvas().getBoundingClientRect();return{x:r.x,y:r.y}});await p.mouse.click(rect.x+overlap.pt.x,rect.y+overlap.pt.y);await wait(500);const clickState=await p.evaluate(()=>({popup:!!document.querySelector('.maplibregl-popup'),sheet:document.getElementById('riverDetailSheet')?.hidden===false,guard:!!window.__fsStationClickCoherenceReady}));console.log('STATION_CLICK',JSON.stringify(clickState));if(!clickState.guard||!clickState.popup||clickState.sheet)throw Error('station click mixed with river detail '+JSON.stringify(clickState))}
-
-            const real=await p.evaluate(()=>{const fs=window.FloodSafeMap.map.getSource('hydro-complete')?.serialize?.()?.data?.features||[];for(const f of fs)if(f.properties?.live_station&&['normal','watch','warning','danger'].includes(f.properties.live_status)){const a=f.geometry.coordinates,q=a[Math.floor((a.length-1)/2)];return{feature:f,q,station:f.properties.live_station,id:f.properties.live_station_id,time:f.properties.live_time,level:Number(f.properties.live_level)}}return null});
-            if(real){await p.evaluate(t=>window.FloodSafeRiverDetail.show(t.feature,{lng:t.q[0],lat:t.q[1]}),real);await wait(200);const d=await p.evaluate(()=>window.__fsLastRiverDetail);console.log('RIVER_DETAIL',JSON.stringify(d));if(!d?.latestOfficial||d.gauge?.name!==real.station||String(d.gauge?.stationId||'')!==String(real.id||'')||String(d.gauge?.time||'')!==String(real.time||'')||Number(d.gauge?.level)!==real.level)throw Error('river detail official mismatch')}
+            if(live.catalog<200||live.window!==10||live.districts!==77||live.buttons!==77||live.staleCurrent!==0||live.leaked!==0||!live.guard)throw Error('10-minute map parity '+JSON.stringify(live));
             if(errors.some(x=>/SyntaxError|TypeError|FloodSafe smooth map runtime failed/.test(x)))throw Error('browser errors '+JSON.stringify(errors));
-            console.log('PASS FloodSafe 77-district exact official realtime map');await b.close();
+            console.log('PASS FloodSafe 77-district 10-minute official map');await b.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

@@ -37,6 +37,11 @@ module.exports=async function verifyTransitions(browser,base){
     assert.equal(await page.$eval('#impactDeaths',e=>e.innerText),'12');
     assert.equal(await page.evaluate(()=>window.__fsRiverRealtimeState.currentCount),0);
 
+    await page.waitForFunction(()=>window.FloodSafeMobileMap&&document.getElementById('fsOpenMapBtn'));
+    assert.equal(await page.evaluate(()=>window.FloodSafeMobileMap.isOpen),false);
+    await page.$eval('#fsOpenMapBtn',e=>e.scrollIntoView({block:'center',behavior:'instant'}));
+    await page.locator('#fsOpenMapBtn').click();
+
     // The hydro source can exist before map initialisation's final Nepal fitBounds.
     // Wait for gauges/districts too so that initial fit cannot undo our test zoom.
     await page.waitForFunction(()=>window.FloodSafeHydroSmooth&&window.FloodSafeMap?.initialized&&window.FloodSafeMap?.map?.getSource('gauges')&&window.FloodSafeMap.map.getSource('hydro-complete'),{timeout:45000});

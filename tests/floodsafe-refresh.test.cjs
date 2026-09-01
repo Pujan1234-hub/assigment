@@ -29,6 +29,25 @@ function runtime(file, transform=code=>code) {
 }
 const observation=(id,t,level=2)=>({stationSeriesId:id,title:'Station '+id,waterLevel:level,waterLevelOn:t,longitude:85,latitude:28});
 
+test('map starts closed; only explicit open changes state; refresh starts closed again',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/user-facing-ui-v1.js'),'utf8');
+  const create=()=>{
+    const classes=new Set(['fsMapClosed']),attrs={},button={textContent:'',setAttribute:(k,v)=>attrs[k]=v};
+    const nodes={fsOpenMapBtn:button,map:{classList:{toggle:(k,on)=>on?classes.add(k):classes.delete(k)},scrollIntoView(){}}};
+    const c={document:{getElementById:id=>nodes[id]},window:{FloodSafe:{state:{lang:'en'}}},setTimeout:fn=>fn(),localStorage:{getItem:()=>null}};
+    vm.createContext(c);
+    const helpers=source.match(/const \$=[^\n]+/)[0]+'\n'+source.match(/let open=[^\n]+/)[0]+'\n'+['renderButton','show','close'].map(n=>source.match(new RegExp('function '+n+'\\([^\\n]+'))[0]).join('\n');
+    vm.runInContext(helpers,c);c.renderButton();return{c,classes,attrs,button};
+  };
+  const r=create();assert.ok(r.classes.has('fsMapClosed'));assert.equal(r.attrs['aria-expanded'],'false');
+  r.c.renderButton();assert.ok(r.classes.has('fsMapClosed'),'re-render does not auto-open');
+  r.c.show();assert.ok(r.classes.has('fsMapOpen'));assert.equal(r.attrs['aria-expanded'],'true');
+  r.c.close();r.c.renderButton();assert.ok(r.classes.has('fsMapClosed'));
+  r.c.show();assert.ok(create().classes.has('fsMapClosed'),'fresh page does not remember open state');
+  assert.doesNotMatch(source,/function bindNav|addEventListener\('click',\(\)=>\{show\(\)/);
+  assert.match(fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/index.html'),'utf8'),/<section class="card mapCard fsMapClosed" id="map">/);
+});
+
 function hydroRuntime() {
   const r=runtime('hydro-smooth-v2.js',code=>code.replace(/\}\)\(\);\s*$/, 'window.__hydroTest={loadTile,bootData,json,visibleData,FAILURES,CACHE};})();'));
   const sources=new Map(),layers=new Map(),events=new Map();let zoom=9;

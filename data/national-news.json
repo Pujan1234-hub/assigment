@@ -1,9 +1,23 @@
 {
-  "generated_at": "2026-09-01T02:47:17.971285+05:45",
-  "updated_at_npt": "01 Sep 02:47 NPT",
+  "generated_at": "2026-09-01T06:19:05.212883+05:45",
+  "updated_at_npt": "01 Sep 06:19 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "गोदावरी आर्यघाट: घट्दै छ मृत्यु संस्कारको दुःख !",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588951/godavari-aryaghat-the-sorrow-of-death-rituals-is-decreasing",
+      "published_at": "2026-09-01T05:18:15+05:45",
+      "flash": false
+    },
+    {
+      "title": "बडीमालिका स्वास्थ्य शिविरबाट ९ सयभन्दा बढी तीर्थयात्री लाभान्वित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/588945/over-900-pilgrims-benefit-from-badimalika-health-camp",
+      "published_at": "2026-09-01T02:26:00+05:45",
+      "flash": false
+    },
     {
       "title": "बाढी प्रभावित बस्ती जोड्न धमाधम तुइन निर्माण गरिँदै",
       "source": "Ratopati",
@@ -16,27 +30,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/588938/strict-measures-in-myagdi-to-prevent-abuse-in-the-name-of-relief-collection",
       "published_at": "2026-09-01T00:36:13+05:45",
-      "flash": false
-    },
-    {
-      "title": "तीज मनाउन सङ्कलित रकम बाढीपीडितलाई",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588927/funds-collected-to-celebrate-teej-to-be-donated-to-flood-victims",
-      "published_at": "2026-08-31T23:06:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी: गोरखामा थप सात शव व्यवस्थापन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588925/bhotekoshi-flood-seven-more-bodies-disposed-of-in-gorkha",
-      "published_at": "2026-08-31T22:43:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपीडितका लागि वीरगञ्ज उद्योग वाणिज्य सङ्घद्वारा रु १५ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/588919/birgunj-chamber-of-commerce-and-industry-provides-rs-15-million-in-assistance-to-flood-victims",
-      "published_at": "2026-08-31T22:14:00+05:45",
       "flash": false
     }
   ],
@@ -57,7 +50,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 5
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

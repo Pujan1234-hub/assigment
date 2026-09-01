@@ -1,6 +1,6 @@
 (()=>{'use strict';
 if(window.__fsImpactLiveV3)return;window.__fsImpactLiveV3=true;
-const LIVE='https://camkoacuokffryyrygda.supabase.co/functions/v1/human-status-live',FALLBACK='../../data/floodsafe-people-status.json',POLL=10000;
+const LIVE='https://camkoacuokffryyrygda.supabase.co/functions/v1/human-status-safe-live',FALLBACK='../../data/floodsafe-people-status.json',POLL=10000;
 const $=id=>document.getElementById(id),lang=()=>window.FloodSafe?.state?.lang||localStorage.getItem('fs-flood-lang')||'ne',tr=(ne,en)=>lang()==='en'?en:ne;
 const allowed=s=>/(?:ronb|radio\s*nepal|nepal\s*police|ndrrma|national\s*disaster|nepal\s*government|government\s*of\s*nepal|ministry|gov\.np)/i.test(String(s||''));
 const safeUrl=u=>{try{const x=new URL(String(u||''));return /^https?:$/.test(x.protocol)?x.href:''}catch{return''}};

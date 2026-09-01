@@ -23,7 +23,8 @@ const assert=require('node:assert/strict');
     const before=await read();assert.equal(before.mapClosed,false);assert.equal(before.mapVisible,true);assert.equal(before.oldHumanScript,false);assert.ok(before.gauges>=100,JSON.stringify(before));
     await page.waitForFunction((first)=>window.__fsRiverRealtimeState?.checkedAt>first.river&&window.__fsImpactLiveState?.checkedAt>first.impact&&window.__fsNewsLiveState?.checkedAt>first.news,{timeout:60000},{river:before.river.checkedAt,impact:before.impact.checkedAt,news:before.news.checkedAt});
     await page.click('#langBtn');await page.waitForFunction(()=>window.FloodSafe.state.lang==='en',{timeout:10000});
-    const after=await read();assert.equal(errors.length,0,errors.join('\n'));
+    await page.waitForFunction(()=>((window.FloodSafeMap?.map?.getSource?.('gauges')?._data?.features?.length||window.__fsStaticMapFallback?.stations||0)>=100),{timeout:15000});
+    const after=await read();assert.ok(after.gauges>=100);assert.equal(errors.length,0,errors.join('\n'));
     console.log('PASS mobile map, single human renderer, independent river/news/human refresh, language interaction',JSON.stringify({before,after}));
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});

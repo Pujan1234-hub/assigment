@@ -6,10 +6,14 @@ on:
       - 'tests/floodsafe-live-browser.cjs'
       - '.github/workflows/floodsafe-live-refresh-smoke.yml'
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Deploy Portfolio to GitHub Pages']
+    types: [completed]
 permissions:
   contents: read
 jobs:
   browser:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:

@@ -41,6 +41,11 @@ test('river values, time boundary and per-station preservation',async()=>{
   const next=api.retain(old,[observation(1,new Date(r.now()).toISOString(),3)]);
   assert.equal(next.length,2);assert.equal(next[0].waterLevel,3);
   assert.equal(api.retain(old,[observation(1,'2026-09-01T10:00:00Z',8)])[0].waterLevel,2);
+  const cached=[{...old[0],_measurementTime:t,_lastWaterLevel:2}];
+  const updated=api.retain(cached,[observation(1,new Date(r.now()).toISOString(),4)])[0];
+  assert.equal(api.level(updated),4,'old derived fields must not shadow a new raw observation');
+  assert.equal(api.measureTime(updated),new Date(r.now()).toISOString());
+  assert.equal(api.level(api.retain(old,[observation(1,new Date(r.now()+3600000).toISOString(),9)])[0]),2);
   r.respond(url=>url.includes('floodsafe-core')?{river_stations:[],rivers:[]}:{results:old,fetched_at:t});
   r.boot();await r.advance(300);assert.equal(r.window.FloodSafe.state.currentRiverStations.length,2);
   await r.advance(600001);assert.equal(r.window.FloodSafe.state.currentRiverStations.length,0);

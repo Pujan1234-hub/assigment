@@ -1,0 +1,30 @@
+name: FloodSafe candidate mobile verification
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'floodsafe-nepal/v25/**'
+      - 'tests/floodsafe-live-browser.cjs'
+      - '.github/workflows/floodsafe-preview-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test candidate with live APIs before trusting publication
+        run: |
+          npm install --prefix /tmp/floodsafe-browser --no-save puppeteer-core@24.31.0
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/floodsafe-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID"' EXIT
+          export NODE_PATH=/tmp/floodsafe-browser/node_modules
+          export CHROME="$(command -v google-chrome || command -v chromium)"
+          export FLOODSAFE_URL=http://127.0.0.1:8765/floodsafe-nepal/v25/
+          node tests/floodsafe-live-browser.cjs

@@ -5,7 +5,7 @@ const assert=require('node:assert/strict');
   try {
     const page=await browser.newPage();await page.setViewport({width:412,height:915});
     const errors=[];page.on('pageerror',e=>{errors.push(String(e));console.log('PAGE ERROR',String(e))});page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE',m.text())});
-    await page.goto('https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/?refresh-verification='+Date.now(),{waitUntil:'domcontentloaded',timeout:60000});
+    await page.goto((process.env.FLOODSAFE_URL||'https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/')+'?refresh-verification='+Date.now(),{waitUntil:'domcontentloaded',timeout:60000});
     await page.waitForFunction(()=>window.FloodSafeRiverRealtime&&window.FloodSafeImpact&&window.FloodSafeNews,{timeout:45000});
     await page.waitForFunction(()=>window.__fsRiverRealtimeState?.catalogCount>=100&&window.__fsImpactLiveState?.lastSuccess&&window.__fsNewsLiveState?.lastSuccess,{timeout:60000});
     await page.waitForFunction(()=>window.FloodSafeMap?.map?.isStyleLoaded?.()||window.__fsStaticMapFallback?.active,{timeout:60000});

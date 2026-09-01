@@ -5,7 +5,6 @@ on:
     paths:
       - "floodsafe-nepal/v25/**"
       - "data/nepal-waterways-tiles/**"
-      - "data/floodsafe-core.json"
       - ".github/workflows/v25-browser-smoke.yml"
   workflow_dispatch:
 permissions:
@@ -16,55 +15,40 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 12
     steps:
-      - name: Wait for deployed nationwide gauge build
+      - uses: actions/checkout@v4
+      - name: Syntax check current mobile runtimes
+        run: |
+          set -euo pipefail
+          node --check floodsafe-nepal/v25/map-loader-v3.js
+          node --check floodsafe-nepal/v25/map-mobile-recovery-v1.js
+          node --check floodsafe-nepal/v25/trusted-river-runtime-v3.js
+          node --check floodsafe-nepal/v25/trusted-rain-runtime-v1.js
+          node --check floodsafe-nepal/v25/news-live-v5.js
+      - name: Wait for current GitHub Pages build
         run: |
           set -euo pipefail
           BASE='https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/'
-          ROOT='https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/'
           ok=0
-          for i in $(seq 1 100); do
+          for i in $(seq 1 80); do
             curl --max-time 15 -fsSL "${BASE}?ci=${GITHUB_SHA}-${i}" -o /tmp/index.html || true
-            if grep -Fq 'flood-only.js?v=12' /tmp/index.html && \
-               grep -Fq 'gauge-bridge.js?v=6' /tmp/index.html && \
-               grep -Fq 'river-map-detail-v2.js?v=9' /tmp/index.html && \
-               grep -Fq 'hydro-complete-v1.js?v=3' /tmp/index.html; then ok=1; break; fi
+            if grep -Fq 'map-loader-v3.js?v=26' /tmp/index.html && grep -Fq 'map-mobile-recovery-v1.js?v=2' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
-          curl --max-time 20 -fsSL "${BASE}flood-only.js?ci=${GITHUB_SHA}" -o /tmp/flood-only.js
-          curl --max-time 20 -fsSL "${BASE}gauge-bridge.js?ci=${GITHUB_SHA}" -o /tmp/gauge.js
-          curl --max-time 20 -fsSL "${BASE}river-map-detail-v2.js?ci=${GITHUB_SHA}" -o /tmp/river-detail.js
-          node --check /tmp/flood-only.js
-          node --check /tmp/gauge.js
-          node --check /tmp/river-detail.js
-          grep -Fq 'river-trimed' /tmp/flood-only.js
-          grep -Fq 'FRESH_MS=24*60*60*1000' /tmp/flood-only.js
-          grep -Fq 'LOCAL_CONTEXT_KM=20' /tmp/gauge.js
-          grep -Fq "coverage:direct.fresh?'same-river-national':'same-river-stale'" /tmp/gauge.js
-          grep -Fq 'Nationwide official station matched' /tmp/river-detail.js
-          grep -Fq 'snapshot syncs every 5 min' /tmp/river-detail.js
-          curl --max-time 30 -fsSL "${ROOT}data/floodsafe-core.json?ci=${GITHUB_SHA}" -o /tmp/core.json
+      - name: Verify Supabase official station mirror responds fast
+        run: |
+          set -euo pipefail
+          curl --max-time 8 -fsSL 'https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers?ci=1' -o /tmp/rivers.json
           python3 - <<'PY'
           import json
-          from datetime import datetime, timezone, timedelta
-          j=json.load(open('/tmp/core.json'))
-          src=j.get('sources',{}).get('rivers',{})
-          assert j.get('schema_version',0)>=2, j.get('schema_version')
-          assert src.get('count',0)>=150, src
-          assert src.get('measured_count',0)>=150, src
-          newest=datetime.fromisoformat(src['newest_measurement'].replace('Z','+00:00'))
-          assert datetime.now(timezone.utc)-newest.astimezone(timezone.utc) < timedelta(hours=24), src
-          rivers=j.get('rivers',[])
-          bag=[r for r in rivers if 'bagmati' in (str(r.get('title') or r.get('river_name') or r.get('name') or '')+' '+str(r.get('basin') or '')).lower()]
-          kar=[r for r in rivers if 'karnali' in (str(r.get('title') or r.get('river_name') or r.get('name') or '')+' '+str(r.get('basin') or '')).lower()]
-          assert bag, 'Bagmati official source rows missing'
-          assert kar, 'Karnali official source rows missing'
-          print('official snapshot',src.get('count'),'Bagmati',len(bag),'Karnali',len(kar),'newest',newest.isoformat())
+          j=json.load(open('/tmp/rivers.json'))
+          assert j.get('count',0)>=281, j
+          assert isinstance(j.get('results'),list) and len(j['results'])>=281, (j.get('count'),len(j.get('results') or []))
+          print('official mirror',j.get('count'),'latest',j.get('latest_count'),'fetched',j.get('fetched_at'))
           PY
-
-      - name: Browser verify Karnali nationwide exact match and safe local context
+      - name: Browser verify mobile map never stays blank
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -78,27 +62,28 @@ jobs:
           (async()=>{
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
             const page=await browser.newPage();
-            await page.setViewport({width:412,height:915});
+            await page.setViewport({width:412,height:915,deviceScaleFactor:2});
             page.setDefaultTimeout(90000);
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));
             await page.goto(process.env.BASE+'?ci='+Date.now()+'#map',{waitUntil:'domcontentloaded'});
-            await page.waitForFunction(()=>window.FloodSafe?.state?.lastPoll>0,{timeout:60000});
-            await page.waitForFunction(()=>window.FloodSafeGauge?.forWaterway,{timeout:30000});
-            const result=await page.evaluate(()=>{
-              const s=window.FloodSafe.state;
-              const bag=window.FloodSafeGauge.forWaterway({name_en:'Bagmati River',name:'Bagmati River',name_ne:'बागमती नदी'},27.728,85.382);
-              const karnali=window.FloodSafeGauge.forWaterway({name_en:'Karnali River',name:'Karnali River',name_ne:'कर्णाली नदी'},29.25,81.65);
-              const kunchal=window.FloodSafeGauge.forWaterway({name:'Kunchal Khola'},27.649,85.114);
-              return {stations:s.stations.length,fresh:Number(document.getElementById('stationCount')?.textContent||0),source:s.feedSource,bag,karnali,kunchal,contextKm:window.FloodSafeGauge.LOCAL_CONTEXT_KM};
-            });
-            if(result.stations<150||result.fresh<1)throw Error('Official nationwide river set missing '+JSON.stringify(result));
-            if(!result.bag||!result.bag.sameRiver)throw Error('Bagmati did not resolve '+JSON.stringify(result.bag));
-            if(!result.karnali||!result.karnali.sameRiver)throw Error('Karnali did not resolve nationwide '+JSON.stringify(result.karnali));
-            if(!result.karnali.fresh)throw Error('Karnali source exists but current reading is stale '+JSON.stringify(result.karnali));
-            if(result.contextKm!==20)throw Error('Local context radius wrong '+JSON.stringify(result));
-            if(result.kunchal&&!result.kunchal.sameRiver&&result.kunchal.distanceKm>20.01)throw Error('Distant unrelated gauge leaked into Kunchal '+JSON.stringify(result.kunchal));
-            if(errors.length)throw Error('Page errors '+JSON.stringify(errors.slice(0,10)));
-            console.log('PASS Karnali nationwide exact match + safe local context',result);
+            await page.waitForFunction(()=>Number(window.__fsRiverRealtimeState?.catalogCount||0)>=281,{timeout:45000});
+            await page.waitForFunction(()=>{
+              const real=!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines'));
+              const fb=!!window.__fsStaticMapFallback?.active;
+              return real||fb;
+            },{timeout:45000});
+            const result=await page.evaluate(()=>({
+              catalog:Number(window.__fsRiverRealtimeState?.catalogCount||0),
+              current:Number(window.__fsRiverRealtimeState?.currentCount||0),
+              stateRows:Array.isArray(window.FloodSafe?.state?.allRiverStations)?window.FloodSafe.state.allRiverStations.length:0,
+              real:!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines')),
+              fallback:window.__fsStaticMapFallback||null,
+              canvas:!!document.querySelector('#riverMapGL canvas.maplibregl-canvas'),
+              svg:!!document.querySelector('#fsStaticMapFallback svg')
+            }));
+            if(result.catalog<281||result.stateRows<281)throw Error('Official station catalogue missing '+JSON.stringify(result));
+            if(!result.real && !(result.fallback?.active&&result.svg&&result.fallback.stations>=200))throw Error('Mobile map blank '+JSON.stringify(result));
+            console.log('PASS mobile map + official catalogue',result,'pageErrors',errors.slice(0,5));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

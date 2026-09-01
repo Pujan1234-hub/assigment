@@ -1,33 +1,33 @@
 {
-  "event": "Current Nepal flood event",
-  "event_ne": "नेपालको हालको बाढी घटना",
+  "event": "Bhotekoshi flash flood",
+  "event_ne": "भोटेकोशी आकस्मिक बाढी",
   "updated_date": "2026-09-01",
-  "recovered_bodies": 15,
-  "recovered_source": "Radio Nepal",
-  "recovered_source_url": "https://radionepalonline.com/2026/08/31/731689.html",
-  "recovered_update_time": "2026-08-31T13:31:28Z",
-  "recovered_update_iso": "2026-08-31T13:31:28Z",
-  "missing_minimum": 15,
-  "missing_source": "Radio Nepal",
-  "missing_source_url": "https://radionepalonline.com/2026/08/31/731689.html",
-  "missing_update_time": "2026-08-31T13:31:28Z",
+  "recovered_bodies": 939,
+  "recovered_source": "Radio Nepal / NDRRMA",
+  "recovered_source_url": "https://radionepalonline.com/en/2026/08/31/435175.html",
+  "recovered_update_time": "2026-08-31T16:47:35Z",
+  "recovered_update_iso": "2026-08-31T16:47:35Z",
+  "missing_minimum": 3925,
+  "missing_source": "Radio Nepal / NDRRMA",
+  "missing_source_url": "https://radionepalonline.com/en/2026/08/31/435175.html",
+  "missing_update_time": "2026-08-31T16:47:35Z",
   "rescued_alive": 11379,
-  "rescued_source": "Radio Nepal",
+  "rescued_source": "Radio Nepal / NDRRMA",
   "rescued_source_url": "https://radionepalonline.com/en/2026/08/31/435175.html",
   "rescued_update_time": "2026-08-31T16:47:35Z",
-  "status": "requested_sources_only",
-  "last_checked_utc": "2026-09-01T00:14:50.756202Z",
+  "status": "supabase_live_verified",
+  "last_checked_utc": "2026-09-01T00:20:17Z",
   "sync_sources": [
-    "RONB",
-    "Radio Nepal",
+    "NDRRMA",
     "Nepal Police",
-    "NDRRMA"
+    "Radio Nepal",
+    "RONB"
   ],
   "last_winning_sources": {
-    "death": "Radio Nepal",
-    "missing": "Radio Nepal",
-    "rescued": "Radio Nepal"
+    "death": "Radio Nepal / NDRRMA",
+    "missing": "Radio Nepal / NDRRMA",
+    "rescued": "Radio Nepal / NDRRMA"
   },
-  "sync_schema": 3,
-  "sync_policy": "Only RONB, Radio Nepal, Nepal Police and NDRRMA/Government official sources. Never substitute an unapproved source. Missing may decrease when a newer approved report changes the count; death/rescued can decrease only on an explicit correction."
+  "sync_schema": 4,
+  "sync_policy": "Event-scoped aggregate figures only. Subgroup counts are rejected. Death and rescued totals never roll backward without an explicit correction. Missing may change only when a newer aggregate report for the same Bhotekoshi event is found. Supabase is the primary live mirror; this file is the fallback snapshot."
 }

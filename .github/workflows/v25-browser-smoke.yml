@@ -28,6 +28,8 @@ jobs:
           node --check floodsafe-nepal/v25/news-live-v5.js
           node --check floodsafe-nepal/v25/user-facing-ui-v1.js
           node --check floodsafe-nepal/v25/official-stale-safety-v1.js
+          node --check floodsafe-nepal/v25/location-click-lock-v1.js
+          node --check floodsafe-nepal/v25/river-status-ui.js
       - name: Wait for current GitHub Pages build
         run: |
           set -euo pipefail
@@ -38,7 +40,10 @@ jobs:
             if grep -Fq 'map-loader-v3.js?v=27' /tmp/index.html && \
                grep -Fq 'map-mobile-recovery-v1.js?v=2' /tmp/index.html && \
                grep -Fq 'user-facing-ui-v1.js?v=2' /tmp/index.html && \
-               grep -Fq 'official-stale-safety-v1.js?v=3' /tmp/index.html; then ok=1; break; fi
+               grep -Fq 'official-stale-safety-v1.js?v=3' /tmp/index.html && \
+               grep -Fq 'location-click-lock-v1.js?v=2' /tmp/index.html && \
+               grep -Fq 'news-live-v5.js?v=8' /tmp/index.html && \
+               grep -Fq 'river-status-ui.js?v=4' /tmp/index.html; then ok=1; break; fi
             sleep 3
           done
           test "$ok" = 1
@@ -47,13 +52,13 @@ jobs:
           set -euo pipefail
           curl --max-time 8 -fsSL 'https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers?ci=1' -o /tmp/rivers.json
           python3 - <<'PY'
-          import json
+          import json, datetime
           j=json.load(open('/tmp/rivers.json'))
           assert j.get('count',0)>=281, j
           assert isinstance(j.get('results'),list) and len(j['results'])>=281
-          print('official mirror',j.get('count'),'latest',j.get('latest_count'),'fetched',j.get('fetched_at'))
+          print('official mirror',j.get('count'),'latest',j.get('latest_count'),'fresh10',j.get('fresh_10m_count'),'newest',j.get('newest_observation'),'fetched',j.get('fetched_at'))
           PY
-      - name: Browser verify mobile map never stays blank
+      - name: Browser verify mobile map, Nepal GPS and fresh-news behavior
         env:
           BASE: https://pujan1234-hub.github.io/assigment/floodsafe-nepal/v25/
         run: |
@@ -67,37 +72,61 @@ jobs:
           const sleep=ms=>new Promise(r=>setTimeout(r,ms));
           (async()=>{
             const browser=await puppeteer.launch({executablePath:process.env.CHROME,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+            const context=browser.defaultBrowserContext();
+            await context.overridePermissions('https://pujan1234-hub.github.io',['geolocation','notifications']);
             const page=await browser.newPage();
             await page.setViewport({width:412,height:915,deviceScaleFactor:2});
+            await page.setGeolocation({latitude:27.7172,longitude:85.3240,accuracy:20});
             page.setDefaultTimeout(60000);
             const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('requestfailed',r=>errors.push('REQ '+r.url()+' '+r.failure()?.errorText));
-            await page.goto(process.env.BASE+'?restore='+Date.now()+'#map',{waitUntil:'domcontentloaded',timeout:15000});
-            await page.waitForFunction(()=>Number(window.__fsRiverRealtimeState?.catalogCount||0)>=281,{timeout:30000});
+            await page.goto(process.env.BASE+'?restore='+Date.now()+'#map',{waitUntil:'domcontentloaded',timeout:20000});
+            await page.waitForFunction(()=>Number(window.__fsRiverRealtimeState?.catalogCount||0)>=281,{timeout:35000});
             await page.waitForFunction(()=>{
               const real=!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines'));
               const fb=!!window.__fsStaticMapFallback?.active;
               return real||fb;
-            },{timeout:30000});
-            await sleep(5000);
-            const result=await page.evaluate(()=>({
-              catalog:Number(window.__fsRiverRealtimeState?.catalogCount||0),
-              current:Number(window.__fsRiverRealtimeState?.currentCount||0),
-              stateRows:Array.isArray(window.FloodSafe?.state?.allRiverStations)?window.FloodSafe.state.allRiverStations.length:0,
-              real:!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines')),
-              hydroLayer:!!window.FloodSafeMap?.map?.getLayer?.('hydro-complete-lines'),
-              hydroFeatures:Number(window.__fsHydroMatchState?.features||0),
-              fallback:window.__fsStaticMapFallback||null,
-              canvas:!!document.querySelector('#riverMapGL canvas.maplibregl-canvas'),
-              svg:!!document.querySelector('#fsStaticMapFallback svg'),
-              uiV2:!!window.__fsUserFacingUIV2,
-              staleV3:!!window.__fsOfficialStaleSafetyV3
-            }));
+            },{timeout:35000});
+            await page.click('#locateBtn');
+            await page.waitForFunction(()=>window.FloodSafe?.state?.kind==='gps'&&Math.abs(Number(window.FloodSafe.state.lat)-27.7172)<0.02&&Math.abs(Number(window.FloodSafe.state.lon)-85.3240)<0.02,{timeout:15000});
+            await page.waitForFunction(()=>window.__fsNewsLiveState?.connected===true,{timeout:25000});
+            await sleep(4000);
+            const result=await page.evaluate(()=>{
+              const now=Date.now(),latest=Array.isArray(window.FloodSafe?.state?.latestRiverStations)?window.FloodSafe.state.latestRiverStations:[];
+              const badFresh=latest.filter(x=>{const t=+new Date(x?._measurementTime||x?.waterLevelOn||x?.measurementTime||0);return !t||now-t>10*60*1000||now-t< -5*60*1000}).length;
+              const news=window.FloodSafeNews?.items||[];
+              const badNews=news.filter(x=>{const t=+new Date(x?.published_at||0);return !t||now-t>10*60*1000||now-t< -5*60*1000||!['RONB Post','Radio Nepal','News24 Nepal'].includes(x?.source)}).length;
+              return {
+                catalog:Number(window.__fsRiverRealtimeState?.catalogCount||0),
+                current:Number(window.__fsRiverRealtimeState?.currentCount||0),
+                stateRows:Array.isArray(window.FloodSafe?.state?.allRiverStations)?window.FloodSafe.state.allRiverStations.length:0,
+                badFresh,
+                gps:{lat:window.FloodSafe?.state?.lat,lon:window.FloodSafe?.state?.lon,kind:window.FloodSafe?.state?.kind,place:document.querySelector('#place')?.textContent||''},
+                newsState:window.__fsNewsLiveState||null,
+                newsCount:news.length,
+                badNews,
+                newsText:document.querySelector('#liveNews')?.textContent||'',
+                real:!!(window.FloodSafeMap?.initialized&&window.FloodSafeMap?.districtCount===77&&window.FloodSafeMap?.map?.getLayer?.('district-lines')),
+                hydroLayer:!!window.FloodSafeMap?.map?.getLayer?.('hydro-complete-lines'),
+                hydroFeatures:Number(window.__fsHydroMatchState?.features||0),
+                fallback:window.__fsStaticMapFallback||null,
+                canvas:!!document.querySelector('#riverMapGL canvas.maplibregl-canvas'),
+                svg:!!document.querySelector('#fsStaticMapFallback svg'),
+                uiV2:!!window.__fsUserFacingUIV2,
+                staleV3:!!window.__fsOfficialStaleSafetyV3,
+                locationV2:!!window.__fsLocationClickLockV2,
+                newsV8:!!window.__fsNewsV8
+              };
+            });
             if(result.catalog<281||result.stateRows<281)throw Error('Official station catalogue missing '+JSON.stringify(result));
-            if(!result.uiV2||!result.staleV3)throw Error('Latest anti-freeze UI guards missing '+JSON.stringify(result));
+            if(result.badFresh)throw Error('River rows older than 10 minutes leaked into live state '+JSON.stringify(result));
+            if(result.gps.kind!=='gps')throw Error('Current location button failed '+JSON.stringify(result));
+            if(!result.newsState?.connected||!result.newsV8||result.badNews)throw Error('Fresh-news runtime failed '+JSON.stringify(result));
+            if(result.newsCount===0&&!/१० मिनेट|10 minutes/i.test(result.newsText))throw Error('No-news safety fallback missing '+JSON.stringify(result));
+            if(!result.uiV2||!result.staleV3||!result.locationV2)throw Error('Latest UI guards missing '+JSON.stringify(result));
             if(!result.real && !(result.fallback?.active&&result.svg&&result.fallback.stations>=200))throw Error('Mobile map blank '+JSON.stringify(result));
             if(result.real && (!result.hydroLayer||result.hydroFeatures<5000))throw Error('River network missing '+JSON.stringify(result));
             if(result.fallback?.active&&Number(result.fallback.rivers||0)<5000)throw Error('Fallback river network missing '+JSON.stringify(result));
-            console.log('PASS restored mobile map + 281 stations + river network',result,'requestErrors',errors.filter(x=>!x.includes('MapServer')).slice(0,8));
+            console.log('PASS mobile map + Nepal GPS + 10-minute rivers/news',result,'requestErrors',errors.filter(x=>!x.includes('MapServer')).slice(0,8));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(3)});
           JS

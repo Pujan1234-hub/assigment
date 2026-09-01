@@ -29,6 +29,19 @@ function runtime(file) {
 }
 const observation=(id,t,level=2)=>({stationSeriesId:id,title:'Station '+id,waterLevel:level,waterLevelOn:t,longitude:85,latitude:28});
 
+test('nearby updates coalesce and unchanged list preserves its DOM',()=>{
+  const code=fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/flood-only.js'),'utf8');
+  let queued, renders=0, checks=0, writes=0,value='same';
+  const c={requestAnimationFrame:fn=>{queued=fn;return 1},renderStations:()=>renders++,nearbyCheck:()=>checks++,risk(){},tick(){}};
+  vm.createContext(c);
+  vm.runInContext(code.match(/function writeStationList[^\n]+/)[0]+'\n'+code.match(/let nearbyFrame=0;\nfunction riverChanged[^\n]+/)[0],c);
+  c.riverChanged();c.riverChanged();c.riverChanged();queued();
+  assert.equal(renders,1);assert.equal(checks,1);
+  const out={get innerHTML(){return value},set innerHTML(v){writes++;value=v}};
+  c.writeStationList(out,'same');assert.equal(writes,0);
+  c.writeStationList(out,'new source reading');assert.equal(writes,1);
+});
+
 test('river clicks choose nearest geometry and never borrow Bagmati gauge name',()=>{
   const r=runtime('map-side-panel-v1.js'),api=r.window.FloodSafeMapPanel;
   const line=(name,y)=>({properties:{name,live_station:'Bagmati at Khokana'},geometry:{type:'LineString',coordinates:[[0,y],[100,y]]}});

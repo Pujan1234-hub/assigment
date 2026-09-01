@@ -6,7 +6,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'scripts/update_floodsafe_people_v3.py'
+      - 'scripts/update_floodsafe_people_v4.py'
       - '.github/workflows/floodsafe-human-status-sync.yml'
 permissions:
   contents: write
@@ -25,7 +25,7 @@ jobs:
       - name: Install parser dependencies
         run: pip install --quiet requests beautifulsoup4
       - name: Sync event-scoped Human Status fallback
-        run: python3 scripts/update_floodsafe_people_v3.py
+        run: python3 scripts/update_floodsafe_people_v4.py
       - name: Validate Human Status safety contract
         run: |
           python3 - <<'PY'
@@ -43,8 +43,6 @@ jobs:
             assert isinstance(v,int) and v>0,(vk,v)
             assert any(a in s.lower() for a in allowed),(sk,s)
             p=urlparse(u);assert p.scheme in ('http','https') and p.netloc,(uk,u)
-          # Critical regression guard: the current Bhotekoshi event is already far above subgroup counts.
-          # A parser must never replace cumulative figures with values such as 15 officials/personnel.
           assert int(j.get('recovered_bodies') or 0) >= 939, j.get('recovered_bodies')
           assert int(j.get('missing_minimum') or 0) >= 3900, j.get('missing_minimum')
           assert int(j.get('rescued_alive') or 0) >= 11379, j.get('rescued_alive')

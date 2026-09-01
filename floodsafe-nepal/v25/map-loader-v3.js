@@ -1,7 +1,16 @@
 const hint=t=>{const e=document.getElementById('mapHint');if(e&&t)e.textContent=t};
 function ensureCss(){if(document.querySelector('link[data-fs-maplibre-css]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/npm/maplibre-gl@6.6.0/dist/maplibre-gl.css';l.media='print';l.dataset.fsMaplibreCss='1';l.onload=()=>{l.media='all'};document.head.appendChild(l)}
-function loadScript(url,timeout=7000){return new Promise((resolve,reject)=>{const s=document.createElement('script');let done=false;const finish=(ok,e)=>{if(done)return;done=true;clearTimeout(to);s.onload=s.onerror=null;ok?resolve():reject(e||Error('map library failed'))};const to=setTimeout(()=>finish(false,Error('map library timeout')),timeout);s.src=url;s.async=true;s.crossOrigin='anonymous';s.onload=()=>finish(true);s.onerror=()=>finish(false,Error('map library network error'));document.head.appendChild(s)})}
-async function ensureMapLibre(){ensureCss();if(window.maplibregl?.Map)return true;for(const url of['https://cdn.jsdelivr.net/npm/maplibre-gl@6.6.0/dist/maplibre-gl.js','https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.js']){try{await loadScript(url);if(window.maplibregl?.Map)return true}catch{}}try{const m=await import('https://cdn.jsdelivr.net/npm/maplibre-gl@6.6.0/dist/maplibre-gl.mjs');window.maplibregl=m;if(window.maplibregl?.Map)return true}catch{}try{const m=await import('https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.mjs');window.maplibregl=m;if(window.maplibregl?.Map)return true}catch{}return false}
+async function ensureMapLibre(){
+  ensureCss();if(window.maplibregl?.Map)return true;
+  if(window.__fsMapLibreModulePromise)return window.__fsMapLibreModulePromise;
+  window.__fsMapLibreModulePromise=(async()=>{
+    for(const url of ['https://cdn.jsdelivr.net/npm/maplibre-gl@6.6.0/dist/maplibre-gl.mjs','https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.mjs']){
+      let timer;try{const m=await Promise.race([import(url),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Map module timeout')),7000)})]);if(m?.Map){window.maplibregl=m;return true}}catch{}finally{clearTimeout(timer)}
+    }return false;
+  })();
+  const ok=await window.__fsMapLibreModulePromise;if(!ok)window.__fsMapLibreModulePromise=null;return ok;
+}
+window.FloodSafeEnsureMapLibre=ensureMapLibre;
 if(!window.__fsSmoothMapLoadingV17){
   window.__fsSmoothMapLoadingV17=true;
   (async()=>{

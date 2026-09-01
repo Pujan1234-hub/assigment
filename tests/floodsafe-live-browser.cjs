@@ -33,6 +33,15 @@ const assert=require('node:assert/strict');
       assert.ok(JSON.stringify(mapSafety.paint).includes('age_ms'),'paint must check observation age');
     }
     console.log('PASS mobile bounds and map safety',JSON.stringify({layout,mapSafety}));
+    const historicalPanel=await page.evaluate(()=>{
+      const o=window.FloodSafe.state.allRiverStations.find(x=>x._catalogueOnly&&x._lastKnownObservation);
+      if(!o)return null;
+      const api=window.FloodSafeRiverRealtime,c=api.coords(o);
+      window.FloodSafeMapPanel.show(api.name(o),{station_id:api.ids(o)[0],has_latest:0},c?.[1]||28,c?.[0]||85);
+      const p=document.getElementById('fsMapSidePanel'),text=p.innerText;p.querySelector('.fsSideClose').click();
+      return text;
+    });
+    if(historicalPanel){assert.match(historicalPanel,/पछिल्लो उपलब्ध मापन|Last known observation/);assert.match(historicalPanel,/NPT/);console.log('PASS last-known panel',historicalPanel);}
     await page.waitForFunction((first)=>window.__fsRiverRealtimeState?.checkedAt>first.river&&window.__fsImpactLiveState?.checkedAt>first.impact&&window.__fsNewsLiveState?.checkedAt>first.news,{timeout:60000},{river:before.river.checkedAt,impact:before.impact.checkedAt,news:before.news.checkedAt});
     await page.click('#langBtn');await page.waitForFunction(()=>window.FloodSafe.state.lang==='en',{timeout:10000});
     await page.waitForFunction(()=>((window.FloodSafeMap?.map?.querySourceFeatures?.('gauges')?.length||window.__fsStaticMapFallback?.stations||0)>=100),{timeout:15000});

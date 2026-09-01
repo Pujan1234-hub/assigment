@@ -1,10 +1,5 @@
 name: FloodSafe deployed auto-refresh verification
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'tests/floodsafe-live-browser.cjs'
-      - '.github/workflows/floodsafe-live-refresh-smoke.yml'
   workflow_dispatch:
   workflow_run:
     workflows: ['Deploy Portfolio to GitHub Pages']

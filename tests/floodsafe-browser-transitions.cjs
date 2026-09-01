@@ -22,17 +22,20 @@ module.exports=async function verifyTransitions(browser,base){
     await page.goto(base+'?fixture-transition='+now,{waitUntil:'domcontentloaded',timeout:60000});
     await page.waitForFunction(()=>window.__fsRiverRealtimeState?.connected&&window.__fsNewsLiveState?.lastSuccess&&window.__fsImpactLiveState?.lastSuccess,{timeout:45000});
     await page.evaluate(()=>{window.FloodSafe.state.lang='en';window.dispatchEvent(new Event('fslanguage'))});
-    await page.waitForFunction(()=>document.getElementById('liveNews').innerText.includes('No fresh data')&&document.getElementById('impactFresh').innerText.includes('Latest reported figures'));
+    await page.waitForFunction(()=>document.getElementById('newsTip')&&document.getElementById('impactFresh').innerText.includes('Latest reported figures'));
     assert.equal(await page.$eval('#impactDeaths',e=>e.innerText),'12');
     assert.equal(await page.evaluate(()=>window.__fsRiverRealtimeState.currentCount),0);
 
     await page.evaluate(()=>{window.FloodSafe.state.lat=28;window.FloodSafe.state.lon=85});
+    const firstTip=await page.$eval('#newsTip',e=>e.dataset.tipIndex);
+    assert.ok(firstTip!==undefined);
     phase='fresh';
     await page.evaluate(()=>{window.FloodSafeNews.refresh();window.FloodSafeRiverRealtime.refresh();void window.FloodSafeImpact.sync()});
     await page.waitForFunction(()=>window.__fsRiverRealtimeState?.currentCount===1&&window.__fsNewsLiveState?.freshCount===1&&document.getElementById('impactDeaths').innerText==='13',{timeout:30000});
     await page.waitForFunction(()=>document.getElementById('nearStations').innerText.includes('6 m')&&document.getElementById('nearCheck')?.innerText.includes('Auto-check active'),{timeout:10000});
     console.log('PASS nearby list receives new source reading without page reload');
     assert.equal(await page.evaluate(()=>window.FloodSafe.state.currentRiverStations[0]._derivedStatus),'warning');
+    assert.equal(await page.$('#newsTip'),null);
     assert.ok(!(await page.$eval('#liveNews',e=>e.innerText)).includes('No fresh data'));
 
     // Advance the browser clock without changing source timestamps. A new

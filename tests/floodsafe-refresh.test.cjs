@@ -29,6 +29,27 @@ function runtime(file) {
 }
 const observation=(id,t,level=2)=>({stationSeriesId:id,title:'Station '+id,waterLevel:level,waterLevelOn:t,longitude:85,latitude:28});
 
+test('tips rotate every ten minutes, never repeat before a full cycle and yield to all news',async()=>{
+  const r=runtime('news-live-v5.js');r.respond(()=>({items:[]}));r.boot();
+  assert.match(r.node('liveNews').innerHTML,/id="newsTip"/);
+  const seen=new Set([r.window.__fsNewsLiveState.tipIndex]);
+  await r.advance(599999);assert.equal(r.window.__fsNewsLiveState.tipIndex,0);
+  await r.advance(100);assert.equal(r.window.__fsNewsLiveState.tipIndex,1);seen.add(1);
+  for(let i=2;i<16;i++){await r.advance(600100);seen.add(r.window.__fsNewsLiveState.tipIndex)}
+  assert.equal(seen.size,16);await r.advance(600100);assert.equal(r.window.__fsNewsLiveState.tipIndex,0);
+  const published_at=new Date(r.now()).toISOString();
+  r.respond(()=>({items:[{title:'New report',source:'Radio Nepal',url:'https://example.com/report',published_at}]}));
+  await r.advance(10000);assert.equal(r.window.__fsNewsLiveState.tipsVisible,false);
+  assert.doesNotMatch(r.node('liveNews').innerHTML,/id="newsTip"/);
+  await r.advance(11*60000);assert.equal(r.window.__fsNewsLiveState.archiveCount,1);
+  assert.equal(r.window.__fsNewsLiveState.tipsVisible,false,'older displayable news also hides tips');
+  r.context.fetch=async()=>{throw Error('offline')};
+  await r.advance(20*60000);assert.equal(r.window.__fsNewsLiveState.tipsVisible,true);
+  assert.match(r.node('liveNews').innerHTML,/Source:/);
+  const index=r.window.__fsNewsLiveState.tipIndex;
+  await r.advance(600100);assert.notEqual(r.window.__fsNewsLiveState.tipIndex,index);
+});
+
 test('nearby updates coalesce and unchanged list preserves its DOM',()=>{
   const code=fs.readFileSync(path.join(__dirname,'../floodsafe-nepal/v25/flood-only.js'),'utf8');
   let queued, renders=0, checks=0, writes=0,value='same';

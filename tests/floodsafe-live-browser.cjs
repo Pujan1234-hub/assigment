@@ -64,8 +64,8 @@ const assert=require('node:assert/strict');
     const after=await read();assert.ok(after.gauges>=100);assert.equal(errors.length,0,errors.join('\n'));
     assert.equal(after.river.connected,true,'a failed poll is not a successful river refresh');
     assert.equal(after.news.connected,true);assert.equal(after.impact.connected,true);
-    const freshnessUI=await page.evaluate(()=>({newsCount:window.__fsNewsLiveState.freshCount,news:document.getElementById('liveNews').innerText,humanCount:window.__fsImpactLiveState.freshCount,human:document.getElementById('impactFresh').innerText,deaths:document.getElementById('impactDeaths').innerText}));
-    if(freshnessUI.newsCount===0)assert.match(freshnessUI.news,/No fresh data/);
+    const freshnessUI=await page.evaluate(()=>({tips:window.__fsNewsLiveState.tipsVisible,newsCount:window.__fsNewsLiveState.freshCount,news:document.getElementById('liveNews').innerText,humanCount:window.__fsImpactLiveState.freshCount,human:document.getElementById('impactFresh').innerText,deaths:document.getElementById('impactDeaths').innerText}));
+    if(freshnessUI.tips)assert.match(freshnessUI.news,/Useful tips/);else if(freshnessUI.newsCount===0)assert.match(freshnessUI.news,/No fresh data/);
     if(freshnessUI.humanCount===0){assert.match(freshnessUI.human,/No reported data/);assert.equal(freshnessUI.deaths,'—');}
     console.log('PASS explicit no-fresh-data UI',JSON.stringify(freshnessUI));
     console.log('PASS mobile map, single human renderer, independent river/news/human refresh, language interaction',JSON.stringify({before,after}));

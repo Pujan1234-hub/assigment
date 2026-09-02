@@ -1,91 +1,49 @@
 {
-  "generated_at": "2026-09-02T23:48:06.594231+05:45",
-  "updated_at_npt": "02 Sep 23:48 NPT",
+  "generated_at": "2026-09-03T02:43:38.131583+05:45",
+  "updated_at_npt": "03 Sep 02:43 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "चीन, रुस र मङ्गोलियाले संयुक्त सीमा रक्षा अभ्यास गर्ने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589449/china-russia-and-mongolia-to-hold-joint-border-defense-exercises",
+      "published_at": "2026-09-03T01:17:26+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी: आचारसंहिता विपरीतका सामग्री सम्प्रेषण गर्नेलाई काउन्सिलको कारबाही",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589448/bhotekoshi-flood-council-takes-action-against-those-who-disseminate-content-that-violates-the-code-of-conduct",
+      "published_at": "2026-09-03T01:09:16+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी: ११ हजार ९९३ जनाको उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589447/bhotekoshi-flood-11993-people-rescued",
+      "published_at": "2026-09-03T00:37:20+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी: पर्यटन समाजद्वारा ब्ल्याङ्केट सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589445/bhotekoshi-flood-blanket-assistance-from-tourism-society",
+      "published_at": "2026-09-02T23:57:43+05:45",
+      "flash": false
+    },
     {
       "title": "भोटेकोशी बाढी : बाँकेबाट सहयोग जारी",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589442/bhotekoshi-flood-assistance-continues-from-banke",
       "published_at": "2026-09-02T23:27:12+05:45",
-      "flash": true
-    },
-    {
-      "title": "डायस्पोराको योगदान संसद्मा नसमेटिएकोमा एनआरएनए सचिव खत्रीको आपत्ति: ‘सहयोग गर्दा किन लुकाइयो ?’",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589440/nrna-secretary-khatri-objects-to-the-fact-that-the-contribution-of-the-diaspora-was-not-included-in-the-parliament-why-were-the-merits-of-nepalis-hidden-while-providing-assistance",
-      "published_at": "2026-09-02T23:09:03+05:45",
-      "flash": true
-    },
-    {
-      "title": "कृष्णभीर अवरुद्ध भएपछि हेटौँडा–काठमाडौँ मार्गमा सवारी चाप",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589438/traffic-congestion-on-hetauda-kathmandu-route-after-krishna-bhir-blocked",
-      "published_at": "2026-09-02T22:55:02+05:45",
-      "flash": true
-    },
-    {
-      "title": "रसुवा बाढीमा एनआरएनए युवा उपाध्यक्ष थापाको सक्रियता: विश्वभरका नेपालीलाई सहयोगको अपिल",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589439/nrna-youth-vice-president-thapas-activism-in-the-rasuwa-flood-appeal-to-nepalis-around-the-world-for-help",
-      "published_at": "2026-09-02T22:54:58+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "बर्दियाका १३५ जनाको उद्धार",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589434/135-people-rescued-from-bardiya",
       "published_at": "2026-09-02T21:58:47+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रदेश प्रमुख मियाँले एक महिनाको पारिश्रमिक बाढीपीडितलाई दिने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589420/provincial-chief-miya-will-donate-one-months-salary-to-flood-victims",
-      "published_at": "2026-09-02T20:32:25+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवा बाढी प्रभावितलाई ३ लाख ३१ हजार सहयोग गरिने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589415/331000-rupees-will-be-provided-as-assistance-to-those-affected-by-the-rasuwa-flood",
-      "published_at": "2026-09-02T20:14:39+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी पीडितलाई विभिन्न सङ्घसंस्थाबाट ४६ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589410/46-million-assistance-from-various-organizations-to-bhotekoshi-flood-victims",
-      "published_at": "2026-09-02T19:55:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "‘अदालतलाई सूचना प्रविधि र जनमैत्री बनाउँदै लगेका छौँ’",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589408/we-are-making-the-court-information-technology-and-people-friendly",
-      "published_at": "2026-09-02T19:47:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "लुम्बिनी नेत्रविज्ञान अध्ययन संस्थानद्वारा बाढीपीडितलाई १४ लाख भन्दा बढी सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589401/63-million-rupees-assistance-to-bhotekoshi-flood-victims",
-      "published_at": "2026-09-02T19:24:13+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रधानमन्त्री राहत कोषमा मोरङबाट ९८ लाख ६४ हजार सङ्कलन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589392/9864-million-collected-from-morang-for-prime-ministers-relief-fund",
-      "published_at": "2026-09-02T18:45:27+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीका घाइतेलाई मध्यनजर गर्दै १११ पिन्ट रगत सङ्कलन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589389/111-pints-of-blood-collected-for-bhotekoshi-flood-victims",
-      "published_at": "2026-09-02T18:12:53+05:45",
       "flash": false
     }
   ],
@@ -105,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 12
+      "flash": 0,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,

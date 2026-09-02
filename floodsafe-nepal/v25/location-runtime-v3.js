@@ -12,7 +12,15 @@ function label(){
   $('place').textContent=tr(`📍 ${fresh()?'मेरो हालको स्थान':'पछिल्लो GPS स्थान'} • ±${Math.round(last.accuracy)} m • ${at} NPT`,`📍 ${fresh()?'My current location':'Last GPS location'} • ±${Math.round(last.accuracy)} m • ${at} NPT`);
 }
 function marker(){
-  const map=window.FloodSafeMap?.map;if(!map||!last)return;
+  if(!last)return;
+  // The lightweight Nepal map must also show GPS when WebGL is unavailable.
+  const svg=$('fsStaticMapFallback')?.querySelector?.('svg');
+  if(svg){
+    let group=svg.querySelector('[data-fs-gps]');
+    if(!group){group=document.createElementNS('http://www.w3.org/2000/svg','g');group.setAttribute('data-fs-gps','1');const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('r','7');dot.setAttribute('stroke','#fff');dot.setAttribute('stroke-width','3');group.appendChild(dot);const label=document.createElementNS('http://www.w3.org/2000/svg','text');label.setAttribute('x','11');label.setAttribute('y','4');label.setAttribute('fill','#fff');label.setAttribute('font-size','13');label.setAttribute('font-weight','bold');label.textContent='GPS';group.appendChild(label);svg.appendChild(group)}
+    group.style.display=inside(last.lat,last.lon)?'':'none';group.setAttribute('transform',`translate(${(last.lon-79.85)/8.6*1000},${(30.55-last.lat)/4.4*515})`);group.querySelector('circle').setAttribute('fill',fresh()?'#2563eb':'#64748b');svg.appendChild(group);
+  }
+  const map=window.FloodSafeMap?.map;if(!map)return;
   const valid=last&&inside(last.lat,last.lon),features=[];
   if(valid){
     const ring=[],radius=Math.min(last.accuracy,10000),cos=Math.cos(last.lat*Math.PI/180);

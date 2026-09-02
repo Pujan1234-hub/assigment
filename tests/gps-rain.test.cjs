@@ -43,6 +43,12 @@ test('GPS pauses in hidden tabs and resumes without adding duplicate watchers',(
   const r=gpsRuntime();r.emit('click');r.document.hidden=true;r.emit('visibilitychange');assert.equal(r.cleared.length,1);assert.equal(r.window.FloodSafeCurrentLocation.tracking,false);
   r.document.hidden=false;r.emit('visibilitychange');r.emit('pageshow');assert.equal(r.count(),2);
 });
+test('GPS remains visible on the lightweight map without WebGL',()=>{
+  const r=gpsRuntime();function element(tag){return {tag,children:[],attrs:{},style:{},setAttribute(k,v){this.attrs[k]=v},appendChild(v){this.children=this.children.filter(x=>x!==v);this.children.push(v)},querySelector(selector){return this.children.find(x=>selector==='[data-fs-gps]'?x.attrs['data-fs-gps']:x.tag===selector)}}}
+  const svg=element('svg');r.document.createElementNS=(_,tag)=>element(tag);r.node('fsStaticMapFallback').querySelector=()=>svg;
+  r.emit('click');r.fix(27.7,85.3);const group=svg.querySelector('[data-fs-gps]');assert.equal(group.style.display,'');assert.match(group.attrs.transform,/translate/);assert.equal(group.querySelector('circle').attrs.fill,'#2563eb');
+  r.advance(121000);assert.equal(group.querySelector('circle').attrs.fill,'#64748b');r.fix(51.5,-.12);assert.equal(group.style.display,'none');
+});
 test('one GPS owner and notification-only worker survive reload cleanup',()=>{
   const core=fs.readFileSync(path.join(base,'flood-only.js'),'utf8'),rain=fs.readFileSync(path.join(base,'rain-timing-v4.js'),'utf8'),reset=fs.readFileSync(path.join(base,'flood-reset.js'),'utf8');
   assert.doesNotMatch(core,/addEventListener\('click',locate\)/);assert.doesNotMatch(rain,/watchPosition|getCurrentPosition|MobileMap.*open/);

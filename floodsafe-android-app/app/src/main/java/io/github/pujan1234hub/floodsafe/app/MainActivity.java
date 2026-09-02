@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
 import android.webkit.GeolocationPermissions;
+import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
@@ -32,7 +33,7 @@ import androidx.webkit.WebViewAssetLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Bundled hybrid app. No JavaScript-to-native bridge or remote top-level page. */
+/** Bundled hybrid app. No remote top-level page. */
 public class MainActivity extends Activity {
     private static final int LOCATION_REQUEST = 40;
     WebView webView;
@@ -50,7 +51,15 @@ public class MainActivity extends Activity {
     }
     private final List<PendingLocation> pendingLocations = new ArrayList<>();
     private boolean androidLocationPromptOpen;
+    private volatile long locationTapUntil;
     private boolean mainFrameError;
+
+    /** A narrowly scoped signal from the bundled location button only. */
+    private final class LocationTapBridge {
+        @JavascriptInterface public void allowLocationPrompt() {
+            locationTapUntil = System.currentTimeMillis() + 6000L;
+        }
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override public void onCreate(Bundle state) {
@@ -102,6 +111,9 @@ public class MainActivity extends Activity {
         settings.setMediaPlaybackRequiresUserGesture(true);
         settings.setSafeBrowsingEnabled(true);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        // Automatic page scripts cannot show Android's location prompt. The
+        // bundled button explicitly opens a short-lived permission window.
+        webView.addJavascriptInterface(new LocationTapBridge(), "FloodSafeNative");
         WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new BundledContent(getAssets())).build();
         webView.setWebViewClient(new WebViewClient() {
@@ -190,6 +202,9 @@ public class MainActivity extends Activity {
 
     void requestLocation(String origin, GeolocationPermissions.Callback callback) {
         if (!NavigationPolicy.trustedOrigin(origin) || !NavigationPolicy.internalPage(webView.getUrl())) {
+            callback.invoke(origin, false, false); return;
+        }
+        if (System.currentTimeMillis() > locationTapUntil) {
             callback.invoke(origin, false, false); return;
         }
         if (hasLocation()) { callback.invoke(origin, true, false); return; }

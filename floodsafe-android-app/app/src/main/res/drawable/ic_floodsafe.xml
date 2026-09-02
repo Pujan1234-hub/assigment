@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Same artwork as floodsafe-nepal/v24/icon.svg, expressed as Android vectors. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="512" android:viewportHeight="512">
+    <path android:fillColor="#003893" android:pathData="M108,0H404Q512,0 512,108V404Q512,512 404,512H108Q0,512 0,404V108Q0,0 108,0Z" />
+    <path android:fillColor="#DC143C" android:strokeColor="#FFFFFF" android:strokeWidth="18"
+        android:strokeLineJoin="round" android:pathData="M70,52v224h274L150,128v140h220L132,448V52Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M113,174a38,38 0,1 0,76 0a38,38 0,1 0,-76 0M156,337a34,34 0,1 0,68 0a34,34 0,1 0,-68 0" />
+    <path android:strokeColor="#5FD5FF" android:strokeWidth="26" android:strokeLineCap="round"
+        android:pathData="M100,404c62,-56 116,-58 176,-4 50,45 91,44 140,1" />
+</vector>

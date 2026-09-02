@@ -1,0 +1,39 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'io.github.pujan1234hub.floodsafe.app'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'io.github.pujan1234hub.floodsafe.app'
+        minSdk 26
+        targetSdk 35
+        versionCode 2
+        versionName '0.2.0-beta'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    sourceSets.main.assets.srcDir(layout.buildDirectory.dir('generated/floodsafe-assets'))
+    lint { abortOnError = true }
+}
+
+def bundleWeb = tasks.register('bundleFloodSafe', Exec) {
+    workingDir rootProject.projectDir
+    def python = System.getProperty('os.name').toLowerCase().contains('windows') ? 'py' : 'python3'
+    commandLine python, 'bundle_web.py'
+    inputs.dir rootProject.file('../floodsafe-nepal')
+    inputs.dir rootProject.file('../data')
+    inputs.file rootProject.file('bundle_web.py')
+    inputs.dir rootProject.file('android-web')
+    outputs.dir layout.buildDirectory.dir('generated/floodsafe-assets')
+}
+tasks.named('preBuild').configure { dependsOn bundleWeb }
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+}

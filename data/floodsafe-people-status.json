@@ -1,7 +1,7 @@
 {
   "event": "Bhotekoshi flash flood",
   "event_ne": "भोटेकोशी आकस्मिक बाढी",
-  "updated_date": "2026-09-01",
+  "updated_date": "2026-09-02",
   "recovered_bodies": 939,
   "recovered_source": "Radio Nepal / NDRRMA",
   "recovered_source_url": "https://radionepalonline.com/en/2026/08/31/435175.html",
@@ -17,7 +17,7 @@
   "rescued_source_url": "https://radionepalonline.com/en/2026/08/31/435175.html",
   "rescued_update_time": "2026-08-31T16:47:35Z",
   "status": "event_scoped_requested_sources",
-  "last_checked_utc": "2026-09-01T22:34:24.008304Z",
+  "last_checked_utc": "2026-09-02T00:28:19.853867Z",
   "sync_sources": [
     "NDRRMA",
     "Nepal Police",

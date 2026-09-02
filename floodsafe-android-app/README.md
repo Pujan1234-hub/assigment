@@ -19,17 +19,16 @@ foreground alerts. The original website and backend are unchanged.
 
 ## Build
 
-Requires JDK 17, Gradle 8.11.1, Python 3, Android SDK 35/build-tools 35.0.0.
+Requires JDK 17, Gradle 8.11.1 and Android SDK 35/build-tools 35.0.0.
 Open this directory in Android Studio, or run:
 
 ```sh
 gradle --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
 ```
 
-`bundle_web.py` runs automatically before building. It copies adjacent
-`floodsafe-nepal/` and `data/` into generated assets, validates entry resources,
-applies only Android notification copy/availability adjustments, and creates
-an asset checksum manifest. Do not edit generated assets directly.
+Gradle automatically copies adjacent `floodsafe-nepal/` and `data/` into
+generated APK assets before every build. It applies only the Android rain-push
+availability copy. Do not edit generated assets directly.
 
 The separate GitHub build workflow builds, checks the APK signature and runs an
 Android 15 emulator smoke test with Wi-Fi/mobile data off. It tests the bundled

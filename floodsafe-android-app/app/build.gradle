@@ -19,15 +19,16 @@ android {
     lint { abortOnError = true }
 }
 
-def bundleWeb = tasks.register('bundleFloodSafe', Exec) {
-    workingDir rootProject.projectDir
-    def python = System.getProperty('os.name').toLowerCase().contains('windows') ? 'py' : 'python3'
-    commandLine python, 'bundle_web.py'
-    inputs.dir rootProject.file('../floodsafe-nepal')
-    inputs.dir rootProject.file('../data')
-    inputs.file rootProject.file('bundle_web.py')
-    inputs.dir rootProject.file('android-web')
-    outputs.dir layout.buildDirectory.dir('generated/floodsafe-assets')
+def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
+    // Bundle the UI/data inside the APK; no Python, Node or browser server required.
+    from(rootProject.file('../floodsafe-nepal')) {
+        into 'floodsafe-nepal'
+        exclude 'v25/rain-push-v1.js'
+    }
+    from(rootProject.file('../data')) { into 'data' }
+    from(rootProject.file('android-web')) { into 'floodsafe-nepal/v25' }
+    includeEmptyDirs = false
+    into(layout.buildDirectory.dir('generated/floodsafe-assets'))
 }
 tasks.named('preBuild').configure { dependsOn bundleWeb }
 

@@ -1,5 +1,24 @@
 (()=>{'use strict';
 if(window.__fsFloodResetV16)return;window.__fsFloodResetV16=true;
+// A location dialog must only follow the user's "My Current Location" tap.
+// This guard runs before the weather/map runtimes and blocks any startup GPS
+// call left behind by an older runtime.
+const geo=navigator.geolocation;
+if(geo&&!window.__fsLocationConsentGate){
+  window.__fsLocationConsentGate=true;
+  let locationTapUntil=0;
+  document.addEventListener('click',event=>{
+    if(event.target?.closest?.('#locateBtn'))locationTapUntil=Date.now()+5000;
+  },true);
+  const deny=error=>{if(typeof error==='function')queueMicrotask(()=>error({code:1,message:'Tap My Current Location to allow GPS'}));};
+  for(const name of ['getCurrentPosition','watchPosition']){
+    const original=geo[name].bind(geo);
+    Object.defineProperty(geo,name,{configurable:true,value(success,error,options){
+      if(Date.now()>locationTapUntil){deny(error);return name==='watchPosition'?-1:undefined;}
+      return original(success,error,options);
+    }});
+  }
+}
 try{
   if('serviceWorker'in navigator) navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{const workers=[r.active,r.installing,r.waiting];if((r.scope||'').includes('/floodsafe-nepal/')&&!workers.some(w=>w&&new URL(w.scriptURL).pathname.endsWith('/rain-alert-sw.js')))r.unregister()}));
   if('caches'in window) caches.keys().then(ks=>ks.filter(k=>/floodsafe|v25|shell/i.test(k)).forEach(k=>caches.delete(k)));

@@ -1,14 +1,83 @@
 document.addEventListener('DOMContentLoaded',()=>{
+  const EMAIL='pujanchapagain.software@gmail.com';
+
+  // Current handcrafted/editorial portfolio.
+  const editorialNav=document.querySelector('.navlinks');
+  const work=document.getElementById('work');
+  if(editorialNav && work){
+    const desc=document.querySelector('meta[name="description"]');
+    if(desc) desc.setAttribute('content','Pujan Chapagain — software portfolio featuring Team Tracker, FixCheck, FloodSafe Nepal and DateMate.');
+
+    if(!editorialNav.querySelector('a[href="#datemate"]')){
+      const a=document.createElement('a');
+      a.href='#datemate'; a.textContent='DateMate';
+      const about=editorialNav.querySelector('a[href="#about"]');
+      if(about) editorialNav.insertBefore(a,about); else editorialNav.appendChild(a);
+    }
+    if(!editorialNav.querySelector('a[href="#contact"]')){
+      const a=document.createElement('a');
+      a.href='#contact'; a.textContent='Contact';
+      editorialNav.appendChild(a);
+    }
+
+    const heroCopy=document.querySelector('.hero-copy');
+    if(heroCopy && /Three products, three different problems:/i.test(heroCopy.textContent||'')){
+      heroCopy.textContent='Four products, four different problems: coordinating people at work, figuring out why the internet is not behaving, making flood information more useful for people in Nepal, and helping people remember important expiry and renewal dates. I design, build, test and keep improving each one hands-on.';
+    }
+
+    const aside=document.querySelector('.hero-aside');
+    if(aside && !aside.querySelector('[data-product="datemate"]')){
+      const ticket=document.createElement('div');
+      ticket.className='ticket';
+      ticket.dataset.product='datemate';
+      ticket.style.background='#eef5ff';
+      ticket.style.transform='rotate(.3deg)';
+      ticket.innerHTML='<div class="ticket-head"><h3>DateMate</h3><span class="tag">EARLY BUILD</span></div><p>A simple date and expiry reminder app for keeping important renewals and due dates from slipping past.</p><a href="#datemate">View build notes →</a>';
+      aside.appendChild(ticket);
+    }
+
+    if(!document.getElementById('datemate')){
+      const flood=document.getElementById('floodsafe');
+      if(flood){
+        const article=document.createElement('article');
+        article.className='project';
+        article.id='datemate';
+        article.innerHTML=`<div class="project-side"><div><div class="project-index">04 / Date reminders</div><h3>DateMate</h3><div class="project-status"><span class="dot" style="background:#5f7fe8"></span> Early development</div></div><div class="side-links"><a href="#contact">Project contact ↗</a></div></div><div class="project-main"><div class="project-copy"><p>DateMate is a simple reminder app built around an easy problem to understand: important expiry, renewal and due dates are easy to forget when they live in different places. The aim is to keep those dates in one clear view and give people useful notice before they become urgent.</p><div class="bullets"><div class="bullet"><i>01</i><span>Fast add flow for an item and its important date.</span></div><div class="bullet"><i>02</i><span>Clear upcoming and expiry-focused reminders.</span></div><div class="bullet"><i>03</i><span>Simple blue mobile-first interface designed to stay easy to scan.</span></div><div class="bullet"><i>04</i><span>Currently in early development, with the core flow being built and tested first.</span></div></div></div><div class="preview" style="background:#eef5ff"><div class="windowbar"><span class="dots"><span></span><span></span><span></span></span><span>Date reminders</span></div><div class="phone"><div class="phone-screen" style="background:#f7faff"><div class="ticket-head"><strong>DateMate</strong><span class="tag">EARLY BUILD</span></div><div class="phone-title">What should I remember?</div><div class="phone-copy">Save the important date now, then see what is coming up without digging through notes.</div><div class="rows"><div class="row"><span>Upcoming</span><b class="blue">3 items</b></div><div class="row"><span>Due soon</span><b class="amber">1 item</b></div><div class="row"><span>Status</span><b class="green">Tracked</b></div></div><div class="big-action" style="background:#3157d5">ADD DATE</div></div></div></div></div>`;
+        flood.insertAdjacentElement('afterend',article);
+      }
+    }
+
+    if(!document.getElementById('contact')){
+      const footer=document.querySelector('footer');
+      if(footer){
+        const contact=document.createElement('section');
+        contact.id='contact';
+        contact.innerHTML=`<div class="wrap"><div class="section-head"><div class="section-number">05</div><div class="section-title"><small>Contact</small><h2>Let’s talk software.</h2><p>For software, product, prototype, or collaboration enquiries.</p></div></div><div class="about-grid"><div class="about-card"><strong>Email</strong><span><a href="mailto:${EMAIL}">${EMAIL}</a></span></div><div class="about-copy"><p>Building practical software, testing it properly, and improving it through real use.</p><p class="small">Based in the United Kingdom · Software products & working prototypes</p></div></div></div>`;
+        footer.parentNode.insertBefore(contact,footer);
+      }
+    }
+
+    const foot=document.querySelector('.footlinks');
+    if(foot){
+      if(!foot.querySelector('a[href="#datemate"]')){
+        const a=document.createElement('a'); a.href='#datemate'; a.textContent='DateMate'; foot.appendChild(a);
+      }
+      if(!foot.querySelector(`a[href="mailto:${EMAIL}"]`)){
+        const a=document.createElement('a'); a.href=`mailto:${EMAIL}`; a.textContent='Email'; foot.appendChild(a);
+      }
+    }
+    return;
+  }
+
+  // Legacy portfolio support: keep FloodSafe available on older layouts.
   if(document.getElementById('floodsafe')) return;
 
-  // Keep the public portfolio count current.
   document.querySelectorAll('.stat').forEach(el=>{
     if((el.textContent||'').includes('Active products')){
       const strong=el.querySelector('strong'); if(strong) strong.textContent='03';
     }
   });
 
-  // Add navigation link.
   const nav=document.querySelector('.links');
   if(nav && !nav.querySelector('a[href="#floodsafe"]')){
     const platforms=nav.querySelector('a[href="#platforms"]');
@@ -16,53 +85,15 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(platforms) nav.insertBefore(a,platforms); else nav.appendChild(a);
   }
 
-  // Make 3 product cards fit cleanly.
   const style=document.createElement('style');
   style.textContent='.cards{grid-template-columns:repeat(3,1fr)}@media(max-width:850px){.cards{grid-template-columns:1fr}}';
   document.head.appendChild(style);
 
-  // Add product card.
   const cards=document.querySelector('#products .cards');
   if(cards){
     const card=document.createElement('article');
     card.className='card';
-    card.innerHTML=`
-      <div class="cardhead"><div class="icon">🌊</div><span class="status amber">Active Development</span></div>
-      <h3>FloodSafe Nepal</h3>
-      <div class="sub">नेपालका लागि local flood & river alert platform</div>
-      <p>A Nepal-focused safety app built around local-area flood awareness, live river-station updates and map-first risk context.</p>
-      <ul class="features">
-        <li>Nepal-only detailed map experience</li>
-        <li>Local-area alerts for the place that matters to the user</li>
-        <li>Official river-station and warning data with frequent refresh</li>
-        <li>Current update time and visible data freshness</li>
-        <li>Nepali-first interface and recognisable alert experience</li>
-      </ul>
-      <div class="miniui"><div class="mocktop"><span class="pill">FloodSafe Nepal</span><span class="ok">Latest live build</span></div>
-      <div class="rows"><div class="row"><span>Nearby river stations</span><b class="ok">Refreshing</b></div><div class="row"><span>Local risk</span><b>Area based</b></div><div class="row"><span>Map</span><b>Nepal only</b></div></div></div>
-      <div class="actions"><a class="btn primary" href="./floodsafe-nepal/">Open web app ↗</a><a class="btn" href="#floodsafe">Product details</a></div>`;
+    card.innerHTML='<div class="cardhead"><div class="icon">🌊</div><span class="status amber">Active Development</span></div><h3>FloodSafe Nepal</h3><div class="sub">नेपालका लागि local flood & river alert platform</div><p>A Nepal-focused safety app built around local-area flood awareness, live river-station updates and map-first risk context.</p><div class="actions"><a class="btn primary" href="./floodsafe-nepal/">Open web app ↗</a></div>';
     cards.appendChild(card);
-  }
-
-  // Add full product detail before platform section.
-  const platforms=document.getElementById('platforms');
-  if(platforms){
-    const sec=document.createElement('section');
-    sec.id='floodsafe';
-    sec.innerHTML=`<div class="wrap">
-      <div class="productHead"><div><div class="k">Product 03 · Active Development</div><h2 class="productTitle">FloodSafe Nepal</h2>
-      <p class="lead" style="font-size:17px">A Nepal-first flood and river-awareness platform designed to make nearby risk easier to understand through a detailed Nepal map, local-area alerts, live station updates and clear data freshness.</p>
-      <div class="actions"><a class="btn primary" href="./floodsafe-nepal/">Launch latest web app ↗</a></div></div>
-      <div class="summary"><div class="sitem"><strong>Product type</strong><span>Public safety / flood awareness web app and PWA direction</span></div><div class="sitem"><strong>Main focus</strong><span>Nearby river conditions, local-area warnings and map-based situational awareness</span></div><div class="sitem"><strong>Geographic focus</strong><span>Nepal only — detailed national map rather than a world map</span></div><div class="sitem"><strong>Current status</strong><span>Active development · working web build</span></div></div></div>
-      <div class="three"><div class="box"><h3>The problem</h3><p>Broad national warnings can be less useful when someone mainly needs to know what is happening around their own home, route or current area.</p></div><div class="box"><h3>How it works</h3><p>The app combines a Nepal-focused map with frequently refreshed river/station information, local-area context and visible update timing.</p></div><div class="box"><h3>Product direction</h3><p>Keep the interface Nepali-first, make station refresh obvious and surface meaningful nearby risk without unrelated alert noise.</p></div></div>
-      <div class="flow"><div class="step"><b>1. Choose or use an area</b><span>The user focuses the map on the place that matters to them.</span></div><div class="step"><b>2. See live context</b><span>Nearby stations and warning information refresh against the Nepal map.</span></div><div class="step"><b>3. Get a local alert</b><span>The app surfaces meaningful risk for that area instead of unrelated national noise.</span></div></div>
-      <div class="note">FloodSafe Nepal is an active safety-oriented prototype. Public warnings should always be cross-checked with official emergency information.</div>
-    </div>`;
-    platforms.parentNode.insertBefore(sec,platforms);
-  }
-
-  const foot=document.querySelector('.footlinks');
-  if(foot && !foot.querySelector('a[href="./floodsafe-nepal/"]')){
-    const a=document.createElement('a'); a.href='./floodsafe-nepal/'; a.textContent='FloodSafe Nepal'; foot.appendChild(a);
   }
 });

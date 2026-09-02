@@ -46,7 +46,7 @@ test('GPS pauses in hidden tabs and resumes without adding duplicate watchers',(
 test('GPS remains visible on the lightweight map without WebGL',()=>{
   const r=gpsRuntime();function element(tag){return {tag,children:[],attrs:{},style:{},setAttribute(k,v){this.attrs[k]=v},appendChild(v){this.children=this.children.filter(x=>x!==v);this.children.push(v)},querySelector(selector){return this.children.find(x=>selector==='[data-fs-gps]'?x.attrs['data-fs-gps']:x.tag===selector)}}}
   const svg=element('svg');r.document.createElementNS=(_,tag)=>element(tag);r.node('fsStaticMapFallback').querySelector=()=>svg;
-  r.emit('click');r.fix(27.7,85.3);const group=svg.querySelector('[data-fs-gps]');assert.equal(group.style.display,'');assert.match(group.attrs.transform,/translate/);assert.equal(group.querySelector('circle').attrs.fill,'#2563eb');
+  r.emit('click');r.fix(27.7,85.3);const group=svg.querySelector('[data-fs-gps]');assert.equal(group.style.display,'');assert.match(group.attrs.transform,/translate/);assert.equal(group.querySelector('circle').attrs.fill,'#16a34a');
   r.advance(121000);assert.equal(group.querySelector('circle').attrs.fill,'#64748b');r.fix(51.5,-.12);assert.equal(group.style.display,'none');
 });
 test('one GPS owner and notification-only worker survive reload cleanup',()=>{
@@ -116,4 +116,13 @@ test('push worker acknowledges stored settings and rejects disabled, expired or 
   await push(message);assert.equal(shown.length,1);
   for(const change of [{key:'28.00,85.00'},{id:'another'},{expiresAt:0},{expiresAt:undefined}])await push({...message,...change});
   stored={...config,enabled:false};await push(message);assert.equal(shown.length,1);
+});
+
+test('GPS uses green while station palette and stale-GPS grey stay unchanged',()=>{
+  const r=gpsRuntime(),station={id:'gauges-live-281',paint:{'circle-color':'#20b8ff'}};
+  r.layers.set(station.id,station);r.window.FloodSafeMap={map:r.map};r.emit('click');r.fix(27.7,85.3);
+  assert.equal(r.layers.get('fs-user-location-accuracy').paint['fill-color'],'#16a34a');
+  const paint=r.layers.get('fs-user-location-dot').paint['circle-color'];
+  assert.equal(paint[2],'#16a34a');assert.equal(paint[3],'#64748b');
+  assert.equal(r.layers.get(station.id),station);assert.equal(station.paint['circle-color'],'#20b8ff');
 });

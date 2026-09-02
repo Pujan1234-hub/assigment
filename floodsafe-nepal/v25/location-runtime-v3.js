@@ -18,7 +18,7 @@ function marker(){
   if(svg){
     let group=svg.querySelector('[data-fs-gps]');
     if(!group){group=document.createElementNS('http://www.w3.org/2000/svg','g');group.setAttribute('data-fs-gps','1');const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('r','7');dot.setAttribute('stroke','#fff');dot.setAttribute('stroke-width','3');group.appendChild(dot);const label=document.createElementNS('http://www.w3.org/2000/svg','text');label.setAttribute('x','11');label.setAttribute('y','4');label.setAttribute('fill','#fff');label.setAttribute('font-size','13');label.setAttribute('font-weight','bold');label.textContent='GPS';group.appendChild(label);svg.appendChild(group)}
-    group.style.display=inside(last.lat,last.lon)?'':'none';group.setAttribute('transform',`translate(${(last.lon-79.85)/8.6*1000},${(30.55-last.lat)/4.4*515})`);group.querySelector('circle').setAttribute('fill',fresh()?'#2563eb':'#64748b');svg.appendChild(group);
+    group.style.display=inside(last.lat,last.lon)?'':'none';group.setAttribute('transform',`translate(${(last.lon-79.85)/8.6*1000},${(30.55-last.lat)/4.4*515})`);group.querySelector('circle').setAttribute('fill',fresh()?'#16a34a':'#64748b');svg.appendChild(group);
   }
   const map=window.FloodSafeMap?.map;if(!map)return;
   const valid=last&&inside(last.lat,last.lon),features=[];
@@ -32,9 +32,9 @@ function marker(){
     if(map.getSource('fs-user-location'))map.getSource('fs-user-location').setData(data);
     else map.addSource('fs-user-location',{type:'geojson',data});
     const layers=[
-      {id:'fs-user-location-accuracy',type:'fill',source:'fs-user-location',filter:['==','kind','accuracy'],paint:{'fill-color':'#2563eb','fill-opacity':.12}},
+      {id:'fs-user-location-accuracy',type:'fill',source:'fs-user-location',filter:['==','kind','accuracy'],paint:{'fill-color':'#16a34a','fill-opacity':.12}},
       {id:'fs-user-location-halo',type:'circle',source:'fs-user-location',filter:['==','kind','position'],paint:{'circle-radius':14,'circle-color':'#fff','circle-opacity':.7}},
-      {id:'fs-user-location-dot',type:'circle',source:'fs-user-location',filter:['==','kind','position'],paint:{'circle-radius':8,'circle-color':['case',['==',['get','fresh'],true],'#2563eb','#64748b'],'circle-stroke-color':'#fff','circle-stroke-width':3}}
+      {id:'fs-user-location-dot',type:'circle',source:'fs-user-location',filter:['==','kind','position'],paint:{'circle-radius':8,'circle-color':['case',['==',['get','fresh'],true],'#16a34a','#64748b'],'circle-stroke-color':'#fff','circle-stroke-width':3}}
     ];
     for(const layer of layers){if(!map.getLayer(layer.id))map.addLayer(layer);map.moveLayer?.(layer.id)}
     if(valid&&pendingCenter&&window.FloodSafeMobileMap?.isOpen){pendingCenter=false;map.flyTo?.({center:[last.lon,last.lat],zoom:12,duration:450})}

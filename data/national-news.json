@@ -1,49 +1,49 @@
 {
-  "generated_at": "2026-09-02T11:37:09.216924+05:45",
-  "updated_at_npt": "02 Sep 11:37 NPT",
+  "generated_at": "2026-09-02T16:07:48.566421+05:45",
+  "updated_at_npt": "02 Sep 16:07 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "गण्डकीमा फणीन्द्रलाई ऊर्जा मन्त्रालय, न्यौपाने भौतिकमा बढुवा",
+      "title": "उत्तरगया गाउँपालिकामा ४२६ जना बेपत्ता, कार्यालयदेखि विद्यालयसम्म सबै बगे",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589346/426-people-missing-in-uttargaya-rural-municipality-everyone-from-offices-to-schools-swept-away",
+      "published_at": "2026-09-02T15:44:45+05:45",
+      "flash": true
+    },
+    {
+      "title": "माथिल्लो त्रिशूली-१ बाढीको चपेटामा: ११५ जना सुरुङभित्रै फसेको आशंका",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589322/upper-trishuli-1-in-the-grip-of-floods-115-people-suspected-to-be-trapped-inside-the-tunnel",
+      "published_at": "2026-09-02T14:37:44+05:45",
+      "flash": false
+    },
+    {
+      "title": "सिरहा कारागारका कैदीबन्दीद्वारा बाढी प्रभावितका लागि सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589316/siraha-prison-inmates-provide-assistance-to-flood-victims",
+      "published_at": "2026-09-02T14:22:23+05:45",
+      "flash": false
+    },
+    {
+      "title": "किसानसँग रकम असुलेर दुई वर्षदेखि वडा अध्यक्ष यादव बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589272/ward-chairman-yadav-has-been-missing-for-two-years-after-extorting-money-from-farmers",
+      "published_at": "2026-09-02T11:55:28+05:45",
+      "flash": false
+    },
+    {
+      "title": "गण्डकीमा फणीन्द्रलाई फेरि ऊर्जा मन्त्रालय, न्यौपानेलाई भौतिककाे जिम्मेवारी",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589262/in-gandaki-phanindra-promoted-to-ministry-of-energy-nandu-promoted-to-physics",
       "published_at": "2026-09-02T11:33:45+05:45",
-      "flash": true
-    },
-    {
-      "title": "मधेसका सबै मन्त्रालयलाई विकास निर्माणका लागि विनियोजित बजेट भदौमै उपलब्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589259/budget-allocated-for-development-works-to-all-ministries-in-madhesh-available-in-bhadra-itself",
-      "published_at": "2026-09-02T11:21:29+05:45",
-      "flash": true
-    },
-    {
-      "title": "कुटपिटबाट गम्भीर घाइते गिरी आईसीयूमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589257/giri-seriously-injured-in-assault-in-icu",
-      "published_at": "2026-09-02T11:16:57+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "एमालेले छोडेको मन्त्रालयमा नेसपाका फणीन्द्र नियुक्त हुँदै, आजै शपथको तयारी",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589248/jsps-phanindra-appointed-to-ministry-vacated-by-uml-preparations-for-oath-taking-today",
       "published_at": "2026-09-02T10:40:57+05:45",
-      "flash": true
-    },
-    {
-      "title": "कान्ति लोकपथलाई प्राथमिकताका साथ सञ्चालन गर्न जिल्ला प्रशासनको निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589233/district-administration-directs-to-operate-kanti-lokpath-with-priority",
-      "published_at": "2026-09-02T09:41:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "मधेस सरकारले बाढी प्रभावित क्षेत्रमा १ करोड ९६ लाख बराबरको राहत सामग्री सहयोग गर्ने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589210/madhesh-government-to-provide-relief-materials-worth-rs-196-million-to-flood-affected-areas",
-      "published_at": "2026-09-02T06:28:52+05:45",
       "flash": false
     }
   ],
@@ -63,7 +63,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
+      "flash": 1,
       "recent": 6
     },
     "Kathmandu Post": {
@@ -74,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     }

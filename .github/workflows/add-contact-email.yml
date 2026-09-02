@@ -1,0 +1,44 @@
+name: Add Portfolio Contact Email
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/add-contact-email.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  update-contact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add contact email
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          email = 'pujanchapagain.software@gmail.com'
+
+          if 'href="#contact"' not in s:
+              s = s.replace('<a href="#about">About</a>', '<a href="#about">About</a><a href="#contact">Contact</a>', 1)
+
+          if email not in s:
+              section = f'''
+          <section id="contact"><div class="wrap"><div class="section-head"><div class="section-number">05</div><div class="section-title"><small>Contact</small><h2>Let’s talk software.</h2><p>For software, product, prototype, or collaboration enquiries.</p></div></div><div class="about-grid"><div class="about-card"><strong>Email</strong><span><a href="mailto:{email}">{email}</a></span></div><div class="about-copy"><p>Building practical software, testing it properly, and improving it through real use.</p><div class="small">Based in the United Kingdom · Software products & working prototypes</div></div></div></div></section>
+          '''
+              s = s.replace('<footer>', section + '<footer>', 1)
+
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No change needed"
+          else
+            git add index.html
+            git commit -m "Add software contact email to portfolio"
+            git push
+          fi

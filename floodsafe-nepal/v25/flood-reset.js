@@ -8,7 +8,12 @@ if(geo&&!window.__fsLocationConsentGate){
   window.__fsLocationConsentGate=true;
   let locationTapUntil=0;
   document.addEventListener('click',event=>{
-    if(event.target?.closest?.('#locateBtn'))locationTapUntil=Date.now()+5000;
+    if(event.target?.closest?.('#locateBtn')){
+      locationTapUntil=Date.now()+5000;
+      // Android also enforces this token natively, so an old/duplicate
+      // weather runtime can never open the system prompt on page launch.
+      try{window.FloodSafeNative?.allowLocationPrompt?.()}catch{}
+    }
   },true);
   const deny=error=>{if(typeof error==='function')queueMicrotask(()=>error({code:1,message:'Tap My Current Location to allow GPS'}));};
   for(const name of ['getCurrentPosition','watchPosition']){

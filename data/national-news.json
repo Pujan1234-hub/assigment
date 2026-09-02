@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-03T02:43:38.131583+05:45",
-  "updated_at_npt": "03 Sep 02:43 NPT",
+  "generated_at": "2026-09-03T05:00:08.131062+05:45",
+  "updated_at_npt": "03 Sep 05:00 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -38,13 +38,6 @@
       "url": "https://www.ratopati.com/story/589442/bhotekoshi-flood-assistance-continues-from-banke",
       "published_at": "2026-09-02T23:27:12+05:45",
       "flash": false
-    },
-    {
-      "title": "बर्दियाका १३५ जनाको उद्धार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589434/135-people-rescued-from-bardiya",
-      "published_at": "2026-09-02T21:58:47+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -64,7 +57,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 6
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

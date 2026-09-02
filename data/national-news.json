@@ -1,56 +1,49 @@
 {
-  "generated_at": "2026-09-02T06:56:55.561180+05:45",
-  "updated_at_npt": "02 Sep 06:56 NPT",
+  "generated_at": "2026-09-02T11:37:09.216924+05:45",
+  "updated_at_npt": "02 Sep 11:37 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "गण्डकीमा फणीन्द्रलाई ऊर्जा मन्त्रालय, न्यौपाने भौतिकमा बढुवा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589262/in-gandaki-phanindra-promoted-to-ministry-of-energy-nandu-promoted-to-physics",
+      "published_at": "2026-09-02T11:33:45+05:45",
+      "flash": true
+    },
+    {
+      "title": "मधेसका सबै मन्त्रालयलाई विकास निर्माणका लागि विनियोजित बजेट भदौमै उपलब्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589259/budget-allocated-for-development-works-to-all-ministries-in-madhesh-available-in-bhadra-itself",
+      "published_at": "2026-09-02T11:21:29+05:45",
+      "flash": true
+    },
+    {
+      "title": "कुटपिटबाट गम्भीर घाइते गिरी आईसीयूमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589257/giri-seriously-injured-in-assault-in-icu",
+      "published_at": "2026-09-02T11:16:57+05:45",
+      "flash": true
+    },
+    {
+      "title": "एमालेले छोडेको मन्त्रालयमा नेसपाका फणीन्द्र नियुक्त हुँदै, आजै शपथको तयारी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589248/jsps-phanindra-appointed-to-ministry-vacated-by-uml-preparations-for-oath-taking-today",
+      "published_at": "2026-09-02T10:40:57+05:45",
+      "flash": true
+    },
+    {
+      "title": "कान्ति लोकपथलाई प्राथमिकताका साथ सञ्चालन गर्न जिल्ला प्रशासनको निर्देशन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589233/district-administration-directs-to-operate-kanti-lokpath-with-priority",
+      "published_at": "2026-09-02T09:41:11+05:45",
+      "flash": false
+    },
     {
       "title": "मधेस सरकारले बाढी प्रभावित क्षेत्रमा १ करोड ९६ लाख बराबरको राहत सामग्री सहयोग गर्ने",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589210/madhesh-government-to-provide-relief-materials-worth-rs-196-million-to-flood-affected-areas",
       "published_at": "2026-09-02T06:28:52+05:45",
-      "flash": true
-    },
-    {
-      "title": "भोटेकोशी बाढी: पोखरामा २१ शवको सनाखत",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589202/bhotekoshi-flood-21-bodies-identified-in-pokhara",
-      "published_at": "2026-09-02T04:56:01+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपीडितलाई होटल मेची क्राउनद्वारा २६ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589197/hotel-mechi-crown-provides-rs-26-million-in-assistance-to-flood-victims",
-      "published_at": "2026-09-02T03:15:33+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीबाट प्रभावित नेपाल टेलिकमका ११३ साइट पुनः सञ्चालनमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589196/113-nepal-telecom-sites-affected-by-floods-resume-operations",
-      "published_at": "2026-09-02T03:13:04+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीपीडितका लागि ४१ लाख ११ हजार सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589195/411-million-assistance-for-bhotekoshi-flood-victims",
-      "published_at": "2026-09-02T03:10:56+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी: काभ्रेबाट एक करोड १० लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589194/bhotekoshi-flood-rs-11-million-assistance-from-kavre",
-      "published_at": "2026-09-02T03:07:57+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी: बाँकेमा सहयोग जुट्दै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589193/bhotekoshi-flood-help-is-being-mobilized-in-banke",
-      "published_at": "2026-09-02T02:37:24+05:45",
       "flash": false
     }
   ],
@@ -70,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 7
+      "flash": 4,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,
@@ -81,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     }

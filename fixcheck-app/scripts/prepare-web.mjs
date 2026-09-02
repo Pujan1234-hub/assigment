@@ -17,13 +17,27 @@ const sourceResponse = await fetch(appSource, { cache: 'no-store' });
 if (!sourceResponse.ok) throw new Error(`Unable to load FixCheck v0.7 source: ${sourceResponse.status}`);
 let html = await sourceResponse.text();
 
-// The host-baseline experiment is no longer part of the native product UI.
-// Keep a tiny local compatibility value so the older pinned v0.7 run function can
-// finish without making the removed baseline request; the native diagnosis below
-// intentionally ignores that compatibility value.
+// The host-baseline experiment is no longer part of the native product.
+// Stop the remote baseline request and keep only a tiny compatibility value for the
+// older pinned run() implementation.
 const oldBaselineProbe = "const srv=await probes('./ping.txt',7,false);";
 if (!html.includes(oldBaselineProbe)) throw new Error('Pinned FixCheck source changed: baseline probe marker not found');
 html = html.replace(oldBaselineProbe, 'const srv=summary([0],1);');
+
+// HARD REMOVE every visible baseline element at build time. This is intentionally
+// not a CSS-only hide: the generated Android/iOS/desktop HTML no longer contains the
+// baseline row, top pill, or comparison card in the visible layout.
+const topBaseline = '<div class="pill">FixCheck host · <strong id="serverTop">not tested</strong></div>';
+const checkBaseline = '<div class="check"><div class="st" id="s-server">–</div><div><b>FixCheck host baseline</b><span id="t-server">Waiting</span></div></div>';
+const compareBaseline = '<div class="card"><h3>FixCheck host</h3><div class="comparegrid"><div class="tiny"><small>Median</small><b id="serverMed">--</b></div><div class="tiny"><small>Jitter</small><b id="serverJit">--</b></div><div class="tiny"><small>Success</small><b id="serverRel">--</b></div></div></div>';
+for (const marker of [topBaseline, checkBaseline, compareBaseline]) {
+  if (!html.includes(marker)) throw new Error('Pinned FixCheck source changed: visible baseline marker not found');
+  html = html.replace(marker, '');
+}
+
+// Legacy v0.7 JavaScript still writes to these IDs. Keep inert hidden nodes so those
+// writes cannot crash the check while the UI stays completely baseline-free.
+const compatibilityNodes = '<div style="display:none!important" aria-hidden="true"><div id="s-server"></div><span id="t-server"></span><strong id="serverTop"></strong><b id="serverMed"></b><b id="serverJit"></b><b id="serverRel"></b></div>';
 
 const nativePatch = `<style>
 #install{display:none!important}
@@ -32,25 +46,13 @@ const nativePatch = `<style>
 <script>
 window.FIXCHECK_NATIVE=true;
 (function(){
-  function hideClosest(selector, closestSelector){
-    const el=document.querySelector(selector);
-    const box=el&&el.closest(closestSelector);
-    if(box)box.style.display='none';
-  }
-
-  // Remove every visible FixCheck-host baseline element while keeping the legacy
-  // DOM nodes available for the pinned v0.7 code path during this compatibility build.
-  hideClosest('#s-server','.check');
-  hideClosest('#serverTop','.pill');
-  hideClosest('#serverMed','.card');
-
   const intro=document.querySelector('h1 + p');
   if(intro)intro.textContent='Pick a service. FixCheck measures DNS and repeated HTTPS response timing to the selected domain from this device.';
   const version=document.querySelector('.version');
-  if(version)version.textContent='FixCheck v0.7.1';
+  if(version)version.textContent='FixCheck v0.7.2';
 
-  // Native verdicts now use only the selected service signals. The removed host
-  // baseline cannot create a warning, lower confidence, or appear in the diagnosis.
+  // Native verdicts use only the selected service signals. The removed host baseline
+  // cannot create a warning, lower confidence, or appear in the diagnosis.
   classify=function(tg,d,svc){
     if(!navigator.onLine)return{level:'bad',title:'Your device is offline',text:'FixCheck cannot test '+tg.name+' until this device has an active connection.',why:'The local device reported offline before service testing began.'};
     if(!d.ok)return{level:'bad',title:'DNS problem for '+tg.name,text:d.nx?tg.host+' does not resolve in public DNS.':'FixCheck could not confirm DNS for '+tg.host+'.',why:'No service response timing is shown when DNS is not confirmed.'};
@@ -75,7 +77,7 @@ window.FIXCHECK_NATIVE=true;
   report=function(){
     if(!last)return'';
     return [
-      'FixCheck v0.7.1 service report',
+      'FixCheck v0.7.2 service report',
       'Target: '+last.target,
       'Diagnosis: '+last.diagnosis,
       'Service score: '+(last.score??'Not rated'),
@@ -90,9 +92,9 @@ window.FIXCHECK_NATIVE=true;
 })();
 </script>`;
 
-html = html.replace('</body>', nativePatch + '\n</body>');
+html = html.replace('</body>', compatibilityNodes + nativePatch + '\n</body>');
 writeFileSync(resolve(out, 'index.html'), html);
 for (const name of ['favicon.svg', 'manifest.webmanifest']) {
   try { copyFileSync(resolve(webAssets, name), resolve(out, name)); } catch {}
 }
-console.log('Prepared pinned FixCheck v0.7.1 assets with host baseline removed from native UI.');
+console.log('Prepared pinned FixCheck v0.7.2 assets with host baseline hard-removed from native UI.');

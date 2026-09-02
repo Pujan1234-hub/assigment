@@ -1,6 +1,10 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const base=path.join(__dirname,'../floodsafe-nepal/v25');
 const helper=()=>import('../supabase/functions/rain-alerts/rain-forecast.mjs');
+test('published browser and server use the exact same forecast parser',()=>{
+  assert.equal(fs.readFileSync(path.join(base,'rain-forecast-v1.mjs'),'utf8'),fs.readFileSync(path.join(__dirname,'../supabase/functions/rain-alerts/rain-forecast.mjs'),'utf8'));
+  assert.match(fs.readFileSync(path.join(base,'rain-timing-v4.js'),'utf8'),/from '\.\/rain-forecast-v1\.mjs'/);
+});
 function gpsRuntime(){
   let now=Date.parse('2026-09-02T08:00:00Z'),callback,fail,watchCount=0,cleared=[],next=0;
   const events=new Map(),nodes=new Map(),timers=[];

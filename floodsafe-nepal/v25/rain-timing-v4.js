@@ -1,4 +1,4 @@
-import {forecastUrl,parseForecast,pointKey,range,clock} from '../../supabase/functions/rain-alerts/rain-forecast.mjs';
+import {forecastUrl,parseForecast,pointKey,range,clock} from './rain-forecast-v1.mjs';
 import {setupRainAlerts} from './rain-push-v1.js';
 const $=id=>document.getElementById(id),POLL=5*60000,TTL=10*60000;
 let point=null,raw=null,forecast=null,fetchedAt=0,lastAttempt=0,controller=null,serial=0,timer=0,error='';

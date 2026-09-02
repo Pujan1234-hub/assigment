@@ -21,7 +21,7 @@ function gpsRuntime(){
   return {window,document,node,source,layers,flights,focus,emit,map,timers,cleared,count:()=>watchCount,advance:ms=>{now+=ms;timers.forEach(fn=>fn())},fix:(lat,lon,extra={})=>callback({timestamp:now,coords:{latitude:lat,longitude:lon,accuracy:12},...extra}),fail:e=>fail(e)};
 }
 test('GPS starts only on click, one watcher, marker does not wait for weather',()=>{
-  const r=gpsRuntime();assert.equal(r.count(),0);r.window.FloodSafeMap={map:r.map};r.emit('click');assert.equal(r.count(),1);
+  const r=gpsRuntime();assert.equal(r.count(),0);r.window.FloodSafeMap={map:r.map};r.emit('fsmapready');assert.equal(r.source.size,0,'do not touch the map before GPS use');r.emit('click');assert.equal(r.count(),1);
   r.fix(27.7,85.3);assert.equal(r.source.get('fs-user-location').data.features.length,2);assert.equal(r.focus.length,1);
   assert.equal(r.window.FloodSafeMobileMap.isOpen,false);assert.equal(r.flights.length,0);
   assert.match(r.node('place').textContent,/My current location/);

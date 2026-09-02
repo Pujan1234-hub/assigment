@@ -12,7 +12,7 @@ function label(){
   $('place').textContent=tr(`📍 ${fresh()?'मेरो हालको स्थान':'पछिल्लो GPS स्थान'} • ±${Math.round(last.accuracy)} m • ${at} NPT`,`📍 ${fresh()?'My current location':'Last GPS location'} • ±${Math.round(last.accuracy)} m • ${at} NPT`);
 }
 function marker(){
-  const map=window.FloodSafeMap?.map;if(!map)return;
+  const map=window.FloodSafeMap?.map;if(!map||!last)return;
   const valid=last&&inside(last.lat,last.lon),features=[];
   if(valid){
     const ring=[],radius=Math.min(last.accuracy,10000),cos=Math.cos(last.lat*Math.PI/180);

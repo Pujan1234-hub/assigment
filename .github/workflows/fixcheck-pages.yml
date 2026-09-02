@@ -9,6 +9,7 @@ on:
       - sw.js
       - auto-update.js
       - portfolio-floodsafe.js
+      - portfolio-motion.js
       - fixcheck/**
       - team-tracker/**
       - floodsafe-nepal/**
@@ -44,6 +45,7 @@ jobs:
           cp sw.js _site/sw.js
           cp auto-update.js _site/auto-update.js
           cp portfolio-floodsafe.js _site/portfolio-floodsafe.js
+          cp portfolio-motion.js _site/portfolio-motion.js
           cp -R fixcheck _site/fixcheck
           cp -R team-tracker _site/team-tracker
           cp -R floodsafe-nepal _site/floodsafe-nepal
@@ -61,7 +63,7 @@ jobs:
           s=re.sub(r'\bAI\b','software',s);p.write_text(s)
           PY
           sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
-          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=2"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=3"></script><script src="./portfolio-motion.js?v=1"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
           python - <<'PY'
           from pathlib import Path
           import re
@@ -102,6 +104,8 @@ jobs:
               grep -Fq 'trusted-river-runtime-v3.js?v=36' /tmp/v25.html
               grep -Fq 'impact-live-v1.js?v=6' /tmp/v25.html
               ! grep -Fq 'flood-freshness.js' /tmp/v25.html
+              curl --max-time 15 -fsSL "$BASE/?check=$GITHUB_SHA" -o /tmp/home.html
+              grep -Fq 'portfolio-motion.js?v=1' /tmp/home.html
               exit 0
             fi
             sleep 5

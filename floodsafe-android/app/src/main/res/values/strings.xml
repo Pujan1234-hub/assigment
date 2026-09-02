@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FloodSafe Nepal Beta</string>
+    <string name="title">FloodSafe Nepal</string>
+    <string name="status">Testing version · Internet required\n\nUses your browser for live FloodSafe data, location permission and web notifications. This is not a native background-alert service.</string>
+    <string name="safety">Rain times are forecasts, not guarantees. Background notifications still need testing on your phone. Follow official local warnings.</string>
+    <string name="open_app">Open FloodSafe / खोल्नुहोस्</string>
+    <string name="browser_missing">No compatible browser is available. Install or enable an up-to-date browser such as Chrome, then tap Open FloodSafe.</string>
+</resources>

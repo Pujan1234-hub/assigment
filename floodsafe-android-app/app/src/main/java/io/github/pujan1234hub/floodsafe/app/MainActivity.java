@@ -29,6 +29,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.webkit.WebViewAssetLoader;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Bundled hybrid app. No JavaScript-to-native bridge or remote top-level page. */
 public class MainActivity extends Activity {
@@ -38,8 +40,16 @@ public class MainActivity extends Activity {
     private LinearLayout recovery;
     private ConnectivityManager connectivity;
     private ConnectivityManager.NetworkCallback networkCallback;
-    private GeolocationPermissions.Callback pendingLocation;
-    private String pendingOrigin;
+    private static final class PendingLocation {
+        final String origin;
+        final GeolocationPermissions.Callback callback;
+        PendingLocation(String origin, GeolocationPermissions.Callback callback) {
+            this.origin = origin;
+            this.callback = callback;
+        }
+    }
+    private final List<PendingLocation> pendingLocations = new ArrayList<>();
+    private boolean androidLocationPromptOpen;
     private boolean mainFrameError;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -108,7 +118,9 @@ public class MainActivity extends Activity {
                 return true;
             }
             @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {
-                finishLocation(false);
+                // Android's own permission dialog may briefly cause WebView lifecycle
+                // callbacks. Do not cancel/re-open the same location prompt then.
+                if (!androidLocationPromptOpen) finishLocation(false);
                 mainFrameError = false;
                 updateConnection();
             }
@@ -124,7 +136,9 @@ public class MainActivity extends Activity {
             @Override public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
                 requestLocation(origin, callback);
             }
-            @Override public void onGeolocationPermissionsHidePrompt() { finishLocation(false); }
+            @Override public void onGeolocationPermissionsHidePrompt() {
+                if (!androidLocationPromptOpen) finishLocation(false);
+            }
             @Override public void onPermissionRequest(PermissionRequest request) { request.deny(); }
             @Override public boolean onCreateWindow(WebView view, boolean dialog, boolean userGesture, Message result) {
                 if (!userGesture) return false;
@@ -179,11 +193,17 @@ public class MainActivity extends Activity {
             callback.invoke(origin, false, false); return;
         }
         if (hasLocation()) { callback.invoke(origin, true, false); return; }
-        finishLocation(false);
-        pendingLocation = callback;
-        pendingOrigin = origin;
-        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST);
+        // A WebView can ask more than once while Android is showing its permission
+        // sheet. Queue those callbacks instead of repeatedly opening the sheet.
+        pendingLocations.add(new PendingLocation(origin, callback));
+        if (androidLocationPromptOpen) return;
+        androidLocationPromptOpen = true;
+        try {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST);
+        } catch (RuntimeException unavailable) {
+            finishLocation(false);
+        }
     }
 
     private boolean hasLocation() {
@@ -192,12 +212,14 @@ public class MainActivity extends Activity {
     }
 
     private void finishLocation(boolean allowed) {
-        if (pendingLocation == null) return;
-        GeolocationPermissions.Callback callback = pendingLocation;
-        String origin = pendingOrigin;
-        pendingLocation = null;
-        pendingOrigin = null;
-        callback.invoke(origin, allowed, false);
+        androidLocationPromptOpen = false;
+        if (pendingLocations.isEmpty()) return;
+        List<PendingLocation> callbacks = new ArrayList<>(pendingLocations);
+        pendingLocations.clear();
+        boolean validPage = allowed && webView != null && NavigationPolicy.internalPage(webView.getUrl());
+        for (PendingLocation item : callbacks) {
+            item.callback.invoke(item.origin, validPage && NavigationPolicy.trustedOrigin(item.origin), false);
+        }
     }
 
     @Override public void onRequestPermissionsResult(int code, String[] permissions, int[] grants) {

@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">FloodSafe Nepal</string>
+    <string name="retry">पुनः प्रयास / Retry</string>
+    <string name="offline">इन्टरनेट छैन • नयाँ मापन र नक्साका लागि जडान गर्नुहोस्। Offline • reconnect for current data and map tiles.</string>
+    <string name="load_error">पेज लोड भएन। पुनः प्रयास गर्नुहोस्। / Page could not load.</string>
+    <string name="webview_missing">Android System WebView update गरेर फेरि खोल्नुहोस्। / Update Android System WebView and reopen.</string>
+    <string name="browser_missing">स्रोत खोल्न browser उपलब्ध छैन। / No browser is available for this source.</string>
+</resources>

@@ -205,6 +205,10 @@ test('human parser binds numbers to outcomes, not years or deployed personnel',a
   assert.equal(extract('Bodies of 939 people who died in the disaster have been found, including 23 in Rasuwa.','death'),939);
   assert.equal(extract('More than 3,900 people, including security personnel, are still missing.','missing'),3900);
   assert.equal(extract('11,379 people affected by the floods have been rescued.','rescued'),11379);
+  assert.equal(extract('रसुवा बाढी : मृत्यु हुनेको संख्या १ हजार ११४ पुग्यो।','death'),1114);
+  assert.equal(extract('प्राधिकरणका अनुसार अझै ३ हजार ९१६ जना सम्पर्कविहीन छन्।','missing'),3916);
+  assert.equal(extract('हालसम्म बाढी प्रभावित क्षेत्रबाट ११ हजार ९९३ जनाको उद्धार गरिएको छ।','rescued'),11993);
+  assert.equal(extract('प्रहरीका अनुसार रसुवामा ४१, नुवाकोटमा १५५ र चितवनमा ३४८ गरी १ हजार ११४ जनाको शव फेला परेको हो।','death'),1114);
   assert.equal(extract('In 2026, 8791 personnel searched for missing people.','missing'),null);
   assert.equal(extract('The death toll is 12. The death toll is 15.','death'),null);
 });

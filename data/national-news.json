@@ -1,49 +1,77 @@
 {
-  "generated_at": "2026-09-02T20:21:39.958612+05:45",
-  "updated_at_npt": "02 Sep 20:21 NPT",
+  "generated_at": "2026-09-02T23:48:06.594231+05:45",
+  "updated_at_npt": "02 Sep 23:48 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढी : बाँकेबाट सहयोग जारी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589442/bhotekoshi-flood-assistance-continues-from-banke",
+      "published_at": "2026-09-02T23:27:12+05:45",
+      "flash": true
+    },
+    {
+      "title": "डायस्पोराको योगदान संसद्मा नसमेटिएकोमा एनआरएनए सचिव खत्रीको आपत्ति: ‘सहयोग गर्दा किन लुकाइयो ?’",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589440/nrna-secretary-khatri-objects-to-the-fact-that-the-contribution-of-the-diaspora-was-not-included-in-the-parliament-why-were-the-merits-of-nepalis-hidden-while-providing-assistance",
+      "published_at": "2026-09-02T23:09:03+05:45",
+      "flash": true
+    },
+    {
+      "title": "कृष्णभीर अवरुद्ध भएपछि हेटौँडा–काठमाडौँ मार्गमा सवारी चाप",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589438/traffic-congestion-on-hetauda-kathmandu-route-after-krishna-bhir-blocked",
+      "published_at": "2026-09-02T22:55:02+05:45",
+      "flash": true
+    },
+    {
+      "title": "रसुवा बाढीमा एनआरएनए युवा उपाध्यक्ष थापाको सक्रियता: विश्वभरका नेपालीलाई सहयोगको अपिल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589439/nrna-youth-vice-president-thapas-activism-in-the-rasuwa-flood-appeal-to-nepalis-around-the-world-for-help",
+      "published_at": "2026-09-02T22:54:58+05:45",
+      "flash": true
+    },
+    {
+      "title": "बर्दियाका १३५ जनाको उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589434/135-people-rescued-from-bardiya",
+      "published_at": "2026-09-02T21:58:47+05:45",
+      "flash": false
+    },
+    {
+      "title": "प्रदेश प्रमुख मियाँले एक महिनाको पारिश्रमिक बाढीपीडितलाई दिने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589420/provincial-chief-miya-will-donate-one-months-salary-to-flood-victims",
+      "published_at": "2026-09-02T20:32:25+05:45",
+      "flash": false
+    },
     {
       "title": "रसुवा बाढी प्रभावितलाई ३ लाख ३१ हजार सहयोग गरिने",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589415/331000-rupees-will-be-provided-as-assistance-to-those-affected-by-the-rasuwa-flood",
       "published_at": "2026-09-02T20:14:39+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढी पीडितलाई विभिन्न सङ्घसंस्थाबाट ४६ लाख सहयोग",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589410/46-million-assistance-from-various-organizations-to-bhotekoshi-flood-victims",
       "published_at": "2026-09-02T19:55:20+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "‘अदालतलाई सूचना प्रविधि र जनमैत्री बनाउँदै लगेका छौँ’",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589408/we-are-making-the-court-information-technology-and-people-friendly",
       "published_at": "2026-09-02T19:47:21+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "लुम्बिनी नेत्रविज्ञान अध्ययन संस्थानद्वारा बाढीपीडितलाई १४ लाख भन्दा बढी सहयोग",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589401/63-million-rupees-assistance-to-bhotekoshi-flood-victims",
       "published_at": "2026-09-02T19:24:13+05:45",
-      "flash": true
-    },
-    {
-      "title": "भोटेकोशी बाढीपीडितलाई ६३ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589400/63-million-rupees-assistance-to-bhotekoshi-flood-victims",
-      "published_at": "2026-09-02T19:10:29+05:45",
-      "flash": false
-    },
-    {
-      "title": "खोलाले बगाउँदा दुई जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589399/two-people-died-after-being-swept-away-by-a-river",
-      "published_at": "2026-09-02T19:07:49+05:45",
       "flash": false
     },
     {
@@ -58,34 +86,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589389/111-pints-of-blood-collected-for-bhotekoshi-flood-victims",
       "published_at": "2026-09-02T18:12:53+05:45",
-      "flash": false
-    },
-    {
-      "title": "बारामा मोटरसाइकल दुर्घटना, चालकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589384/motorcycle-accident-in-bara-1-person-dies",
-      "published_at": "2026-09-02T17:47:41+05:45",
-      "flash": false
-    },
-    {
-      "title": "उत्तरगया गाउँपालिकामा ४२६ जना बेपत्ता, कार्यालयदेखि विद्यालयसम्म सबै बगे",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589346/426-people-missing-in-uttargaya-rural-municipality-everyone-from-offices-to-schools-swept-away",
-      "published_at": "2026-09-02T15:44:45+05:45",
-      "flash": false
-    },
-    {
-      "title": "माथिल्लो त्रिशूली-१ बाढीको चपेटामा: ११५ जना सुरुङभित्रै फसेको आशंका",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589322/upper-trishuli-1-in-the-grip-of-floods-115-people-suspected-to-be-trapped-inside-the-tunnel",
-      "published_at": "2026-09-02T14:37:44+05:45",
-      "flash": false
-    },
-    {
-      "title": "सिरहा कारागारका कैदीबन्दीद्वारा बाढी प्रभावितका लागि सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589316/siraha-prison-inmates-provide-assistance-to-flood-victims",
-      "published_at": "2026-09-02T14:22:23+05:45",
       "flash": false
     }
   ],

@@ -1,0 +1,4 @@
+{
+  "imports": {"postgres":"npm:postgres@3.4.9","web-push":"npm:web-push@3.6.7"},
+  "compilerOptions": {"allowJs":true,"strict":false}
+}

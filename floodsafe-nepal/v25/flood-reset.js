@@ -1,7 +1,7 @@
 (()=>{'use strict';
 if(window.__fsFloodResetV16)return;window.__fsFloodResetV16=true;
 try{
-  if('serviceWorker'in navigator) navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{if((r.scope||'').includes('/floodsafe-nepal/'))r.unregister()}));
+  if('serviceWorker'in navigator) navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{const workers=[r.active,r.installing,r.waiting];if((r.scope||'').includes('/floodsafe-nepal/')&&!workers.some(w=>w&&new URL(w.scriptURL).pathname.endsWith('/rain-alert-sw.js')))r.unregister()}));
   if('caches'in window) caches.keys().then(ks=>ks.filter(k=>/floodsafe|v25|shell/i.test(k)).forEach(k=>caches.delete(k)));
 }catch{}
 
@@ -37,7 +37,7 @@ const timer=setInterval(()=>{
     if(!api?.initialized){if(tries>120)clearInterval(timer);return}
     api.set3D?.(false);
     m.stop?.();m.setPitch?.(0);m.setBearing?.(0);
-    m.fitBounds?.([[80.0,26.2],[88.35,30.5]],{padding:window.innerWidth<620?16:34,pitch:0,bearing:0,duration:0});
+    if(!window.FloodSafeCurrentLocation?.last)m.fitBounds?.([[80.0,26.2],[88.35,30.5]],{padding:window.innerWidth<620?16:34,pitch:0,bearing:0,duration:0});
     const hint=document.getElementById('mapHint');
     if(hint && api.districtCount>=70 && !window.FloodSafeHydroSmooth) hint.textContent=(window.FloodSafe?.state?.lang==='en')?'🇳🇵 Nepal • 77 districts • live river gauges':'🇳🇵 नेपाल • ७७ जिल्ला • प्रत्यक्ष नदी मापन केन्द्र';
     clearInterval(timer);

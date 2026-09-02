@@ -6,6 +6,8 @@ on:
       - 'floodsafe-nepal/v25/**'
       - 'tests/floodsafe-refresh.test.cjs'
       - 'tests/river-sync-latency.test.cjs'
+      - 'tests/gps-rain.test.cjs'
+      - 'supabase/functions/rain-alerts/**'
       - 'supabase/functions/sync-bipad-rivers/**'
       - '.github/workflows/floodsafe-refresh-tests.yml'
   workflow_dispatch:
@@ -19,4 +21,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/floodsafe-refresh.test.cjs tests/river-sync-latency.test.cjs
+      - run: node --test tests/floodsafe-refresh.test.cjs tests/river-sync-latency.test.cjs tests/gps-rain.test.cjs

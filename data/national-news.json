@@ -1,15 +1,22 @@
 {
-  "generated_at": "2026-09-02T05:07:59.235314+05:45",
-  "updated_at_npt": "02 Sep 05:07 NPT",
+  "generated_at": "2026-09-02T06:56:55.561180+05:45",
+  "updated_at_npt": "02 Sep 06:56 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "मधेस सरकारले बाढी प्रभावित क्षेत्रमा १ करोड ९६ लाख बराबरको राहत सामग्री सहयोग गर्ने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589210/madhesh-government-to-provide-relief-materials-worth-rs-196-million-to-flood-affected-areas",
+      "published_at": "2026-09-02T06:28:52+05:45",
+      "flash": true
+    },
     {
       "title": "भोटेकोशी बाढी: पोखरामा २१ शवको सनाखत",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589202/bhotekoshi-flood-21-bodies-identified-in-pokhara",
       "published_at": "2026-09-02T04:56:01+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "बाढीपीडितलाई होटल मेची क्राउनद्वारा २६ लाख सहयोग",
@@ -44,13 +51,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589193/bhotekoshi-flood-help-is-being-mobilized-in-banke",
       "published_at": "2026-09-02T02:37:24+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी: समुदायले नै जुटाउँदैछ सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589192/bhotekoshi-flood-community-is-raising-funds",
-      "published_at": "2026-09-02T02:15:55+05:45",
       "flash": false
     }
   ],

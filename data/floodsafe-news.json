@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-03T13:54:16.638157Z",
+  "generated_at": "2026-09-03T17:36:19.312722Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,37 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 4
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "इलाममा ट्रक दुर्घटना हुँदा एक जनाको मृत्यु, दुई घाइते",
-      "url": "https://radionepalonline.com/2026/09/03/732282.html",
-      "published_at": "2026-09-03T13:49:14Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "बाढीमा फसेका ११४ नेपाली तातोपानी नाकाबाट फर्किए",
-      "url": "https://radionepalonline.com/2026/09/03/732280.html",
-      "published_at": "2026-09-03T13:40:43Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "बाइरोडको बाटो हुँदै २४ हजार ५०० सिलिण्डर उपत्यकामा आयो",
-      "url": "https://radionepalonline.com/2026/09/03/732278.html",
-      "published_at": "2026-09-03T13:35:29Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "बाढी प्रभावित विद्यालय पुनः निर्माणमा ‘ठूला विद्यालय’को अवधारणा: मन्त्री पोखरेल",
-      "url": "https://radionepalonline.com/2026/09/03/732276.html",
-      "published_at": "2026-09-03T13:26:03Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

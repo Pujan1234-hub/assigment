@@ -1,22 +1,29 @@
 {
-  "generated_at": "2026-09-03T23:49:29.953288+05:45",
-  "updated_at_npt": "03 Sep 23:49 NPT",
+  "generated_at": "2026-09-04T02:43:03.678131+05:45",
+  "updated_at_npt": "04 Sep 02:43 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "भोटेकोशी बाढीमा बेपत्ता ४४ रामेछापेलीको खोजी तीव्र पार्न सांसद बुढाथोकीको माग",
+      "title": "नाइजेरियामा शङ्कास्पद विषाक्त धुवाँबाट करिब ४० जनाको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589693/mp-budhathoki-demands-to-intensify-search-for-44-missing-in-bhotekoshi-flood-in-ramechhapeli",
-      "published_at": "2026-09-03T23:37:33+05:45",
+      "url": "https://www.ratopati.com/story/589698/nearly-40-dead-in-nigeria-from-suspected-toxic-fumes",
+      "published_at": "2026-09-04T02:00:00+05:45",
       "flash": true
     },
     {
-      "title": "एकै संस्थाद्वारा डेढ अर्ब भन्दा बढी सहयोग, उद्धार कोषमा जुट्यो १० अर्ब",
+      "title": "काठमाडौँको पेप्सीकोलामा आगलागी, नियन्त्रणको प्रयास जारी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589692/a-single-organization-provided-more-than-15-billion-rupees-raising-10-billion-rupees-for-the-rescue-fund",
-      "published_at": "2026-09-03T23:20:32+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/589700/massive-fire-breaks-out-at-pepsico-in-kathmandu-efforts-to-control-it-continue",
+      "published_at": "2026-09-04T01:39:49+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी : पाँच हजार ३८४ जनाको उपचार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589697/bhotekoshi-flood-5384-people-treated",
+      "published_at": "2026-09-04T01:24:05+05:45",
+      "flash": false
     },
     {
       "title": "इलाममा ट्रक दुर्घटना, एक जनाको घटनास्थलमै मृत्यु",
@@ -30,20 +37,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589664/panchkhal-mayor-kharel-donates-rs-2-million-to-flood-and-landslide-victims",
       "published_at": "2026-09-03T20:50:28+05:45",
-      "flash": false
-    },
-    {
-      "title": "सुदूरपश्चिममा आकस्मिक बाढीको जोखिम, सतर्क रहन आग्रह",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589646/risk-of-flash-floods-in-the-far-west-urges-caution",
-      "published_at": "2026-09-03T19:21:01+05:45",
-      "flash": false
-    },
-    {
-      "title": "सुस्तामा सीमा मानिएको सिमलको रूख ढल्यो बाढीले",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589632/a-simal-tree-considered-a-boundary-tree-in-susta-was-toppled-by-the-flood",
-      "published_at": "2026-09-03T18:01:05+05:45",
       "flash": false
     }
   ],
@@ -63,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 6
+      "flash": 1,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

@@ -27,8 +27,10 @@ export function setupRainAlerts({getLanguage}) {
       onStatus = (event) => render(Boolean(event?.detail?.enabled));
       window.addEventListener('floodsafe-alerts-status', onStatus);
 
-      const button = document.getElementById('rainAlertToggle');
-      if (button) button.addEventListener('click', () => {
+      // The visible home-screen Warning Alert button is #alertBtn.
+      // Capture the tap as well as the compact rain-widget button when present.
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('#alertBtn, #rainAlertBtn')) return;
         if (window.FloodSafeNative?.enableRainAlerts) window.FloodSafeNative.enableRainAlerts();
         else render(false);
       });

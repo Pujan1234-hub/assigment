@@ -1,0 +1,31 @@
+name: Build FloodSafe Nepal Windows app
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'floodsafe-nepal/**'
+      - 'windows-app/**'
+      - '.github/workflows/build-floodsafe-windows.yml'
+
+jobs:
+  package-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: windows-app/package.json
+      - name: Install desktop build tools
+        working-directory: windows-app
+        run: npm install
+      - name: Package portable Windows app
+        working-directory: windows-app
+        run: npm run dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-Windows
+          path: windows-app/release/*.exe
+          if-no-files-found: error

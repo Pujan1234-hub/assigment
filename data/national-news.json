@@ -1,42 +1,49 @@
 {
-  "generated_at": "2026-09-03T06:56:03.541333+05:45",
-  "updated_at_npt": "03 Sep 06:56 NPT",
+  "generated_at": "2026-09-03T11:35:29.263035+05:45",
+  "updated_at_npt": "03 Sep 11:35 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "अमेरिकाको मिनियापोलिसमा सामूहिक गोलीकाण्ड, दुई जनाको मृत्यु; तीन प्रहरीसहित कैयौँ घाइते",
+      "title": "भोटेकोशी बाढी : डीएनए परीक्षणबाट पहिचानको आशमा आफन्त",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589464/mass-shooting-in-minneapolis-usa-leaves-two-dead-several-injured-including-three-police-officers",
-      "published_at": "2026-09-03T06:41:09+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/589482/bhotekoshi-flood-relatives-hope-for-identification-through-dna-testing",
+      "published_at": "2026-09-03T09:49:55+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढीमा मधेस प्रदेशका हराइरहेका ३० सम्पर्कमा, १६२ जना अझै सम्पर्कविहीन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589475/30-people-missing-in-bhotekoshi-flood-from-madhesh-province-contacted-162-still-unaccounted-for",
+      "published_at": "2026-09-03T08:21:43+05:45",
+      "flash": false
+    },
+    {
+      "title": "कचनकवलद्वारा प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा रु २९ लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589472/kachankawal-donates-rs-29-million-to-prime-ministers-disaster-relief-fund",
+      "published_at": "2026-09-03T07:52:35+05:45",
+      "flash": false
     },
     {
       "title": "बाढी पीडितलाई मन फुकाएर सहयोग गर्दै मधेसवासी",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589463/madhes-residents-are-helping-flood-victims-wholeheartedly",
       "published_at": "2026-09-03T06:34:49+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढी : कञ्चनपुरबाट एक करोड ३२ लाख बढी सहयोग",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589461/bhotekoshi-flood-more-than-rs-132-million-assistance-from-kanchanpur",
       "published_at": "2026-09-03T06:21:35+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "सम्पर्कविहीन परिवार: न चुल्हो बल्छ , न आँखा ओभाउँछन्",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589458/a-family-without-contact-neither-the-stove-nor-the-eyes-are-lit",
       "published_at": "2026-09-03T05:43:50+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रहरीबाट अवकाशपछि कृषि पेसामा रमाइरहेका अर्जुन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589456/arjun-is-enjoying-his-agricultural-career-after-retiring-from-the-police",
-      "published_at": "2026-09-03T05:33:58+05:45",
       "flash": false
     }
   ],
@@ -56,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 5
+      "flash": 0,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,
@@ -66,8 +73,8 @@
       "recent": 0
     },
     "The Rising Nepal": {
-      "ok": true,
-      "candidates": 16,
+      "ok": false,
+      "error": "HTTPSConnectionPool(host='risingnepaldaily.com', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutEr",
       "flash": 0,
       "recent": 0
     }

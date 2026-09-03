@@ -1,0 +1,116 @@
+name: Build DateMate Complete Project ZIP
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build-datemate-complete-project.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Reconstruct DateMate Android project
+        shell: bash
+        run: |
+          cat datemate-build/project.part00 datemate-build/project.part01 datemate-build/project.part02 datemate-build/project.part03 > /tmp/datemate-project.b64
+          base64 --decode /tmp/datemate-project.b64 > /tmp/datemate-project.zip
+          unzip -q /tmp/datemate-project.zip -d .
+          test -f datemate-android-fixed/app/src/main/java/com/pujan/datemate/MainActivity.kt
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Generate proper Gradle wrapper
+        run: |
+          gradle -p datemate-android-fixed wrapper --gradle-version 8.10.2 --distribution-type bin
+          test -f datemate-android-fixed/gradlew
+          test -f datemate-android-fixed/gradlew.bat
+          test -f datemate-android-fixed/gradle/wrapper/gradle-wrapper.jar
+          test -f datemate-android-fixed/gradle/wrapper/gradle-wrapper.properties
+          chmod +x datemate-android-fixed/gradlew
+
+      - name: Build and verify debug APK
+        run: |
+          cd datemate-android-fixed
+          ./gradlew --no-daemon clean assembleDebug
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          cp app/build/outputs/apk/debug/app-debug.apk DateMate-Camera-Fix.apk
+
+      - name: Add handoff README
+        shell: bash
+        run: |
+          cat > datemate-android-fixed/README-FIRST.txt <<'EOF'
+          DateMate Android Studio Complete Project
+          =======================================
+
+          This ZIP is the full Android Studio project, not only an APK artifact.
+
+          INCLUDED
+          - app source code
+          - MainActivity.kt camera-freeze fix
+          - AndroidManifest.xml
+          - Gradle build files
+          - proper Gradle wrapper (gradlew, gradlew.bat, wrapper JAR/properties)
+          - DateMate resources/logo
+          - already-built DateMate-Camera-Fix.apk
+
+          OPEN IN ANDROID STUDIO
+          1. Unzip the folder.
+          2. Android Studio > Open.
+          3. Select the unzipped datemate-android-fixed folder.
+          4. Wait for Gradle Sync to finish.
+          5. Connect Android phone and press Run.
+
+          APK
+          You can also install DateMate-Camera-Fix.apk directly on an Android phone.
+
+          CAMERA FIX
+          Full-resolution expiry-photo decoding is moved off the UI thread before ML Kit OCR.
+          This prevents the app from freezing after taking the expiry-date photo on large phone-camera images.
+
+          EXPIRY SCAN
+          Supports common formats including 05/2029, 05/29, JUN 8, 8 JUN,
+          08/06/2027, EXP, USE BY, BEST BEFORE, BBE and similar labels.
+          EOF
+
+      - name: Create complete project ZIP
+        run: |
+          mv datemate-android-fixed DateMate
+          zip -qr DateMate-AndroidStudio-Complete-Camera-Fix.zip DateMate \
+            -x 'DateMate/.gradle/*' \
+            -x 'DateMate/app/build/*' \
+            -x 'DateMate/build/*'
+          unzip -l DateMate-AndroidStudio-Complete-Camera-Fix.zip | grep 'DateMate/gradle/wrapper/gradle-wrapper.jar'
+          unzip -l DateMate-AndroidStudio-Complete-Camera-Fix.zip | grep 'DateMate/app/src/main/java/com/pujan/datemate/MainActivity.kt'
+          unzip -l DateMate-AndroidStudio-Complete-Camera-Fix.zip | grep 'DateMate/DateMate-Camera-Fix.apk'
+          ls -lh DateMate-AndroidStudio-Complete-Camera-Fix.zip
+
+      - name: Upload complete project artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DateMate-AndroidStudio-Complete-Camera-Fix
+          path: DateMate-AndroidStudio-Complete-Camera-Fix.zip
+          if-no-files-found: error
+
+      - name: Publish complete project ZIP release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="datemate-complete-project-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" DateMate-AndroidStudio-Complete-Camera-Fix.zip --title "DateMate Complete Android Studio Project ${GITHUB_RUN_NUMBER}" --notes "Complete importable Android Studio project with Gradle wrapper, verified debug build, camera freeze fix and direct APK inside the ZIP."

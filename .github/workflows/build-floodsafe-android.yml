@@ -5,6 +5,8 @@ on:
   push:
     paths:
       - 'floodsafe-android-app/**'
+      - 'floodsafe-nepal/**'
+      - 'data/**'
       - '.github/workflows/build-floodsafe-android.yml'
 
 permissions:

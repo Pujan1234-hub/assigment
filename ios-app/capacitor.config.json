@@ -1,0 +1,6 @@
+{
+  "appId": "com.floodsafe.nepal",
+  "appName": "FloodSafe Nepal",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}

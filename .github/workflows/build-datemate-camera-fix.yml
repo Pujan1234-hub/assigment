@@ -1,0 +1,59 @@
+name: Build DateMate Camera Fix APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build-datemate-camera-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Reconstruct DateMate Android project
+        shell: bash
+        run: |
+          cat datemate-build/project.part00 datemate-build/project.part01 datemate-build/project.part02 datemate-build/project.part03 > /tmp/datemate-project.b64
+          base64 --decode /tmp/datemate-project.b64 > /tmp/datemate-project.zip
+          unzip -q /tmp/datemate-project.zip -d .
+          test -f datemate-android-fixed/app/src/main/java/com/pujan/datemate/MainActivity.kt
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Build debug APK
+        run: gradle -p datemate-android-fixed --stacktrace assembleDebug
+
+      - name: Prepare APK
+        run: |
+          cp datemate-android-fixed/app/build/outputs/apk/debug/app-debug.apk DateMate-Camera-Fix.apk
+          ls -lh DateMate-Camera-Fix.apk
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DateMate-Camera-Fix-APK
+          path: DateMate-Camera-Fix.apk
+          if-no-files-found: error
+
+      - name: Publish downloadable APK release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="datemate-camera-fix-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" DateMate-Camera-Fix.apk --title "DateMate Camera Fix APK ${GITHUB_RUN_NUMBER}" --notes "DateMate Android build with the full-resolution expiry photo decoding moved off the UI thread to prevent the post-camera freeze. Includes barcode scanning, expiry OCR/date parsing, local items/archive, user name, and 7 AM / 7 PM reminders."

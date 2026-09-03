@@ -2,7 +2,9 @@
 // 15 minutes. In Nepal these are interpolated hourly forecasts, not radar nowcasts.
 // Treat trace model amounts as a possibility, not observed rain.\nexport const STEP=15*60*1000, WET_MM=.5, TRACE_MM=.05, MAX_CURRENT_AGE=45*60*1000;
 const amount=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0?v:null;
-export function liquid(rain,showers){const a=amount(rain),b=amount(showers);return a===null||b===null?null:a+b}
+// Open-Meteo may omit one zero-valued field. Missing rain/showers therefore means 0
+// when the other liquid field is present; only two missing values mean unknown.
+export function liquid(rain,showers){const a=amount(rain),b=amount(showers);return a===null&&b===null?null:(a??0)+(b??0)}
 export function pointKey(lat,lon){return `${Number(lat).toFixed(2)},${Number(lon).toFixed(2)}`}
 export function forecastUrl(lat,lon){
   const u=new URL('https://api.open-meteo.com/v1/forecast');
@@ -12,8 +14,10 @@ export function parseForecast(j,now=Date.now()){
   const c=j?.current,series=j?.minutely_15,time=Number(c?.time)*1000;
   if(j?.current_units?.time!=='unixtime'||j?.minutely_15_units?.time!=='unixtime'||j?.minutely_15_units?.rain!=='mm'||j?.minutely_15_units?.showers!=='mm'||!Number.isFinite(time)||time>now+STEP||now-time>MAX_CURRENT_AGE)throw Error('Forecast time or units are unavailable/stale');
   const current=liquid(c.rain,c.showers),times=series?.time, rain=series?.rain,showers=series?.showers;
-  if(current===null||!Array.isArray(times)||!Array.isArray(rain)||!Array.isArray(showers)||times.length!==rain.length||times.length!==showers.length||times.length<2)throw Error('Incomplete rainfall forecast');
-  const slots=times.map((t,i)=>({start:Number(t)*1000-STEP,end:Number(t)*1000,mm:liquid(rain[i],showers[i])}));
+  if(current===null||!Array.isArray(times)||(!Array.isArray(rain)&&!Array.isArray(showers))||times.length<2)throw Error('Incomplete rainfall forecast');
+  if(Array.isArray(rain)&&rain.length!==times.length)throw Error('Rainfall interval mismatch');
+  if(Array.isArray(showers)&&showers.length!==times.length)throw Error('Showers interval mismatch');
+  const slots=times.map((t,i)=>({start:Number(t)*1000-STEP,end:Number(t)*1000,mm:liquid(rain?.[i],showers?.[i])}));
   if(slots.some((s,i)=>!Number.isFinite(s.end)||(i>0&&s.end-slots[i-1].end!==STEP)))throw Error('Forecast interval gap');
   if(!slots.some(s=>s.start<=now&&s.end>=now)||slots.at(-1).end<=now)throw Error('Forecast does not cover the current time');
   const wetNow=current>=WET_MM;let start=null,stop=null,sawWet=wetNow,unknown=false;

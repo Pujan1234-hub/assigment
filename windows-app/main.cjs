@@ -15,7 +15,7 @@ function createWindow() {
       webSecurity: true
     }
   });
-  win.loadFile(path.join(__dirname, "..", "floodsafe-nepal", "index.html"));
+  win.loadFile(path.join(__dirname, "floodsafe-nepal", "index.html"));
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };

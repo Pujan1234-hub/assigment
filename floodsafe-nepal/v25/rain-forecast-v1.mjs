@@ -1,6 +1,6 @@
 // Shared by the browser and push worker. Open-Meteo amounts cover the PRECEDING
 // 15 minutes. In Nepal these are interpolated hourly forecasts, not radar nowcasts.
-export const STEP=15*60*1000, WET_MM=.05, MAX_CURRENT_AGE=45*60*1000;
+// Treat trace model amounts as a possibility, not observed rain.\nexport const STEP=15*60*1000, WET_MM=.5, TRACE_MM=.05, MAX_CURRENT_AGE=45*60*1000;
 const amount=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0?v:null;
 export function liquid(rain,showers){const a=amount(rain),b=amount(showers);return a===null||b===null?null:a+b}
 export function pointKey(lat,lon){return `${Number(lat).toFixed(2)},${Number(lon).toFixed(2)}`}

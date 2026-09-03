@@ -1,4 +1,7 @@
-plugins { id 'com.android.application' }
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+}
 
 android {
     namespace 'io.github.pujan1234hub.floodsafe.app'
@@ -7,8 +10,8 @@ android {
         applicationId 'io.github.pujan1234hub.floodsafe.app'
         minSdk 26
         targetSdk 35
-        versionCode 2
-        versionName '0.2.0-beta'
+        versionCode 3
+        versionName '0.3.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     compileOptions {
@@ -34,6 +37,7 @@ tasks.named('preBuild').configure { dependsOn bundleWeb }
 
 dependencies {
     implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'com.google.firebase:firebase-messaging:24.1.1'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'

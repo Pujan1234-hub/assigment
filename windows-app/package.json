@@ -1,0 +1,34 @@
+{
+  "name": "floodsafe-nepal-windows",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FloodSafe Nepal Windows desktop app",
+  "main": "main.cjs",
+  "scripts": {
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "35.1.5",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "io.github.pujan1234hub.floodsafe.windows",
+    "productName": "FloodSafe Nepal",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "../floodsafe-nepal/**/*"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "artifactName": "FloodSafe-Nepal-Windows-${version}.exe"
+    },
+    "portable": {
+      "artifactName": "FloodSafe-Nepal-Windows-${version}.exe"
+    }
+  }
+}

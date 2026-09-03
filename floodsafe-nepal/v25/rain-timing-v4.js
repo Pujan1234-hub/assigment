@@ -15,7 +15,9 @@ function render(){
   renderWeather();
   if($('rainForecastMeta'))$('rainForecastMeta').textContent='';
   if(!point){el.textContent=tr('वर्षा सुरु/रोकिने अनुमानका लागि “मेरो हालको स्थान” थिच्नुहोस् वा नेपालमा निगरानी क्षेत्र छान्नुहोस्।','Tap “My Current Location” or choose a Nepal monitoring point for rain timing.');return}
-  if(!forecast||Date.now()-fetchedAt>TTL){el.textContent=tr('वर्षाको ताजा पूर्वानुमान उपलब्ध छैन • स्वतः पुनः जाँच हुँदैछ','Fresh rain forecast unavailable • retrying automatically');return}
+  const stale=forecast&&Date.now()-fetchedAt>TTL;
+  if(!forecast){el.textContent=tr('वर्षाको ताजा पूर्वानुमान उपलब्ध छैन • स्वतः पुनः जाँच हुँदैछ','Fresh rain forecast unavailable • retrying automatically');return}
+  if(stale) el.textContent=tr('पछिल्लो मौसम पूर्वानुमान देखाइँदैछ • नयाँ डेटा स्वतः पुनः जाँच हुँदैछ','Showing the last weather forecast • checking for a fresh update automatically');
   const f=forecast,zone=f.timeZone,parts=[];
   if(f.wetNow)parts.push(tr('🌧️ पूर्वानुमानमा अहिले वर्षा देखिएको छ','🌧️ Forecast indicates rain now'));
   else if(f.rainMm>=.05)parts.push(tr(`💧 हल्का वर्षाको सम्भावना मात्र (${f.rainMm.toFixed(1)} mm) • अहिले वर्षा पुष्टि भएको छैन`,`💧 Light rain possibility only (${f.rainMm.toFixed(1)} mm) • rain is not confirmed now`));
@@ -27,7 +29,7 @@ function render(){
   $('rainForecastMeta').textContent=tr(`${point.kind==='gps'?(gpsFresh?'हालको GPS':'पछिल्लो GPS'):'छानिएको निगरानी'} क्षेत्र • Open-Meteo पूर्वानुमान • ${zone} • जाँच ${clock(fetchedAt,zone,lang())}। यी अनुमान हुन्; ठ्याक्कै १५-मिनेटको स्थानीय मापन होइन।`,`${point.kind==='gps'?(gpsFresh?'Current GPS':'Last GPS'):'Selected monitoring'} area • Open-Meteo forecast • ${zone} • checked ${clock(fetchedAt,zone,lang())}. Estimates, not exact local 15-minute observations.`)+(error?tr(' पछिल्लो जाँच असफल भयो।',' Latest check failed.'):'');
 }
 function renderWeather(){
-  if(!forecast||Date.now()-fetchedAt>TTL){for(const id of ['temp','rain','humidity','wind'])if($(id))$(id).textContent='—';if($('weatherText'))$('weatherText').textContent=tr('ताजा मौसम पूर्वानुमान उपलब्ध छैन','Fresh weather forecast unavailable');return}const c=forecast.current;
+  if(!forecast){for(const id of ['temp','rain','humidity','wind'])if($(id))$(id).textContent='—';if($('weatherText'))$('weatherText').textContent=tr('ताजा मौसम पूर्वानुमान उपलब्ध छैन','Fresh weather forecast unavailable');return}const c=forecast.current;
   for(const [id,value] of Object.entries({temp:Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+'°':'—°',rain:forecast.rainMm.toFixed(1)+' mm',humidity:Number.isFinite(c.relative_humidity_2m)?Math.round(c.relative_humidity_2m)+'%':'—',wind:Number.isFinite(c.wind_speed_10m)?Math.round(c.wind_speed_10m)+' km/h':'—'}))if($(id))$(id).textContent=value;
   if($('weatherText'))$('weatherText').textContent=forecast.wetNow
     ?tr('पूर्वानुमान: वर्षा','Forecast: rain')

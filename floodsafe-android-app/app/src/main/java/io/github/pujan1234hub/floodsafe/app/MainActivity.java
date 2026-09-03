@@ -209,6 +209,7 @@ public class MainActivity extends Activity {
     }
 
 
+    private void refreshConnection() {
         runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) updateConnection(); });
     }
 

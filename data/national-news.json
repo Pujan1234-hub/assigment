@@ -1,15 +1,36 @@
 {
-  "generated_at": "2026-09-03T20:23:28.670945+05:45",
-  "updated_at_npt": "03 Sep 20:23 NPT",
+  "generated_at": "2026-09-03T23:49:29.953288+05:45",
+  "updated_at_npt": "03 Sep 23:49 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "देउवा पक्षको बैठकले एकपक्षीय महाधिवेशनको मिति तोक्नेसहित गर्‍यो ९ बुँदे निर्णय",
+      "title": "भोटेकोशी बाढीमा बेपत्ता ४४ रामेछापेलीको खोजी तीव्र पार्न सांसद बुढाथोकीको माग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589657/deuba-faction-meeting-makes-9-point-decision-including-setting-date-for-unilateral-general-convention",
-      "published_at": "2026-09-03T20:20:38+05:45",
+      "url": "https://www.ratopati.com/story/589693/mp-budhathoki-demands-to-intensify-search-for-44-missing-in-bhotekoshi-flood-in-ramechhapeli",
+      "published_at": "2026-09-03T23:37:33+05:45",
       "flash": true
+    },
+    {
+      "title": "एकै संस्थाद्वारा डेढ अर्ब भन्दा बढी सहयोग, उद्धार कोषमा जुट्यो १० अर्ब",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589692/a-single-organization-provided-more-than-15-billion-rupees-raising-10-billion-rupees-for-the-rescue-fund",
+      "published_at": "2026-09-03T23:20:32+05:45",
+      "flash": true
+    },
+    {
+      "title": "इलाममा ट्रक दुर्घटना, एक जनाको घटनास्थलमै मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589675/truck-accident-in-ilam-one-person-dies-on-the-spot",
+      "published_at": "2026-09-03T21:44:40+05:45",
+      "flash": false
+    },
+    {
+      "title": "पाँचखालका मेयर खरेलले बाढीपहिरो पीडितलाई गरे २० लाख रुपैयाँ सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589664/panchkhal-mayor-kharel-donates-rs-2-million-to-flood-and-landslide-victims",
+      "published_at": "2026-09-03T20:50:28+05:45",
+      "flash": false
     },
     {
       "title": "सुदूरपश्चिममा आकस्मिक बाढीको जोखिम, सतर्क रहन आग्रह",
@@ -23,13 +44,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589632/a-simal-tree-considered-a-boundary-tree-in-susta-was-toppled-by-the-flood",
       "published_at": "2026-09-03T18:01:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "उदाहरणीय रङ्गशाला बनाएका तत्कालीन सदस्यसचिव पारिश्रमिक नपाएपछि पुगे सर्वोच्च अदालत",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589629/the-then-member-secretary-who-built-the-exemplary-stadium-reached-the-supreme-court-after-not-receiving-his-salary",
-      "published_at": "2026-09-03T17:47:37+05:45",
       "flash": false
     }
   ],
@@ -49,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 4
+      "flash": 2,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,

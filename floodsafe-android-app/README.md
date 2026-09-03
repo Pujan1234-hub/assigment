@@ -1,4 +1,4 @@
-# FloodSafe Nepal Android app — 0.2.0 beta
+# FloodSafe Nepal Android app — 0.3.0
 
 This hybrid Android app bundles the FloodSafe UI and reference data from the
 laptop ZIP (web source commit `949e2af4af6436a802fb68635f974be2a5c4d9a0`). It opens

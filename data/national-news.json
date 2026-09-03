@@ -1,42 +1,35 @@
 {
-  "generated_at": "2026-09-03T16:04:00.589749+05:45",
-  "updated_at_npt": "03 Sep 16:04 NPT",
+  "generated_at": "2026-09-03T20:23:28.670945+05:45",
+  "updated_at_npt": "03 Sep 20:23 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "उद्धार, राहत वितरण र क्षतिग्रस्त भौतिक संरचनाहरूको पुनर्निर्माण गर्न उच्चस्तरीय विशेष समिति गठनको माग",
+      "title": "देउवा पक्षको बैठकले एकपक्षीय महाधिवेशनको मिति तोक्नेसहित गर्‍यो ९ बुँदे निर्णय",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589593/demand-for-the-formation-of-a-high-level-special-committee-for-rescue-relief-distribution-and-reconstruction-of-damaged-physical-structures",
-      "published_at": "2026-09-03T15:58:54+05:45",
+      "url": "https://www.ratopati.com/story/589657/deuba-faction-meeting-makes-9-point-decision-including-setting-date-for-unilateral-general-convention",
+      "published_at": "2026-09-03T20:20:38+05:45",
       "flash": true
     },
     {
-      "title": "भोटेकोशीको बाढी ‘हिमालयन सुनामी’",
+      "title": "सुदूरपश्चिममा आकस्मिक बाढीको जोखिम, सतर्क रहन आग्रह",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589592/bhotekoshi-floods-himalayan-tsunami",
-      "published_at": "2026-09-03T15:57:51+05:45",
-      "flash": true
-    },
-    {
-      "title": "कैलालीमा हाइसको ठक्करबाट १५ वर्षीया किशोरीको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589524/15-year-old-girl-dies-after-being-hit-by-a-high-speed-vehicle-in-kailali",
-      "published_at": "2026-09-03T13:20:24+05:45",
+      "url": "https://www.ratopati.com/story/589646/risk-of-flash-floods-in-the-far-west-urges-caution",
+      "published_at": "2026-09-03T19:21:01+05:45",
       "flash": false
     },
     {
-      "title": "रसुवाको बाढीमा सुदूरपश्चिमका १५० जना बेपत्ता, ५९ जना फेला",
+      "title": "सुस्तामा सीमा मानिएको सिमलको रूख ढल्यो बाढीले",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589515/150-people-from-sudurpaschim-missing-in-rasuwa-floods-59-found",
-      "published_at": "2026-09-03T12:20:40+05:45",
+      "url": "https://www.ratopati.com/story/589632/a-simal-tree-considered-a-boundary-tree-in-susta-was-toppled-by-the-flood",
+      "published_at": "2026-09-03T18:01:05+05:45",
       "flash": false
     },
     {
-      "title": "श्रम संस्कृति पार्टीको बाढीपीडित राहत कोषमा ६ लाख ४९ हजार संकलन",
+      "title": "उदाहरणीय रङ्गशाला बनाएका तत्कालीन सदस्यसचिव पारिश्रमिक नपाएपछि पुगे सर्वोच्च अदालत",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589506/shram-sanskriti-party-collects-rs-649000-in-flood-relief-fund",
-      "published_at": "2026-09-03T11:45:33+05:45",
+      "url": "https://www.ratopati.com/story/589629/the-then-member-secretary-who-built-the-exemplary-stadium-reached-the-supreme-court-after-not-receiving-his-salary",
+      "published_at": "2026-09-03T17:47:37+05:45",
       "flash": false
     }
   ],
@@ -56,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 5
+      "flash": 1,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

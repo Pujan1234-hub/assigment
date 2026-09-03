@@ -18,14 +18,16 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: windows-app/package.json
+      - name: Copy FloodSafe app files into desktop package
+        run: Copy-Item -Recurse floodsafe-nepal windows-app/floodsafe-nepal
       - name: Install desktop build tools
         working-directory: windows-app
         run: npm install
-      - name: Package portable Windows app
+      - name: Package Windows installer
         working-directory: windows-app
         run: npm run dist
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-Windows
+          name: FloodSafe-Nepal-Windows-Setup
           path: windows-app/release/*.exe
           if-no-files-found: error

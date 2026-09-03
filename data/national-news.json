@@ -1,49 +1,42 @@
 {
-  "generated_at": "2026-09-03T11:35:29.263035+05:45",
-  "updated_at_npt": "03 Sep 11:35 NPT",
+  "generated_at": "2026-09-03T16:04:00.589749+05:45",
+  "updated_at_npt": "03 Sep 16:04 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "भोटेकोशी बाढी : डीएनए परीक्षणबाट पहिचानको आशमा आफन्त",
+      "title": "उद्धार, राहत वितरण र क्षतिग्रस्त भौतिक संरचनाहरूको पुनर्निर्माण गर्न उच्चस्तरीय विशेष समिति गठनको माग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589482/bhotekoshi-flood-relatives-hope-for-identification-through-dna-testing",
-      "published_at": "2026-09-03T09:49:55+05:45",
+      "url": "https://www.ratopati.com/story/589593/demand-for-the-formation-of-a-high-level-special-committee-for-rescue-relief-distribution-and-reconstruction-of-damaged-physical-structures",
+      "published_at": "2026-09-03T15:58:54+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशीको बाढी ‘हिमालयन सुनामी’",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589592/bhotekoshi-floods-himalayan-tsunami",
+      "published_at": "2026-09-03T15:57:51+05:45",
+      "flash": true
+    },
+    {
+      "title": "कैलालीमा हाइसको ठक्करबाट १५ वर्षीया किशोरीको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589524/15-year-old-girl-dies-after-being-hit-by-a-high-speed-vehicle-in-kailali",
+      "published_at": "2026-09-03T13:20:24+05:45",
       "flash": false
     },
     {
-      "title": "भोटेकोशी बाढीमा मधेस प्रदेशका हराइरहेका ३० सम्पर्कमा, १६२ जना अझै सम्पर्कविहीन",
+      "title": "रसुवाको बाढीमा सुदूरपश्चिमका १५० जना बेपत्ता, ५९ जना फेला",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589475/30-people-missing-in-bhotekoshi-flood-from-madhesh-province-contacted-162-still-unaccounted-for",
-      "published_at": "2026-09-03T08:21:43+05:45",
+      "url": "https://www.ratopati.com/story/589515/150-people-from-sudurpaschim-missing-in-rasuwa-floods-59-found",
+      "published_at": "2026-09-03T12:20:40+05:45",
       "flash": false
     },
     {
-      "title": "कचनकवलद्वारा प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा रु २९ लाख सहयोग",
+      "title": "श्रम संस्कृति पार्टीको बाढीपीडित राहत कोषमा ६ लाख ४९ हजार संकलन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589472/kachankawal-donates-rs-29-million-to-prime-ministers-disaster-relief-fund",
-      "published_at": "2026-09-03T07:52:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी पीडितलाई मन फुकाएर सहयोग गर्दै मधेसवासी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589463/madhes-residents-are-helping-flood-victims-wholeheartedly",
-      "published_at": "2026-09-03T06:34:49+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : कञ्चनपुरबाट एक करोड ३२ लाख बढी सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589461/bhotekoshi-flood-more-than-rs-132-million-assistance-from-kanchanpur",
-      "published_at": "2026-09-03T06:21:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "सम्पर्कविहीन परिवार: न चुल्हो बल्छ , न आँखा ओभाउँछन्",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589458/a-family-without-contact-neither-the-stove-nor-the-eyes-are-lit",
-      "published_at": "2026-09-03T05:43:50+05:45",
+      "url": "https://www.ratopati.com/story/589506/shram-sanskriti-party-collects-rs-649000-in-flood-relief-fund",
+      "published_at": "2026-09-03T11:45:33+05:45",
       "flash": false
     }
   ],
@@ -63,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 6
+      "flash": 2,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

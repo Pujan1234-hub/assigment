@@ -18,6 +18,7 @@ function render(){
   if(!forecast||Date.now()-fetchedAt>TTL){el.textContent=tr('वर्षाको ताजा पूर्वानुमान उपलब्ध छैन • स्वतः पुनः जाँच हुँदैछ','Fresh rain forecast unavailable • retrying automatically');return}
   const f=forecast,zone=f.timeZone,parts=[];
   if(f.wetNow)parts.push(tr('🌧️ पूर्वानुमानमा अहिले वर्षा देखिएको छ','🌧️ Forecast indicates rain now'));
+  else if(f.rainMm>=.05)parts.push(tr(`💧 हल्का वर्षाको सम्भावना मात्र (${f.rainMm.toFixed(1)} mm) • अहिले वर्षा पुष्टि भएको छैन`,`💧 Light rain possibility only (${f.rainMm.toFixed(1)} mm) • rain is not confirmed now`));
   else if(f.start){const m=Math.max(0,Math.ceil((f.start.from-Date.now())/60000));parts.push(tr(`🌧️ अनुमानित सुरु: ${range(f.start,zone,lang())} • करिब ${m} मिनेटपछि`,`🌧️ Expected start: ${range(f.start,zone,lang())} • in about ${m} min`))}
   else parts.push(f.unknown?tr('वर्षा सुरु हुने समय निर्धारण गर्न पर्याप्त data छैन','Not enough data to estimate rain onset'):tr(`${clock(f.coverageUntil,zone,lang())} सम्मको पूर्वानुमानमा वर्षा देखिएको छैन`,`No rain indicated in the forecast through ${clock(f.coverageUntil,zone,lang())}`));
   if(f.wetNow||f.start)parts.push(f.stop?tr(`🌤️ अनुमानित रोकिने: ${range(f.stop,zone,lang())}`,`🌤️ Expected end: ${range(f.stop,zone,lang())}`):tr('रोकिने समय उपलब्ध छैन','End time unavailable'));
@@ -28,7 +29,11 @@ function render(){
 function renderWeather(){
   if(!forecast||Date.now()-fetchedAt>TTL){for(const id of ['temp','rain','humidity','wind'])if($(id))$(id).textContent='—';if($('weatherText'))$('weatherText').textContent=tr('ताजा मौसम पूर्वानुमान उपलब्ध छैन','Fresh weather forecast unavailable');return}const c=forecast.current;
   for(const [id,value] of Object.entries({temp:Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+'°':'—°',rain:forecast.rainMm.toFixed(1)+' mm',humidity:Number.isFinite(c.relative_humidity_2m)?Math.round(c.relative_humidity_2m)+'%':'—',wind:Number.isFinite(c.wind_speed_10m)?Math.round(c.wind_speed_10m)+' km/h':'—'}))if($(id))$(id).textContent=value;
-  if($('weatherText'))$('weatherText').textContent=forecast.wetNow?tr('पूर्वानुमान: वर्षा','Forecast: rain'):tr('पूर्वानुमान: अहिले वर्षा छैन','Forecast: no rain now');
+  if($('weatherText'))$('weatherText').textContent=forecast.wetNow
+    ?tr('पूर्वानुमान: वर्षा','Forecast: rain')
+    :forecast.rainMm>=.05
+      ?tr('पूर्वानुमान: हल्का वर्षाको सम्भावना','Forecast: slight rain possibility')
+      :tr('पूर्वानुमान: अहिले वर्षा छैन','Forecast: no rain now');
 }
 function schedule(ms=POLL){clearTimeout(timer);timer=setTimeout(()=>void refresh(),ms)}
 async function refresh(force=false){

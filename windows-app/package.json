@@ -5,7 +5,7 @@
   "description": "FloodSafe Nepal Windows desktop app",
   "main": "main.cjs",
   "scripts": {
-    "dist": "electron-builder --win portable"
+    "dist": "electron-builder --win nsis"
   },
   "devDependencies": {
     "electron": "35.1.5",
@@ -23,12 +23,16 @@
     ],
     "win": {
       "target": [
-        "portable"
+        "nsis"
       ],
-      "artifactName": "FloodSafe-Nepal-Windows-${version}.exe"
+      "artifactName": "FloodSafe-Nepal-Setup-${version}.exe"
     },
-    "portable": {
-      "artifactName": "FloodSafe-Nepal-Windows-${version}.exe"
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "FloodSafe Nepal"
     }
   }
 }

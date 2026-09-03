@@ -11,6 +11,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
@@ -30,6 +31,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.webkit.WebViewAssetLoader;
+import com.google.firebase.messaging.FirebaseMessaging;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,11 +55,15 @@ public class MainActivity extends Activity {
     private boolean androidLocationPromptOpen;
     private volatile long locationTapUntil;
     private boolean mainFrameError;
+    private static final int NOTIFICATION_REQUEST = 41;
 
     /** A narrowly scoped signal from the bundled location button only. */
     private final class LocationTapBridge {
         @JavascriptInterface public void allowLocationPrompt() {
             locationTapUntil = System.currentTimeMillis() + 6000L;
+        }
+        @JavascriptInterface public void enableRainAlerts() {
+            runOnUiThread(MainActivity.this::enableRainAlerts);
         }
     }
 
@@ -185,7 +191,24 @@ public class MainActivity extends Activity {
         updateConnection();
     }
 
-    private void refreshConnection() {
+    private void enableRainAlerts() {
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_REQUEST);
+            return;
+        }
+        FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts")
+                .addOnCompleteListener(task -> notifyAlertStatus(task.isSuccessful()));
+    }
+
+    private void notifyAlertStatus(boolean enabled) {
+        if (webView == null) return;
+        webView.post(() -> webView.evaluateJavascript(
+                "window.dispatchEvent(new CustomEvent('floodsafe-alerts-status',{detail:{enabled:"
+                        + enabled + "}}));", null));
+    }
+
+
         runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) updateConnection(); });
     }
 
@@ -241,6 +264,11 @@ public class MainActivity extends Activity {
         super.onRequestPermissionsResult(code, permissions, grants);
         if (code == LOCATION_REQUEST) finishLocation(hasLocation() && webView != null
                 && NavigationPolicy.internalPage(webView.getUrl()));
+        if (code == NOTIFICATION_REQUEST) {
+            if (Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                    == PackageManager.PERMISSION_GRANTED) enableRainAlerts();
+            else notifyAlertStatus(false);
+        }
     }
 
     private void openSource(String url) {

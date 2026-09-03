@@ -37,6 +37,26 @@ function renderWeather(){
       ?tr('पूर्वानुमान: हल्का वर्षाको सम्भावना','Forecast: slight rain possibility')
       :tr('पूर्वानुमान: अहिले वर्षा छैन','Forecast: no rain now');
 }
+function basicForecast(j){
+  const c=j?.current||{},precip=Number(c.precipitation??c.rain??0);
+  if(!Number.isFinite(Number(c.temperature_2m))) throw Error('Incomplete basic weather forecast');
+  return {
+    current:{temperature_2m:Number(c.temperature_2m),relative_humidity_2m:Number(c.relative_humidity_2m),
+      wind_speed_10m:Number(c.wind_speed_10m),rain:precip,showers:0,weather_code:Number(c.weather_code)},
+    rainMm:Number.isFinite(precip)?precip:0,wetNow:Number.isFinite(precip)&&precip>=.5,
+    start:null,stop:null,unknown:true,coverageUntil:Date.now()+60*60000,
+    timeZone:j?.timezone||'UTC',resolutionMinutes:60,source:'Open-Meteo basic forecast',notRadar:true
+  };
+}
+async function fetchBasicForecast(next,signal){
+  const u=new URL('https://api.open-meteo.com/v1/forecast');
+  u.search=new URLSearchParams({latitude:String(next.lat),longitude:String(next.lon),
+    current:'temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m',
+    timezone:'auto',forecast_days:'1'}).toString();
+  const response=await fetch(u,{cache:'no-store',credentials:'omit',signal});
+  if(!response.ok) throw Error('Basic weather HTTP '+response.status);
+  return basicForecast(await response.json());
+}
 function schedule(ms=POLL){clearTimeout(timer);timer=setTimeout(()=>void refresh(),ms)}
 async function refresh(force=false){
   const next=pickPoint();if(!next){render();schedule();return}
@@ -50,7 +70,14 @@ async function refresh(force=false){
     const response=await fetch(forecastUrl(next.lat,next.lon),{cache:'no-store',credentials:'omit',signal:active.signal});if(!response.ok)throw Error('Weather HTTP '+response.status);
     const j=await response.json(),parsed=parseForecast(j);if(generation!==serial)return;
     raw=j;forecast=parsed;fetchedAt=Date.now();error='';render();await alerts.check();
-  }catch(e){if(generation===serial){error=String(e);render()}}
+  }catch(e){
+    // The 15-minute endpoint can be temporarily unavailable on some mobile
+    // networks. Keep the weather card useful with the smaller current-weather request.
+    if(generation===serial) try {
+      forecast=await fetchBasicForecast(next,active.signal);fetchedAt=Date.now();
+      error='';render();
+    } catch(fallbackError) { error=String(fallbackError);render(); }
+  }
   finally{clearTimeout(to);if(generation===serial){controller=null;schedule(error?60000:POLL)}}
 }
 function tick(){

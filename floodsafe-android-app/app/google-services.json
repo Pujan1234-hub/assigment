@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "313923750267",
+    "project_id": "floodsafe-nepal",
+    "storage_bucket": "floodsafe-nepal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:313923750267:android:5c7598a6bcaa64b03e55de",
+        "android_client_info": {
+          "package_name": "io.github.pujan1234hub.floodsafe.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDN0leZZd9yDL7mZZDhlZNfDfcqZuvrZt4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

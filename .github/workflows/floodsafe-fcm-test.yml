@@ -1,0 +1,45 @@
+name: FloodSafe Android notification test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  send-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send background notification to FloodSafe Android devices
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python3 -m pip install --quiet google-auth requests
+          python3 - <<'PY'
+          import json, os, sys, requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          raw = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '').strip()
+          if not raw:
+              sys.exit('Missing FIREBASE_SERVICE_ACCOUNT GitHub secret. Add the Firebase service-account JSON first.')
+          service = json.loads(raw)
+          creds = service_account.Credentials.from_service_account_info(
+              service, scopes=['https://www.googleapis.com/auth/firebase.messaging'])
+          creds.refresh(Request())
+          payload = {
+              'message': {
+                  'topic': 'nepal-alerts',
+                  'data': {
+                      'title': '🔔 FloodSafe Nepal परीक्षण सूचना',
+                      'body': 'यो बन्द app मा पनि देखिनुपर्ने FCM परीक्षण सूचना हो।',
+                      'kind': 'test'
+                  },
+                  'android': {'priority': 'high'}
+              }
+          }
+          url = f"https://fcm.googleapis.com/v1/projects/{service['project_id']}/messages:send"
+          response = requests.post(url, headers={
+              'Authorization': 'Bearer ' + creds.token,
+              'Content-Type': 'application/json'
+          }, json=payload, timeout=20)
+          response.raise_for_status()
+          print('FCM background notification test sent to nepal-alerts')
+          PY

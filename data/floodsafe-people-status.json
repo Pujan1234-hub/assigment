@@ -12,18 +12,21 @@
   "missing_source": "NDRRMA via OnlineKhabar",
   "missing_source_url": "https://www.onlinekhabar.com/2026/09/2009006/rasuwa-flood-death-toll-reaches-1114",
   "missing_update_time": "2026-09-02T04:54:00Z",
-  "rescued_alive": 11993,
-  "rescued_source": "Radio Nepal / NDRRMA",
-  "rescued_source_url": "https://radionepalonline.com/en/2026/09/02/435248.html",
-  "rescued_update_time": "2026-09-02T08:32:32Z",
+  "rescued_alive": 12000,
+  "rescued_source": "NDRRMA via The Himalayan Times",
+  "rescued_source_url": "https://thehimalayantimes.com/ampArticle/1040101",
+  "rescued_update_time": "2026-09-03T09:39:21Z",
   "status": "event_scoped_requested_sources",
-  "last_checked_utc": "2026-09-04T05:36:26.703040Z",
+  "last_checked_utc": "2026-09-04T05:59:12.604425Z",
   "sync_sources": [
     "NDRRMA",
     "OnlineKhabar",
-    "Nepal Police",
     "Radio Nepal",
-    "RONB"
+    "RONB",
+    "MyRepublica",
+    "The Himalayan Times",
+    "B360 Nepal",
+    "Nepal News"
   ],
   "sync_schema": 4,
   "sync_policy": "Newest explicit event-wide authority-attributed total wins. Nepali thousand/lakh totals are parsed only when attached to deaths, missing or rescued outcomes; subgroup counts and BS years cannot become totals."

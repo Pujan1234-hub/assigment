@@ -41,16 +41,26 @@ def numberize(text):
 def extract(text,kind):
  s=numberize(text)
  patterns={
-  'death':(r'death toll\s+(?:(?:has\s+|had\s+)?(?:risen|increased|climbed)\s+to|(?:has\s+)?reached|stands?\s+at|is|of)\s+(\d+)\b',r'bodies\s+of\s+(\d+)\s+(?:people|persons)\s+who\s+died',r'total\s+of\s+(\d+)\s+(?:people|persons)\s+(?:have\s+died|were\s+killed)',r'(?:मृत्यु\s+हुनेको\s+संख्या|मृतक\s+संख्या)\s*(\d+)\b',r'(\d+)\s*जनाको\s+(?:शव\s+(?:फेला|भेटि)|मृत्यु)'),
-  'missing':(r'(?:more than|over|total of)\s+(\d+)\s+(?:people|persons)\b[^.!?।]{0,220}?\b(?:still\s+|remain\s+|are\s+)?missing',r'(\d+)\s+(?:people|persons)\s+(?:are\s+)?(?:still|remain)\s+missing',r'(\d+)\s+(?:people\s+)?(?:still\s+)?(?:remain|are)\s+(?:unaccounted(?:\s+for)?|missing)',r'(?:अझै|हालसम्म)?\s*(\d+)\s*जना\s+(?:अझै\s+)?(?:सम्पर्कविहीन|बेपत्ता)'),
-  'rescued':(r'(\d+)\s+(?:people|persons)\b[^.!?।]{0,100}?\b(?:have|had)\s+been\s+rescued',r'(?:total of)\s+(\d+)\b[^.!?।]{0,100}?\brescued',r'(?:हालसम्म[^.!?।]{0,120}?)?(\d+)\s*जनाको\s+उद्धार',r'(\d+)\s*(?:को|जनालाई)\s+उद्धार')
+  'death':(
+   r'death toll\s+(?:(?:has\s+|had\s+)?(?:risen|increased|climbed)\s+to|(?:has\s+)?reached|stands?\s+at|is|of)\s+(\d+)\b',
+   r'bodies\s+of\s+(\d+)\s+(?:people|persons)\s+who\s+died',
+   r'total\s+of\s+(\d+)\s+(?:people|persons)\s+(?:have\s+died|were\s+killed)',
+   r'(?:मृत्यु\s+हुनेको\s+संख्या|मृतक\s+संख्या)\s*(\d+)\b',
+   r'(\d+)\s*जनाको\s+(?:शव\s+(?:फेला|भेटि)|मृत्यु)'),
+  'missing':(
+   r'(?:more than|over|total of)\s+(\d+)\s+(?:people|persons)\b[^.!?।]{0,220}?\b(?:still\s+|remain\s+|are\s+)?missing',
+   r'(\d+)\s+(?:people|persons)\s+(?:are\s+)?(?:still|remain)\s+missing',
+   r'(\d+)\s+(?:people\s+)?(?:still\s+)?(?:remain|are)\s+(?:unaccounted(?:\s+for)?|missing)',
+   r'(?:अझै|हालसम्म)?\s*(\d+)\s*जना\s+(?:अझै\s+)?(?:सम्पर्कविहीन|बेपत्ता)'),
+  'rescued':(
+   r'(\d+)\s+(?:people|persons)\b[^.!?।]{0,100}?\bhad\s+been\s+rescued',
+   r'(?:total of)\s+(\d+)\b[^.!?।]{0,100}?\brescued',
+   r'(?:हालसम्म[^.!?।]{0,120}?)?(\d+)\s*जनाको\s+उद्धार',
+   r'(\d+)\s*(?:को|जनालाई)\s+उद्धार')
  }
- vals=set()
- for p in patterns.get(kind,()):
-  for m in re.finditer(p,s,re.I):
-   # Do not turn a rounded headline such as “nearly 12,000 rescued”
-   # into an exact official count when the article gives a precise total later.
-   if re.search(r'(?:nearly|about|around|approximately|almost)\s*
+ vals={int(m.group(1)) for p in patterns.get(kind,()) for m in re.finditer(p,s,re.I)}
+ return next(iter(vals)) if len(vals)==1 else None
+
 def consider(best,kind,value,t,source,url,correction=False,minimum=False):
  if value is None or not t:return
  c={'value':int(value),'t':float(t),'time':iso(t),'source':source,'url':url,'correction':bool(correction),'minimum':bool(minimum)};o=best.get(kind)

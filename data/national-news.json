@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-05T01:36:30.560986+05:45",
-  "updated_at_npt": "05 Sep 01:36 NPT",
+  "generated_at": "2026-09-05T03:44:04.459408+05:45",
+  "updated_at_npt": "05 Sep 03:44 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -24,13 +24,6 @@
       "url": "https://www.ratopati.com/story/589929/bhotekoshi-flood-48-injured-discharged-from-tribhuvan-university-teaching-hospital-25-undergoing-treatment",
       "published_at": "2026-09-04T23:14:47+05:45",
       "flash": false
-    },
-    {
-      "title": "मोरङ कारागारमा कैदीबन्दीबिच झडप : अभिषेक गिरीका १९ ‘आदेशपालक’ अन्यत्र सारिँदै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589919/clash-between-prisoners-in-morang-prison-abhishek-giris-19-commanders-are-being-transferred-elsewhere",
-      "published_at": "2026-09-04T21:30:13+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -50,7 +43,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 4
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

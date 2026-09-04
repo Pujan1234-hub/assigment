@@ -22,7 +22,7 @@ function render(){
   if(f.wetNow)parts.push(tr('🌧️ पूर्वानुमानमा अहिले वर्षा देखिएको छ','🌧️ Forecast indicates rain now'));
   else if(f.rainMm>=.05)parts.push(tr(`💧 हल्का वर्षाको सम्भावना मात्र (${f.rainMm.toFixed(1)} mm) • अहिले वर्षा पुष्टि भएको छैन`,`💧 Light rain possibility only (${f.rainMm.toFixed(1)} mm) • rain is not confirmed now`));
   else if(f.start){const m=Math.max(0,Math.ceil((f.start.from-Date.now())/60000));parts.push(tr(`🌧️ अनुमानित सुरु: ${range(f.start,zone,lang())} • करिब ${m} मिनेटपछि`,`🌧️ Expected start: ${range(f.start,zone,lang())} • in about ${m} min`))}
-  else parts.push(f.unknown?tr('वर्षा सुरु हुने समय निर्धारण गर्न पर्याप्त data छैन','Not enough data to estimate rain onset'):tr(`${clock(f.coverageUntil,zone,lang())} सम्मको पूर्वानुमानमा वर्षा देखिएको छैन`,`No rain indicated in the forecast through ${clock(f.coverageUntil,zone,lang())}`));
+  else parts.push(f.unknown?tr('🌤️ अहिले वर्षा छैन • विस्तृत वर्षा-समय स्वतः अद्यावधिक हुँदैछ','🌤️ No rain right now • detailed rain timing is updating automatically'):tr(`${clock(f.coverageUntil,zone,lang())} सम्मको पूर्वानुमानमा वर्षा देखिएको छैन`,`No rain indicated in the forecast through ${clock(f.coverageUntil,zone,lang())}`));
   if(f.wetNow||f.start)parts.push(f.stop?tr(`🌤️ अनुमानित रोकिने: ${range(f.stop,zone,lang())}`,`🌤️ Expected end: ${range(f.stop,zone,lang())}`):tr('रोकिने समय उपलब्ध छैन','End time unavailable'));
   el.textContent=parts.join(' · ');
   const gpsFresh=window.FloodSafeCurrentLocation?.fresh;
@@ -37,22 +37,36 @@ function renderWeather(){
       ?tr('पूर्वानुमान: हल्का वर्षाको सम्भावना','Forecast: slight rain possibility')
       :tr('पूर्वानुमान: अहिले वर्षा छैन','Forecast: no rain now');
 }
+function toMillis(value){
+  if(typeof value==='number'&&Number.isFinite(value))return value>1e12?value:value*1000;
+  const parsed=Date.parse(String(value));return Number.isFinite(parsed)?parsed:NaN;
+}
 function basicForecast(j){
   const c=j?.current||{},precip=Number(c.precipitation??c.rain??0);
   if(!Number.isFinite(Number(c.temperature_2m))) throw Error('Incomplete basic weather forecast');
+  const hourly=j?.hourly||{},times=Array.isArray(hourly.time)?hourly.time:[],rain=Array.isArray(hourly.rain)?hourly.rain:[],showers=Array.isArray(hourly.showers)?hourly.showers:[],total=Array.isArray(hourly.precipitation)?hourly.precipitation:[];
+  const now=Date.now(),wetNow=Number.isFinite(precip)&&precip>=.5;
+  let start=null,stop=null,sawWet=wetNow,coverageUntil=now+60*60000;
+  for(let i=0;i<times.length;i++){
+    const end=toMillis(times[i]);if(!Number.isFinite(end)||end<=now)continue;
+    coverageUntil=Math.max(coverageUntil,end);
+    const values=[rain[i],showers[i],total[i]].map(Number).filter(Number.isFinite);if(!values.length)continue;
+    const amount=Math.max(...values);
+    if(amount>=.5){if(!sawWet){start={from:end-60*60000,to:end};sawWet=true}}
+    else if(sawWet&&!stop){stop={from:end-60*60000,to:end};break}
+  }
   return {
     current:{temperature_2m:Number(c.temperature_2m),relative_humidity_2m:Number(c.relative_humidity_2m),
       wind_speed_10m:Number(c.wind_speed_10m),rain:precip,showers:0,weather_code:Number(c.weather_code)},
-    rainMm:Number.isFinite(precip)?precip:0,wetNow:Number.isFinite(precip)&&precip>=.5,
-    start:null,stop:null,unknown:true,coverageUntil:Date.now()+60*60000,
-    timeZone:j?.timezone||'UTC',resolutionMinutes:60,source:'Open-Meteo basic forecast',notRadar:true
+    rainMm:Number.isFinite(precip)?precip:0,wetNow,start,stop,unknown:false,coverageUntil,
+    timeZone:j?.timezone||'UTC',resolutionMinutes:60,source:'Open-Meteo hourly fallback',notRadar:true
   };
 }
 async function fetchBasicForecast(next,signal){
   const u=new URL('https://api.open-meteo.com/v1/forecast');
   u.search=new URLSearchParams({latitude:String(next.lat),longitude:String(next.lon),
     current:'temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m',
-    timezone:'auto',forecast_days:'1'}).toString();
+    hourly:'rain,showers,precipitation',timezone:'auto',timeformat:'unixtime',forecast_days:'2'}).toString();
   const response=await fetch(u,{cache:'no-store',credentials:'omit',signal});
   if(!response.ok) throw Error('Basic weather HTTP '+response.status);
   return basicForecast(await response.json());

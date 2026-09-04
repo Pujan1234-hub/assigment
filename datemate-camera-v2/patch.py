@@ -119,8 +119,6 @@ text = text[:start] + replacement + text[end:]
 for imp in [
     "import android.content.ContentValues\n",
     "import android.graphics.Bitmap\n",
-    "import android.os.Handler\n",
-    "import android.os.Looper\n",
     "import android.provider.MediaStore\n",
     "import com.google.mlkit.vision.common.InputImage\n",
     "import com.google.mlkit.vision.text.TextRecognition\n",

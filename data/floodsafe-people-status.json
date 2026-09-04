@@ -1,7 +1,7 @@
 {
   "event": "Bhotekoshi flash flood",
   "event_ne": "भोटेकोशी आकस्मिक बाढी",
-  "updated_date": "2026-09-03",
+  "updated_date": "2026-09-04",
   "recovered_bodies": 1114,
   "recovered_source": "NDRRMA via OnlineKhabar",
   "recovered_source_url": "https://www.onlinekhabar.com/2026/09/2009006/rasuwa-flood-death-toll-reaches-1114",
@@ -17,7 +17,7 @@
   "rescued_source_url": "https://radionepalonline.com/en/2026/09/02/435248.html",
   "rescued_update_time": "2026-09-02T08:32:32Z",
   "status": "event_scoped_requested_sources",
-  "last_checked_utc": "2026-09-03T23:17:36.912549Z",
+  "last_checked_utc": "2026-09-04T01:00:54.914181Z",
   "sync_sources": [
     "NDRRMA",
     "OnlineKhabar",

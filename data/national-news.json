@@ -1,28 +1,42 @@
 {
-  "generated_at": "2026-09-04T04:57:18.350540+05:45",
-  "updated_at_npt": "04 Sep 04:57 NPT",
+  "generated_at": "2026-09-04T06:46:26.666511+05:45",
+  "updated_at_npt": "04 Sep 06:46 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "नाइजेरियामा शङ्कास्पद विषाक्त धुवाँबाट करिब ४० जनाको मृत्यु",
+      "title": "बच्चाको मानसिक स्वास्थ्यलाई ठीक राख्न आमाबुबाले गर्नैपर्छ यी काम",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589698/nearly-40-dead-in-nigeria-from-suspected-toxic-fumes",
-      "published_at": "2026-09-04T02:00:00+05:45",
+      "url": "https://www.ratopati.com/story/589718/parents-must-do-these-things-to-maintain-their-childs-mental-health",
+      "published_at": "2026-09-04T06:35:30+05:45",
+      "flash": true
+    },
+    {
+      "title": "त्रिशूली ३ए अपडेट : सुरुङभित्र मानिसको आवाज सुनियो, उद्धार कार्यमा तीव्रता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589716/trishuli-3a-update-human-voices-heard-inside-the-tunnel",
+      "published_at": "2026-09-04T06:26:36+05:45",
+      "flash": true
+    },
+    {
+      "title": "नारीवादी आन्दोलनकी प्रभावशाली अभियन्ता ग्लोरिया स्टाइनमको ९२ वर्षको उपमेरमा निधन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589715/gloria-steinem-influential-feminist-activist-dies-at-92",
+      "published_at": "2026-09-04T06:25:13+05:45",
+      "flash": true
+    },
+    {
+      "title": "स्वास्थ्य जाँचसँगै ज्येष्ठ नागरिकको सहारा बन्दै अर्जुनधारा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589704/arjundhara-becomes-a-support-for-senior-citizens-with-health-checkups",
+      "published_at": "2026-09-04T05:20:11+05:45",
       "flash": false
     },
     {
-      "title": "काठमाडौँको पेप्सीकोलामा आगलागी, नियन्त्रणको प्रयास जारी",
+      "title": "जलविद्युत् आयोजनाको सहयोगमा दुखुखोला पुल संरक्षण गरिने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589700/massive-fire-breaks-out-at-pepsico-in-kathmandu-efforts-to-control-it-continue",
-      "published_at": "2026-09-04T01:39:49+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : पाँच हजार ३८४ जनाको उपचार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589697/bhotekoshi-flood-5384-people-treated",
-      "published_at": "2026-09-04T01:24:05+05:45",
+      "url": "https://www.ratopati.com/story/589703/dukhukhola-bridge-to-be-protected-with-the-help-of-hydroelectric-project",
+      "published_at": "2026-09-04T05:16:46+05:45",
       "flash": false
     }
   ],
@@ -42,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 3
+      "flash": 3,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

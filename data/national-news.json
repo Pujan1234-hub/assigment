@@ -1,42 +1,56 @@
 {
-  "generated_at": "2026-09-04T06:46:26.666511+05:45",
-  "updated_at_npt": "04 Sep 06:46 NPT",
+  "generated_at": "2026-09-04T11:31:56.546093+05:45",
+  "updated_at_npt": "04 Sep 11:31 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बच्चाको मानसिक स्वास्थ्यलाई ठीक राख्न आमाबुबाले गर्नैपर्छ यी काम",
+      "title": "भोटेकोशी विपद्को १० औँ दिनमा कसरी सम्भव भयो जीवित उद्धार ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589718/parents-must-do-these-things-to-maintain-their-childs-mental-health",
-      "published_at": "2026-09-04T06:35:30+05:45",
+      "url": "https://www.ratopati.com/story/589759/how-was-the-rescue-of-survivors-possible-on-the-10th-day-of-the-bhotekoshi-disaster",
+      "published_at": "2026-09-04T11:26:09+05:45",
       "flash": true
     },
     {
-      "title": "त्रिशूली ३ए अपडेट : सुरुङभित्र मानिसको आवाज सुनियो, उद्धार कार्यमा तीव्रता",
+      "title": "त्रिशूली–३ ‘ए’ बाट जीवितै उद्धार गरिएका साह भन्छन्– सुरुङभित्र ४०–५० जना हुनुपर्छ",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589716/trishuli-3a-update-human-voices-heard-inside-the-tunnel",
-      "published_at": "2026-09-04T06:26:36+05:45",
+      "url": "https://www.ratopati.com/story/589758/sah-who-was-rescued-alive-from-trishuli-3-a-says-there-must-have-been-40-50-people-inside-the-tunnel",
+      "published_at": "2026-09-04T11:25:31+05:45",
       "flash": true
     },
     {
-      "title": "नारीवादी आन्दोलनकी प्रभावशाली अभियन्ता ग्लोरिया स्टाइनमको ९२ वर्षको उपमेरमा निधन",
+      "title": "सुरुङबाट जीवितै उद्धार गरिएकालाई थप उपचारका लागि काठमाडौँ ल्याइयो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589715/gloria-steinem-influential-feminist-activist-dies-at-92",
-      "published_at": "2026-09-04T06:25:13+05:45",
+      "url": "https://www.ratopati.com/story/589756/those-rescued-alive-from-the-tunnel-brought-to-kathmandu-for-further-treatment",
+      "published_at": "2026-09-04T11:20:02+05:45",
       "flash": true
     },
     {
-      "title": "स्वास्थ्य जाँचसँगै ज्येष्ठ नागरिकको सहारा बन्दै अर्जुनधारा",
+      "title": "जाइरोङ नाकामा खोज–उद्धार जारी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589704/arjundhara-becomes-a-support-for-senior-citizens-with-health-checkups",
-      "published_at": "2026-09-04T05:20:11+05:45",
+      "url": "https://www.ratopati.com/story/589755/search-and-rescue-continues-at-jairong-border-crossing",
+      "published_at": "2026-09-04T11:13:38+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीले बदलेको बेत्रावतीको भूगोल : गुमेको थातथलो, बाँकी सम्झना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589754/the-geography-of-betravati-changed-by-the-flood-lost-heritage-memories-remain",
+      "published_at": "2026-09-04T11:12:33+05:45",
+      "flash": true
+    },
+    {
+      "title": "प्रेम विवाहको दुई महिनामै नवविवाहिताको शंकास्पद मृत्यु, माइती पक्षद्वारा हत्याको आरोप",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589740/newlyweds-suspicious-death-two-months-after-love-marriage-family-alleges-murder",
+      "published_at": "2026-09-04T09:49:06+05:45",
       "flash": false
     },
     {
-      "title": "जलविद्युत् आयोजनाको सहयोगमा दुखुखोला पुल संरक्षण गरिने",
+      "title": "भोटेकोशी बाढी : बेपत्ता सुदूरपश्चिमवासीको खोजीमा स्थानीय तह र प्रदेश सरकार के गर्दैछन् ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589703/dukhukhola-bridge-to-be-protected-with-the-help-of-hydroelectric-project",
-      "published_at": "2026-09-04T05:16:46+05:45",
+      "url": "https://www.ratopati.com/story/589720/bhotekoshi-flood-what-are-the-local-and-provincial-governments-doing-in-the-search-for-missing-far-westerners",
+      "published_at": "2026-09-04T06:59:51+05:45",
       "flash": false
     }
   ],
@@ -56,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 5
+      "flash": 5,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -66,8 +80,8 @@
       "recent": 0
     },
     "The Rising Nepal": {
-      "ok": false,
-      "error": "HTTPSConnectionPool(host='risingnepaldaily.com', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutEr",
+      "ok": true,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     }

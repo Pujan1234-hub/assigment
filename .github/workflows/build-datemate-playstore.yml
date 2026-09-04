@@ -71,11 +71,12 @@ jobs:
         run: |
           ./datemate-android-fixed/gradlew -p datemate-android-fixed --stacktrace bundleRelease
 
-      - name: Verify bundle
+      - name: Verify and copy bundle
         shell: bash
         run: |
           test -s datemate-android-fixed/app/build/outputs/bundle/release/app-release.aab
-          ls -lh datemate-android-fixed/app/build/outputs/bundle/release/app-release.aab
+          cp datemate-android-fixed/app/build/outputs/bundle/release/app-release.aab DateMate-v1.0.3-unsigned.aab
+          ls -lh DateMate-v1.0.3-unsigned.aab
 
       - name: Add Play Store handoff notes
         shell: bash
@@ -104,7 +105,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DateMate-PlayStore-Unsigned-AAB
-          path: datemate-android-fixed/app/build/outputs/bundle/release/app-release.aab
+          path: DateMate-v1.0.3-unsigned.aab
           if-no-files-found: error
 
       - name: Upload Play Store project

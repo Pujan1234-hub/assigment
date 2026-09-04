@@ -31,9 +31,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.webkit.WebViewAssetLoader;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 import com.google.firebase.messaging.FirebaseMessaging;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /** Bundled hybrid app. No remote top-level page. */
 public class MainActivity extends Activity {
@@ -70,6 +76,15 @@ public class MainActivity extends Activity {
         }
         @JavascriptInterface public void syncRainAlertsStatus() {
             runOnUiThread(MainActivity.this::syncRainAlertsStatus);
+        }
+        @JavascriptInterface public void setBackgroundRainAlerts(double lat, double lon) {
+            runOnUiThread(() -> enableBackgroundRainAlerts(lat, lon));
+        }
+        @JavascriptInterface public void disableBackgroundRainAlerts() {
+            runOnUiThread(MainActivity.this::disableBackgroundRainAlerts);
+        }
+        @JavascriptInterface public void syncBackgroundRainAlerts() {
+            runOnUiThread(MainActivity.this::syncBackgroundRainAlerts);
         }
     }
 
@@ -219,6 +234,43 @@ public class MainActivity extends Activity {
                 .addOnCompleteListener(task -> notifyAlertStatus(task.isSuccessful()));
     }
 
+    private void enableBackgroundRainAlerts(double lat, double lon) {
+        if (!Double.isFinite(lat) || !Double.isFinite(lon)) { notifyAlertStatus(false); return; }
+        getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).edit()
+                .putBoolean("enabled", true)
+                .putLong("lat", Double.doubleToRawLongBits(lat))
+                .putLong("lon", Double.doubleToRawLongBits(lon)).apply();
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_REQUEST);
+            return;
+        }
+        scheduleBackgroundRainAlerts();
+        notifyAlertStatus(true);
+    }
+
+    private void scheduleBackgroundRainAlerts() {
+        Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
+        PeriodicWorkRequest work = new PeriodicWorkRequest.Builder(RainAlertWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraints).build();
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("floodsafe-local-rain-alerts",
+                ExistingPeriodicWorkPolicy.UPDATE, work);
+    }
+
+    private void disableBackgroundRainAlerts() {
+        getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).edit().putBoolean("enabled", false).apply();
+        WorkManager.getInstance(this).cancelUniqueWork("floodsafe-local-rain-alerts");
+        notifyAlertStatus(false);
+    }
+
+    private void syncBackgroundRainAlerts() {
+        boolean enabled = getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).getBoolean("enabled", false)
+                && (Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED);
+        if (enabled) scheduleBackgroundRainAlerts();
+        notifyAlertStatus(enabled);
+    }
+
     private void notifyAlertStatus(boolean enabled) {
         if (webView == null) return;
         webView.post(() -> webView.evaluateJavascript(
@@ -285,8 +337,11 @@ public class MainActivity extends Activity {
                 && NavigationPolicy.internalPage(webView.getUrl()));
         if (code == NOTIFICATION_REQUEST) {
             if (Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
-                    == PackageManager.PERMISSION_GRANTED) setRainAlerts(true);
-            else notifyAlertStatus(false);
+                    == PackageManager.PERMISSION_GRANTED) {
+                if (getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).getBoolean("enabled", false)) {
+                    scheduleBackgroundRainAlerts(); notifyAlertStatus(true);
+                } else setRainAlerts(true);
+            } else { getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).edit().putBoolean("enabled", false).apply(); notifyAlertStatus(false); }
         }
     }
 

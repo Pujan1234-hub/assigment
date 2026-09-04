@@ -46,7 +46,7 @@ public final class RainAlertWorker extends Worker {
         try {
             String query = "latitude=" + URLEncoder.encode(String.valueOf(lat), "UTF-8")
                     + "&longitude=" + URLEncoder.encode(String.valueOf(lon), "UTF-8")
-                    + "&current=precipitation,rain"
+                    + "&current=temperature_2m,relative_humidity_2m,precipitation,rain,wind_speed_10m"
                     + "&hourly=rain,showers,precipitation"
                     + "&forecast_days=1&timezone=auto";
             HttpURLConnection connection = (HttpURLConnection) new URL(
@@ -62,9 +62,12 @@ public final class RainAlertWorker extends Worker {
             } finally { connection.disconnect(); }
 
             JSONObject data = new JSONObject(body.toString());
-            double current = data.optJSONObject("current") == null ? 0 :
-                    data.optJSONObject("current").optDouble("precipitation",
-                            data.optJSONObject("current").optDouble("rain", 0));
+            JSONObject currentData = data.optJSONObject("current");
+            double current = currentData == null ? 0 : currentData.optDouble("precipitation",
+                    currentData.optDouble("rain", 0));
+            double temperature = currentData == null ? Double.NaN : currentData.optDouble("temperature_2m", Double.NaN);
+            double humidity = currentData == null ? Double.NaN : currentData.optDouble("relative_humidity_2m", Double.NaN);
+            double wind = currentData == null ? Double.NaN : currentData.optDouble("wind_speed_10m", Double.NaN);
             JSONObject hourly = data.optJSONObject("hourly");
             double next = 0;
             if (hourly != null) {
@@ -85,7 +88,7 @@ public final class RainAlertWorker extends Worker {
             long now = System.currentTimeMillis();
             if (now - prefs.getLong("last_alert", 0) < COOLDOWN_MS) return Result.success();
             prefs.edit().putLong("last_alert", now).apply();
-            notifyRain(current >= 0.1d, next);
+            notifyRain(current >= 0.1d, next, temperature, humidity, wind);
             return Result.success();
         } catch (Exception ignored) {
             return Result.retry();
@@ -96,7 +99,7 @@ public final class RainAlertWorker extends Worker {
         return values == null ? 0 : Math.max(0, values.optDouble(index, 0));
     }
 
-    private void notifyRain(boolean rainingNow, double next) {
+    private void notifyRain(boolean rainingNow, double next, double temperature, double humidity, double wind) {
         NotificationManager manager = getApplicationContext().getSystemService(NotificationManager.class);
         if (manager == null) return;
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "FloodSafe local rain alerts",
@@ -104,8 +107,11 @@ public final class RainAlertWorker extends Worker {
         channel.setDescription("Rain forecast for the last FloodSafe monitoring area");
         manager.createNotificationChannel(channel);
         String title = rainingNow ? "🌧️ तपाईंको निगरानी क्षेत्रमा वर्षा" : "🌧️ वर्षा हुनसक्छ";
-        String text = rainingNow ? "अहिले वर्षा देखिएको छ। FloodSafe Nepal खोलेर विवरण हेर्नुहोस्।"
-                : "अर्को घण्टामा वर्षा हुनसक्छ। FloodSafe Nepal खोलेर विवरण हेर्नुहोस्।";
+        String weather = (Double.isFinite(temperature) ? " " + Math.round(temperature) + "°C" : "")
+                + (Double.isFinite(humidity) ? " • आर्द्रता " + Math.round(humidity) + "%" : "")
+                + (Double.isFinite(wind) ? " • हावा " + Math.round(wind) + " km/h" : "");
+        String text = rainingNow ? "अहिले वर्षा देखिएको छ।" + weather
+                : "अर्को घण्टामा वर्षा हुनसक्छ।" + weather;
         Intent launch = new Intent(getApplicationContext(), MainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(getApplicationContext(), 1, launch,

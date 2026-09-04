@@ -23,12 +23,43 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - name: Install parser dependencies
-        run: pip install --quiet requests beautifulsoup4
+        run: pip install --quiet requests beautifulsoup4 google-auth
       - name: Sync event-scoped Human Status fallback
         run: |
           # Nepal Police is still a trusted/supporting source, but its Nepali word-number pages
           # must not be parsed as numeric totals until that parser is proven safe.
           python3 scripts/update_floodsafe_people_v4.py
+      - name: Detect verified Human Status change
+        id: changed
+        shell: bash
+        run: |
+          if git diff --quiet -- data/floodsafe-people-status.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Send official FCM alert
+        if: steps.changed.outputs.changed == 'true' && secrets.FIREBASE_SERVICE_ACCOUNT != ''
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python3 - <<'PY'
+          import json, os, requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+          item=json.load(open('data/floodsafe-people-status.json',encoding='utf-8'))
+          service=json.loads(os.environ['FIREBASE_SERVICE_ACCOUNT'])
+          creds=service_account.Credentials.from_service_account_info(
+              service,scopes=['https://www.googleapis.com/auth/firebase.messaging'])
+          creds.refresh(Request())
+          title='🚨 FloodSafe Nepal — आधिकारिक अपडेट'
+          body=f"मृत्यु {item.get('recovered_bodies','—')} • सम्पर्कविहीन {item.get('missing_minimum','—')} • उद्धार {item.get('rescued_alive','—')}"
+          message={'message':{'topic':'nepal-alerts','data':{'title':title,'body':body,'kind':'official-human-status'},'android':{'priority':'high'}}}
+          url=f"https://fcm.googleapis.com/v1/projects/{service['project_id']}/messages:send"
+          response=requests.post(url,headers={'Authorization':'Bearer '+creds.token,'Content-Type':'application/json'},json=message,timeout=20)
+          response.raise_for_status()
+          print('Official FCM alert sent to nepal-alerts')
+          PY
       - name: Validate Human Status safety contract
         run: |
           python3 - <<'PY'

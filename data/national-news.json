@@ -1,28 +1,21 @@
 {
-  "generated_at": "2026-09-05T03:44:04.459408+05:45",
-  "updated_at_npt": "05 Sep 03:44 NPT",
+  "generated_at": "2026-09-05T05:41:31.219542+05:45",
+  "updated_at_npt": "05 Sep 05:41 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढी: राहत जुटाउँदै चितवनका स्थानीय पालिका",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589938/bhotekoshi-flood-chitwan-local-municipality-providing-relief",
+      "published_at": "2026-09-05T05:36:21+05:45",
+      "flash": true
+    },
     {
       "title": "सात सय घरमा विद्युत् सुविधाको पहुँच",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589933/access-to-electricity-facilities-in-700-homes",
       "published_at": "2026-09-05T00:27:39+05:45",
-      "flash": false
-    },
-    {
-      "title": "खाद्य सुरक्षालाई ध्यान दिन प्रशासनको आग्रह",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589930/administration-urges-attention-to-food-safety",
-      "published_at": "2026-09-04T23:24:36+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : त्रिवि शिक्षण अस्पतालबाट ४८ घाइते ‘डिस्चार्ज’, २५ जनाको उपचार हुँदै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589929/bhotekoshi-flood-48-injured-discharged-from-tribhuvan-university-teaching-hospital-25-undergoing-treatment",
-      "published_at": "2026-09-04T23:14:47+05:45",
       "flash": false
     }
   ],
@@ -42,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 3
+      "flash": 1,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,

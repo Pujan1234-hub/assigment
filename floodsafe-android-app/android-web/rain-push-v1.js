@@ -5,10 +5,10 @@ export function setupRainAlerts({getLanguage}) {
   let onStatus;
   const message = (enabled) => getLanguage() === 'en'
     ? (enabled
-      ? 'Official Nepal alerts are enabled. Notifications can arrive while the app is closed.'
+      ? 'Official Nepal alerts are active.'
       : 'Notification permission was not granted. Turn it on in Android Settings to receive official alerts.')
     : (enabled
-      ? 'आधिकारिक नेपाल सूचना चालु छ। app बन्द हुँदा पनि सूचना आउन सक्छ।'
+      ? 'आधिकारिक नेपाल सूचना सक्रिय छ।'
       : 'सूचना अनुमति दिइएन। आधिकारिक सूचना पाउन Android Settings मा अनुमति दिनुहोस्।');
 
   function render(enabled) {

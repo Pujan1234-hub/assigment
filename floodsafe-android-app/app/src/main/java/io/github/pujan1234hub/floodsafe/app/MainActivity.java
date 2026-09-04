@@ -63,7 +63,13 @@ public class MainActivity extends Activity {
             locationTapUntil = System.currentTimeMillis() + 6000L;
         }
         @JavascriptInterface public void enableRainAlerts() {
-            runOnUiThread(MainActivity.this::enableRainAlerts);
+            runOnUiThread(() -> setRainAlerts(true));
+        }
+        @JavascriptInterface public void setRainAlerts(boolean enabled) {
+            runOnUiThread(() -> MainActivity.this.setRainAlerts(enabled));
+        }
+        @JavascriptInterface public void syncRainAlertsStatus() {
+            runOnUiThread(MainActivity.this::syncRainAlertsStatus);
         }
     }
 
@@ -191,10 +197,22 @@ public class MainActivity extends Activity {
         updateConnection();
     }
 
-    private void enableRainAlerts() {
-        if (Build.VERSION.SDK_INT >= 33
+    private void setRainAlerts(boolean enabled) {
+        if (enabled && Build.VERSION.SDK_INT >= 33
                 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_REQUEST);
+            return;
+        }
+        if (enabled) FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts")
+                .addOnCompleteListener(task -> notifyAlertStatus(task.isSuccessful()));
+        else FirebaseMessaging.getInstance().unsubscribeFromTopic("nepal-alerts")
+                .addOnCompleteListener(task -> notifyAlertStatus(false));
+    }
+
+    private void syncRainAlertsStatus() {
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notifyAlertStatus(false);
             return;
         }
         FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts")
@@ -267,7 +285,7 @@ public class MainActivity extends Activity {
                 && NavigationPolicy.internalPage(webView.getUrl()));
         if (code == NOTIFICATION_REQUEST) {
             if (Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
-                    == PackageManager.PERMISSION_GRANTED) enableRainAlerts();
+                    == PackageManager.PERMISSION_GRANTED) setRainAlerts(true);
             else notifyAlertStatus(false);
         }
     }

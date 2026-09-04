@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
     /** A narrowly scoped signal from the bundled location button only. */
     private final class LocationTapBridge {
         @JavascriptInterface public void allowLocationPrompt() {
-            locationTapUntil = System.currentTimeMillis() + 6000L;
+            runOnUiThread(MainActivity.this::beginLocationFromTap);
         }
         @JavascriptInterface public void enableRainAlerts() {
             runOnUiThread(() -> setRainAlerts(true));
@@ -292,6 +292,18 @@ public class MainActivity extends Activity {
         }
         connection.setText(mainFrameError ? R.string.load_error : R.string.offline);
         recovery.setVisibility(offline || mainFrameError ? View.VISIBLE : View.GONE);
+    }
+
+    private void beginLocationFromTap() {
+        locationTapUntil = System.currentTimeMillis() + 6000L;
+        if (hasLocation() || androidLocationPromptOpen) return;
+        androidLocationPromptOpen = true;
+        try {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST);
+        } catch (RuntimeException unavailable) {
+            finishLocation(false);
+        }
     }
 
     void requestLocation(String origin, GeolocationPermissions.Callback callback) {

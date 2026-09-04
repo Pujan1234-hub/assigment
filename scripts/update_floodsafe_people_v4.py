@@ -84,7 +84,23 @@ def main():
  listing(best,'https://ndrrma.gov.np/','ndrrma.gov.np','NDRRMA')
  inspect(best,'https://www.onlinekhabar.com/2026/09/2009006/rasuwa-flood-death-toll-reaches-1114','NDRRMA via OnlineKhabar',True)
  listing(best,'https://www.onlinekhabar.com/trend/bhotekoshi-flood','onlinekhabar.com','NDRRMA via OnlineKhabar',True)
+ # Independent Nepal newsrooms are used only when their report explicitly attributes
+ # an event-wide total to NDRRMA/Nepal Police. This prevents a local subgroup count
+ # becoming a national total.
+ media=(
+  ('https://myrepublica.nagariknetwork.com/news/bhotekoshi-flood-11993-rescued-4216-still-missing-96-15.html','NDRRMA via MyRepublica'),
+  ('https://thehimalayantimes.com/ampArticle/1040101','NDRRMA via The Himalayan Times'),
+  ('https://www.b360nepal.com/detail/29939/bhotekoshi-floods-11993-people-rescued-4216-reported-missing','NDRRMA via B360 Nepal'),
+  ('https://english.nepalnews.com/s/nation/bhotekoshi-flood-4216-people-still-missing/','NDRRMA via Nepal News'),
+ )
+ for url,source in media:inspect(best,url,source,True)
+ for base,host,source in (
+  ('https://myrepublica.nagariknetwork.com/','myrepublica.nagariknetwork.com','NDRRMA via MyRepublica'),
+  ('https://thehimalayantimes.com/','thehimalayantimes.com','NDRRMA via The Himalayan Times'),
+  ('https://www.b360nepal.com/','b360nepal.com','NDRRMA via B360 Nepal'),
+  ('https://english.nepalnews.com/','english.nepalnews.com','NDRRMA via Nepal News'),
+ ):listing(best,base,host,source,True)
  d,m,r=best.get('death'),best.get('missing'),best.get('rescued')
- payload={'event':'Bhotekoshi flash flood','event_ne':'भोटेकोशी आकस्मिक बाढी','updated_date':datetime.now(timezone.utc).date().isoformat(),'recovered_bodies':d['value'] if d else None,'recovered_source':d['source'] if d else None,'recovered_source_url':d['url'] if d else None,'recovered_update_time':d['time'] if d else None,'recovered_update_iso':d['time'] if d else None,'missing_minimum':m['value'] if m else None,'missing_is_minimum':bool(m and m.get('minimum')),'missing_source':m['source'] if m else None,'missing_source_url':m['url'] if m else None,'missing_update_time':m['time'] if m else None,'rescued_alive':r['value'] if r else None,'rescued_source':r['source'] if r else None,'rescued_source_url':r['url'] if r else None,'rescued_update_time':r['time'] if r else None,'status':'event_scoped_requested_sources','last_checked_utc':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),'sync_sources':['NDRRMA','OnlineKhabar','Nepal Police','Radio Nepal','RONB'],'sync_schema':4,'sync_policy':'Newest explicit event-wide authority-attributed total wins. Nepali thousand/lakh totals are parsed only when attached to deaths, missing or rescued outcomes; subgroup counts and BS years cannot become totals.'}
+ payload={'event':'Bhotekoshi flash flood','event_ne':'भोटेकोशी आकस्मिक बाढी','updated_date':datetime.now(timezone.utc).date().isoformat(),'recovered_bodies':d['value'] if d else None,'recovered_source':d['source'] if d else None,'recovered_source_url':d['url'] if d else None,'recovered_update_time':d['time'] if d else None,'recovered_update_iso':d['time'] if d else None,'missing_minimum':m['value'] if m else None,'missing_is_minimum':bool(m and m.get('minimum')),'missing_source':m['source'] if m else None,'missing_source_url':m['url'] if m else None,'missing_update_time':m['time'] if m else None,'rescued_alive':r['value'] if r else None,'rescued_source':r['source'] if r else None,'rescued_source_url':r['url'] if r else None,'rescued_update_time':r['time'] if r else None,'status':'event_scoped_requested_sources','last_checked_utc':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),'sync_sources':['NDRRMA','OnlineKhabar','Radio Nepal','RONB','MyRepublica','The Himalayan Times','B360 Nepal','Nepal News'],'sync_schema':4,'sync_policy':'Newest explicit event-wide authority-attributed total wins. Nepali thousand/lakh totals are parsed only when attached to deaths, missing or rescued outcomes; subgroup counts and BS years cannot become totals.'}
  OUT.write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8');print(payload['recovered_bodies'],payload['missing_minimum'],payload['rescued_alive'])
 if __name__=='__main__':main()

@@ -363,7 +363,11 @@ public class MainActivity extends Activity {
     }
     @Override protected void onResume() {
         super.onResume();
-        if (webView != null) webView.onResume();
+        if (webView != null) {
+            webView.onResume();
+            // Always re-check weather immediately when returning from a closed/background app.
+            webView.evaluateJavascript("setTimeout(function(){window.FloodSafeRain?.refresh?.(true)},120)", null);
+        }
         updateConnection();
     }
     @Override protected void onDestroy() {

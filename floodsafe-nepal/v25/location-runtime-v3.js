@@ -66,6 +66,8 @@ function startWatch(){
   watch=navigator.geolocation.watchPosition(accept,fail,{enableHighAccuracy:true,timeout:15000,maximumAge:5000});
 }
 function locate(){
+  // Android WebView needs an explicit native request before geolocation starts.
+  try{window.FloodSafeNative?.allowLocationPrompt?.()}catch{}
   requested=true;pendingCenter=true;lastError='';
   if($('place'))$('place').textContent=tr('📍 हालको स्थान खोजिँदैछ…','📍 Finding current location…');
   stopWatch();startWatch();

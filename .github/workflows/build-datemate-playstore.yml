@@ -1,0 +1,115 @@
+name: Build DateMate Play Store AAB
+
+on:
+  push:
+    paths:
+      - 'datemate-playstore/**'
+      - 'datemate-camera-v2/**'
+      - '.github/workflows/build-datemate-playstore.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Reconstruct DateMate Android project
+        shell: bash
+        run: |
+          cat datemate-build/project.part00 datemate-build/project.part01 datemate-build/project.part02 datemate-build/project.part03 > /tmp/datemate-project.b64
+          base64 --decode /tmp/datemate-project.b64 > /tmp/datemate-project.zip
+          unzip -q /tmp/datemate-project.zip -d .
+          test -f datemate-android-fixed/app/src/main/java/com/pujan/datemate/MainActivity.kt
+
+      - name: Apply CameraX freeze fix
+        shell: bash
+        run: |
+          cp datemate-camera-v2/ExpiryCameraActivity.kt datemate-android-fixed/app/src/main/java/com/pujan/datemate/ExpiryCameraActivity.kt
+          python3 datemate-camera-v2/patch.py
+
+      - name: Apply Play Store preparation
+        shell: bash
+        run: |
+          python3 datemate-playstore/patch.py
+          grep -q 'compileSdk = 36' datemate-android-fixed/app/build.gradle.kts
+          grep -q 'targetSdk = 36' datemate-android-fixed/app/build.gradle.kts
+          grep -q 'Privacy Policy' datemate-android-fixed/app/src/main/java/com/pujan/datemate/MainActivity.kt
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android API 36
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+
+      - name: Set up Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Generate matching Gradle wrapper
+        shell: bash
+        run: |
+          gradle -p datemate-android-fixed wrapper --gradle-version 8.11.1
+
+      - name: Build release App Bundle
+        shell: bash
+        run: |
+          ./datemate-android-fixed/gradlew -p datemate-android-fixed --stacktrace bundleRelease
+
+      - name: Verify bundle
+        shell: bash
+        run: |
+          test -s datemate-android-fixed/app/build/outputs/bundle/release/app-release.aab
+          ls -lh datemate-android-fixed/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Add Play Store handoff notes
+        shell: bash
+        run: |
+          cat > datemate-android-fixed/PLAY_STORE_README.txt <<'EOF'
+          DateMate Play Store build
+          =========================
+          Version: 1.0.3 (versionCode 4)
+          Package: com.pujan.datemate
+          compileSdk: 36
+          targetSdk: 36
+          minSdk: 24
+
+          This project includes the CameraX expiry-camera freeze fix and a Privacy Policy button.
+          The AAB produced by this workflow is intentionally unsigned. It is signed after download
+          with the private DateMate upload key, so the upload key is never committed to GitHub.
+          EOF
+
+      - name: Create Android Studio project ZIP
+        shell: bash
+        run: |
+          rm -rf datemate-android-fixed/.gradle datemate-android-fixed/app/build
+          zip -qr DateMate-AndroidStudio-PlayStore-v1.0.3.zip datemate-android-fixed
+
+      - name: Upload unsigned AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: DateMate-PlayStore-Unsigned-AAB
+          path: datemate-android-fixed/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      - name: Upload Play Store project
+        uses: actions/upload-artifact@v4
+        with:
+          name: DateMate-AndroidStudio-PlayStore-v1.0.3
+          path: DateMate-AndroidStudio-PlayStore-v1.0.3.zip
+          if-no-files-found: error

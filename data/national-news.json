@@ -1,77 +1,105 @@
 {
-  "generated_at": "2026-09-04T15:44:06.782578+05:45",
-  "updated_at_npt": "04 Sep 15:44 NPT",
+  "generated_at": "2026-09-04T19:58:48.126422+05:45",
+  "updated_at_npt": "04 Sep 19:58 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढी : त्रिशूली–३ ‘ए’ मा खोज तथा उद्धार जारी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589895/bhotekoshi-flood-search-and-rescue-continues-in-trishuli-3-a",
+      "published_at": "2026-09-04T18:50:31+05:45",
+      "flash": false
+    },
+    {
+      "title": "कोशी प्रदेशका १६० व्यक्ति सम्पर्कविहीन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589894/160-people-from-koshi-province-remain-uncontacted",
+      "published_at": "2026-09-04T18:49:11+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढी प्रभावित क्षेत्रको स्थलगत अध्ययन गर्न निर्माण व्यवसायी महासङ्घको टोली त्रिशूलीमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589885/construction-entrepreneurs-federation-team-in-trishuli-to-conduct-on-site-study-of-flood-affected-areas",
+      "published_at": "2026-09-04T18:01:20+05:45",
+      "flash": false
+    },
+    {
+      "title": "देवीघाटमा बेलिब्रिज जडान गर्न सेनाले थाल्यो काम",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589882/army-begins-work-to-install-bailey-bridge-in-benighat",
+      "published_at": "2026-09-04T17:45:46+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढीका कारण क्षतिग्रस्त झोलुङ्गे पुलको मर्मत सुरु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589877/repairs-to-suspension-bridge-damaged-by-flood-begin",
+      "published_at": "2026-09-04T17:25:53+05:45",
+      "flash": false
+    },
+    {
+      "title": "कपिलवस्तुमा अटोको ठक्करबाट तीन वर्षीय बालकको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589872/three-year-old-boy-dies-after-being-hit-by-car-in-kapilvastu",
+      "published_at": "2026-09-04T17:16:50+05:45",
+      "flash": false
+    },
+    {
+      "title": "बागलुङमा ग्यास वितरणमा प्रहरी खटिनुपर्ने अवस्था, उपभोक्ता र विक्रेता एकापसमा आजित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589861/police-have-to-be-deployed-in-gas-distribution-in-baglung-consumers-and-sellers-are-at-loggerheads",
+      "published_at": "2026-09-04T16:39:25+05:45",
+      "flash": false
+    },
+    {
+      "title": "पहिरोले थुनियो चमेलिया नदी, भटारका १५ परिवारलाई सुरक्षित स्थानमा सारिँदै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589852/landslide-blocks-chameliya-river-15-families-from-bhatar-being-evacuated-to-safer-places",
+      "published_at": "2026-09-04T16:14:10+05:45",
+      "flash": false
+    },
+    {
+      "title": "परिवारको गुजाराकै लागि कञ्चनपुरबाट रसुवा पुगेका एकै परिवारका तीन जना बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589844/three-members-of-the-same-family-who-had-reached-rasuwa-from-kanchanpur-to-support-their-family-have-gone-missing",
+      "published_at": "2026-09-04T16:00:00+05:45",
+      "flash": false
+    },
     {
       "title": "अनोजलाई बाढीले बगायो, क्यान्सर पीडित आमा दोहोरो पीडामा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589832/anoj-washed-away-by-flood-cancer-stricken-mother-in-double-pain",
       "published_at": "2026-09-04T15:30:00+05:45",
-      "flash": true
-    },
-    {
-      "title": "‘मालती मंगले’को च्यारिटी शोबाट सङ्कलित तीन लाख प्रधानमन्त्री राहत कोषलाई प्रदान",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589841/three-lakh-rupees-collected-from-malati-mangle-charity-show-donated-to-prime-ministers-relief-fund",
-      "published_at": "2026-09-04T15:29:19+05:45",
-      "flash": true
-    },
-    {
-      "title": "त्रिशूली–३ए मा १७० मिटर भित्र पुगे उद्धारकर्मी, अरू हाइड्रोमा के छ प्रगति ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589840/rescue-workers-have-reached-within-170-meters-of-trishuli-3a-what-is-the-progress-at-other-hydropower-plants",
-      "published_at": "2026-09-04T15:24:41+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "बाढीपीडितका लागि अनेरास्ववियु रूपन्देहीकाे १० लाखको राहत सामग्री",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589839/annfsu-rupandehi-provides-relief-materials-worth-rs-1-million-for-flood-victims",
       "published_at": "2026-09-04T15:21:50+05:45",
-      "flash": true
-    },
-    {
-      "title": "बाढीका कारण प्रभावित १३ हजारभन्दा बढीको उद्धार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589837/more-than-13000-people-affected-by-floods-rescued",
-      "published_at": "2026-09-04T15:16:57+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "अन्तिम फोन कलको त्यो वाचा : बाढी गएको नौ दिन बित्दा पनि अब्दुलको बाटो हेर्दै परिवार",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589831/that-promise-in-the-last-phone-call-nine-days-after-the-flood-abduls-family-still-waiting-for-him",
       "published_at": "2026-09-04T15:02:47+05:45",
-      "flash": true
-    },
-    {
-      "title": "बाढीपीडितका लागि नेविसंघको स्वास्थ्य तथा मनोपरामर्श शिविर",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589830/nepali-navy-union-health-and-counseling-camp-for-flood-victims-in-nuwakot",
-      "published_at": "2026-09-04T15:01:09+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढीपीडितका लागि मिर्चैया नगरपालिकाद्वारा २५ लाख ५८ हजार सहयोगको घोषणा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589827/mirchaiya-municipality-announces-rs-258-million-assistance-for-bhotekoshi-flood-victims",
       "published_at": "2026-09-04T14:50:24+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "रसुवाको बाढीमा श्रीमान् बेपत्ता, भगवानलाई गुहार्दैछिन् पूजा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589808/husband-goes-missing-in-rasuwa-floods-pooja-prays-to-god",
       "published_at": "2026-09-04T14:30:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "नुवाकोटमा पहिरो गएपछि रोकिए राहत बोकेका गाडी (तस्बिरहरू)",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589814/relief-vehicles-stopped-after-landslide-in-nuwakot-photos",
-      "published_at": "2026-09-04T14:16:44+05:45",
       "flash": false
     },
     {
@@ -98,8 +126,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 8,
-      "recent": 11
+      "flash": 0,
+      "recent": 15
     },
     "Kathmandu Post": {
       "ok": true,

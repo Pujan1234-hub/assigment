@@ -1,15 +1,22 @@
 {
-  "generated_at": "2026-09-06T00:22:48.312989+05:45",
-  "updated_at_npt": "06 Sep 00:22 NPT",
+  "generated_at": "2026-09-06T02:27:57.085308+05:45",
+  "updated_at_npt": "06 Sep 02:27 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढी: ६४ करोड बराबरका खानेपानी आयोजनामा क्षति",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590090/bhotekoshi-flood-damage-to-drinking-water-projects-worth-rs-640-million",
+      "published_at": "2026-09-06T01:45:53+05:45",
+      "flash": true
+    },
     {
       "title": "भोटेकोशी बाढी: काभ्रेबाट रु दुई करोड २२ लाख सहयोग",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590086/bhotekoshi-flood-rs-222-million-assistance-from-kavre",
       "published_at": "2026-09-05T23:25:42+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "बाढी पीडितलाई माछापुच्छ्रे गाउँपालिकाले साढे २० लाख सहयोग गर्ने",
@@ -23,27 +30,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590075/one-person-drowns-while-kayaking-in-fewa-lake",
       "published_at": "2026-09-05T20:32:29+05:45",
-      "flash": false
-    },
-    {
-      "title": "नुवाकोटका राहत शिविरमा बाढी प्रभावितलाई सुविसुको निःशुल्क इन्टरनेट",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590072/subisu-provides-free-internet-to-flood-victims-in-nuwakot-relief-camps",
-      "published_at": "2026-09-05T20:14:26+05:45",
-      "flash": false
-    },
-    {
-      "title": "सिमकोटमा विद्युत् आपूर्ति बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590068/electricity-supply-cut-off-in-simkot",
-      "published_at": "2026-09-05T19:41:55+05:45",
-      "flash": false
-    },
-    {
-      "title": "मन्त्री आचार्यको निर्देशनमा नयाँ ठेक्का रोक्का : सरकारले पूर्वाधारको ‘डीपीआर’ नै फेर्ने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590036/new-contracts-halted-on-minister-acharyas-instructions-government-will-change-infrastructure-dpr",
-      "published_at": "2026-09-05T18:30:00+05:45",
       "flash": false
     }
   ],
@@ -64,7 +50,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 1,
-      "recent": 6
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

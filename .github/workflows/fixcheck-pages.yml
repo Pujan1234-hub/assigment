@@ -14,6 +14,7 @@ on:
       - team-tracker/**
       - floodsafe-nepal/**
       - data/**
+      - assets/**
       - .github/workflows/fixcheck-pages.yml
   workflow_dispatch:
 
@@ -50,7 +51,12 @@ jobs:
           cp -R team-tracker _site/team-tracker
           cp -R floodsafe-nepal _site/floodsafe-nepal
           if [ -d data ]; then cp -R data _site/data; fi
+          if [ -d assets ]; then cp -R assets _site/assets; fi
           test -s _site/data/nepal-waterways-seed.json
+          test -s _site/assets/portfolio/datemate-home.svg
+          test -s _site/assets/portfolio/datemate-archive.svg
+          test -s _site/assets/portfolio/floodsafe-map.svg
+          test -s _site/assets/portfolio/floodsafe-poster.svg
           python3 -c "import json; j=json.load(open('_site/data/nepal-waterways-seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']; print('packaging river routes',j['count'])"
           printf '%s' "$GITHUB_SHA" > _site/build-version.txt
           python - <<'PY'
@@ -106,6 +112,10 @@ jobs:
               ! grep -Fq 'flood-freshness.js' /tmp/v25.html
               curl --max-time 15 -fsSL "$BASE/?check=$GITHUB_SHA" -o /tmp/home.html
               grep -Fq 'portfolio-motion.js?v=2' /tmp/home.html
+              curl --max-time 15 -fsSL "$BASE/assets/portfolio/datemate-home.svg?check=$GITHUB_SHA" -o /tmp/datemate-home.svg
+              grep -Fq '<svg' /tmp/datemate-home.svg
+              curl --max-time 15 -fsSL "$BASE/assets/portfolio/floodsafe-map.svg?check=$GITHUB_SHA" -o /tmp/floodsafe-map.svg
+              grep -Fq '<svg' /tmp/floodsafe-map.svg
               exit 0
             fi
             sleep 5

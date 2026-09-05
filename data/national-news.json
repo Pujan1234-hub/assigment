@@ -1,21 +1,42 @@
 {
-  "generated_at": "2026-09-05T05:41:31.219542+05:45",
-  "updated_at_npt": "05 Sep 05:41 NPT",
+  "generated_at": "2026-09-05T09:40:27.346332+05:45",
+  "updated_at_npt": "05 Sep 09:40 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "बोलिभियाको सैन्य परिसरमा शक्तिशाली विस्फोट, कम्तीमा १० जनाको मृत्यु, ६० भन्दा बढी घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589964/powerful-explosion-at-bolivian-military-complex-kills-at-least-10-injures-more-than-60",
+      "published_at": "2026-09-05T09:32:15+05:45",
+      "flash": true
+    },
+    {
+      "title": "‘अक्षरा’ले हलबाट आएको १० प्रतिशत प्रधानमन्त्री दैवीप्रकोप उद्धार कोषमा जम्मा गर्ने घोषणा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589961/akshara-announces-to-donate-10-percent-of-proceeds-from-the-hall-to-the-prime-ministers-disaster-relief-fund",
+      "published_at": "2026-09-05T09:16:06+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढी प्रभावित क्षेत्रमा राहत पुर्‍याउन चिनियाँ ड्रोनको प्रयोग (तस्बिरहरू)",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589960/chinese-drones-used-to-deliver-relief-to-flood-affected-areas-photos",
+      "published_at": "2026-09-05T09:05:29+05:45",
+      "flash": true
+    },
+    {
+      "title": "एमाले प्रचार प्रमुख आचार्यको प्रश्न–राहत कुहिने, जनता भोकै बस्ने अवस्था किन आयो ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589957/uml-publicity-chief-acharyas-question-why-has-the-situation-come-to-a-point-where-relief-is-being-wasted-and-people-are-going-hungry",
+      "published_at": "2026-09-05T08:40:28+05:45",
+      "flash": true
+    },
     {
       "title": "भोटेकोशी बाढी: राहत जुटाउँदै चितवनका स्थानीय पालिका",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589938/bhotekoshi-flood-chitwan-local-municipality-providing-relief",
       "published_at": "2026-09-05T05:36:21+05:45",
-      "flash": true
-    },
-    {
-      "title": "सात सय घरमा विद्युत् सुविधाको पहुँच",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589933/access-to-electricity-facilities-in-700-homes",
-      "published_at": "2026-09-05T00:27:39+05:45",
       "flash": false
     }
   ],
@@ -35,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 2
+      "flash": 4,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

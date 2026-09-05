@@ -1,42 +1,63 @@
 {
-  "generated_at": "2026-09-05T09:40:27.346332+05:45",
-  "updated_at_npt": "05 Sep 09:40 NPT",
+  "generated_at": "2026-09-05T13:55:24.949728+05:45",
+  "updated_at_npt": "05 Sep 13:55 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बोलिभियाको सैन्य परिसरमा शक्तिशाली विस्फोट, कम्तीमा १० जनाको मृत्यु, ६० भन्दा बढी घाइते",
+      "title": "बेत्रावतीमा उद्धार गरिएकी महिला बोल्न सक्ने अवस्थामा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589964/powerful-explosion-at-bolivian-military-complex-kills-at-least-10-injures-more-than-60",
-      "published_at": "2026-09-05T09:32:15+05:45",
+      "url": "https://www.ratopati.com/story/590014/woman-rescued-in-betrawati-able-to-speak",
+      "published_at": "2026-09-05T13:52:41+05:45",
       "flash": true
     },
     {
-      "title": "‘अक्षरा’ले हलबाट आएको १० प्रतिशत प्रधानमन्त्री दैवीप्रकोप उद्धार कोषमा जम्मा गर्ने घोषणा",
+      "title": "बेत्रावतीमा चमत्कार: बाढीले पुरिएको ११ औँ दिनमा एक महिलाको जीवितै उद्धार",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589961/akshara-announces-to-donate-10-percent-of-proceeds-from-the-hall-to-the-prime-ministers-disaster-relief-fund",
-      "published_at": "2026-09-05T09:16:06+05:45",
+      "url": "https://www.ratopati.com/story/590012/miracle-in-betravati-woman-rescued-alive-11-days-after-being-buried-by-flood",
+      "published_at": "2026-09-05T13:46:36+05:45",
       "flash": true
     },
     {
-      "title": "बाढी प्रभावित क्षेत्रमा राहत पुर्‍याउन चिनियाँ ड्रोनको प्रयोग (तस्बिरहरू)",
+      "title": "अपर त्रिशूली–१ बाट विदेशी नागरिकको जीवितै उद्धार",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589960/chinese-drones-used-to-deliver-relief-to-flood-affected-areas-photos",
-      "published_at": "2026-09-05T09:05:29+05:45",
+      "url": "https://www.ratopati.com/story/590011/foreign-national-rescued-alive-from-upper-trishuli-1",
+      "published_at": "2026-09-05T13:42:20+05:45",
       "flash": true
     },
     {
-      "title": "एमाले प्रचार प्रमुख आचार्यको प्रश्न–राहत कुहिने, जनता भोकै बस्ने अवस्था किन आयो ?",
+      "title": "वीरेन्द्रनगरमा मोटरसाइकल दुर्घटना, चालकको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589957/uml-publicity-chief-acharyas-question-why-has-the-situation-come-to-a-point-where-relief-is-being-wasted-and-people-are-going-hungry",
-      "published_at": "2026-09-05T08:40:28+05:45",
+      "url": "https://www.ratopati.com/story/590008/motorcycle-accident-in-birendranagar-driver-dies",
+      "published_at": "2026-09-05T13:30:51+05:45",
       "flash": true
     },
     {
-      "title": "भोटेकोशी बाढी: राहत जुटाउँदै चितवनका स्थानीय पालिका",
+      "title": "‘बेपत्ता नागरिकलाई मृतकसरह मानेर राहत दिन सङ्घीय सरकारसँग पहल भइरहेको छ’",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589938/bhotekoshi-flood-chitwan-local-municipality-providing-relief",
-      "published_at": "2026-09-05T05:36:21+05:45",
+      "url": "https://www.ratopati.com/story/589988/initiatives-are-being-taken-with-the-federal-government-to-provide-relief-to-missing-citizens-by-treating-them-as-if-they-were-dead",
+      "published_at": "2026-09-05T13:30:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "पृथ्वी राजमार्गको परेवाभिर खण्डमा आज दिनभर सवारी आवागमन पूर्ण बन्द",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589994/vehicular-traffic-on-the-parewabhir-section-of-the-prithvi-highway-will-be-completely-closed-for-the-entire-day-today",
+      "published_at": "2026-09-05T12:35:11+05:45",
+      "flash": false
+    },
+    {
+      "title": "मुस्ताङको टुकुचेमा कालीगण्डकीले कटान गरेपछि गाउँ पहिरोको जोखिममा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589992/village-at-risk-of-landslide-after-kaligandaki-erodes-tukuche-mustang",
+      "published_at": "2026-09-05T12:28:13+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढीपछि बेपत्ता भएका आफन्तको पर्खाइमा नेपालगञ्जका अनलाल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589967/nepalgunjs-anlal-waits-for-relatives-who-went-missing-after-the-bhotekoshi-flood",
+      "published_at": "2026-09-05T10:27:50+05:45",
       "flash": false
     }
   ],
@@ -56,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 5
+      "flash": 5,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,

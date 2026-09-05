@@ -1,49 +1,63 @@
 {
-  "generated_at": "2026-09-05T13:55:24.949728+05:45",
-  "updated_at_npt": "05 Sep 13:55 NPT",
+  "generated_at": "2026-09-05T17:35:33.972849+05:45",
+  "updated_at_npt": "05 Sep 17:35 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बेत्रावतीमा उद्धार गरिएकी महिला बोल्न सक्ने अवस्थामा",
+      "title": "उद्धार गरिएकी चण्डिकाको घुँडाको अप्रेसन हुँदै",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590014/woman-rescued-in-betrawati-able-to-speak",
-      "published_at": "2026-09-05T13:52:41+05:45",
+      "url": "https://www.ratopati.com/story/590055/rescued-chandika-undergoes-knee-surgery",
+      "published_at": "2026-09-05T17:28:28+05:45",
       "flash": true
     },
     {
-      "title": "बेत्रावतीमा चमत्कार: बाढीले पुरिएको ११ औँ दिनमा एक महिलाको जीवितै उद्धार",
+      "title": "उत्तरगया गाउँपालिकाका २५० परिवारलाई राहत सामग्री हस्तान्तरण",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590012/miracle-in-betravati-woman-rescued-alive-11-days-after-being-buried-by-flood",
-      "published_at": "2026-09-05T13:46:36+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/590047/relief-materials-handed-over-to-250-families-in-uttargaya-rural-municipality",
+      "published_at": "2026-09-05T16:17:56+05:45",
+      "flash": false
     },
     {
-      "title": "अपर त्रिशूली–१ बाट विदेशी नागरिकको जीवितै उद्धार",
+      "title": "रसुवा बाढीमा बेपत्ता भएकी प्रमिलाकाे कुशको पुतला बनाएर दाहसंस्कार",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590011/foreign-national-rescued-alive-from-upper-trishuli-1",
-      "published_at": "2026-09-05T13:42:20+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/590046/pramila-who-went-missing-in-the-rasuwa-floods-cremated-in-a-kush-effigy",
+      "published_at": "2026-09-05T16:13:28+05:45",
+      "flash": false
     },
     {
-      "title": "वीरेन्द्रनगरमा मोटरसाइकल दुर्घटना, चालकको मृत्यु",
+      "title": "फेवातालमा कायकिङ गर्दा डुबेका युवाको गोताखोर टोलीद्वारा उद्धार",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590008/motorcycle-accident-in-birendranagar-driver-dies",
-      "published_at": "2026-09-05T13:30:51+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/590043/diving-team-rescues-youth-who-drowned-while-kayaking-in-fewa-lake",
+      "published_at": "2026-09-05T15:54:55+05:45",
+      "flash": false
+    },
+    {
+      "title": "कास्की पहिरो अपडेट : दुई कामदारको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590035/kaski-landslide-update-two-workers-killed",
+      "published_at": "2026-09-05T15:19:59+05:45",
+      "flash": false
+    },
+    {
+      "title": "कास्कीमा पहिरोमा परी दुई जना गम्भीर घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590031/two-seriously-injured-in-landslide-in-kaski",
+      "published_at": "2026-09-05T15:06:41+05:45",
+      "flash": false
+    },
+    {
+      "title": "केन्द्रले चासो नदिएपछि कर्णाली सरकारद्वारा भूकम्प प्रभावित ८२ संरचनाको पुनर्निर्माण सम्पन्न",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/589990/karnali-government-completes-reconstruction-of-82-earthquake-hit-structures-after-the-center-showed-no-interest",
+      "published_at": "2026-09-05T14:00:00+05:45",
+      "flash": false
     },
     {
       "title": "‘बेपत्ता नागरिकलाई मृतकसरह मानेर राहत दिन सङ्घीय सरकारसँग पहल भइरहेको छ’",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589988/initiatives-are-being-taken-with-the-federal-government-to-provide-relief-to-missing-citizens-by-treating-them-as-if-they-were-dead",
       "published_at": "2026-09-05T13:30:00+05:45",
-      "flash": true
-    },
-    {
-      "title": "पृथ्वी राजमार्गको परेवाभिर खण्डमा आज दिनभर सवारी आवागमन पूर्ण बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589994/vehicular-traffic-on-the-parewabhir-section-of-the-prithvi-highway-will-be-completely-closed-for-the-entire-day-today",
-      "published_at": "2026-09-05T12:35:11+05:45",
       "flash": false
     },
     {
@@ -51,13 +65,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/589992/village-at-risk-of-landslide-after-kaligandaki-erodes-tukuche-mustang",
       "published_at": "2026-09-05T12:28:13+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीपछि बेपत्ता भएका आफन्तको पर्खाइमा नेपालगञ्जका अनलाल",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/589967/nepalgunjs-anlal-waits-for-relatives-who-went-missing-after-the-bhotekoshi-flood",
-      "published_at": "2026-09-05T10:27:50+05:45",
       "flash": false
     }
   ],
@@ -77,8 +84,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 5,
-      "recent": 8
+      "flash": 1,
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,

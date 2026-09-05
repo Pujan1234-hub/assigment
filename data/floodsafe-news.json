@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-05T16:13:13.695925Z",
+  "generated_at": "2026-09-05T18:22:32.313273Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,35 +12,16 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 2
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "अँध्यारो सुरुङभित्रको ‘हेलो…. हेलो…’ र जीवनको खोजी",
-      "url": "https://radionepalonline.com/2026/09/05/732794.html",
-      "published_at": "2026-09-05T16:01:46Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "बाढी प्रभावित ज्येष्ठ नागरिकलाई प्रधानमन्त्रीको सम्बोधन- ‘एक्लो नठान्नुहोस्,सरकार साथमा छ’",
-      "url": "https://www.ronbpost.com/2026/09/19700/",
-      "published_at": "2026-09-05T15:54:23Z",
-      "source": "RONB Post"
-    },
-    {
-      "title": "भोटेकोशी बाढी : रसुवागढी हाइड्रोको छैटौँ तलामा पुग्यो उद्धार टोली, लेदो पन्छाएर खोजी जारी",
-      "url": "https://radionepalonline.com/2026/09/05/732792.html",
-      "published_at": "2026-09-05T15:45:10Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

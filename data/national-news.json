@@ -1,9 +1,23 @@
 {
-  "generated_at": "2026-09-05T22:34:50.113767+05:45",
-  "updated_at_npt": "05 Sep 22:34 NPT",
+  "generated_at": "2026-09-06T00:22:48.312989+05:45",
+  "updated_at_npt": "06 Sep 00:22 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढी: काभ्रेबाट रु दुई करोड २२ लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590086/bhotekoshi-flood-rs-222-million-assistance-from-kavre",
+      "published_at": "2026-09-05T23:25:42+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढी पीडितलाई माछापुच्छ्रे गाउँपालिकाले साढे २० लाख सहयोग गर्ने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590084/machhapuchhre-rural-municipality-will-provide-25-million-rupees-in-assistance-to-flood-victims",
+      "published_at": "2026-09-05T22:41:43+05:45",
+      "flash": false
+    },
     {
       "title": "फेवातालमा काइकिङ गर्ने क्रममा डुबेर एकजनाको मृत्यु",
       "source": "Ratopati",
@@ -31,20 +45,6 @@
       "url": "https://www.ratopati.com/story/590036/new-contracts-halted-on-minister-acharyas-instructions-government-will-change-infrastructure-dpr",
       "published_at": "2026-09-05T18:30:00+05:45",
       "flash": false
-    },
-    {
-      "title": "चुनावमा असहयोगको आरोप लागेका चार कांग्रेस नेताले पाए सफाइ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590058/four-congress-leaders-accused-of-non-cooperation-in-the-election-were-acquitted",
-      "published_at": "2026-09-05T18:08:54+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : रसुवामा ४१ किलोमिटर सडक र आठ जलविद्युत् आयोजनामा पूर्ण क्षति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590056/bhotekoshi-flood-41-km-of-road-and-eight-hydroelectric-projects-completely-damaged-in-rasuwa",
-      "published_at": "2026-09-05T17:41:37+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -63,7 +63,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
+      "flash": 1,
       "recent": 6
     },
     "Kathmandu Post": {

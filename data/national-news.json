@@ -1,42 +1,35 @@
 {
-  "generated_at": "2026-09-06T18:11:46.080117+05:45",
-  "updated_at_npt": "06 Sep 18:11 NPT",
+  "generated_at": "2026-09-06T21:26:37.043229+05:45",
+  "updated_at_npt": "06 Sep 21:26 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "बाढीका बेला नुवाकोटमा कैदीहरूले गरेका थिए सुरक्षाकर्मीमाथि आक्रमण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590256/prisoners-attacked-security-personnel-in-nuwakot-during-the-floods",
+      "published_at": "2026-09-06T20:56:23+05:45",
+      "flash": true
+    },
+    {
+      "title": "राधा-कृष्णको मूर्ति विसर्जन गर्न गएका किशाेर बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590240/teenager-goes-missing-after-going-to-immerse-radha-krishna-idols",
+      "published_at": "2026-09-06T19:40:31+05:45",
+      "flash": false
+    },
+    {
+      "title": "गगने खोलामा पहिरो : शनिबारदेखि माथिल्लो कर्णालीको यातायात ठप्प",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590230/landslide-in-gagane-river-traffic-in-upper-karnali-disrupted-from-saturday",
+      "published_at": "2026-09-06T18:28:10+05:45",
+      "flash": false
+    },
     {
       "title": "बाढीले मनास्लु पदमार्ग अवरुद्ध",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590195/floods-block-manaslu-trekking-route",
       "published_at": "2026-09-06T15:40:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "टिपरको ठक्करबाट एक जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590189/one-person-dies-after-being-hit-by-a-tipper-truck",
-      "published_at": "2026-09-06T15:03:18+05:45",
-      "flash": false
-    },
-    {
-      "title": "लेदुवा खोलाको पुल सात वर्षदेखि अधुरै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590183/the-bridge-over-leduwa-river-has-been-incomplete-for-seven-years",
-      "published_at": "2026-09-06T14:50:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपीडितलाई आर्थिक सहयोग जुटाउने क्रम जारी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590175/financial-assistance-continues-to-be-provided-to-flood-victims",
-      "published_at": "2026-09-06T14:33:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवा बाढी : कर्णालीका २ जनाको मृत्यु भएको पुष्टि, १६८ जनाको अवस्था अझै अज्ञात",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590169/rasuwa-flood-2-deaths-confirmed-in-karnali-condition-of-168-still-unknown",
-      "published_at": "2026-09-06T14:24:18+05:45",
       "flash": false
     }
   ],
@@ -56,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 5
+      "flash": 1,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +60,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     }

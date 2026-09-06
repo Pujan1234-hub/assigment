@@ -1,15 +1,29 @@
 {
-  "generated_at": "2026-09-06T23:28:39.771200+05:45",
-  "updated_at_npt": "06 Sep 23:28 NPT",
+  "generated_at": "2026-09-07T01:19:48.666695+05:45",
+  "updated_at_npt": "07 Sep 01:19 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "जोखिमपूर्ण यात्रामा रहेका ४६४ को उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590282/464-rescued-on-risky-journey",
+      "published_at": "2026-09-07T01:02:45+05:45",
+      "flash": true
+    },
+    {
+      "title": "नुवाकोटमा हराइरहेका व्यक्तिको खोज तथा उद्धारमा तीव्रता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590281/search-and-rescue-efforts-intensify-for-missing-people-in-nuwakot",
+      "published_at": "2026-09-07T00:59:29+05:45",
+      "flash": true
+    },
     {
       "title": "नेपाल तरुण दलद्वारा विपद् प्रभावित परिवारलाई राहत, २० विद्यार्थीको उच्च शिक्षासम्म अभिभावकत्व लिने",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590276/nepal-tarun-dal-provides-relief-to-disaster-affected-families-takes-on-guardianship-of-20-students-up-to-higher-education",
       "published_at": "2026-09-06T23:04:22+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "उद्धार कोषमा मकवानपुरबाट ५७ लाख सहयोग",
@@ -31,13 +45,6 @@
       "url": "https://www.ratopati.com/story/590240/teenager-goes-missing-after-going-to-immerse-radha-krishna-idols",
       "published_at": "2026-09-06T19:40:31+05:45",
       "flash": false
-    },
-    {
-      "title": "गगने खोलामा पहिरो : शनिबारदेखि माथिल्लो कर्णालीको यातायात ठप्प",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590230/landslide-in-gagane-river-traffic-in-upper-karnali-disrupted-from-saturday",
-      "published_at": "2026-09-06T18:28:10+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -56,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 5
+      "flash": 2,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,

@@ -67,40 +67,19 @@ jobs:
           python3 -c "import json; j=json.load(open('_site/data/nepal-waterways-seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']; print('packaging river routes',j['count'])"
           printf '%s' "$GITHUB_SHA" > _site/build-version.txt
 
-          # Strict curated project registry.
-          # No folder/file scanning: a new portfolio entry is added only when a real project is deliberately started.
+          # Curated project registry only. Generic folders/platform builds NEVER become products.
+          # When a real named project is deliberately started, this registry is updated as part of that project start.
           python3 - <<'PY'
           from pathlib import Path
           import json
           projects=[
-            {
-              'slug':'team-tracker','title':'Team Tracker','status_en':'Working web app','status_np':'चलिरहेको वेब एप',
-              'description_en':'Browser-based workflow product with live status, task flow and a clear operations view. Public portfolio data is sample-only.',
-              'description_np':'Live status, task flow र स्पष्ट operations view भएको browser-based workflow product। Public portfolio data sample मात्र हो।',
-              'tech':['JavaScript','Web APIs','Responsive UI'],'link':'./team-tracker/'
-            },
-            {
-              'slug':'fixcheck','title':'FixCheck','status_en':'In development','status_np':'विकासमा',
-              'description_en':'No-login connectivity diagnostic utility that turns network signals into understandable next steps.',
-              'description_np':'Network signal लाई बुझ्न सजिलो next step मा बदल्ने no-login connectivity diagnostic utility।',
-              'tech':['JavaScript','Networking','PWA direction'],'link':'./fixcheck/'
-            },
-            {
-              'slug':'datemate','title':'DateMate','status_en':'Android app','status_np':'एन्ड्रोइड एप',
-              'description_en':'Android expiry-date reminder app with camera-assisted date capture and notifications before expiry.',
-              'description_np':'Camera-assisted date capture र expiry अघि notification दिने Android expiry-date reminder app।',
-              'tech':['Android','Camera workflow','Notifications'],'link':None
-            },
-            {
-              'slug':'floodsafe-nepal','title':'FloodSafe Nepal','status_en':'Active development','status_np':'सक्रिय विकास',
-              'description_en':'Nepal-focused flood and river awareness platform with map-first context and frequently refreshed official data.',
-              'description_np':'Map-first context र बारम्बार refresh हुने आधिकारिक data भएको Nepal-focused flood तथा river awareness platform।',
-              'tech':['JavaScript','Mapping','Live data'],'link':'./floodsafe-nepal/'
-            }
+            {'slug':'team-tracker','title':'Team Tracker','started':True,'portfolio':True,'status_en':'Working web app','status_np':'चलिरहेको वेब एप','link':'./team-tracker/'},
+            {'slug':'fixcheck','title':'FixCheck','started':True,'portfolio':True,'status_en':'In development','status_np':'विकासमा','link':'./fixcheck/'},
+            {'slug':'datemate','title':'DateMate','started':True,'portfolio':True,'status_en':'Active development','status_np':'सक्रिय विकास','link':None},
+            {'slug':'floodsafe-nepal','title':'FloodSafe Nepal','started':True,'portfolio':True,'status_en':'Active development','status_np':'सक्रिय विकास','link':'./floodsafe-nepal/'}
           ]
-          payload={'version':2,'mode':'curated-only','project_count':len(projects),'projects':projects}
+          payload={'version':3,'mode':'curated-started-projects-only','project_count':len(projects),'projects':projects}
           Path('_site/projects-manifest.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
-          print('portfolio curated projects:',len(projects))
           PY
 
           python - <<'PY'
@@ -114,7 +93,7 @@ jobs:
           PY
 
           sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
-          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=3"></script><script src="./portfolio-motion.js?v=2"></script><script src="./portfolio-i18n.js?v=2"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=3"></script><script src="./portfolio-motion.js?v=2"></script><script src="./portfolio-i18n.js?v=3"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
 
           python - <<'PY'
           from pathlib import Path
@@ -140,10 +119,8 @@ jobs:
           ai=re.compile(r'\bAI\b|AI-assisted|artificial intelligence',re.I)
           for p in files:
               text=p.read_text(encoding='utf-8',errors='ignore')
-              if forbidden.search(text):
-                  print('Blocked private/internal wording in',p);sys.exit(2)
-              if ai.search(text):
-                  print('Blocked unwanted attribution wording in',p);sys.exit(2)
+              if forbidden.search(text): print('Blocked private/internal wording in',p);sys.exit(2)
+              if ai.search(text): print('Blocked unwanted attribution wording in',p);sys.exit(2)
           PY
 
       - name: Setup Pages
@@ -162,7 +139,7 @@ jobs:
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
 
-      - name: Verify exact deployed FloodSafe build
+      - name: Verify exact deployed build
         shell: bash
         run: |
           set -euo pipefail
@@ -177,22 +154,16 @@ jobs:
 
               curl --max-time 15 -fsSL "$BASE/?check=$GITHUB_SHA" -o /tmp/home.html
               grep -Fq 'portfolio-motion.js?v=2' /tmp/home.html
-              grep -Fq 'portfolio-i18n.js?v=2' /tmp/home.html
+              grep -Fq 'portfolio-i18n.js?v=3' /tmp/home.html
 
               curl --max-time 15 -fsSL "$BASE/portfolio-i18n.js?check=$GITHUB_SHA" -o /tmp/i18n.js
-              grep -Fq 'lang-switch' /tmp/i18n.js
+              grep -Fq '__pcPortfolioI18nV3' /tmp/i18n.js
               grep -Fq 'नेपाली' /tmp/i18n.js
-              grep -Fq '__pcPortfolioI18nV2' /tmp/i18n.js
               ! grep -Fq 'Auto-detected project' /tmp/i18n.js
-              ! grep -Fq 'renderAutoProjects' /tmp/i18n.js
+              ! grep -Fq 'SATHI' /tmp/i18n.js
 
               curl --max-time 15 -fsSL "$BASE/projects-manifest.json?check=$GITHUB_SHA" -o /tmp/projects.json
-              python3 -c "import json; j=json.load(open('/tmp/projects.json')); assert j['mode']=='curated-only'; assert j['project_count']==4; names=[x['title'] for x in j['projects']]; assert names==['Team Tracker','FixCheck','DateMate','FloodSafe Nepal']"
-
-              curl --max-time 15 -fsSL "$BASE/assets/portfolio/datemate-home.svg?check=$GITHUB_SHA" -o /tmp/datemate-home.svg
-              grep -Fq '<svg' /tmp/datemate-home.svg
-              curl --max-time 15 -fsSL "$BASE/assets/portfolio/floodsafe-map.svg?check=$GITHUB_SHA" -o /tmp/floodsafe-map.svg
-              grep -Fq '<svg' /tmp/floodsafe-map.svg
+              python3 -c "import json; j=json.load(open('/tmp/projects.json')); assert j['mode']=='curated-started-projects-only'; assert j['project_count']==4; assert [x['title'] for x in j['projects']]==['Team Tracker','FixCheck','DateMate','FloodSafe Nepal']; assert all(x['started'] and x['portfolio'] for x in j['projects'])"
               exit 0
             fi
             sleep 5

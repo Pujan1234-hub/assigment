@@ -1,15 +1,29 @@
 {
-  "generated_at": "2026-09-06T21:26:37.043229+05:45",
-  "updated_at_npt": "06 Sep 21:26 NPT",
+  "generated_at": "2026-09-06T23:28:39.771200+05:45",
+  "updated_at_npt": "06 Sep 23:28 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "नेपाल तरुण दलद्वारा विपद् प्रभावित परिवारलाई राहत, २० विद्यार्थीको उच्च शिक्षासम्म अभिभावकत्व लिने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590276/nepal-tarun-dal-provides-relief-to-disaster-affected-families-takes-on-guardianship-of-20-students-up-to-higher-education",
+      "published_at": "2026-09-06T23:04:22+05:45",
+      "flash": true
+    },
+    {
+      "title": "उद्धार कोषमा मकवानपुरबाट ५७ लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590269/makawanpur-donates-rs-57-million-to-rescue-fund",
+      "published_at": "2026-09-06T22:04:26+05:45",
+      "flash": false
+    },
     {
       "title": "बाढीका बेला नुवाकोटमा कैदीहरूले गरेका थिए सुरक्षाकर्मीमाथि आक्रमण",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590256/prisoners-attacked-security-personnel-in-nuwakot-during-the-floods",
       "published_at": "2026-09-06T20:56:23+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "राधा-कृष्णको मूर्ति विसर्जन गर्न गएका किशाेर बेपत्ता",
@@ -23,13 +37,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590230/landslide-in-gagane-river-traffic-in-upper-karnali-disrupted-from-saturday",
       "published_at": "2026-09-06T18:28:10+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीले मनास्लु पदमार्ग अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590195/floods-block-manaslu-trekking-route",
-      "published_at": "2026-09-06T15:40:35+05:45",
       "flash": false
     }
   ],
@@ -50,7 +57,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 1,
-      "recent": 4
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

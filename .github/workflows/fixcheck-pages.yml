@@ -16,17 +16,6 @@ on:
       - floodsafe-nepal/**
       - data/**
       - assets/**
-      - '*/index.html'
-      - '*/README.md'
-      - '*/package.json'
-      - '*/build.gradle'
-      - '*/build.gradle.kts'
-      - '*/settings.gradle'
-      - '*/settings.gradle.kts'
-      - '*/pubspec.yaml'
-      - '*/requirements.txt'
-      - '*/pyproject.toml'
-      - '*/portfolio.project.json'
       - .github/workflows/fixcheck-pages.yml
   workflow_dispatch:
 
@@ -78,130 +67,40 @@ jobs:
           python3 -c "import json; j=json.load(open('_site/data/nepal-waterways-seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']; print('packaging river routes',j['count'])"
           printf '%s' "$GITHUB_SHA" > _site/build-version.txt
 
-          # Build the portfolio project manifest. Known products receive curated public metadata.
-          # New top-level software projects are detected from common project files and get a
-          # safe generic public summary automatically. Rich future projects can optionally carry
-          # portfolio.project.json; when ChatGPT starts a project for the user it can create that
-          # metadata as part of the project scaffold, so the user never needs to edit the portfolio.
+          # Strict curated project registry.
+          # No folder/file scanning: a new portfolio entry is added only when a real project is deliberately started.
           python3 - <<'PY'
           from pathlib import Path
-          import json, re, subprocess
-
-          root=Path('.')
-          out=Path('_site/projects-manifest.json')
-          known=[
+          import json
+          projects=[
             {
-              'slug':'team-tracker','title':'Team Tracker','auto':False,'status_en':'Working web app','status_np':'चलिरहेको वेब एप',
+              'slug':'team-tracker','title':'Team Tracker','status_en':'Working web app','status_np':'चलिरहेको वेब एप',
               'description_en':'Browser-based workflow product with live status, task flow and a clear operations view. Public portfolio data is sample-only.',
               'description_np':'Live status, task flow र स्पष्ट operations view भएको browser-based workflow product। Public portfolio data sample मात्र हो।',
               'tech':['JavaScript','Web APIs','Responsive UI'],'link':'./team-tracker/'
             },
             {
-              'slug':'fixcheck','title':'FixCheck','auto':False,'status_en':'In development','status_np':'विकासमा',
+              'slug':'fixcheck','title':'FixCheck','status_en':'In development','status_np':'विकासमा',
               'description_en':'No-login connectivity diagnostic utility that turns network signals into understandable next steps.',
               'description_np':'Network signal लाई बुझ्न सजिलो next step मा बदल्ने no-login connectivity diagnostic utility।',
               'tech':['JavaScript','Networking','PWA direction'],'link':'./fixcheck/'
             },
             {
-              'slug':'datemate','title':'DateMate','auto':False,'status_en':'Android app','status_np':'एन्ड्रोइड एप',
+              'slug':'datemate','title':'DateMate','status_en':'Android app','status_np':'एन्ड्रोइड एप',
               'description_en':'Android expiry-date reminder app with camera-assisted date capture and notifications before expiry.',
               'description_np':'Camera-assisted date capture र expiry अघि notification दिने Android expiry-date reminder app।',
               'tech':['Android','Camera workflow','Notifications'],'link':None
             },
             {
-              'slug':'floodsafe-nepal','title':'FloodSafe Nepal','auto':False,'status_en':'Active development','status_np':'सक्रिय विकास',
+              'slug':'floodsafe-nepal','title':'FloodSafe Nepal','status_en':'Active development','status_np':'सक्रिय विकास',
               'description_en':'Nepal-focused flood and river awareness platform with map-first context and frequently refreshed official data.',
               'description_np':'Map-first context र बारम्बार refresh हुने आधिकारिक data भएको Nepal-focused flood तथा river awareness platform।',
               'tech':['JavaScript','Mapping','Live data'],'link':'./floodsafe-nepal/'
             }
           ]
-
-          forbidden=re.compile(r'\b(?:Princesshay|Suroj|Tango|Victor|Chiraag|hotel|siyara|mic|security|cleaner|Exeter|employment|badge|Bedford|Catherine)\b|Roman\s+Walk',re.I)
-          ai_word=re.compile(r'\bAI\b',re.I)
-          def clean(v):
-              s=str(v or '').strip()
-              if forbidden.search(s):
-                  return None
-              s=ai_word.sub('software assistant',s)
-              return s[:500]
-
-          known_prefixes=('datemate','fixcheck','floodsafe','team-tracker','team_tracker')
-          excluded={'.github','assets','data','node_modules','scripts','tools','docs','dist','build','public','src','tests','test','coverage'}
-          internal_words=('backend','internal','private','admin','control-room','control_room','database','cache','sync','smoke','acceptance')
-          signatures=('index.html','README.md','package.json','build.gradle','build.gradle.kts','settings.gradle','settings.gradle.kts','pubspec.yaml','requirements.txt','pyproject.toml')
-
-          def titleize(name):
-              title=' '.join(x.capitalize() for x in re.split(r'[-_]+',name) if x)
-              return clean(title) or 'Software Project'
-
-          def technologies(d):
-              tech=[]
-              if (d/'index.html').exists(): tech.append('Web interface')
-              if (d/'package.json').exists(): tech.append('JavaScript / Web tooling')
-              if (d/'manifest.webmanifest').exists(): tech.append('PWA')
-              if any((d/x).exists() for x in ('build.gradle','build.gradle.kts','settings.gradle','settings.gradle.kts')): tech.append('Android / Gradle')
-              if (d/'pubspec.yaml').exists(): tech.append('Flutter')
-              if any((d/x).exists() for x in ('requirements.txt','pyproject.toml')): tech.append('Python')
-              if (d/'README.md').exists(): tech.append('Project documentation')
-              return tech[:6] or ['Software project']
-
-          def last_update(d):
-              try:
-                  return subprocess.check_output(['git','log','-1','--format=%cs','--',str(d)],text=True).strip() or None
-              except Exception:
-                  return None
-
-          auto=[]
-          for d in sorted((p for p in root.iterdir() if p.is_dir()),key=lambda p:p.name.lower()):
-              name=d.name
-              low=name.lower()
-              if low in excluded or low.startswith('.') or low.startswith(known_prefixes):
-                  continue
-              if any(w in low for w in internal_words):
-                  continue
-              marker=d/'portfolio.project.json'
-              has_signature=any((d/s).exists() for s in signatures)
-              if not marker.exists() and not has_signature:
-                  continue
-
-              tech=technologies(d)
-              title=titleize(name)
-              desc_en=f'{title} is an active software project currently being built and tested. The portfolio detected {", ".join(tech[:3])} in the project structure.'
-              desc_np=f'{title} अहिले विकास र परीक्षण भइरहेको software project हो। Project structure मा {", ".join(tech[:3])} भेटिएको छ।'
-              status_en='Active development'; status_np='सक्रिय विकास'; public_link=None
-
-              if marker.exists():
-                  try:
-                      meta=json.loads(marker.read_text(encoding='utf-8'))
-                      mt=clean(meta.get('title'))
-                      men=clean(meta.get('description_en'))
-                      mnp=clean(meta.get('description_np'))
-                      mse=clean(meta.get('status_en'))
-                      msn=clean(meta.get('status_np'))
-                      if mt: title=mt
-                      if men: desc_en=men
-                      if mnp: desc_np=mnp
-                      if mse: status_en=mse
-                      if msn: status_np=msn
-                      rawtech=meta.get('tech')
-                      if isinstance(rawtech,list):
-                          safe=[clean(x) for x in rawtech]
-                          tech=[x for x in safe if x][:8] or tech
-                      link=clean(meta.get('public_link'))
-                      if link and (link.startswith('./') or link.startswith('https://')):
-                          public_link=link
-                  except Exception as e:
-                      print('Ignoring invalid public project metadata for',name,':',e)
-
-              auto.append({
-                'slug':low,'title':title,'auto':True,'status_en':status_en,'status_np':status_np,
-                'description_en':desc_en,'description_np':desc_np,'tech':tech,'link':public_link,
-                'updated':last_update(d)
-              })
-
-          payload={'version':1,'generated_from_commit':None,'project_count':len(known)+len(auto),'projects':known+auto}
-          out.write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
-          print('portfolio projects:',payload['project_count'],'auto-detected:',len(auto))
+          payload={'version':2,'mode':'curated-only','project_count':len(projects),'projects':projects}
+          Path('_site/projects-manifest.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
+          print('portfolio curated projects:',len(projects))
           PY
 
           python - <<'PY'
@@ -215,7 +114,7 @@ jobs:
           PY
 
           sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
-          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=3"></script><script src="./portfolio-motion.js?v=2"></script><script src="./portfolio-i18n.js?v=1"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=3"></script><script src="./portfolio-motion.js?v=2"></script><script src="./portfolio-i18n.js?v=2"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
 
           python - <<'PY'
           from pathlib import Path
@@ -278,14 +177,17 @@ jobs:
 
               curl --max-time 15 -fsSL "$BASE/?check=$GITHUB_SHA" -o /tmp/home.html
               grep -Fq 'portfolio-motion.js?v=2' /tmp/home.html
-              grep -Fq 'portfolio-i18n.js?v=1' /tmp/home.html
+              grep -Fq 'portfolio-i18n.js?v=2' /tmp/home.html
 
               curl --max-time 15 -fsSL "$BASE/portfolio-i18n.js?check=$GITHUB_SHA" -o /tmp/i18n.js
               grep -Fq 'lang-switch' /tmp/i18n.js
               grep -Fq 'नेपाली' /tmp/i18n.js
+              grep -Fq '__pcPortfolioI18nV2' /tmp/i18n.js
+              ! grep -Fq 'Auto-detected project' /tmp/i18n.js
+              ! grep -Fq 'renderAutoProjects' /tmp/i18n.js
 
               curl --max-time 15 -fsSL "$BASE/projects-manifest.json?check=$GITHUB_SHA" -o /tmp/projects.json
-              python3 -c "import json; j=json.load(open('/tmp/projects.json')); assert j['project_count']>=4; names=[x['title'] for x in j['projects']]; assert 'Team Tracker' in names and 'FixCheck' in names and 'DateMate' in names and 'FloodSafe Nepal' in names"
+              python3 -c "import json; j=json.load(open('/tmp/projects.json')); assert j['mode']=='curated-only'; assert j['project_count']==4; names=[x['title'] for x in j['projects']]; assert names==['Team Tracker','FixCheck','DateMate','FloodSafe Nepal']"
 
               curl --max-time 15 -fsSL "$BASE/assets/portfolio/datemate-home.svg?check=$GITHUB_SHA" -o /tmp/datemate-home.svg
               grep -Fq '<svg' /tmp/datemate-home.svg

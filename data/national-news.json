@@ -1,22 +1,29 @@
 {
-  "generated_at": "2026-09-07T01:19:48.666695+05:45",
-  "updated_at_npt": "07 Sep 01:19 NPT",
+  "generated_at": "2026-09-07T03:26:46.783812+05:45",
+  "updated_at_npt": "07 Sep 03:26 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "‘केनाइन’को प्रयोग गर्दै खोज तथा उद्धारमा सक्रिय नेपाल प्रहरी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590284/nepal-police-active-in-search-and-rescue-using-canines",
+      "published_at": "2026-09-07T01:38:44+05:45",
+      "flash": false
+    },
     {
       "title": "जोखिमपूर्ण यात्रामा रहेका ४६४ को उद्धार",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590282/464-rescued-on-risky-journey",
       "published_at": "2026-09-07T01:02:45+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "नुवाकोटमा हराइरहेका व्यक्तिको खोज तथा उद्धारमा तीव्रता",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590281/search-and-rescue-efforts-intensify-for-missing-people-in-nuwakot",
       "published_at": "2026-09-07T00:59:29+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "नेपाल तरुण दलद्वारा विपद् प्रभावित परिवारलाई राहत, २० विद्यार्थीको उच्च शिक्षासम्म अभिभावकत्व लिने",
@@ -30,20 +37,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590269/makawanpur-donates-rs-57-million-to-rescue-fund",
       "published_at": "2026-09-06T22:04:26+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीका बेला नुवाकोटमा कैदीहरूले गरेका थिए सुरक्षाकर्मीमाथि आक्रमण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590256/prisoners-attacked-security-personnel-in-nuwakot-during-the-floods",
-      "published_at": "2026-09-06T20:56:23+05:45",
-      "flash": false
-    },
-    {
-      "title": "राधा-कृष्णको मूर्ति विसर्जन गर्न गएका किशाेर बेपत्ता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590240/teenager-goes-missing-after-going-to-immerse-radha-krishna-idols",
-      "published_at": "2026-09-06T19:40:31+05:45",
       "flash": false
     }
   ],
@@ -63,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 6
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

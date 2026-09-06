@@ -1,6 +1,6 @@
 (()=>{
-  if(window.__pcPortfolioI18nV3) return;
-  window.__pcPortfolioI18nV3=true;
+  if(window.__pcPortfolioI18nV4) return;
+  window.__pcPortfolioI18nV4=true;
 
   const EN='en', NP='np';
   let lang=localStorage.getItem('pc-portfolio-lang')===NP?NP:EN;
@@ -16,8 +16,11 @@
     .lang-switch button{border:0;background:transparent;color:#68707b;border-radius:999px;padding:6px 9px;font:inherit;cursor:pointer}
     .lang-switch button.active{background:var(--ink,#17191d);color:var(--paper,#f2eee6)}
     .portfolio-privacy-note{margin:14px 0 0;padding:9px 11px;border-left:3px solid var(--blue,#3157d5);background:rgba(49,87,213,.055);font-size:.77rem!important;line-height:1.55!important;color:#5d6570!important}
+    .sathi-preview{background:#11151b;color:#dfe7f3;border:1px solid var(--ink,#17191d);min-height:300px;padding:18px;font-family:"SFMono-Regular",Consolas,monospace;box-shadow:5px 6px 0 rgba(23,25,29,.09)}
+    .sathi-preview .sp-head{display:flex;justify-content:space-between;gap:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.13);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#9ca8b9}
+    .sathi-preview .sp-status{color:#67d7ab}.sathi-preview .sp-lines{display:grid;gap:13px;padding-top:18px;font-size:.76rem}.sathi-preview .sp-line{display:grid;grid-template-columns:92px 1fr;gap:12px}.sathi-preview .sp-key{color:#7894ff}.sathi-preview .sp-value{color:#dfe7f3}.sathi-preview .sp-pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#67d7ab;margin-right:7px;box-shadow:0 0 0 5px rgba(103,215,171,.08)}
     @media(max-width:1050px){.lang-switch{margin-left:auto}}
-    @media(max-width:700px){.lang-switch{font-size:.67rem}.lang-switch button{padding:6px 8px}}
+    @media(max-width:700px){.lang-switch{font-size:.67rem}.lang-switch button{padding:6px 8px}.sathi-preview{min-height:250px}}
   `;
   document.head.appendChild(style);
 
@@ -25,11 +28,11 @@
     hero:{
       kicker:['Software portfolio · 2026','सफ्टवेयर पोर्टफोलियो · २०२६'],
       title:['I build small software that fixes <em>real-world friction.</em>','म वास्तविक जीवनका समस्या घटाउने <em>उपयोगी सफ्टवेयर बनाउँछु।</em>'],
-      copy:['Four products, four practical problems: coordinating work, diagnosing internet trouble, remembering important expiry dates, and making flood information more useful for people in Nepal. I design, build, test and keep improving each one hands-on.','चार प्रोजेक्ट, चार वास्तविक समस्या: काम समन्वय गर्ने, इन्टरनेट समस्या बुझ्ने, महत्त्वपूर्ण म्याद सम्झने र नेपालमा बाढीसम्बन्धी जानकारी अझ उपयोगी बनाउने। म प्रत्येकलाई आफैं डिजाइन, निर्माण, परीक्षण र सुधार गर्दै लैजान्छु।'],
+      copy:['Five real projects, five different problems: coordinating work, diagnosing internet trouble, remembering important dates, making flood information more useful in Nepal, and building a Nepali-first personal assistant. I design, build, test and keep improving each one hands-on.','पाँच वास्तविक प्रोजेक्ट, पाँच फरक समस्या: काम समन्वय गर्ने, इन्टरनेट समस्या बुझ्ने, महत्त्वपूर्ण म्याद सम्झने, नेपालमा बाढीसम्बन्धी जानकारी उपयोगी बनाउने र नेपाली-first personal assistant बनाउने। म प्रत्येकलाई आफैं डिजाइन, निर्माण, परीक्षण र सुधार गर्दै लैजान्छु।'],
       board:['On my desk right now','अहिले म बनाइरहेको'],
       builds:['Current builds','हालका प्रोजेक्ट']
     },
-    nav:{work:['Work','काम'],team:['Team Tracker','टिम ट्र्याकर'],fix:['FixCheck','फिक्सचेक'],date:['DateMate','डेटमेट'],flood:['FloodSafe Nepal','फ्लडसेफ नेपाल'],about:['About','मेरो बारेमा'],contact:['Contact','सम्पर्क']},
+    nav:{work:['Work','काम'],team:['Team Tracker','टिम ट्र्याकर'],fix:['FixCheck','फिक्सचेक'],date:['DateMate','डेटमेट'],flood:['FloodSafe Nepal','फ्लडसेफ नेपाल'],sathi:['SATHI AI','SATHI AI'],about:['About','मेरो बारेमा'],contact:['Contact','सम्पर्क']},
     work:{small:['Selected work','मुख्य काम'],title:['Projects with a reason to exist.','काम लाग्ने उद्देश्य भएका प्रोजेक्टहरू।'],copy:['Each build starts with a practical problem, then moves through system design, interface work, testing and repeated refinement.','हरेक प्रोजेक्ट वास्तविक समस्याबाट सुरु हुन्छ, त्यसपछि system design, interface, testing र पटक-पटक सुधार हुँदै अगाडि बढ्छ।']},
     about:{small:['About','मेरो बारेमा'],title:['How I approach software.','म सफ्टवेयर कसरी बनाउँछु।'],copy:['A Computer Science mindset: break the problem down, model the flow, test the system and refine the interface.','Computer Science को सोच: समस्यालाई भागमा छुट्याउने, flow बनाउने, system परीक्षण गर्ने र interface सुधार्ने।']},
     contact:{small:['Contact','सम्पर्क'],title:["Let’s talk software.",'सफ्टवेयरबारे कुरा गरौं।'],copy:['For software, product, prototype, or collaboration enquiries.','सफ्टवेयर, प्रोडक्ट, प्रोटोटाइप वा सहकार्यका लागि सम्पर्क गर्नुहोस्।']},
@@ -37,11 +40,21 @@
       team:{status:['Working web app','चलिरहेको वेब एप'],desc:['A browser-based workflow product for live team status, task flow and a clear operations view. The public portfolio version uses sample data only.','Live team status, task flow र स्पष्ट operations view का लागि बनाइएको browser-based workflow product। सार्वजनिक portfolio version मा sample data मात्र प्रयोग हुन्छ।'],privacy:['Public interactive build · sample data only · no private operational records.','सार्वजनिक interactive build · sample data मात्र · कुनै निजी operational record छैन।']},
       fix:{status:['In development','विकासमा'],desc:['A no-login connectivity diagnostic utility that turns network signals into a clear next step instead of a wall of technical information.','Login नचाहिने connectivity diagnostic utility जसले जटिल network signal लाई बुझ्न सजिलो next step मा बदल्छ।']},
       date:{status:['Active development','सक्रिय विकास'],desc:['An expiry-date reminder app for capturing important dates and receiving useful reminders before items expire.','महत्त्वपूर्ण expiry date राख्ने र म्याद सकिनुअघि उपयोगी reminder दिने app।']},
-      flood:{status:['Active development','सक्रिय विकास'],desc:['A Nepal-focused flood and river awareness platform built around local context, map-first information and frequently refreshed official river data.','नेपाल केन्द्रित बाढी तथा नदी जानकारी platform, जसले local context, map-first information र बारम्बार refresh हुने आधिकारिक river data मा ध्यान दिन्छ।']}
+      flood:{status:['Active development','सक्रिय विकास'],desc:['A Nepal-focused flood and river awareness platform built around local context, map-first information and frequently refreshed official river data.','नेपाल केन्द्रित बाढी तथा नदी जानकारी platform, जसले local context, map-first information र बारम्बार refresh हुने आधिकारिक river data मा ध्यान दिन्छ।']},
+      sathi:{
+        status:['Active development','सक्रिय विकास'],
+        desc:['SATHI AI is an Android-first personal assistant project focused on Nepali voice interaction, useful web-assisted answers and an education module for Nepal Classes 8–12. The current build is still being developed and tested.','SATHI AI Android-first personal assistant project हो। नेपाली voice interaction, उपयोगी web-assisted answers र नेपालका कक्षा ८–१२ का लागि education module यसको मुख्य direction हुन्। हालको build विकास र परीक्षणमा छ।'],
+        bullets:[
+          ['Nepali-first voice interaction and wake-phrase direction.','नेपाली-first voice interaction र wake-phrase direction।'],
+          ['Background assistant service direction so it can respond beyond the main screen.','Main screen बाहिर पनि काम गर्न सक्ने background assistant service direction।'],
+          ['Web-search synthesis for useful, clear answers.','उपयोगी र स्पष्ट उत्तरका लागि web-search synthesis।'],
+          ['Education module focused on Nepal Classes 8–12.','नेपालका कक्षा ८–१२ केन्द्रित education module।']
+        ],
+        link:['Project contact ↗','प्रोजेक्ट सम्पर्क ↗']
+      }
     }
   };
 
-  // Remove anything previously inferred from generic folders/platforms.
   function removeFalseProjects(){
     q('#new-projects')?.remove();
     q('#sathi')?.remove();
@@ -67,13 +80,43 @@
     const host=q('.navin'); if(!host) return;
     const box=document.createElement('div'); box.className='lang-switch'; box.setAttribute('aria-label','Language');
     box.innerHTML='<button type="button" data-lang="en">EN</button><button type="button" data-lang="np">नेपाली</button>';
-    host.appendChild(box);
+    const note=q('.open-note',host);
+    if(note) host.insertBefore(box,note); else host.appendChild(box);
     box.addEventListener('click',e=>{
       const b=e.target.closest('button[data-lang]'); if(!b)return;
       lang=b.dataset.lang===NP?NP:EN;
       localStorage.setItem('pc-portfolio-lang',lang);
       apply();
     });
+  }
+
+  function ensureSathi(){
+    const nav=q('.navlinks');
+    if(nav && !q('a[href="#sathi-ai"]',nav)){
+      const a=document.createElement('a');a.href='#sathi-ai';a.textContent='SATHI AI';
+      const about=q('a[href="#about"]',nav);if(about)nav.insertBefore(a,about);else nav.appendChild(a);
+    }
+
+    const aside=q('.hero-aside');
+    if(aside && !q('[data-product="sathi-ai"]',aside)){
+      const card=document.createElement('div');card.className='ticket';card.dataset.product='sathi-ai';
+      card.style.background='#eef3ff';card.style.transform='rotate(-.25deg)';
+      card.innerHTML='<div class="ticket-head"><h3>SATHI AI</h3><span class="tag">ACTIVE DEVELOPMENT</span></div><p>Android-first Nepali personal assistant project with voice, web-assisted answers and an education module.</p><a href="#sathi-ai">View build notes →</a>';
+      aside.appendChild(card);
+    }
+
+    if(!q('#sathi-ai')){
+      const after=q('#datemate')||q('#floodsafe');
+      if(after){
+        const article=document.createElement('article');article.className='project';article.id='sathi-ai';
+        article.innerHTML=`<div class="project-side"><div><div class="project-index">05 / Personal assistant</div><h3>SATHI AI</h3><div class="project-status"><span class="dot"></span> Active development</div></div><div class="side-links"><a href="#contact">Project contact ↗</a></div></div><div class="project-main"><div class="project-copy"><p></p><div class="bullets"><div class="bullet"><i>01</i><span></span></div><div class="bullet"><i>02</i><span></span></div><div class="bullet"><i>03</i><span></span></div><div class="bullet"><i>04</i><span></span></div></div></div><div class="sathi-preview"><div class="sp-head"><span>SATHI / ASSISTANT SYSTEM</span><span class="sp-status"><span class="sp-pulse"></span>BUILDING</span></div><div class="sp-lines"><div class="sp-line"><b class="sp-key">voice</b><span class="sp-value">Nepali-first interaction</span></div><div class="sp-line"><b class="sp-key">wake</b><span class="sp-value">wake-phrase direction</span></div><div class="sp-line"><b class="sp-key">service</b><span class="sp-value">background assistant direction</span></div><div class="sp-line"><b class="sp-key">search</b><span class="sp-value">web-assisted synthesis</span></div><div class="sp-line"><b class="sp-key">learn</b><span class="sp-value">Nepal Classes 8–12 module</span></div><div class="sp-line"><b class="sp-key">status</b><span class="sp-value">development + testing</span></div></div></div></div>`;
+        after.insertAdjacentElement('afterend',article);
+      }
+    }
+
+    const contactNumber=q('#contact .section-number');if(contactNumber)contactNumber.textContent='06';
+    const foot=q('.footlinks');
+    if(foot && !q('a[href="#sathi-ai"]',foot)){const a=document.createElement('a');a.href='#sathi-ai';a.textContent='SATHI AI';foot.appendChild(a)}
   }
 
   function setStatus(project,pair){
@@ -83,50 +126,42 @@
   }
 
   function translateProject(selector,data){
-    const p=q(selector); if(!p)return;
+    const p=q(selector);if(!p)return;
     setStatus(p,data.status);
-    const desc=q('.project-copy > p',p); set(desc,data.desc);
+    set(q('.project-copy > p',p),data.desc);
+    if(data.bullets){qa('.bullet span',p).forEach((el,i)=>{if(data.bullets[i])set(el,data.bullets[i])})}
+    if(data.link){const a=q('.side-links a',p);if(a)set(a,data.link)}
+  }
+
+  function translateTicket(name,data){
+    qa('.hero-aside .ticket').forEach(card=>{
+      if((q('h3',card)?.textContent||'').trim()!==name)return;
+      set(q('.tag',card),data.status);set(q('p',card),data.desc);
+      const a=q('a',card);if(a)a.textContent=lang===NP?'विवरण हेर्नुहोस् →':'View build notes →';
+    });
   }
 
   function apply(){
-    removeFalseProjects();
+    removeFalseProjects();ensureSathi();
     document.documentElement.lang=lang===NP?'ne':'en';
     qa('.lang-switch button').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
 
-    html(q('.hero .kicker'),T.hero.kicker);
-    html(q('.hero h1'),T.hero.title);
-    set(q('.hero-copy'),T.hero.copy);
-    set(q('.board-title b'),T.hero.board);
-    set(q('.board-title span'),T.hero.builds);
+    html(q('.hero .kicker'),T.hero.kicker);html(q('.hero h1'),T.hero.title);set(q('.hero-copy'),T.hero.copy);set(q('.board-title b'),T.hero.board);set(q('.board-title span'),T.hero.builds);
 
-    const navMap={'#work':T.nav.work,'#team-tracker':T.nav.team,'#fixcheck':T.nav.fix,'#datemate':T.nav.date,'#floodsafe':T.nav.flood,'#about':T.nav.about,'#contact':T.nav.contact};
+    const navMap={'#work':T.nav.work,'#team-tracker':T.nav.team,'#fixcheck':T.nav.fix,'#datemate':T.nav.date,'#floodsafe':T.nav.flood,'#sathi-ai':T.nav.sathi,'#about':T.nav.about,'#contact':T.nav.contact};
     qa('.navlinks a').forEach(a=>{const p=navMap[a.getAttribute('href')];if(p)set(a,p)});
 
-    const work=q('#work .section-title'); if(work){set(q('small',work),T.work.small);set(q('h2',work),T.work.title);set(q('p',work),T.work.copy)}
-    const about=q('#about .section-title'); if(about){set(q('small',about),T.about.small);set(q('h2',about),T.about.title);set(q('p',about),T.about.copy)}
-    const contact=q('#contact .section-title'); if(contact){set(q('small',contact),T.contact.small);set(q('h2',contact),T.contact.title);set(q('p',contact),T.contact.copy)}
+    const work=q('#work .section-title');if(work){set(q('small',work),T.work.small);set(q('h2',work),T.work.title);set(q('p',work),T.work.copy)}
+    const about=q('#about .section-title');if(about){set(q('small',about),T.about.small);set(q('h2',about),T.about.title);set(q('p',about),T.about.copy)}
+    const contact=q('#contact .section-title');if(contact){set(q('small',contact),T.contact.small);set(q('h2',contact),T.contact.title);set(q('p',contact),T.contact.copy)}
 
-    translateProject('#team-tracker',T.projects.team);
-    translateProject('#fixcheck',T.projects.fix);
-    translateProject('#datemate',T.projects.date);
-    translateProject('#floodsafe',T.projects.flood);
+    translateProject('#team-tracker',T.projects.team);translateProject('#fixcheck',T.projects.fix);translateProject('#datemate',T.projects.date);translateProject('#floodsafe',T.projects.flood);translateProject('#sathi-ai',T.projects.sathi);translateTicket('SATHI AI',T.projects.sathi);
 
     const team=q('#team-tracker');
-    if(team){
-      let note=q('.portfolio-privacy-note',team);
-      if(!note){note=document.createElement('p');note.className='portfolio-privacy-note';q('.project-copy',team)?.appendChild(note)}
-      set(note,T.projects.team.privacy);
-    }
+    if(team){let note=q('.portfolio-privacy-note',team);if(!note){note=document.createElement('p');note.className='portfolio-privacy-note';q('.project-copy',team)?.appendChild(note)}set(note,T.projects.team.privacy)}
+    document.dispatchEvent(new CustomEvent('portfolio:language',{detail:{lang}}));
   }
 
-  function boot(){
-    removeFalseProjects();
-    ensureSwitch();
-    apply();
-    // Run once more after other portfolio modules have finished injecting their known sections.
-    setTimeout(apply,250);
-    setTimeout(apply,1200);
-  }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+  function boot(){removeFalseProjects();ensureSathi();ensureSwitch();apply();setTimeout(apply,250);setTimeout(apply,1200)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

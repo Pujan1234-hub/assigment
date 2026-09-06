@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-07T03:26:46.783812+05:45",
-  "updated_at_npt": "07 Sep 03:26 NPT",
+  "generated_at": "2026-09-07T04:57:35.591185+05:45",
+  "updated_at_npt": "07 Sep 04:57 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -31,13 +31,6 @@
       "url": "https://www.ratopati.com/story/590276/nepal-tarun-dal-provides-relief-to-disaster-affected-families-takes-on-guardianship-of-20-students-up-to-higher-education",
       "published_at": "2026-09-06T23:04:22+05:45",
       "flash": false
-    },
-    {
-      "title": "उद्धार कोषमा मकवानपुरबाट ५७ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590269/makawanpur-donates-rs-57-million-to-rescue-fund",
-      "published_at": "2026-09-06T22:04:26+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -57,7 +50,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 5
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

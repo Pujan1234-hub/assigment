@@ -1,14 +1,42 @@
 {
-  "generated_at": "2026-09-06T05:48:21.854641+05:45",
-  "updated_at_npt": "06 Sep 05:48 NPT",
+  "generated_at": "2026-09-06T10:15:10.975851+05:45",
+  "updated_at_npt": "06 Sep 10:15 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "भोटेकोशी बाढी: ६४ करोड बराबरका खानेपानी आयोजनामा क्षति",
+      "title": "पहिरोले बडीमालिका–९ का आधा दर्जन घरमा क्षति, दुई गोरु मरे",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590090/bhotekoshi-flood-damage-to-drinking-water-projects-worth-rs-640-million",
-      "published_at": "2026-09-06T01:45:53+05:45",
+      "url": "https://www.ratopati.com/story/590115/landslide-damages-half-a-dozen-houses-in-badimalika-9-two-cows-die",
+      "published_at": "2026-09-06T09:52:14+05:45",
+      "flash": true
+    },
+    {
+      "title": "पहिरा खस्दा रोल्पाको सहिदमार्ग अवरुद्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590105/rolpas-martyrs-road-blocked-by-landslide",
+      "published_at": "2026-09-06T08:24:28+05:45",
+      "flash": false
+    },
+    {
+      "title": "पहिराले साँफे–मार्तडी सडकखण्ड अवरुद्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590103/landslide-blocks-sanfe-martadi-road-section",
+      "published_at": "2026-09-06T08:08:19+05:45",
+      "flash": false
+    },
+    {
+      "title": "चुमनुब्रीस्थित थेराङखोलाको बाढीले चार घर र पुलमा क्षति, बूढीगण्डकीको तटीय क्षेत्रमा सचेत रहन आग्रह",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590102/flooding-in-therangkhola-in-chumanubri-damages-four-houses-and-a-bridge-caution-urged-in-the-coastal-areas-of-budhigandaki",
+      "published_at": "2026-09-06T08:03:39+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी : रसुवामा तीन हजार सम्पर्कविहीन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590093/bhotekoshi-flood-3000-people-left-without-contact-in-rasuwa",
+      "published_at": "2026-09-06T06:22:09+05:45",
       "flash": false
     }
   ],
@@ -28,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 1
+      "flash": 1,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,
@@ -39,7 +67,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     }

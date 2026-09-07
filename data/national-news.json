@@ -1,70 +1,77 @@
 {
-  "generated_at": "2026-09-07T11:46:52.392721+05:45",
-  "updated_at_npt": "07 Sep 11:46 NPT",
+  "generated_at": "2026-09-07T18:05:30.863413+05:45",
+  "updated_at_npt": "07 Sep 18:05 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "सुदूरपश्चिममा आगामी तीन दिनसम्म वर्षाको सम्भावना, सतर्कता अपनाउन आग्रह",
+      "title": "भोटेकोशी बाढी : ३४ देशका ५८७ विदेशी पर्यटक बेपत्ता",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590339/rain-likely-in-the-far-west-for-the-next-three-days-urges-caution",
-      "published_at": "2026-09-07T09:37:03+05:45",
+      "url": "https://www.ratopati.com/story/590470/bhotekoshi-flood-587-foreign-tourists-from-34-countries-missing",
+      "published_at": "2026-09-07T18:04:31+05:45",
+      "flash": true
+    },
+    {
+      "title": "वातावरणीय मापदण्ड पालना नगर्ने उद्योगलाई कारबाहीको चेतावनी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590469/warning-of-action-against-industries-that-do-not-comply-with-environmental-standards",
+      "published_at": "2026-09-07T18:00:01+05:45",
+      "flash": true
+    },
+    {
+      "title": "विपद्‌मा एकताबद्ध हुन राष्ट्रपतिको आह्वान, अन्तर्राष्ट्रिय समुदायसँग मागे जलवायु न्याय (पूर्णपाठ)",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590424/president-poudel-calls-for-unity-in-times-of-disaster-seeks-climate-justice-from-international-community-full-text",
+      "published_at": "2026-09-07T18:00:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीपछि लयमा फर्किंदै नेपाली चलचित्र क्षेत्र",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590466/nepali-film-industry-returning-to-normal-after-floods",
+      "published_at": "2026-09-07T17:51:11+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढी प्रभावितको कुशलताको कामना गर्दै धर्मग्रन्थ पाठ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590464/recitation-of-scriptures-wishing-for-the-well-being-of-flood-victims",
+      "published_at": "2026-09-07T17:43:51+05:45",
+      "flash": true
+    },
+    {
+      "title": "पहिरोले निसीखोलाका १२ परिवार विस्थापित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590457/landslide-displaces-12-families-in-nisikhola",
+      "published_at": "2026-09-07T17:31:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "हेटौँडामा सात वर्षपछि पुनः सञ्चालनमा आयो तौलपुल, त्रिभुवन राजपथमा ओभरलोड नियन्त्रण गरिने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590451/weight-bridge-reopens-in-hetauda-after-seven-years-overload-control-to-be-implemented-on-tribhuvan-highway",
+      "published_at": "2026-09-07T17:20:38+05:45",
+      "flash": true
+    },
+    {
+      "title": "महाकाली नदीमा डुबेर किशोरी बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590415/teenage-girl-goes-missing-after-drowning-in-mahakali-river",
+      "published_at": "2026-09-07T15:11:47+05:45",
       "flash": false
     },
     {
-      "title": "अविरल वर्षाले बाजुरामा जनजीवन प्रभावित : सडक र विद्युत् ठप्प, जोखिमयुक्त बस्ती स्थानान्तरण",
+      "title": "बाढी प्रभावितका लागि बालबाटिकाद्वारा राहत सामग्री वितरण",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590333/incessant-rains-affect-normal-life-in-bajura-roads-and-electricity-disrupted-vulnerable-settlements-relocated",
-      "published_at": "2026-09-07T09:17:40+05:45",
+      "url": "https://www.ratopati.com/story/590414/balbatika-distributes-relief-materials-to-flood-victims",
+      "published_at": "2026-09-07T15:09:30+05:45",
       "flash": false
     },
     {
-      "title": "नारायणगढ–मुग्लिन खण्डमा सवारी आवागमन आंशिक बन्द हुने",
+      "title": "बैतडीका १८ घर पहिरोको उच्च जोखिममा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590330/traffic-will-be-partially-closed-on-the-narayangadh-muglin-section",
-      "published_at": "2026-09-07T09:01:58+05:45",
-      "flash": false
-    },
-    {
-      "title": "१५ करोड ७५ लाखमा कटहरियामा सडक निर्माण सुरु, पुल–कलभर्ट र नालासहित कालोपत्रे हुँदै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590328/road-construction-begins-in-katahariya-at-a-cost-of-rs-1575-million-including-bridges-culverts-and-drains-being-blacktopped",
-      "published_at": "2026-09-07T08:53:44+05:45",
-      "flash": false
-    },
-    {
-      "title": "ताप्लेजुङमा ‘ट्याक्टर’ खोलामा खस्यो, दुई जना बेपत्ता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590320/tractor-falls-into-river-in-taplejung-two-missing",
-      "published_at": "2026-09-07T08:08:50+05:45",
-      "flash": false
-    },
-    {
-      "title": "राहुघाट जलविद्युत् आयोजनाको सुरुङ प्रभावितलाई क्षतिपूर्ति दिन ढिलाइ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590318/delay-in-compensating-those-affected-by-rahughat-hydropower-project-tunnel",
-      "published_at": "2026-09-07T07:54:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीमा बेपत्ताका आफन्तलाई डीएनए नमूना दिन तनहुँ प्रहरीको आग्रह",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590315/tanahun-police-urge-relatives-of-those-missing-in-bhotekoshi-flood-to-provide-dna-samples",
-      "published_at": "2026-09-07T07:45:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी प्रभावितलाई कपिलवस्तुका छ पालिकाबाट दुई करोड सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590301/six-municipalities-in-kapilvastu-provide-rs-20-million-assistance-to-bhotekoshi-flood-victims",
-      "published_at": "2026-09-07T06:26:39+05:45",
-      "flash": false
-    },
-    {
-      "title": "‘देशभरका पालिका बटुलेर सम्मेलन गर्छौँ, निष्कर्ष प्रधानमन्त्री मार्फत महासभामा पठाउँछौँ’",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590297/we-will-gather-municipalities-across-the-country-and-hold-a-conference-and-send-the-conclusions-to-the-general-assembly-through-the-prime-minister",
-      "published_at": "2026-09-07T06:02:49+05:45",
+      "url": "https://www.ratopati.com/story/590411/18-houses-in-baitadi-at-high-risk-of-landslides",
+      "published_at": "2026-09-07T15:05:09+05:45",
       "flash": false
     }
   ],
@@ -84,8 +91,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 9
+      "flash": 7,
+      "recent": 10
     },
     "Kathmandu Post": {
       "ok": true,

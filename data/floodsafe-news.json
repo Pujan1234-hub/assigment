@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-07T12:23:16.453260Z",
+  "generated_at": "2026-09-07T17:50:25.384808Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,41 +12,16 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 3
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "नापजाँच भएको १३ वर्षपछि कपिलवस्तुका ७३० परिवारले पाए लालपुर्जा",
-      "url": "https://www.ronbpost.com/2026/09/19759/",
-      "published_at": "2026-09-07T12:10:01Z",
-      "source": "RONB Post"
-    },
-    {
-      "title": "बाढीपीडितको अपमान गरेर भिडियो बनाउने युवा पक्राउ",
-      "url": "https://radionepalonline.com/2026/09/07/733170.html",
-      "published_at": "2026-09-07T12:01:36Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "कर्णालीको स्याउलगायत अर्ग्यानिक उत्पादन प्रदर्शनी",
-      "url": "https://radionepalonline.com/2026/09/07/733164.html",
-      "published_at": "2026-09-07T12:00:06Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "मुस्ताङमा आजदेखि सबै प्रजाति स्याउ टिपाइ खुल्ला",
-      "url": "https://radionepalonline.com/2026/09/07/733161.html",
-      "published_at": "2026-09-07T11:56:42Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

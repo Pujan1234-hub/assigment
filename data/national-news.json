@@ -1,36 +1,36 @@
 {
-  "generated_at": "2026-09-07T23:32:39.804008+05:45",
-  "updated_at_npt": "07 Sep 23:32 NPT",
+  "generated_at": "2026-09-08T02:33:45.055874+05:45",
+  "updated_at_npt": "08 Sep 02:33 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "ओमानद्वारा साउदी जहाजबाट १६ चालक दलका सदस्यको उद्धार",
+      "title": "भोटेकोशी बाढी: शोकमा डुबेका अनलाललाई साथ दिँदै वडावासी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590529/oman-rescues-16-crew-members-from-saudi-ship",
-      "published_at": "2026-09-07T23:24:02+05:45",
+      "url": "https://www.ratopati.com/story/590541/bhotekoshi-flood-ward-residents-support-grief-stricken-anlal",
+      "published_at": "2026-09-08T02:03:18+05:45",
       "flash": true
     },
     {
-      "title": "भोटेकोशी बाढीमा बेपत्ता मजदुरको सम्झनामा दीप प्रज्वलन",
+      "title": "जीवनका आधार नै सम्पर्कविहीन भएपछि...",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590527/candle-lighting-in-memory-of-workers-missing-in-bhotekoshi-flood",
-      "published_at": "2026-09-07T23:09:10+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/590540/when-the-very-foundation-of-life-is-disconnected",
+      "published_at": "2026-09-08T01:32:40+05:45",
+      "flash": false
+    },
+    {
+      "title": "जेनजी आन्दोलनको एक वर्ष : बालेन र रास्वपामाथि भरोसा कायमै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590539/one-year-of-the-genji-movement-trust-in-balen-and-the-rashtriya-swayamsevak-sangh-remains-intact",
+      "published_at": "2026-09-08T00:13:00+05:45",
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढी: तेह्रौँ दिन पनि खोज तथा उद्धार कार्य जारी",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590525/bhotekoshi-flood-search-and-rescue-operations-continue-for-the-thirteenth-day",
       "published_at": "2026-09-07T22:56:52+05:45",
-      "flash": true
-    },
-    {
-      "title": "ज्वालामुखी विस्फोटपछि जकार्ता विमानस्थलमा अवरुद्ध सेवा थपियो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590521/jakarta-airport-suspends-services-after-volcanic-eruption",
-      "published_at": "2026-09-07T22:37:15+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "सेनाको जागिर छाडेर चालक बनेका थिए, भोटेकोशी बाढीमा बेपत्ता भए",
@@ -44,27 +44,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590512/tanahun-police-searching-for-body-in-trishuli-river",
       "published_at": "2026-09-07T22:03:59+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रहरी जवान आशिष अझै सम्पर्कविहीन, प्रतीक्षा गरिरहेकी श्रीमती अस्पतालको बेडमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590490/police-constable-ashish-still-missing-wife-waiting-in-hospital-bed",
-      "published_at": "2026-09-07T19:47:13+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवा बाढीका मृतकप्रति नेपाल रत्न तथा आभूषण सङ्घद्वारा श्रद्धाञ्जली अर्पण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590488/nepal-gem-and-jewelry-association-pays-tribute-to-those-killed-in-rasuwa-flood",
-      "published_at": "2026-09-07T19:27:24+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवा बाढीमा ज्यान गुमाएकाप्रति लुम्बिनीमा दीप प्रज्वलन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590485/lamp-lighting-in-lumbini-for-those-who-lost-their-lives-in-the-rasuwa-flood",
-      "published_at": "2026-09-07T19:12:13+05:45",
       "flash": false
     }
   ],
@@ -84,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 9
+      "flash": 1,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,

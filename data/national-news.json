@@ -1,49 +1,70 @@
 {
-  "generated_at": "2026-09-07T06:48:49.666926+05:45",
-  "updated_at_npt": "07 Sep 06:48 NPT",
+  "generated_at": "2026-09-07T11:46:52.392721+05:45",
+  "updated_at_npt": "07 Sep 11:46 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बाढीबाट विस्थापितलाई विदुर नगरपालिकाले तत्काल १० हजार घरभाडा र राहत सामग्री दिने",
+      "title": "सुदूरपश्चिममा आगामी तीन दिनसम्म वर्षाको सम्भावना, सतर्कता अपनाउन आग्रह",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590303/bidur-municipality-to-provide-immediate-housing-and-relief-materials-to-flood-displaced-people",
-      "published_at": "2026-09-07T06:32:09+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/590339/rain-likely-in-the-far-west-for-the-next-three-days-urges-caution",
+      "published_at": "2026-09-07T09:37:03+05:45",
+      "flash": false
+    },
+    {
+      "title": "अविरल वर्षाले बाजुरामा जनजीवन प्रभावित : सडक र विद्युत् ठप्प, जोखिमयुक्त बस्ती स्थानान्तरण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590333/incessant-rains-affect-normal-life-in-bajura-roads-and-electricity-disrupted-vulnerable-settlements-relocated",
+      "published_at": "2026-09-07T09:17:40+05:45",
+      "flash": false
+    },
+    {
+      "title": "नारायणगढ–मुग्लिन खण्डमा सवारी आवागमन आंशिक बन्द हुने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590330/traffic-will-be-partially-closed-on-the-narayangadh-muglin-section",
+      "published_at": "2026-09-07T09:01:58+05:45",
+      "flash": false
+    },
+    {
+      "title": "१५ करोड ७५ लाखमा कटहरियामा सडक निर्माण सुरु, पुल–कलभर्ट र नालासहित कालोपत्रे हुँदै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590328/road-construction-begins-in-katahariya-at-a-cost-of-rs-1575-million-including-bridges-culverts-and-drains-being-blacktopped",
+      "published_at": "2026-09-07T08:53:44+05:45",
+      "flash": false
+    },
+    {
+      "title": "ताप्लेजुङमा ‘ट्याक्टर’ खोलामा खस्यो, दुई जना बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590320/tractor-falls-into-river-in-taplejung-two-missing",
+      "published_at": "2026-09-07T08:08:50+05:45",
+      "flash": false
+    },
+    {
+      "title": "राहुघाट जलविद्युत् आयोजनाको सुरुङ प्रभावितलाई क्षतिपूर्ति दिन ढिलाइ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590318/delay-in-compensating-those-affected-by-rahughat-hydropower-project-tunnel",
+      "published_at": "2026-09-07T07:54:35+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढीमा बेपत्ताका आफन्तलाई डीएनए नमूना दिन तनहुँ प्रहरीको आग्रह",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590315/tanahun-police-urge-relatives-of-those-missing-in-bhotekoshi-flood-to-provide-dna-samples",
+      "published_at": "2026-09-07T07:45:11+05:45",
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढी प्रभावितलाई कपिलवस्तुका छ पालिकाबाट दुई करोड सहयोग",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590301/six-municipalities-in-kapilvastu-provide-rs-20-million-assistance-to-bhotekoshi-flood-victims",
       "published_at": "2026-09-07T06:26:39+05:45",
-      "flash": true
-    },
-    {
-      "title": "काठमाडौँका सार्वजनिक स्थलमा विद्वेषपूर्ण अभिव्यक्ति लेख्ने प्रहरी फन्दामा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590298/police-caught-writing-hateful-statements-in-public-places-in-kathmandu",
-      "published_at": "2026-09-07T06:07:15+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "‘देशभरका पालिका बटुलेर सम्मेलन गर्छौँ, निष्कर्ष प्रधानमन्त्री मार्फत महासभामा पठाउँछौँ’",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590297/we-will-gather-municipalities-across-the-country-and-hold-a-conference-and-send-the-conclusions-to-the-general-assembly-through-the-prime-minister",
       "published_at": "2026-09-07T06:02:49+05:45",
-      "flash": true
-    },
-    {
-      "title": "कर्णाली राजमार्ग अवरुद्ध हुँदा स्याउ व्यापारी मर्कामा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590291/apple-traders-in-trouble-as-karnali-highway-is-blocked",
-      "published_at": "2026-09-07T05:21:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "जोखिमपूर्ण यात्रामा रहेका ४६४ को उद्धार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590282/464-rescued-on-risky-journey",
-      "published_at": "2026-09-07T01:02:45+05:45",
       "flash": false
     }
   ],
@@ -63,8 +84,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 6
+      "flash": 0,
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,

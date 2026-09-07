@@ -1,15 +1,22 @@
 {
-  "generated_at": "2026-09-08T02:33:45.055874+05:45",
-  "updated_at_npt": "08 Sep 02:33 NPT",
+  "generated_at": "2026-09-08T04:48:10.649415+05:45",
+  "updated_at_npt": "08 Sep 04:48 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "दूधे पिँडालु भोजपुरका किसानको आम्दानीको स्रोत बन्दै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590542/milk-thistle-is-becoming-a-source-of-income-for-bhojpur-farmers",
+      "published_at": "2026-09-08T03:12:44+05:45",
+      "flash": false
+    },
     {
       "title": "भोटेकोशी बाढी: शोकमा डुबेका अनलाललाई साथ दिँदै वडावासी",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590541/bhotekoshi-flood-ward-residents-support-grief-stricken-anlal",
       "published_at": "2026-09-08T02:03:18+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "जीवनका आधार नै सम्पर्कविहीन भएपछि...",
@@ -19,31 +26,10 @@
       "flash": false
     },
     {
-      "title": "जेनजी आन्दोलनको एक वर्ष : बालेन र रास्वपामाथि भरोसा कायमै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590539/one-year-of-the-genji-movement-trust-in-balen-and-the-rashtriya-swayamsevak-sangh-remains-intact",
-      "published_at": "2026-09-08T00:13:00+05:45",
-      "flash": false
-    },
-    {
       "title": "भोटेकोशी बाढी: तेह्रौँ दिन पनि खोज तथा उद्धार कार्य जारी",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590525/bhotekoshi-flood-search-and-rescue-operations-continue-for-the-thirteenth-day",
       "published_at": "2026-09-07T22:56:52+05:45",
-      "flash": false
-    },
-    {
-      "title": "सेनाको जागिर छाडेर चालक बनेका थिए, भोटेकोशी बाढीमा बेपत्ता भए",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590518/he-had-left-his-army-job-to-become-a-driver-but-disappeared-in-the-bhotekoshi-flood",
-      "published_at": "2026-09-07T22:26:10+05:45",
-      "flash": false
-    },
-    {
-      "title": "त्रिशूली नदीमा शव खोज्दै तनहुँ प्रहरी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590512/tanahun-police-searching-for-body-in-trishuli-river",
-      "published_at": "2026-09-07T22:03:59+05:45",
       "flash": false
     }
   ],
@@ -63,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 6
+      "flash": 0,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

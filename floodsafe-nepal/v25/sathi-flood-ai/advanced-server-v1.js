@@ -6,8 +6,15 @@ window.__SATHI_FLOOD_ADVANCED_V1__=true;
 const ROOT='https://camkoacuokffryyrygda.supabase.co/functions/v1';
 const DEVICE_ID_KEY='floodsafe_sathi_device_id_v1';
 const DEVICE_TOKEN_KEY='floodsafe_sathi_device_token_v1';
-const VERSION='2.0-grounded';
-const history=[];
+const HISTORY_KEY='floodsafe_sathi_history_v1';
+const VERSION='2.1.3-context-safe';
+const history=(()=>{
+  try{
+    const a=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
+    return Array.isArray(a)?a.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.content==='string').slice(-12):[];
+  }catch{return[]}
+})();
+const saveHistory=()=>{try{localStorage.setItem(HISTORY_KEY,JSON.stringify(history.slice(-12)))}catch{}};
 const $=s=>document.querySelector(s);
 const add=(text,type='ai')=>{
   const box=$('#sathiFloodMsgs');if(!box)return null;
@@ -60,7 +67,7 @@ function currentLocation(){
 }
 function remember(role,content){
   const t=String(content||'').trim();if(!t)return;
-  history.push({role,content:t.slice(0,1400)});if(history.length>12)history.splice(0,history.length-12);
+  history.push({role,content:t.slice(0,1400)});if(history.length>12)history.splice(0,history.length-12);saveHistory();
 }
 function localFallback(q){
   try{return window.SathiFloodAI?.__localAnswer?.(q)||'AI server जोडिन सकेन। उपलब्ध local FloodSafe data बाट फेरि प्रयास गर्नुहोस्।'}catch{return'AI server जोडिन सकेन।'}
@@ -106,7 +113,7 @@ function installWrapper(){
     },0);
     return'🧠 ताजा official data मिलाउँदैछु…';
   };
-  ai.__advancedInstalled=true;ai.version='2.0-grounded-server';
+  ai.__advancedInstalled=true;ai.version=VERSION;
   setAdvancedLabels();
   const box=$('#sathiFloodMsgs');if(box){
     new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes){if(n?.nodeType===1&&n.classList?.contains('ai')&&n.textContent==='🧠 ताजा official data मिलाउँदैछु…')n.dataset.sathiPending='1'}}).observe(box,{childList:true});

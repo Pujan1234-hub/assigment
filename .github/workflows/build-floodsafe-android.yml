@@ -29,7 +29,7 @@ jobs:
         run: |
           curl -fsSL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
-      - name: Verify local-alert and disaster-status contract
+      - name: Verify local-alert and clean-news contract
         shell: bash
         run: |
           set -euo pipefail
@@ -42,17 +42,36 @@ jobs:
           ! grep -Fq 'id="impact"' floodsafe-nepal/v25/index.html
           grep -Fq 'id="disasterStatus"' floodsafe-nepal/v25/index.html
           grep -Fq 'disaster-monitor-v2.js?v=3' floodsafe-nepal/v25/index.html
+          grep -Fq '__floodsafeDisasterCardRemovedV1' floodsafe-nepal/v25/disaster-monitor-v2.js
+          grep -Fq 'id="bulletin"' floodsafe-nepal/v25/index.html
+          grep -Fq 'news-live-v5.js?v=17' floodsafe-nepal/v25/index.html
           grep -Fq 'native-alert-bridge-v1.js?v=1' floodsafe-nepal/v25/index.html
           grep -Fq 'ALERT_RADIUS_KM=15' floodsafe-nepal/v25/flood-only.js
           grep -Fq 'acceptNearbyRiver' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
           grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 15d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
+          test -s floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
           test -s .github/workflows/floodsafe-river-alert-push.yml
-          echo 'Nearby river + disaster status guard PASS'
-      - name: Build debug APK
+          echo 'Nearby river + clean news guard PASS'
+      - name: Build corrected debug APK
         run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:assembleDebug --no-daemon
+      - name: Verify corrected APK contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -p "$APK" assets/floodsafe-nepal/v25/index.html > /tmp/floodsafe-index.html
+          ! grep -Fq 'id="disasterStatus"' /tmp/floodsafe-index.html
+          ! grep -Fq 'disaster-monitor-v2.js' /tmp/floodsafe-index.html
+          grep -Fq 'id="bulletin"' /tmp/floodsafe-index.html
+          grep -Fq 'news-live-v5.js?v=17' /tmp/floodsafe-index.html
+          ! unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/disaster-monitor-v2.js'
+          ! unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/impact-live-v1.js'
+          ! unzip -l "$APK" | grep -Fq 'floodsafe-people-status.json'
+          echo 'Corrected APK content verification PASS'
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-debug-APK
+          name: FloodSafe-Nepal-Corrected-APK
           path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7

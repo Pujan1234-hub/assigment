@@ -34,7 +34,7 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
         channel.setDescription("Verified flood and severe-weather notifications");
         manager.createNotificationChannel(channel);
 
-        Intent launch = new Intent(this, MainActivity.class)
+        Intent launch = new Intent(this, VoiceMainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(this, 0, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);

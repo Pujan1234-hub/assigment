@@ -1,49 +1,13 @@
 {
-  "generated_at": "2026-09-09T00:21:18.298402+05:45",
-  "updated_at_npt": "09 Sep 00:21 NPT",
+  "generated_at": "2026-09-09T03:09:29.246258+05:45",
+  "updated_at_npt": "09 Sep 03:09 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
-  "items": [
-    {
-      "title": "बहाव घटेको सूचना आएपछि अलर्ट गराइएको हो : प्रहरी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590739/alert-issued-after-reports-of-reduced-flow-police",
-      "published_at": "2026-09-08T21:58:58+05:45",
-      "flash": false
-    },
-    {
-      "title": "आज थुनिएको किम्रुङ खोलामा असार २८ गते पनि एक्कासि बाढी आएको थियो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590735/the-kimrung-river-which-is-being-blocked-today-also-experienced-a-sudden-flood-on-july-11",
-      "published_at": "2026-09-08T21:22:43+05:45",
-      "flash": false
-    },
-    {
-      "title": "'अन्तर्राष्ट्रिय क्षेत्रसँग राहत होइन, क्षतिपूर्ति माग्नुपर्छ'",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590733/we-should-ask-the-international-community-for-compensation-not-relief",
-      "published_at": "2026-09-08T20:57:36+05:45",
-      "flash": false
-    },
-    {
-      "title": "जेनजी आन्दोलनका सहिद विनोद महर्जनसहितको शालिक अनावरण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590727/statue-of-genji-movement-martyr-binod-maharjan-unveiled",
-      "published_at": "2026-09-08T20:36:44+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीपीडित महिला–बालबालिकालाई महिला सङ्घको राहत",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590719/womens-association-provides-relief-to-women-and-children-affected-by-bhotekoshi-floods",
-      "published_at": "2026-09-08T20:01:14+05:45",
-      "flash": false
-    }
-  ],
+  "items": [],
   "sources": {
     "OnlineKhabar": {
-      "ok": true,
-      "candidates": 16,
+      "ok": false,
+      "error": "HTTPSConnectionPool(host='www.onlinekhabar.com', port=443): Read timed out. (read timeout=12)",
       "flash": 0,
       "recent": 0
     },
@@ -57,7 +21,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 5
+      "recent": 0
     },
     "Kathmandu Post": {
       "ok": true,

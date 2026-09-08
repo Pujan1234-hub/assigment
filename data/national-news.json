@@ -1,42 +1,28 @@
 {
-  "generated_at": "2026-09-08T06:53:36.684104+05:45",
-  "updated_at_npt": "08 Sep 06:53 NPT",
+  "generated_at": "2026-09-08T11:43:05.436458+05:45",
+  "updated_at_npt": "08 Sep 11:43 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "'जेनजी आन्दोलनले सुशासन छैन भने दुई तिहाइ बहुमतले पनि स्थिरता दिन सक्दैन भन्ने सन्देश दियो'",
+      "title": "जेनजी आन्दोलनका माग सम्बोधन र दोषीलाई कारबाही गर्न नेकपा प्रवक्ता प्रकाश ज्वालाको माग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590554/the-genji-movement-sent-a-message-that-even-a-two-thirds-majority-in-parliament-cannot-provide-stability-if-there-is-no-good-governance",
-      "published_at": "2026-09-08T06:51:01+05:45",
+      "url": "https://www.ratopati.com/story/590604/ncp-spokesperson-prakash-jwala-demands-to-address-the-demands-of-the-genji-movement-and-take-action-against-the-culprits",
+      "published_at": "2026-09-08T11:24:19+05:45",
       "flash": true
     },
     {
-      "title": "प्रभावकारी स्वास्थ्य सेवाको खोजीमा खोटाङवासी",
+      "title": "जेनजी आन्दोलनको एक वर्ष: लुम्बिनी प्रदेशका सहिद परिवारको अवस्था के छ ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590546/khotang-residents-in-search-of-effective-health-services",
-      "published_at": "2026-09-08T05:14:36+05:45",
+      "url": "https://www.ratopati.com/story/590585/one-year-of-the-genji-movement-what-is-the-situation-of-the-martyr-families-of-lumbini-province",
+      "published_at": "2026-09-08T10:37:33+05:45",
       "flash": false
     },
     {
-      "title": "दूधे पिँडालु भोजपुरका किसानको आम्दानीको स्रोत बन्दै",
+      "title": "बेपत्ताका आफन्तजन भन्छन्–'अब आश्वासन होइन, तत्काल उद्धार चाहियो'",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590542/milk-thistle-is-becoming-a-source-of-income-for-bhojpur-farmers",
-      "published_at": "2026-09-08T03:12:44+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी: शोकमा डुबेका अनलाललाई साथ दिँदै वडावासी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590541/bhotekoshi-flood-ward-residents-support-grief-stricken-anlal",
-      "published_at": "2026-09-08T02:03:18+05:45",
-      "flash": false
-    },
-    {
-      "title": "जीवनका आधार नै सम्पर्कविहीन भएपछि...",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590540/when-the-very-foundation-of-life-is-disconnected",
-      "published_at": "2026-09-08T01:32:40+05:45",
+      "url": "https://www.ratopati.com/story/590563/relatives-of-the-missing-say-no-more-assurances-we-need-immediate-rescue",
+      "published_at": "2026-09-08T08:06:23+05:45",
       "flash": false
     }
   ],
@@ -57,7 +43,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 1,
-      "recent": 5
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

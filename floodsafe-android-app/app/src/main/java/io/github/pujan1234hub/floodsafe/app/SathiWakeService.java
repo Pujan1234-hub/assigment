@@ -51,7 +51,7 @@ public final class SathiWakeService extends Service implements LocationListener 
     private static final String CHANNEL_ID = "sathi_voice_service_v1";
     private static final String WAKE_CHANNEL_ID = "sathi_wake_prompt_v1";
     private static final int SERVICE_NOTIFICATION_ID = 7200;
-    private static final long RESTART_MS = 1200L;
+    private static final long RESTART_MS = 900L;
     private static final long COMMAND_WINDOW_MS = 12000L;
     private static final long RAIN_TICK_MS = 5L * 60L * 1000L;
 
@@ -60,6 +60,7 @@ public final class SathiWakeService extends Service implements LocationListener 
     private TextToSpeech tts;
     private boolean paused;
     private boolean listening;
+    private boolean partialWakeTriggered;
     private long awaitingCommandUntil;
     private LocationManager locationManager;
 
@@ -105,7 +106,6 @@ public final class SathiWakeService extends Service implements LocationListener 
             return START_NOT_STICKY;
         }
 
-        // Permissions may have changed since the service was first started.
         if (!ensureForeground()) {
             stopSelf();
             return START_NOT_STICKY;
@@ -119,6 +119,7 @@ public final class SathiWakeService extends Service implements LocationListener 
         }
         if (ACTION_RESUME.equals(action)) {
             paused = false;
+            partialWakeTriggered = false;
             awaitingCommandUntil = 0L;
             scheduleRestart(250L);
             return START_STICKY;
@@ -130,6 +131,7 @@ public final class SathiWakeService extends Service implements LocationListener 
 
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(KEY_ENABLED, true).apply();
         paused = false;
+        partialWakeTriggered = false;
         scheduleRestart(250L);
         return START_STICKY;
     }
@@ -214,23 +216,29 @@ public final class SathiWakeService extends Service implements LocationListener 
                     @Override public void onError(int error) {
                         listening = false;
                         if (error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS) return;
-                        scheduleRestart(error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY ? 2200L : RESTART_MS);
+                        long delay = error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY ? 1800L
+                                : error == SpeechRecognizer.ERROR_NO_MATCH ? 350L : RESTART_MS;
+                        scheduleRestart(delay);
                     }
                     @Override public void onResults(Bundle results) {
                         listening = false;
-                        String text = firstResult(results);
+                        String text = bestWakeResult(results);
                         if (!text.isEmpty()) handleFinal(text);
                         else scheduleRestart(RESTART_MS);
                     }
-                    @Override public void onPartialResults(Bundle partialResults) {}
+                    @Override public void onPartialResults(Bundle partialResults) {
+                        String text = bestWakeResult(partialResults);
+                        if (!text.isEmpty()) handlePartial(text);
+                    }
                     @Override public void onEvent(int eventType, Bundle params) {}
                 });
             }
+            partialWakeTriggered = false;
             recognizer.startListening(recognizerIntent());
             listening = true;
         } catch (RuntimeException busy) {
             listening = false;
-            scheduleRestart(2200L);
+            scheduleRestart(1800L);
         }
     }
 
@@ -239,8 +247,18 @@ public final class SathiWakeService extends Service implements LocationListener 
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ne-NP")
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "ne-NP")
-                .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
+                .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
                 .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
+    }
+
+    private void handlePartial(String heard) {
+        if (partialWakeTriggered || awaitingCommandUntil > System.currentTimeMillis()) return;
+        WakeMatch match = findWake(heard);
+        // For partial speech, only trigger on the clean wake phrase itself. If a
+        // command is already being spoken after it, wait for the final transcript.
+        if (match == null || !match.rest.isEmpty()) return;
+        partialWakeTriggered = true;
+        armCommandWindow();
     }
 
     private void handleFinal(String heard) {
@@ -253,22 +271,25 @@ public final class SathiWakeService extends Service implements LocationListener 
 
         WakeMatch match = findWake(heard);
         if (match == null) {
-            scheduleRestart(450L);
+            scheduleRestart(350L);
             return;
         }
         if (!match.rest.isEmpty()) {
             deliverQuery(match.rest);
             return;
         }
+        armCommandWindow();
+    }
 
-        awaitingCommandUntil = now + COMMAND_WINDOW_MS;
+    private void armCommandWindow() {
+        awaitingCommandUntil = System.currentTimeMillis() + COMMAND_WINDOW_MS;
         paused = true;
         cancelRecognition();
         speak("सुन्दैछु");
         main.postDelayed(() -> {
             paused = false;
             scheduleRestart(100L);
-        }, 1150L);
+        }, 1050L);
     }
 
     private void deliverQuery(String query) {
@@ -293,11 +314,10 @@ public final class SathiWakeService extends Service implements LocationListener 
             postWakeFallback(q, eventId);
         }
 
-        // Always leave a tap fallback because recent Android versions may block
-        // background activity launches even when startActivity does not throw.
         postWakeFallback(q, eventId);
         main.postDelayed(() -> {
             paused = false;
+            partialWakeTriggered = false;
             awaitingCommandUntil = 0L;
             scheduleRestart(100L);
         }, 18000L);
@@ -352,6 +372,16 @@ public final class SathiWakeService extends Service implements LocationListener 
         return list.get(0).trim();
     }
 
+    private static String bestWakeResult(Bundle bundle) {
+        if (bundle == null) return "";
+        ArrayList<String> list = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+        if (list == null || list.isEmpty()) return "";
+        for (String candidate : list) {
+            if (candidate != null && findWake(candidate) != null) return candidate.trim();
+        }
+        return firstResult(bundle);
+    }
+
     private static final class WakeMatch {
         final String rest;
         WakeMatch(String rest) { this.rest = rest; }
@@ -363,8 +393,9 @@ public final class SathiWakeService extends Service implements LocationListener 
                 .replaceAll("[,!?।]+", " ")
                 .replaceAll("\\s+", " ");
         String[] phrases = {
-                "ye sathi", "hey sathi", "hey sati", "ye sati",
-                "ए साथी", "हे साथी", "ए सथि", "हे सथि", "ये साथी"
+                "ye sathi", "hey sathi", "hey sati", "ye sati", "ya sathi",
+                "ए साथी", "हे साथी", "ए सथि", "हे सथि", "ये साथी", "य साथी",
+                "ए साती", "ये साती", "ए साठी", "हे साठी", "ये साठी"
         };
         for (String phrase : phrases) {
             int i = lower.indexOf(phrase);
@@ -382,7 +413,8 @@ public final class SathiWakeService extends Service implements LocationListener 
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                     tts.setLanguage(new Locale("ne"));
                 }
-                tts.setSpeechRate(0.92f);
+                tts.setSpeechRate(0.94f);
+                tts.setPitch(1.01f);
             }
         });
     }
@@ -441,7 +473,6 @@ public final class SathiWakeService extends Service implements LocationListener 
     private void saveLocation(Location location) {
         if (!getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).getBoolean("follow_device", false)) return;
         double lat = location.getLatitude(), lon = location.getLongitude();
-        // FloodSafe Nepal only.
         if (!Double.isFinite(lat) || !Double.isFinite(lon)
                 || lat < 26.0 || lat > 31.0 || lon < 79.5 || lon > 89.0) return;
         getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).edit()

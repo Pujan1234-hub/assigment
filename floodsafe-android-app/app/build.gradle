@@ -10,8 +10,8 @@ android {
         applicationId 'io.github.pujan1234hub.floodsafe.app'
         minSdk 26
         targetSdk 35
-        versionCode 4
-        versionName '0.4.0'
+        versionCode 5
+        versionName '0.4.1'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     compileOptions {
@@ -39,6 +39,7 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
         exclude 'v25/human-final-v2.js'
         exclude 'v25/people.html'
         exclude 'v25/impact-live-v1.js'
+        exclude 'v25/disaster-monitor-v2.js'
         exclude 'v24/v24-people-status.js'
     }
     from(rootProject.file('../data')) {
@@ -49,20 +50,29 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
     includeEmptyDirs = false
     into(generatedFloodSafeAssets)
 
-    // The v25 source keeps a compatibility shell for older web deployments. The Android
-    // package must contain no Human Status card or loader at all.
+    // Android keeps the real national-news bulletin only. Remove the retired Human
+    // Status shell and the duplicate disaster/news card so unrelated stories can never
+    // be presented under a flood heading.
     doLast {
         def entry = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/index.html')
         if (!entry.isFile()) {
             throw new GradleException('Missing packaged FloodSafe v25 index.html')
         }
         def text = entry.getText('UTF-8')
-        text = text.replaceFirst('(?s)<section class="card" id="impact">.*?</section>', '')
+        text = text.replaceFirst('(?s)<section class="card" id="impact"[^>]*>.*?</section>', '')
         text = text.replaceFirst('<script src="\\./impact-live-v1\\.js\\?v=\\d+" defer></script>', '')
+        text = text.replaceFirst('(?s)<section class="card" id="disasterStatus"[^>]*>.*?</section>', '')
+        text = text.replaceFirst('<script src="\\./disaster-monitor-v2\\.js\\?v=\\d+" defer></script>', '')
         entry.write(text, 'UTF-8')
 
         if (text.contains('id="impact"') || text.contains('impact-live-v1.js') || text.contains('बाढीको मानवीय असर')) {
             throw new GradleException('Human Status UI remained in packaged v25 index')
+        }
+        if (text.contains('id="disasterStatus"') || text.contains('disaster-monitor-v2.js')) {
+            throw new GradleException('Duplicate disaster/news card remained in packaged v25 index')
+        }
+        if (!text.contains('id="bulletin"') || !text.contains('news-live-v5.js?v=17')) {
+            throw new GradleException('Primary Nepal news bulletin was removed unexpectedly')
         }
 
         def forbidden = [
@@ -72,15 +82,16 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
             'floodsafe-nepal/v25/human-final-v2.js',
             'floodsafe-nepal/v25/people.html',
             'floodsafe-nepal/v25/impact-live-v1.js',
+            'floodsafe-nepal/v25/disaster-monitor-v2.js',
             'floodsafe-nepal/v24/v24-people-status.js',
             'data/floodsafe-people-status.json'
         ]
         forbidden.each { relative ->
             if (new File(generatedFloodSafeAssets.get().asFile, relative).exists()) {
-                throw new GradleException("Human Status asset was packaged: ${relative}")
+                throw new GradleException("Forbidden legacy/duplicate asset was packaged: ${relative}")
             }
         }
-        println 'Android bundle Human Status removal PASS'
+        println 'Android clean FloodSafe home/news bundle PASS'
     }
 }
 tasks.named('preBuild').configure { dependsOn bundleWeb }

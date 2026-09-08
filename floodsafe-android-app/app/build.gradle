@@ -3,17 +3,54 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+def releaseKeystorePath = System.getenv('FLOODSAFE_KEYSTORE_PATH')
+def releaseStorePassword = System.getenv('FLOODSAFE_KEYSTORE_PASSWORD')
+def releaseKeyAlias = System.getenv('FLOODSAFE_KEY_ALIAS')
+def releaseKeyPassword = System.getenv('FLOODSAFE_KEY_PASSWORD')
+def hasReleaseSigning = [
+    releaseKeystorePath,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword
+].every { it != null && !it.trim().isEmpty() }
+
 android {
     namespace 'io.github.pujan1234hub.floodsafe.app'
-    compileSdk 35
+    compileSdk 36
+
     defaultConfig {
         applicationId 'io.github.pujan1234hub.floodsafe.app'
         minSdk 26
-        targetSdk 35
+        targetSdk 36
         versionCode 6
         versionName '0.4.2'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(releaseKeystorePath)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17

@@ -6,8 +6,6 @@ on:
     paths:
       - '.github/workflows/floodsafe-river-alert-push.yml'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java'
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -21,7 +19,7 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send fresh warning and danger readings
+      - name: Verify optional Firebase server push
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
@@ -40,7 +38,13 @@ jobs:
           MAX_AGE_MIN=20
           raw=os.environ.get('FIREBASE_SERVICE_ACCOUNT','').strip()
           if not raw:
-              sys.exit('Missing FIREBASE_SERVICE_ACCOUNT GitHub secret')
+              print(json.dumps({
+                  'server_push':'disabled_missing_firebase_service_account',
+                  'android_fallback':'RiverAlertWorker',
+                  'fallback_interval_minutes':15,
+                  'radius_km':15
+              }))
+              sys.exit(0)
           service=json.loads(raw)
           creds=service_account.Credentials.from_service_account_info(
               service,scopes=['https://www.googleapis.com/auth/firebase.messaging'])

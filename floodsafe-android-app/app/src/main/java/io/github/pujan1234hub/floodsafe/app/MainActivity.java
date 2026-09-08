@@ -33,7 +33,9 @@ import android.widget.Toast;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -251,15 +253,30 @@ public class MainActivity extends Activity {
 
     private void scheduleBackgroundRainAlerts() {
         Constraints constraints = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
-        PeriodicWorkRequest work = new PeriodicWorkRequest.Builder(RainAlertWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest rainWork = new PeriodicWorkRequest.Builder(RainAlertWorker.class, 15, TimeUnit.MINUTES)
                 .setConstraints(constraints).build();
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork("floodsafe-local-rain-alerts",
-                ExistingPeriodicWorkPolicy.UPDATE, work);
+        PeriodicWorkRequest riverWork = new PeriodicWorkRequest.Builder(RiverAlertWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraints).build();
+        OneTimeWorkRequest riverNow = new OneTimeWorkRequest.Builder(RiverAlertWorker.class)
+                .setConstraints(constraints).build();
+        WorkManager manager = WorkManager.getInstance(this);
+        manager.enqueueUniquePeriodicWork("floodsafe-local-rain-alerts",
+                ExistingPeriodicWorkPolicy.UPDATE, rainWork);
+        manager.enqueueUniquePeriodicWork("floodsafe-local-river-alerts",
+                ExistingPeriodicWorkPolicy.UPDATE, riverWork);
+        manager.enqueueUniqueWork("floodsafe-local-river-alert-now",
+                ExistingWorkPolicy.REPLACE, riverNow);
+        // Keep the preferred instant server-push path subscribed whenever Firebase
+        // credentials are configured; the local worker remains an independent fallback.
+        FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");
     }
 
     private void disableBackgroundRainAlerts() {
         getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).edit().putBoolean("enabled", false).apply();
-        WorkManager.getInstance(this).cancelUniqueWork("floodsafe-local-rain-alerts");
+        WorkManager manager = WorkManager.getInstance(this);
+        manager.cancelUniqueWork("floodsafe-local-rain-alerts");
+        manager.cancelUniqueWork("floodsafe-local-river-alerts");
+        manager.cancelUniqueWork("floodsafe-local-river-alert-now");
         notifyAlertStatus(false);
     }
 
@@ -384,7 +401,7 @@ public class MainActivity extends Activity {
     }
     @Override protected void onDestroy() {
         finishLocation(false);
-        if (connectivity != null && networkCallback != null) connectivity.unregisterNetworkCallback(networkCallback);
+        if (connectivity != null && networkCallback != null) connectivity.unregisterDefaultNetworkCallback(networkCallback);
         if (webView != null) {
             ((android.view.ViewGroup) webView.getParent()).removeView(webView);
             webView.destroy();

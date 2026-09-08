@@ -1,63 +1,42 @@
 {
-  "generated_at": "2026-09-08T20:49:54.831814+05:45",
-  "updated_at_npt": "08 Sep 20:49 NPT",
+  "generated_at": "2026-09-09T00:21:18.298402+05:45",
+  "updated_at_npt": "09 Sep 00:21 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "बहाव घटेको सूचना आएपछि अलर्ट गराइएको हो : प्रहरी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590739/alert-issued-after-reports-of-reduced-flow-police",
+      "published_at": "2026-09-08T21:58:58+05:45",
+      "flash": false
+    },
+    {
+      "title": "आज थुनिएको किम्रुङ खोलामा असार २८ गते पनि एक्कासि बाढी आएको थियो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590735/the-kimrung-river-which-is-being-blocked-today-also-experienced-a-sudden-flood-on-july-11",
+      "published_at": "2026-09-08T21:22:43+05:45",
+      "flash": false
+    },
+    {
+      "title": "'अन्तर्राष्ट्रिय क्षेत्रसँग राहत होइन, क्षतिपूर्ति माग्नुपर्छ'",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590733/we-should-ask-the-international-community-for-compensation-not-relief",
+      "published_at": "2026-09-08T20:57:36+05:45",
+      "flash": false
+    },
     {
       "title": "जेनजी आन्दोलनका सहिद विनोद महर्जनसहितको शालिक अनावरण",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590727/statue-of-genji-movement-martyr-binod-maharjan-unveiled",
       "published_at": "2026-09-08T20:36:44+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढीपीडित महिला–बालबालिकालाई महिला सङ्घको राहत",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/590719/womens-association-provides-relief-to-women-and-children-affected-by-bhotekoshi-floods",
       "published_at": "2026-09-08T20:01:14+05:45",
-      "flash": true
-    },
-    {
-      "title": "माइतीघरमा आत्मदाह प्रयास गरेकी युवतीको उद्धार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590711/rescue-of-a-young-woman-who-attempted-self-immolation-at-her-home",
-      "published_at": "2026-09-08T18:55:48+05:45",
-      "flash": false
-    },
-    {
-      "title": "शनिबारदेखि अवरूद्ध कर्णाली राजमार्ग सञ्चालनमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590694/blocked-karnali-highway-to-reopen-on-saturday",
-      "published_at": "2026-09-08T17:23:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवा बाढीमा सम्पर्कविहीन गङ्गारामका बुबा भन्छन्, ‘केही त चाहियो नि ! नत्र कसरी चित्त बुझ्छ’",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590663/father-of-gangaram-who-lost-contact-in-the-rasuwa-floods-says-something-is-needed-otherwise-how-can-he-understand",
-      "published_at": "2026-09-08T15:16:16+05:45",
-      "flash": false
-    },
-    {
-      "title": "जेनजी आन्दोलनको एक वर्ष : कर्णालीले गरेन परिवर्तनको अनुभूति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590662/one-year-of-the-genji-movement-karnali-has-not-experienced-any-change",
-      "published_at": "2026-09-08T15:11:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "अरिङ्गाले फेदीको पहिरोमा एक जनाकाे मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590661/one-person-dies-in-landslide-in-aringala",
-      "published_at": "2026-09-08T15:09:04+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवा बाढीमा परेका दमाइ परिवारको भविष्य अन्याेलमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590656/future-of-damai-family-affected-by-rasuwa-floods-uncertain",
-      "published_at": "2026-09-08T14:59:23+05:45",
       "flash": false
     }
   ],
@@ -77,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 8
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

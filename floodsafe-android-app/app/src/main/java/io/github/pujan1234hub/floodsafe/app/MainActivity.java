@@ -401,7 +401,7 @@ public class MainActivity extends Activity {
     }
     @Override protected void onDestroy() {
         finishLocation(false);
-        if (connectivity != null && networkCallback != null) connectivity.unregisterDefaultNetworkCallback(networkCallback);
+        if (connectivity != null && networkCallback != null) connectivity.unregisterNetworkCallback(networkCallback);
         if (webView != null) {
             ((android.view.ViewGroup) webView.getParent()).removeView(webView);
             webView.destroy();

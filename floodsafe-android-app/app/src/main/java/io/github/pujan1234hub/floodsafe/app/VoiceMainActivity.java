@@ -9,10 +9,12 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
 import android.webkit.JavascriptInterface;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -196,16 +198,63 @@ public final class VoiceMainActivity extends MainActivity {
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                     tts.setLanguage(new Locale("ne"));
                 }
-                tts.setSpeechRate(0.92f);
+                selectBestNepaliVoice();
+                tts.setSpeechRate(0.96f);
+                tts.setPitch(1.02f);
             }
         });
     }
 
+    private void selectBestNepaliVoice() {
+        if (tts == null || Build.VERSION.SDK_INT < 21) return;
+        try {
+            Set<Voice> voices = tts.getVoices();
+            if (voices == null || voices.isEmpty()) return;
+            Voice best = null;
+            int bestScore = Integer.MIN_VALUE;
+            for (Voice voice : voices) {
+                if (voice == null || voice.getLocale() == null
+                        || !"ne".equalsIgnoreCase(voice.getLocale().getLanguage())) continue;
+                int score = voice.getQuality() * 100 - voice.getLatency() * 8;
+                if ("NP".equalsIgnoreCase(voice.getLocale().getCountry())) score += 40;
+                if (!voice.isNetworkConnectionRequired()) score += 8;
+                String name = voice.getName() == null ? "" : voice.getName().toLowerCase(Locale.ROOT);
+                if (name.contains("natural") || name.contains("neural") || name.contains("premium")) score += 25;
+                if (score > bestScore) {
+                    best = voice;
+                    bestScore = score;
+                }
+            }
+            if (best != null) tts.setVoice(best);
+        } catch (RuntimeException ignored) {}
+    }
+
     private void speakNepali(String text) {
         if (tts == null || text == null || text.trim().isEmpty()) return;
-        String cleaned = text.replaceAll("[\\p{So}\\p{Cn}]+", " ").replaceAll("\\s+", " ").trim();
+        String cleaned = text
+                .replaceAll("[\\p{So}\\p{Cn}]+", " ")
+                .replace("°C", " डिग्री सेल्सियस")
+                .replace("km/h", " किलोमिटर प्रति घण्टा")
+                .replace("mm", " मिलिमिटर")
+                .replace("%", " प्रतिशत")
+                .replaceAll("\\s+", " ")
+                .trim();
         if (cleaned.length() > 1800) cleaned = cleaned.substring(0, 1800);
-        tts.speak(cleaned, TextToSpeech.QUEUE_FLUSH, null, "sathi-web-answer");
+        tts.stop();
+        String[] parts = cleaned.split("(?<=[।.!?])\\s+");
+        boolean first = true;
+        int count = 0;
+        for (String part : parts) {
+            String spoken = part == null ? "" : part.trim();
+            if (spoken.isEmpty()) continue;
+            tts.speak(spoken, first ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD,
+                    null, "sathi-web-answer-" + count);
+            first = false;
+            count++;
+            if (count < parts.length) {
+                tts.playSilentUtterance(105L, TextToSpeech.QUEUE_ADD, "sathi-pause-" + count);
+            }
+        }
     }
 
     private void consumeWakeIntent(Intent intent) {
@@ -226,8 +275,6 @@ public final class VoiceMainActivity extends MainActivity {
         final String id = pendingWakeEventId;
         pendingWakeQuery = null;
         pendingWakeEventId = null;
-        // The bundled page can still be loading after a cold wake. Dispatch the
-        // same id more than once; the JS bridge de-duplicates it.
         webView.postDelayed(() -> dispatchTranscript(q, true, id), 450L);
         webView.postDelayed(() -> dispatchTranscript(q, true, id), 1600L);
         webView.postDelayed(() -> dispatchTranscript(q, true, id), 3200L);

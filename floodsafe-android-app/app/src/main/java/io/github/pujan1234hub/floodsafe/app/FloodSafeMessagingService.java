@@ -18,6 +18,10 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
     private static final String CHANNEL_ID = "official_nepal_alerts_v2";
     private static final double DEFAULT_RIVER_RADIUS_KM = 15d;
     private static final String PUSH_PREFS = "floodsafe_push_guard";
+    private static final long WARNING_REPEAT_MS = 90L * 60L * 1000L;
+    private static final long DANGER_REPEAT_MS = 30L * 60L * 1000L;
+    private static final double MATERIAL_RISE_METRES = 0.20d;
+    private double acceptedRiverDistanceKm = Double.NaN;
 
     @Override public void onMessageReceived(RemoteMessage message) {
         if (Build.VERSION.SDK_INT >= 33
@@ -25,7 +29,9 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
                 != PackageManager.PERMISSION_GRANTED) return;
 
         Map<String, String> data = message.getData();
-        if ("river_alert".equals(data.get("kind")) && !acceptNearbyRiver(data)) return;
+        boolean riverAlert = "river_alert".equals(data.get("kind"));
+        acceptedRiverDistanceKm = Double.NaN;
+        if (riverAlert && !acceptNearbyRiver(data)) return;
 
         String title = "FloodSafe Nepal alert";
         String body = "Open FloodSafe Nepal for current official information.";
@@ -35,6 +41,19 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
         }
         if (data.containsKey("title")) title = data.get("title");
         if (data.containsKey("body")) body = data.get("body");
+
+        if (riverAlert && Double.isFinite(acceptedRiverDistanceKm)) {
+            String stage = safe(data.get("stage"));
+            String river = safe(data.get("river_name"));
+            String level = safe(data.get("water_level"));
+            title = "danger".equals(stage)
+                    ? "🚨 नजिकको नदी खतरा चेतावनी"
+                    : "⚠️ नजिकको नदी चेतावनी";
+            body = (river.isEmpty() ? "Official river station" : river)
+                    + " • " + String.format(Locale.US, "%.1f km", acceptedRiverDistanceKm)
+                    + (level.isEmpty() ? "" : " • " + level + " m")
+                    + " • BIPAD/DHM official";
+        }
 
         NotificationManager manager = getSystemService(NotificationManager.class);
         if (manager == null) return;
@@ -84,29 +103,39 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
 
         String stage = safe(data.get("stage"));
         if (!("warning".equals(stage) || "danger".equals(stage))) return false;
-        String signature = safe(data.get("station_id")) + "|" + stage + "|"
-                + safe(data.get("measured_at")) + "|" + safe(data.get("water_level"));
-        if (signature.length() < 6) return false;
+
+        String stationId = safe(data.get("station_id"));
+        if (stationId.isEmpty()) return false;
+        double currentLevel = number(data.get("water_level"));
+        long now = System.currentTimeMillis();
 
         SharedPreferences guard = getSharedPreferences(PUSH_PREFS, Context.MODE_PRIVATE);
-        String key = "river_" + Integer.toHexString(safe(data.get("station_id")).hashCode());
-        if (signature.equals(guard.getString(key, ""))) return false;
-        guard.edit().putString(key, signature).apply();
+        String key = "river_" + Integer.toHexString(stationId.hashCode());
+        String previousStage = guard.getString(key + "_stage", "");
+        double previousLevel = Double.longBitsToDouble(guard.getLong(
+                key + "_level", Double.doubleToRawLongBits(Double.NaN)));
+        long previousAt = guard.getLong(key + "_at", 0L);
 
-        // Put an exact local distance into the message shown to the user.
-        if (data instanceof java.util.HashMap) {
-            @SuppressWarnings("unchecked") java.util.HashMap<String, String> mutable =
-                    (java.util.HashMap<String, String>) data;
-            String river = safe(data.get("river_name"));
-            String level = safe(data.get("water_level"));
-            String title = "danger".equals(stage) ? "🚨 नजिकको नदी खतरा चेतावनी" : "⚠️ नजिकको नदी चेतावनी";
-            String body = (river.isEmpty() ? "Official river station" : river)
-                    + " • " + String.format(Locale.US, "%.1f km", distance)
-                    + (level.isEmpty() ? "" : " • " + level + " m")
-                    + " • BIPAD/DHM official";
-            mutable.put("title", title);
-            mutable.put("body", body);
+        boolean stageChanged = !stage.equals(previousStage);
+        boolean escalated = "danger".equals(stage) && !"danger".equals(previousStage);
+        boolean materiallyRisen = Double.isFinite(currentLevel)
+                && Double.isFinite(previousLevel)
+                && currentLevel >= previousLevel + MATERIAL_RISE_METRES;
+        long repeatAfter = "danger".equals(stage) ? DANGER_REPEAT_MS : WARNING_REPEAT_MS;
+        boolean cooldownExpired = previousAt <= 0L || now - previousAt >= repeatAfter;
+
+        if (!stageChanged && !materiallyRisen && !cooldownExpired) return false;
+        if (!escalated && "warning".equals(stage) && "danger".equals(previousStage)
+                && !materiallyRisen && !cooldownExpired) return false;
+
+        SharedPreferences.Editor edit = guard.edit()
+                .putString(key + "_stage", stage)
+                .putLong(key + "_at", now);
+        if (Double.isFinite(currentLevel)) {
+            edit.putLong(key + "_level", Double.doubleToRawLongBits(currentLevel));
         }
+        edit.apply();
+        acceptedRiverDistanceKm = distance;
         return true;
     }
 

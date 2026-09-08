@@ -26,6 +26,7 @@ public final class VoiceMainActivity extends MainActivity {
     private SpeechRecognizer speech;
     private TextToSpeech tts;
     private boolean pendingVoiceStart;
+    private boolean resumeWakeAfterQuery;
     private String pendingWakeQuery;
     private String pendingWakeEventId;
 
@@ -44,11 +45,7 @@ public final class VoiceMainActivity extends MainActivity {
 
     @Override protected void onResume() {
         super.onResume();
-        if (getSharedPreferences(SathiWakeService.PREFS, MODE_PRIVATE)
-                .getBoolean(SathiWakeService.KEY_ENABLED, false)
-                && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            startWakeService(SathiWakeService.ACTION_START);
-        }
+        if (wakeEnabled()) startWakeService(SathiWakeService.ACTION_START);
         flushWakeQuery();
     }
 
@@ -70,9 +67,7 @@ public final class VoiceMainActivity extends MainActivity {
         }
 
         @JavascriptInterface public boolean isAlwaysOn() {
-            return getSharedPreferences(SathiWakeService.PREFS, MODE_PRIVATE)
-                    .getBoolean(SathiWakeService.KEY_ENABLED, false)
-                    && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+            return wakeEnabled();
         }
 
         @JavascriptInterface public void speak(String text) {
@@ -87,7 +82,11 @@ public final class VoiceMainActivity extends MainActivity {
                         .putLong("lon", Double.doubleToRawLongBits(lon))
                         .putBoolean("follow_device", followDevice)
                         .apply();
-                if (followDevice && hasLocationPermission()) startWakeService(SathiWakeService.ACTION_REFRESH);
+                // Updating GPS must never silently start the microphone wake service.
+                // Only refresh it when the user explicitly enabled “Ye Sathi”.
+                if (followDevice && hasLocationPermission() && wakeEnabled()) {
+                    startWakeService(SathiWakeService.ACTION_REFRESH);
+                }
             });
         }
     }
@@ -97,17 +96,25 @@ public final class VoiceMainActivity extends MainActivity {
                 || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
+    private boolean wakeEnabled() {
+        return getSharedPreferences(SathiWakeService.PREFS, MODE_PRIVATE)
+                .getBoolean(SathiWakeService.KEY_ENABLED, false)
+                && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
     private void ensureAudioAndStart(boolean immediateQuery) {
         pendingVoiceStart = immediateQuery;
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, AUDIO_REQUEST);
             return;
         }
-        enableWakeService();
         if (immediateQuery) {
-            startWakeService(SathiWakeService.ACTION_PAUSE);
-            if (webView != null) webView.postDelayed(this::startSingleRecognition, 280L);
+            // A normal mic tap is one-shot. It must NOT turn on always-on wake.
+            resumeWakeAfterQuery = wakeEnabled();
+            if (resumeWakeAfterQuery) startWakeService(SathiWakeService.ACTION_PAUSE);
+            if (webView != null) webView.postDelayed(this::startSingleRecognition, 220L);
         } else {
+            enableWakeService();
             dispatchState("wake", true, "“Ye Sathi” पृष्ठभूमि आवाज सक्रिय छ।");
         }
     }
@@ -128,11 +135,20 @@ public final class VoiceMainActivity extends MainActivity {
         }
     }
 
+    private void resumeWakeIfNeeded() {
+        if (!resumeWakeAfterQuery) return;
+        resumeWakeAfterQuery = false;
+        startWakeService(SathiWakeService.ACTION_RESUME);
+    }
+
     private void startSingleRecognition() {
-        if (isFinishing() || isDestroyed()) return;
+        if (isFinishing() || isDestroyed()) {
+            resumeWakeIfNeeded();
+            return;
+        }
         if (!SpeechRecognizer.isRecognitionAvailable(this)) {
             dispatchState("mic", false, "यो फोनमा Android voice recognition उपलब्ध छैन।");
-            startWakeService(SathiWakeService.ACTION_RESUME);
+            resumeWakeIfNeeded();
             return;
         }
         try {
@@ -151,7 +167,7 @@ public final class VoiceMainActivity extends MainActivity {
                 @Override public void onEndOfSpeech() {}
                 @Override public void onError(int error) {
                     dispatchState("mic", false, "आवाज बुझिएन। फेरि माइक थिचेर सोध्नुहोस्।");
-                    startWakeService(SathiWakeService.ACTION_RESUME);
+                    resumeWakeIfNeeded();
                 }
                 @Override public void onResults(Bundle results) {
                     String best = firstResult(results);
@@ -160,7 +176,7 @@ public final class VoiceMainActivity extends MainActivity {
                     } else {
                         dispatchState("mic", false, "आवाज स्पष्ट भएन। फेरि प्रयास गर्नुहोस्।");
                     }
-                    startWakeService(SathiWakeService.ACTION_RESUME);
+                    resumeWakeIfNeeded();
                 }
                 @Override public void onPartialResults(Bundle partialResults) {
                     String partial = firstResult(partialResults);
@@ -171,7 +187,7 @@ public final class VoiceMainActivity extends MainActivity {
             speech.startListening(recognizerIntent());
         } catch (RuntimeException e) {
             dispatchState("mic", false, "माइक सुरु हुन सकेन। फेरि प्रयास गर्नुहोस्।");
-            startWakeService(SathiWakeService.ACTION_RESUME);
+            resumeWakeIfNeeded();
         }
     }
 
@@ -308,15 +324,17 @@ public final class VoiceMainActivity extends MainActivity {
         if (granted) {
             boolean immediate = pendingVoiceStart;
             pendingVoiceStart = false;
-            enableWakeService();
             if (immediate) {
-                startWakeService(SathiWakeService.ACTION_PAUSE);
-                if (webView != null) webView.postDelayed(this::startSingleRecognition, 320L);
+                // Permission was requested by a one-shot mic tap: do not enable wake.
+                resumeWakeAfterQuery = false;
+                if (webView != null) webView.postDelayed(this::startSingleRecognition, 260L);
             } else {
+                enableWakeService();
                 dispatchState("wake", true, "“Ye Sathi” पृष्ठभूमि आवाज सक्रिय छ।");
             }
         } else {
             pendingVoiceStart = false;
+            resumeWakeAfterQuery = false;
             dispatchState("mic", false, "Voice चलाउन microphone अनुमति चाहिन्छ।");
         }
     }

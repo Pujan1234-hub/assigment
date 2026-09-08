@@ -2,10 +2,8 @@
 'use strict';
 if(window.SathiFloodAIEngine)return;
 
-const DEVANAGARI=/[\u0900-\u097F]/;
 const norm=s=>String(s||'').toLowerCase().normalize('NFKC').replace(/[.,!?;:()[\]{}"'`~]/g,' ').replace(/\s+/g,' ').trim();
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const now=()=>Date.now();
 const neTime=t=>{
   const d=new Date(t||Date.now());
@@ -130,7 +128,8 @@ function listRiskAnswer(src){
   const rs=riskStations(src);
   if(!currentStations(src).length)return 'अहिले BIPAD/DHM को ताजा नदी मापन उपलब्ध छैन। ताजा डेटा आएपछि मात्र जोखिम देखाइन्छ।';
   if(!rs.length)return 'अहिले उपलब्ध ताजा आधिकारिक नदी मापनमा चेतावनी वा खतरा तहमा पुगेको स्टेशन भेटिएन।';
-  const sorted=rs.sort((a,b)=>({danger:3,warning:2,watch:1}[b.stage]-({danger:3,warning:2,watch:1}[a.stage]));
+  const weight={danger:3,warning:2,watch:1};
+  const sorted=rs.sort((a,b)=>(weight[b.stage]||0)-(weight[a.stage]||0));
   const top=sorted.slice(0,8).map(x=>`${stageNe(x.stage)} ${x.name}${x.level!==null?` — ${x.level.toFixed(2)} मि.`:''}`).join('\n');
   const more=sorted.length>8?`\n… थप ${sorted.length-8} स्टेशन निगरानीमा छन्।`:'';
   return `अहिले जोखिम देखिएका नदी/खोला स्टेशनहरू:\n${top}${more}`;
@@ -194,5 +193,5 @@ function answer(question,sourceWindow){
   return unsupportedFloodAnswer();
 }
 
-window.SathiFloodAIEngine={answer,isFloodQuestion,source,allStations,currentStations,riskStations,findStationByQuestion,stationAnswer,listRiskAnswer,rainAnswer,nearbyAnswer,safetyAnswer,version:'0.1.0-additive'};
+window.SathiFloodAIEngine={answer,isFloodQuestion,source,allStations,currentStations,riskStations,findStationByQuestion,stationAnswer,listRiskAnswer,rainAnswer,nearbyAnswer,safetyAnswer,version:'0.1.1-additive'};
 })();

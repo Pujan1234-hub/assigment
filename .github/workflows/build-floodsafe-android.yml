@@ -8,6 +8,7 @@ on:
       - 'floodsafe-nepal/**'
       - 'data/**'
       - '.github/workflows/build-floodsafe-android.yml'
+      - '.github/workflows/floodsafe-river-alert-push.yml'
 
 permissions:
   contents: read
@@ -28,7 +29,7 @@ jobs:
         run: |
           curl -fsSL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
-      - name: Verify Human Status stays removed
+      - name: Verify local-alert and disaster-status contract
         shell: bash
         run: |
           set -euo pipefail
@@ -38,12 +39,15 @@ jobs:
           test ! -e floodsafe-nepal/v25/human-final.js
           test ! -e floodsafe-nepal/v25/human-final-v2.js
           test ! -e floodsafe-nepal/v25/people.html
-          grep -q '__fsHumanStatusRemovedV1' floodsafe-nepal/v25/impact-live-v1.js
-          if grep -Eq 'human-status-safe-live|floodsafe-people-status\.json' floodsafe-nepal/v25/impact-live-v1.js; then
-            echo 'Human Status live/fallback source was reintroduced' >&2
-            exit 1
-          fi
-          echo 'Human Status removal guard PASS'
+          ! grep -Fq 'id="impact"' floodsafe-nepal/v25/index.html
+          grep -Fq 'id="disasterStatus"' floodsafe-nepal/v25/index.html
+          grep -Fq 'disaster-monitor-v2.js?v=3' floodsafe-nepal/v25/index.html
+          grep -Fq 'native-alert-bridge-v1.js?v=1' floodsafe-nepal/v25/index.html
+          grep -Fq 'ALERT_RADIUS_KM=15' floodsafe-nepal/v25/flood-only.js
+          grep -Fq 'acceptNearbyRiver' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
+          grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 15d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
+          test -s .github/workflows/floodsafe-river-alert-push.yml
+          echo 'Nearby river + disaster status guard PASS'
       - name: Build debug APK
         run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4

@@ -1,0 +1,146 @@
+name: FloodSafe nearby river push
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: floodsafe-nearby-river-push
+  cancel-in-progress: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send fresh warning and danger readings
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet google-auth requests
+          python3 - <<'PY'
+          import json, math, os, sys
+          from datetime import datetime, timezone, timedelta
+          import requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          EDGE='https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers'
+          TOPIC='nepal-alerts'
+          RADIUS_KM='15'
+          MAX_AGE_MIN=20
+          raw=os.environ.get('FIREBASE_SERVICE_ACCOUNT','').strip()
+          if not raw:
+              sys.exit('Missing FIREBASE_SERVICE_ACCOUNT GitHub secret')
+          service=json.loads(raw)
+          creds=service_account.Credentials.from_service_account_info(
+              service,scopes=['https://www.googleapis.com/auth/firebase.messaging'])
+          creds.refresh(Request())
+          send_url=f"https://fcm.googleapis.com/v1/projects/{service['project_id']}/messages:send"
+
+          response=requests.get(EDGE,headers={'Accept':'application/json'},timeout=20)
+          response.raise_for_status()
+          payload=response.json()
+          rows=payload if isinstance(payload,list) else payload.get('results') or payload.get('data') or []
+          if isinstance(rows,dict): rows=rows.get('results') or []
+          if not isinstance(rows,list): rows=[]
+
+          def flat(o):
+              if isinstance(o,dict) and isinstance(o.get('fields'),dict):
+                  return {**o['fields'],**o}
+              return o if isinstance(o,dict) else {}
+          def val(o,keys):
+              o=flat(o)
+              for k in keys:
+                  v=o.get(k)
+                  if v not in (None,''): return v
+              return None
+          def number(v):
+              try:
+                  n=float(v)
+                  return n if math.isfinite(n) else None
+              except: return None
+          def coords(o):
+              o=flat(o)
+              candidates=[o.get('_stationCoordinate'),(o.get('point') or {}).get('coordinates') if isinstance(o.get('point'),dict) else None,(o.get('location') or {}).get('coordinates') if isinstance(o.get('location'),dict) else None,(o.get('geometry') or {}).get('coordinates') if isinstance(o.get('geometry'),dict) else None]
+              for c in candidates:
+                  if isinstance(c,list) and len(c)>=2:
+                      a,b=number(c[0]),number(c[1])
+                      if a is None or b is None: continue
+                      if 79.5<=a<=89 and 26<=b<=31.8: return b,a
+                      if 79.5<=b<=89 and 26<=a<=31.8: return a,b
+              lat=number(val(o,['latitude','lat','stationLatitude','station_latitude']))
+              lon=number(val(o,['longitude','lon','lng','stationLongitude','station_longitude']))
+              return (lat,lon) if lat is not None and lon is not None else (None,None)
+          def measured(o):
+              return val(o,['_measurementTime','waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','measurement_time','observationTime','observation_time','observedAt','observed_at','datetime','timestamp'])
+          def parse_time(v):
+              if not v:return None
+              try:
+                  s=str(v).replace('Z','+00:00')
+                  d=datetime.fromisoformat(s)
+                  if d.tzinfo is None:d=d.replace(tzinfo=timezone.utc)
+                  return d.astimezone(timezone.utc)
+              except:return None
+          def stage(o):
+              level=number(val(o,['_lastWaterLevel','waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level','value']))
+              warning=number(val(o,['_lastWarningLevel','warningLevel','warning_level','warningThreshold','warning_threshold']))
+              danger=number(val(o,['_lastDangerLevel','dangerLevel','danger_level','dangerThreshold','danger_threshold']))
+              status=str(val(o,['_officialStatus','status','status_name','alertStatus','alert_status','riskLevel','risk_level']) or '').upper()
+              if level is not None and danger is not None and danger>0 and level>=danger:return 'danger',level,warning,danger
+              if 'DANGER' in status or 'RED' in status:return 'danger',level,warning,danger
+              if level is not None and warning is not None and warning>0 and level>=warning:return 'warning',level,warning,danger
+              if 'WARNING' in status or 'ORANGE' in status:return 'warning',level,warning,danger
+              return None,level,warning,danger
+          def station_id(o):
+              for src in (flat(o),flat(o).get('station') or {},flat(o).get('riverStation') or {},flat(o).get('river_station') or {}):
+                  if not isinstance(src,dict):continue
+                  for k in ('stationSeriesId','station_series_id','stationId','station_id','stationIndex','station_index','id'):
+                      if src.get(k) not in (None,''):return str(src[k])
+              la,lo=coords(o);return f"{val(o,['river_name','riverName','station_name','stationName','title','name']) or 'river'}-{la}-{lo}"
+
+          now=datetime.now(timezone.utc)
+          hazards=[]
+          seen=set()
+          for row in rows:
+              st,level,warning,danger=stage(row)
+              if st not in ('warning','danger'):continue
+              t=parse_time(measured(row))
+              if t is None or now-t>timedelta(minutes=MAX_AGE_MIN) or t-now>timedelta(minutes=5):continue
+              lat,lon=coords(row)
+              if lat is None or lon is None:continue
+              sid=station_id(row)
+              key=(sid,st,t.isoformat(),level)
+              if key in seen:continue
+              seen.add(key)
+              name=str(val(row,['river_name','riverName','station_name','stationName','title','name']) or 'Official river station').strip()
+              hazards.append((st,sid,name,lat,lon,level,warning,danger,t))
+          hazards.sort(key=lambda x:(0 if x[0]=='danger' else 1,x[2]))
+          hazards=hazards[:60]
+
+          submitted=0
+          for st,sid,name,lat,lon,level,warning,danger,t in hazards:
+              title='🚨 नजिकको नदी खतरा चेतावनी' if st=='danger' else '⚠️ नजिकको नदी चेतावनी'
+              body=f'{name} • BIPAD/DHM official • {t.astimezone(timezone(timedelta(hours=5,minutes=45))).strftime("%H:%M")} NPT'
+              if level is not None:body+=f' • {level:g} m'
+              data={
+                  'kind':'river_alert','title':title,'body':body,'stage':st,
+                  'station_id':sid[:120],'river_name':name[:160],
+                  'lat':f'{lat:.6f}','lon':f'{lon:.6f}','radius_km':RADIUS_KM,
+                  'water_level':'' if level is None else f'{level:g}',
+                  'warning_level':'' if warning is None else f'{warning:g}',
+                  'danger_level':'' if danger is None else f'{danger:g}',
+                  'measured_at':t.isoformat().replace('+00:00','Z'),
+                  'source':'BIPAD/DHM official'
+              }
+              msg={'message':{'topic':TOPIC,'data':data,'android':{'priority':'high','ttl':'300s'}}}
+              r=requests.post(send_url,headers={'Authorization':'Bearer '+creds.token,'Content-Type':'application/json'},json=msg,timeout=20)
+              if r.status_code==401:
+                  creds.refresh(Request());r=requests.post(send_url,headers={'Authorization':'Bearer '+creds.token,'Content-Type':'application/json'},json=msg,timeout=20)
+              r.raise_for_status();submitted+=1
+          print(json.dumps({'official_rows':len(rows),'fresh_warning_danger':len(hazards),'submitted':submitted}))
+          PY

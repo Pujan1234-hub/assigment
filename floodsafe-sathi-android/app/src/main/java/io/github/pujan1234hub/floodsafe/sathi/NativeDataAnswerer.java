@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -75,8 +76,8 @@ final class NativeDataAnswerer {
             JSONObject j = getJson(u);
             JSONObject current = j.optJSONObject("current");
             double nowRain = current == null ? 0 : Math.max(current.optDouble("precipitation", 0), current.optDouble("rain", 0));
-            JSONArray times = j.optJSONObject("hourly") == null ? null : j.optJSONObject("hourly").optJSONArray("time");
             JSONObject hourly = j.optJSONObject("hourly");
+            JSONArray times = hourly == null ? null : hourly.optJSONArray("time");
             JSONArray precipitation = hourly == null ? null : hourly.optJSONArray("precipitation");
             JSONArray rain = hourly == null ? null : hourly.optJSONArray("rain");
             JSONArray showers = hourly == null ? null : hourly.optJSONArray("showers");
@@ -125,8 +126,7 @@ final class NativeDataAnswerer {
             for (int i = 0; i < rows.length(); i++) {
                 JSONObject raw = rows.optJSONObject(i);
                 if (raw == null) continue;
-                JSONObject o = flatten(raw);
-                River r = parseRiver(o);
+                River r = parseRiver(flatten(raw));
                 if (r != null) rivers.add(r);
             }
             String target = targetRiver(q);
@@ -210,8 +210,14 @@ final class NativeDataAnswerer {
         JSONObject fields = raw.optJSONObject("fields");
         if (fields == null) return raw;
         JSONObject out = new JSONObject();
-        for (String k : fields.keySet()) try { out.put(k, fields.get(k)); } catch (Exception ignored) {}
-        for (String k : raw.keySet()) try { out.put(k, raw.get(k)); } catch (Exception ignored) {}
+        for (Iterator<String> it = fields.keys(); it.hasNext();) {
+            String k = it.next();
+            try { out.put(k, fields.get(k)); } catch (Exception ignored) {}
+        }
+        for (Iterator<String> it = raw.keys(); it.hasNext();) {
+            String k = it.next();
+            try { out.put(k, raw.get(k)); } catch (Exception ignored) {}
+        }
         return out;
     }
 
@@ -281,5 +287,20 @@ final class NativeDataAnswerer {
         return s.toLowerCase(Locale.ROOT).replaceAll("[\\p{Punct}]", " ").replaceAll("\\s+", " ").trim();
     }
 
-    private record River(String name, double level, double warning, double danger, int stage, String time) {}
+    private static final class River {
+        final String name;
+        final double level;
+        final double warning;
+        final double danger;
+        final int stage;
+        final String time;
+        River(String name, double level, double warning, double danger, int stage, String time) {
+            this.name = name;
+            this.level = level;
+            this.warning = warning;
+            this.danger = danger;
+            this.stage = stage;
+            this.time = time;
+        }
+    }
 }

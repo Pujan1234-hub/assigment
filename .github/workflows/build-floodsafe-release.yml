@@ -1,0 +1,116 @@
+name: Build FloodSafe Signed Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      FLOODSAFE_KEYSTORE_PATH: /tmp/floodsafe-upload.jks
+      FLOODSAFE_KEYSTORE_PASSWORD: ${{ secrets.FLOODSAFE_KEYSTORE_PASSWORD }}
+      FLOODSAFE_KEY_ALIAS: ${{ secrets.FLOODSAFE_KEY_ALIAS }}
+      FLOODSAFE_KEY_PASSWORD: ${{ secrets.FLOODSAFE_KEY_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android 16 SDK
+        run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+
+      - name: Install Gradle
+        run: |
+          curl -fsSL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+
+      - name: Validate release signing secrets
+        env:
+          FLOODSAFE_KEYSTORE_BASE64: ${{ secrets.FLOODSAFE_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for value in \
+            "$FLOODSAFE_KEYSTORE_BASE64" \
+            "$FLOODSAFE_KEYSTORE_PASSWORD" \
+            "$FLOODSAFE_KEY_ALIAS" \
+            "$FLOODSAFE_KEY_PASSWORD"; do
+            if [ -z "$value" ]; then
+              echo '::error::One or more FloodSafe release signing secrets are missing.'
+              exit 1
+            fi
+          done
+          printf '%s' "$FLOODSAFE_KEYSTORE_BASE64" | base64 --decode > "$FLOODSAFE_KEYSTORE_PATH"
+          test -s "$FLOODSAFE_KEYSTORE_PATH"
+          chmod 600 "$FLOODSAFE_KEYSTORE_PATH"
+
+      - name: Verify clean-news release contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e data/floodsafe-people-status.json
+          test ! -e floodsafe-nepal/v25/human-bootstrap.js
+          test ! -e floodsafe-nepal/v25/human-current-guard.js
+          test ! -e floodsafe-nepal/v25/human-final.js
+          test ! -e floodsafe-nepal/v25/human-final-v2.js
+          test ! -e floodsafe-nepal/v25/people.html
+          ! grep -Fq 'id="impact"' floodsafe-nepal/v25/index.html
+          grep -Fq 'id="bulletin"' floodsafe-nepal/v25/index.html
+          grep -Fq 'news-live-v5.js?v=17' floodsafe-nepal/v25/index.html
+          echo 'Release source guard PASS'
+
+      - name: Build signed release APK and AAB
+        run: |
+          /tmp/gradle-8.11.1/bin/gradle \
+            -p floodsafe-android-app \
+            :app:clean \
+            :app:assembleRelease \
+            :app:bundleRelease \
+            --no-daemon
+
+      - name: Verify release artifacts and signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/release/app-release.apk'
+          AAB='floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab'
+          test -s "$APK"
+          test -s "$AAB"
+
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          jarsigner -verify "$AAB" >/dev/null
+
+          unzip -p "$APK" assets/floodsafe-nepal/v25/index.html > /tmp/floodsafe-release-index.html
+          ! grep -Fq 'id="disasterStatus"' /tmp/floodsafe-release-index.html
+          ! grep -Fq 'disaster-monitor-v2.js' /tmp/floodsafe-release-index.html
+          grep -Fq 'id="bulletin"' /tmp/floodsafe-release-index.html
+          grep -Fq 'news-live-v5.js?v=17' /tmp/floodsafe-release-index.html
+          ! unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/disaster-monitor-v2.js'
+          ! unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/impact-live-v1.js'
+          ! unzip -l "$APK" | grep -Fq 'floodsafe-people-status.json'
+
+          sha256sum "$APK" "$AAB" | tee floodsafe-android-app/app/build/outputs/release-sha256.txt
+          echo 'Signed release verification PASS'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-Signed-Release
+          path: |
+            floodsafe-android-app/app/build/outputs/apk/release/app-release.apk
+            floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab
+            floodsafe-android-app/app/build/outputs/release-sha256.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Remove temporary keystore
+        if: always()
+        run: rm -f "$FLOODSAFE_KEYSTORE_PATH"

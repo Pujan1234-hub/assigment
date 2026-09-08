@@ -22,6 +22,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check floodsafe-nepal/v25/sathi-flood-ai/engine.js
+          node --check floodsafe-nepal/v25/sathi-flood-ai/knowledge-v1.js
           node --check floodsafe-nepal/v25/sathi-flood-ai/controller.js
       - name: Verify additive-only PR paths
         run: |

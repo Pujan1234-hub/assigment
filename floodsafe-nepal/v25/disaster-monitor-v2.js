@@ -1,36 +1,13 @@
 (()=>{'use strict';
-if(window.__floodsafeDisasterStatusV3)return;window.__floodsafeDisasterStatusV3=true;
-const KCHA='https://kchakhabar.com/api/v1/today.json?limit=80';
-const USGS='https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson';
-const BIPAD='https://bipadportal.gov.np/api/v1/incident/?limit=120&ordering=-incidentOn';
-const FLOOD=/\b(flood|flash flood|inundat|river flood|overflow)\b|बाढी|डुबान|नदीमा बाढी|खोलामा बाढी/i;
-const LANDSLIDE=/\b(landslide|mudslide|debris flow)\b|पहिरो|भूस्खलन/i;
-const AIR=/\b(plane crash|aircraft crash|air crash|helicopter crash|aviation accident|aircraft accident)\b|विमान दुर्घटना|हवाई दुर्घटना|हेलिकप्टर दुर्घटना/i;
-const WEATHER=/\b(cloudburst|extreme rain|torrential rain|severe storm|windstorm|hailstorm|lightning disaster)\b|अतिवृष्टि|भीषण वर्षा|मुसलधारे वर्षा|हावाहुरी|असिना|चट्याङ/i;
-const NEPAL=/\b(nepal|kathmandu|pokhara|lalitpur|bhaktapur|chitwan|rasuwa|nuwakot|dhading|gorkha|tanahun|mustang|manang|solukhumbu|sindhupalchok|dolakha|kavre|makwanpur|parsa|bara|rautahat|sarlahi|mahottari|dhanusha|siraha|saptari|morang|sunsari|jhapa|ilam|taplejung|panchthar|dhankuta|bhojpur|khotang|udayapur|baglung|myagdi|parbat|kaski|lamjung|syangja|nawalparasi|rupandehi|kapilvastu|dang|banke|bardiya|surkhet|dailekh|jajarkot|rukum|rolpa|pyuthan|gulmi|arghakhanchi|palpa|kailali|kanchanpur|dadeldhura|doti|achham|bajura|bajhang|baitadi|darchula|jumla|humla|mugu|dolpa|kalikot)\b|नेपाल|काठमाडौं|काठमाडौँ|पोखरा|ललितपुर|भक्तपुर|चितवन|रसुवा|नुवाकोट|धादिङ|गोरखा|तनहुँ|मुस्ताङ|मनाङ|सोलुखुम्बु|सिन्धुपाल्चोक|दोलखा|काभ्रे|मकवानपुर|पर्सा|बारा|रौतहट|सर्लाही|महोत्तरी|धनुषा|सिराहा|सप्तरी|मोरङ|सुनसरी|झापा|इलाम|ताप्लेजुङ|पाँचथर|धनकुटा|भोजपुर|खोटाङ|उदयपुर|बागलुङ|म्याग्दी|पर्वत|कास्की|लमजुङ|स्याङ्जा|नवलपरासी|रुपन्देही|कपिलवस्तु|दाङ|बाँके|बर्दिया|सुर्खेत|दैलेख|जाजरकोट|रुकुम|रोल्पा|प्युठान|गुल्मी|अर्घाखाँची|पाल्पा|कैलाली|कञ्चनपुर|डडेलधुरा|डोटी|अछाम|बाजुरा|बझाङ|बैतडी|दार्चुला|जुम्ला|हुम्ला|मुगु|डोल्पा|कालिकोट/i;
-const FOREIGN=/\b(india|china|pakistan|bangladesh|sri lanka|iran|iraq|israel|gaza|russia|ukraine|united states|usa|japan|indonesia|philippines|myanmar|afghanistan|turkey|australia)\b|भारत|चीन|पाकिस्तान|बंगलादेश|श्रीलंका|इरान|इराक|इजरायल|गाजा|रुस|युक्रेन|अमेरिका|जापान|इन्डोनेसिया|फिलिपिन्स|म्यानमार|अफगानिस्तान|टर्की|अष्ट्रेलिया/i;
-const $=id=>document.getElementById(id),age=t=>{const n=Date.parse(t||'');return Number.isFinite(n)?Math.max(0,Date.now()-n):Infinity};
-const tr=(ne,en)=>window.FloodSafe?.state?.lang==='en'?en:ne;
-let current=null,busy=false,timer=0;
-function storyText(s){return [s?.topic_ne,s?.topic_en,s?.summary_ne,s?.summary_en].filter(Boolean).join(' ')}
-function storyTime(s){return s?.updated_at||s?.first_reported||s?.published_at||null}
-function isNepalStory(s){const t=storyText(s);if(NEPAL.test(t))return true;if(FOREIGN.test(t))return false;return /[\u0900-\u097F]/.test(t)}
-function mediaKind(s){const t=storyText(s);if(!isNepalStory(s))return null;if(FLOOD.test(t))return'flood';if(LANDSLIDE.test(t))return'landslide';if(AIR.test(t))return'air';if(WEATHER.test(t))return'weather';return null}
-function label(k){return k==='flood'?tr('🌊 बाढी','🌊 Flood'):k==='landslide'?tr('⛰️ पहिरो','⛰️ Landslide'):k==='quake'?tr('🌐 भूकम्प','🌐 Earthquake'):k==='air'?tr('✈️ हवाई दुर्घटना','✈️ Aviation accident'):tr('⛈️ गम्भीर मौसम','⛈️ Severe weather')}
-function sourceAge(t){const m=Math.max(0,Math.round(age(t)/60000));if(!Number.isFinite(m))return tr('समय उपलब्ध छैन','Time unavailable');if(m<1)return tr('अहिले','now');if(m<60)return tr(`${m} मिनेट अघि`,`${m} min ago`);const h=Math.round(m/60);return tr(`${h} घण्टा अघि`,`${h} hr ago`)}
-function mediaEvent(stories){let best=null;for(let i=0;i<Math.min(35,stories.length);i++){
-  const s=stories[i],kind=mediaKind(s),a=age(storyTime(s));if(!kind||a>24*3600e3)continue;
-  const coverage=Number(s?.source_count||s?.sources?.length||1),priority={flood:400,landslide:360,air:340,weather:300}[kind]||0;
-  const score=priority+Math.min(coverage,20)*5+Math.max(0,60-Math.floor(a/600000))+Math.max(0,35-i);
-  if(!best||score>best.score)best={kind,score,title:s.topic_ne||s.topic_en||label(kind),summary:String(s.summary_ne||s.summary_en||'').trim(),time:storyTime(s),url:s.url||s.sources?.[0]?.url||'',source:coverage>1?`${coverage} newsrooms`:'Nepal media'};
-}return best}
-function quakeEvent(features){let best=null;for(const q of features||[]){const p=q?.properties||{},c=q?.geometry?.coordinates||[],lon=Number(c[0]),lat=Number(c[1]),mag=Number(p.mag),a=age(p.time);if(!Number.isFinite(lat)||!Number.isFinite(lon)||!Number.isFinite(mag)||lat<26||lat>31.8||lon<80||lon>89.5||mag<4.5||a>24*3600e3)continue;const score=320+mag*20-Math.min(100,Math.floor(a/600000));const e={kind:'quake',score,title:`M${mag.toFixed(1)} • ${p.place||'Nepal region'}`,summary:tr(`USGS ले नेपाल क्षेत्रमा M${mag.toFixed(1)} भूकम्प रिपोर्ट गरेको छ${Number.isFinite(Number(c[2]))?` • गहिराइ करिब ${Math.round(Number(c[2]))} km`:''}।`,`USGS reports an M${mag.toFixed(1)} earthquake in the Nepal region${Number.isFinite(Number(c[2]))?` • depth about ${Math.round(Number(c[2]))} km`:''}.`),time:p.time,url:p.url||'',source:'USGS'};if(!best||score>best.score)best=e}return best}
-function incidentRows(j){if(Array.isArray(j))return j;for(const k of ['results','data','objects'])if(Array.isArray(j?.[k]))return j[k];return[]}
-function incidentEvent(rows){let best=null;for(const o of rows||[]){const t=JSON.stringify(o||{}),time=o?.incidentOn||o?.createdOn||o?.created_at||o?.modifiedOn||o?.updated_at||null,a=age(time);if(a>24*3600e3)continue;let kind=null;if(FLOOD.test(t))kind='flood';else if(LANDSLIDE.test(t))kind='landslide';else if(AIR.test(t))kind='air';else if(WEATHER.test(t))kind='weather';if(!kind)continue;const title=String(o?.titleNe||o?.title||o?.name||o?.hazard?.titleNe||o?.hazard?.title||o?.descriptionNe||o?.description||label(kind));const detail=String(o?.descriptionNe||o?.description||o?.remarks||'').trim();const score=({flood:390,landslide:350,air:330,weather:290}[kind]||0)+Math.max(0,40-Math.floor(a/900000));const e={kind,score,title,summary:detail,time,url:'https://bipadportal.gov.np/incidents/',source:'BIPAD'};if(!best||score>best.score)best=e}return best}
-function choose(media,quake,incident){return [media,quake,incident].filter(Boolean).sort((a,b)=>b.score-a.score)[0]||null}
-function render(){const box=$('disasterStatus');if(!box)return;if(!current){box.hidden=true;return}box.hidden=false;if($('disasterStatusTitle'))$('disasterStatusTitle').textContent=label(current.kind);if($('disasterStatusFresh'))$('disasterStatusFresh').textContent=tr(`पछिल्लो जाँच • ${sourceAge(current.time)}`,`Latest check • ${sourceAge(current.time)}`);if($('disasterStatusBody'))$('disasterStatusBody').textContent=current.title;if($('disasterStatusDetail'))$('disasterStatusDetail').textContent=current.summary||tr('पुष्टि भएको स्रोत खोल्नुहोस्।','Open the source for confirmed details.');if($('disasterStatusMeta'))$('disasterStatusMeta').textContent=`${current.source} • ${sourceAge(current.time)}`;const a=$('disasterStatusLink');if(a){a.hidden=!current.url;if(current.url)a.href=current.url;a.textContent=tr('स्रोत खोल्नुहोस् ↗','Open source ↗')}}
-async function get(url,ms=8000){const c=new AbortController(),to=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer',headers:{accept:'application/json'},signal:c.signal});if(!r.ok)throw Error(String(r.status));return await r.json()}finally{clearTimeout(to)}}
-async function refresh(){if(busy)return;busy=true;try{const results=await Promise.allSettled([get(KCHA),get(USGS),get(BIPAD)]);const stories=results[0].status==='fulfilled'&&Array.isArray(results[0].value?.stories)?results[0].value.stories:[],quakes=results[1].status==='fulfilled'?results[1].value?.features||[]:[],incidents=results[2].status==='fulfilled'?incidentRows(results[2].value):[];current=choose(mediaEvent(stories),quakeEvent(quakes),incidentEvent(incidents));window.__floodsafeDisasterState={active:current,checkedAt:new Date().toISOString()};render()}finally{busy=false;clearTimeout(timer);timer=setTimeout(refresh,60000)}}
-function boot(){render();void refresh();for(const e of['online','focus','pageshow'])window.addEventListener(e,()=>void refresh());window.addEventListener('fslanguage',render);document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh()})}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+// FloodSafe: the extra disaster/news card is intentionally removed.
+// National/general news remains only in the existing #bulletin section.
+if(window.__floodsafeDisasterCardRemovedV1)return;
+window.__floodsafeDisasterCardRemovedV1=true;
+function removeExtraCard(){
+  const card=document.getElementById('disasterStatus');
+  if(card)card.remove();
+  window.__floodsafeDisasterState={active:null,removed:true,checkedAt:new Date().toISOString()};
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',removeExtraCard,{once:true});
+else removeExtraCard();
 })();

@@ -1,23 +1,23 @@
 (()=>{'use strict';
-if(window.__fsImpactLiveV4)return;window.__fsImpactLiveV4=true;
-const LIVE='https://camkoacuokffryyrygda.supabase.co/functions/v1/human-status-safe-live',FALLBACK='../../data/floodsafe-people-status.json';
-const $=id=>document.getElementById(id),tr=(ne,en)=>window.FloodSafe?.state?.lang==='en'?en:ne;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const timestamp=t=>t?Date.parse(t):NaN;
-const fields={death:['recovered_bodies','recovered_source','recovered_source_url','recovered_update_iso','recovered_update_time'],missing:['missing_minimum','missing_source','missing_source_url','missing_update_time'],rescued:['rescued_alive','rescued_source','rescued_source_url','rescued_update_time']};
-let current={},eventName='',busy=false,timer=0,lastOk=null,lastChecked=null,connected=false,error='';
-function safeUrl(u){try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:''}catch{return''}}
-function metric(j,k){const[v,s,u,t,t2]=fields[k],time=j[t]||j[t2],n=j[v];if(n===null||n===undefined||n===''||typeof n==='boolean'||!Number.isInteger(Number(n))||Number(n)<0||!Number.isFinite(timestamp(time))||timestamp(time)>Date.now()+300000||!safeUrl(j[u])||!/(ronb|radio\s*nepal|nepal\s*police|ndrrma|government|ministry)/i.test(j[s]||''))return null;return{value:Number(n),source:j[s],url:safeUrl(j[u]),time,minimum:k==='missing'&&j.missing_is_minimum===true}}
-function accept(j){if(!j||typeof j!=='object')throw Error('Invalid Human Status payload');const next={};for(const k of Object.keys(fields)){const m=metric(j,k);if(m)next[k]=m}if(!Object.keys(next).length)throw Error('No timestamped supported Human Status figures');const incomingEvent=j.event||j.event_ne||'';if(eventName&&incomingEvent&&incomingEvent!==eventName)throw Error('Human Status event mismatch');eventName=incomingEvent||eventName;for(const[k,m]of Object.entries(next))if(!current[k]||timestamp(m.time)>=timestamp(current[k].time))current[k]=m;return true}
-function fmt(t){if(!Number.isFinite(timestamp(t)))return'—';return new Intl.DateTimeFormat(window.FloodSafe?.state?.lang==='en'?'en-GB':'ne-NP',{timeZone:'Asia/Kathmandu',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(t))+' NPT'}
-function put(id,s){const e=$(id);if(e&&e.textContent!==s)e.textContent=s}
-// Published human reports do not expire on a sensor timer.
-const isFresh=m=>!!m&&Date.now()-timestamp(m.time)>=-300000;
-function render(){put('impactEvent',eventName||tr('पुष्टि भएको घटना पर्खिँदैछ','Waiting for a verified event'));for(const[k,id]of Object.entries({death:'impactDeaths',missing:'impactMissing',rescued:'impactRescued'})){const m=current[k];put(id,isFresh(m)?m.value.toLocaleString('en-GB')+(m.minimum?'+':''):'—')}const freshCount=Object.values(current).filter(isFresh).length;put('impactFresh',(freshCount?tr('पछिल्लो प्रकाशित आँकडा • ','Latest reported figures • '):tr('नयाँ तथ्याङ्क उपलब्ध छैन • ','No reported data • '))+tr('अन्तिम सफल जाँच: ','Last successful check: ')+fmt(lastOk)+(connected?'':tr(' • जडान पुनः प्रयास',' • reconnecting')));const labels={death:tr('मृत्यु','Deaths'),missing:tr('सम्पर्कविहीन','Missing'),rescued:tr('उद्धार / सुरक्षित','Rescued / safe')};const older=Object.entries(current).filter(([,m])=>!isFresh(m));const html=Object.entries(labels).map(([k,label])=>{const m=current[k];return'<div><b>'+label+':</b> '+(isFresh(m)?'<a target="_blank" rel="noopener noreferrer" href="'+esc(m.url)+'">'+esc(m.source)+'</a> • '+esc(fmt(m.time)):tr('नयाँ तथ्याङ्क उपलब्ध छैन','No reported data'))+'</div>'}).join('')+'<small>'+tr('पछिल्लो प्रकाशित आँकडा हो; जाँच समय नयाँ हुँदा संख्या नयाँ भएको भन्ने हुँदैन।','These are the latest reported figures; a new check does not mean a new report.')+'</small>'+(older.length?'<details class="lastKnownData" id="impactArchive" open><summary>'+tr('पछिल्लो उपलब्ध आँकडा हेर्नुहोस् — ताजा होइन','View last reported figures — not fresh')+'</summary>'+older.map(([k,m])=>'<div><b>'+labels[k]+': '+m.value.toLocaleString('en-GB')+(m.minimum?'+':'')+'</b> • <a target="_blank" rel="noopener noreferrer" href="'+esc(m.url)+'">'+esc(m.source)+'</a> • '+esc(fmt(m.time))+'</div>').join('')+'</details>':'');const badge=$('impact')?.querySelector?.('.badge');if(badge){badge.textContent=freshCount?tr('प्रकाशित आँकडा','Reported figures'):tr('नयाँ छैन','No reported data');badge.className='badge '+(freshCount?'green':'amber')}if($('impactDetail')&&$('impactDetail').innerHTML!==html)$('impactDetail').innerHTML=html;window.__fsImpactLiveState={connected,checkedAt:lastChecked,lastSuccess:lastOk,error,metrics:current,freshCount,expiryMinutes:null,reportedCount:freshCount};}
-async function get(url){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);try{const r=await fetch(url+'?_fsimpact='+Date.now(),{cache:'no-store',credentials:'omit',signal:c.signal});if(!r.ok)throw Error('HTTP '+r.status);const j=await r.json();if(j?.status==='error')throw Error(j.error||'Source failure');return j}finally{clearTimeout(t)}}
-function schedule(ms=document.hidden?60000:15000){clearTimeout(timer);timer=setTimeout(refresh,ms)}
-async function refresh(){if(busy)return;busy=true;lastChecked=new Date().toISOString();try{const results=await Promise.allSettled([get(LIVE),get(FALLBACK)]);let accepted=false;for(const result of results)if(result.status==='fulfilled'){try{accept(result.value);accepted=true}catch{}}if(!accepted)throw Error(results.map(x=>x.status==='rejected'?String(x.reason):'invalid payload').join(' | '));lastOk=new Date().toISOString();connected=results[0].status==='fulfilled';error=connected?'':String(results[0].reason||'Live source unavailable');}catch(e){connected=false;error=String(e);console.warn('FloodSafe Human Status',error)}finally{busy=false;render();window.dispatchEvent(new CustomEvent('fshumanupdate',{detail:window.__fsImpactLiveState}));schedule()}}
-function boot(){render();refresh();setInterval(()=>{if(!document.hidden)render()},1000);for(const ev of['online','focus','pageshow'])window.addEventListener(ev,()=>{if(!busy){clearTimeout(timer);refresh()}});window.addEventListener('fslanguage',render);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy){clearTimeout(timer);refresh()}})}
-window.FloodSafeImpact={sync:refresh,accept,metric,get current(){return current}};
+// Human Status / human-impact reporting is intentionally disabled in FloodSafe Nepal.
+// Keep this tiny compatibility file because v25/index.html still references the filename.
+// It performs no network requests and removes any legacy Human Status card if old markup
+// or cached HTML attempts to render it.
+if(window.__fsHumanStatusRemovedV1)return;
+window.__fsHumanStatusRemovedV1=true;
+function removeHumanStatus(){
+  document.getElementById('impact')?.remove();
+  document.getElementById('humanStatus')?.remove();
+  document.querySelectorAll('[data-human-status],.human-status,.humanStatus').forEach(el=>el.remove());
+}
+function boot(){
+  removeHumanStatus();
+  const root=document.body;
+  if(!root)return;
+  const observer=new MutationObserver(removeHumanStatus);
+  observer.observe(root,{childList:true,subtree:true});
+  window.addEventListener('pageshow',removeHumanStatus);
+  window.addEventListener('fslanguage',removeHumanStatus);
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

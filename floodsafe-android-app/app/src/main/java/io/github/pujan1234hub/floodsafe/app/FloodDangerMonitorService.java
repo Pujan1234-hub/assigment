@@ -32,7 +32,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -41,22 +40,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Read-only safety layer for FloodSafe Nepal.
- *
- * It never changes the map/river/weather core. While enabled by a saved monitoring
- * point it checks the existing FloodSafe BIPAD/DHM mirror about every 45 seconds.
- * A fresh official station that newly crosses the danger threshold generates a
- * local high-priority notification only when the monitored/user point is nearby.
- */
+/** Additive, read-only nearby danger alert layer. Existing FloodSafe river/map code is untouched. */
 public final class FloodDangerMonitorService extends Service implements LocationListener {
     static final String PREFS = "floodsafe-danger-monitor-v1";
-    private static final String ACTIVE_KEY = "active_danger_stations";
-    private static final String LAST_CHECK_KEY = "last_check_ms";
+    private static final String ACTIVE_KEY = "active_nearby_danger";
     private static final String MONITOR_CHANNEL = "flood_danger_monitor";
     private static final String DANGER_CHANNEL = "official_flood_danger";
     private static final int FOREGROUND_ID = 73101;
-    private static final int MAX_BODY = 900;
     private static final long POLL_MS = 45_000L;
     private static final long FRESH_MS = 10 * 60_000L;
     private static final long FUTURE_ALLOW_MS = 5 * 60_000L;
@@ -65,34 +55,32 @@ public final class FloodDangerMonitorService extends Service implements Location
             "https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers";
 
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    private volatile boolean started;
+    private volatile boolean scheduled;
     private volatile boolean checking;
     private LocationManager locationManager;
 
     public static void start(Context context) {
         try {
-            Intent intent = new Intent(context, FloodDangerMonitorService.class);
-            if (Build.VERSION.SDK_INT >= 26) context.startForegroundService(intent);
-            else context.startService(intent);
-        } catch (RuntimeException ignored) {
-            // Android may reject background FGS starts. FloodSafeApp retries while an
-            // activity is visible, and START_STICKY lets Android restore the service.
-        }
+            Intent service = new Intent(context, FloodDangerMonitorService.class);
+            if (Build.VERSION.SDK_INT >= 26) context.startForegroundService(service);
+            else context.startService(service);
+        } catch (RuntimeException ignored) {}
     }
 
     @Override public void onCreate() {
         super.onCreate();
         createChannels();
         promoteForeground();
-        beginLocationTrackingIfAllowed();
+        startLocationUpdatesIfAllowed();
     }
 
     @Override public int onStartCommand(Intent intent, int flags, int startId) {
-        if (!started) {
-            started = true;
+        promoteForeground();
+        startLocationUpdatesIfAllowed();
+        if (!scheduled) {
+            scheduled = true;
             executor.scheduleWithFixedDelay(this::checkSafely, 0, POLL_MS, TimeUnit.MILLISECONDS);
         }
-        beginLocationTrackingIfAllowed();
         return START_STICKY;
     }
 
@@ -105,7 +93,7 @@ public final class FloodDangerMonitorService extends Service implements Location
 
         NotificationChannel monitor = new NotificationChannel(
                 MONITOR_CHANNEL, "Flood danger monitoring", NotificationManager.IMPORTANCE_LOW);
-        monitor.setDescription("Silent background monitoring of nearby official river danger readings");
+        monitor.setDescription("Silent official river danger monitoring");
         monitor.setSound(null, null);
         monitor.enableVibration(false);
         monitor.setShowBadge(false);
@@ -113,7 +101,7 @@ public final class FloodDangerMonitorService extends Service implements Location
 
         NotificationChannel danger = new NotificationChannel(
                 DANGER_CHANNEL, "Official nearby flood danger", NotificationManager.IMPORTANCE_HIGH);
-        danger.setDescription("High-priority alert when a nearby fresh BIPAD/DHM station reaches danger level");
+        danger.setDescription("Nearby fresh BIPAD/DHM river danger alerts");
         danger.enableVibration(true);
         danger.setVibrationPattern(new long[]{0, 280, 170, 280});
         AudioAttributes attrs = new AudioAttributes.Builder()
@@ -124,16 +112,15 @@ public final class FloodDangerMonitorService extends Service implements Location
         nm.createNotificationChannel(danger);
     }
 
-    private Notification monitoringNotification() {
+    private Notification monitorNotification() {
         Intent launch = new Intent(this, VoiceMainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent open = PendingIntent.getActivity(this, 73101, launch,
+        PendingIntent open = PendingIntent.getActivity(this, FOREGROUND_ID, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        Notification.Builder builder = Build.VERSION.SDK_INT >= 26
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26
                 ? new Notification.Builder(this, MONITOR_CHANNEL)
                 : new Notification.Builder(this);
-        return builder
-                .setSmallIcon(R.drawable.ic_floodsafe)
+        return b.setSmallIcon(R.drawable.ic_floodsafe)
                 .setContentTitle("FloodSafe Nepal")
                 .setContentText("नजिकको आधिकारिक बाढी खतरा निगरानी सक्रिय छ")
                 .setOngoing(true)
@@ -143,14 +130,16 @@ public final class FloodDangerMonitorService extends Service implements Location
     }
 
     private void promoteForeground() {
-        Notification n = monitoringNotification();
+        Notification n = monitorNotification();
         if (Build.VERSION.SDK_INT >= 29) {
             int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
             if (hasLocationPermission()) type |= ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
-            try { startForeground(FOREGROUND_ID, n, type); return; }
-            catch (RuntimeException | SecurityException ignored) {}
+            try {
+                startForeground(FOREGROUND_ID, n, type);
+                return;
+            } catch (RuntimeException ignored) {}
         }
-        startForeground(FOREGROUND_ID, n);
+        try { startForeground(FOREGROUND_ID, n); } catch (RuntimeException ignored) {}
     }
 
     private boolean hasLocationPermission() {
@@ -158,7 +147,7 @@ public final class FloodDangerMonitorService extends Service implements Location
                 || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
-    private void beginLocationTrackingIfAllowed() {
+    private void startLocationUpdatesIfAllowed() {
         SharedPreferences p = getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE);
         if (!p.getBoolean("follow_device", false) || !hasLocationPermission()) return;
         if (locationManager == null) locationManager = getSystemService(LocationManager.class);
@@ -166,11 +155,11 @@ public final class FloodDangerMonitorService extends Service implements Location
         try {
             if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60_000L, 100f, this);
-        } catch (RuntimeException | SecurityException ignored) {}
+        } catch (RuntimeException ignored) {}
         try {
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60_000L, 100f, this);
-        } catch (RuntimeException | SecurityException ignored) {}
+        } catch (RuntimeException ignored) {}
     }
 
     @Override public void onLocationChanged(Location location) {
@@ -189,43 +178,31 @@ public final class FloodDangerMonitorService extends Service implements Location
     private void checkSafely() {
         if (checking) return;
         checking = true;
-        try { checkNow(); }
-        catch (Exception ignored) {
-            // A failed network/parse attempt must never erase the last known danger episode.
-        } finally { checking = false; }
+        try { checkNow(); } catch (Exception ignored) {} finally { checking = false; }
     }
 
     private void checkNow() throws Exception {
         Point user = monitoringPoint();
         if (user == null || !insideNepal(user.lat, user.lon)) return;
-
-        JSONObject root = fetchJson(FEED);
-        JSONArray rows = root.optJSONArray("results");
+        JSONArray rows = fetchJson(FEED).optJSONArray("results");
         if (rows == null) return;
 
         long now = System.currentTimeMillis();
-        Set<String> previous = new HashSet<>(getSharedPreferences(PREFS, MODE_PRIVATE)
-                .getStringSet(ACTIVE_KEY, new HashSet<>()));
-        Set<String> active = new HashSet<>();
-        List<DangerStation> newNearby = new ArrayList<>();
+        SharedPreferences dangerPrefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        Set<String> previous = new HashSet<>(dangerPrefs.getStringSet(ACTIVE_KEY, new HashSet<>()));
+        Set<String> activeNearby = new HashSet<>();
+        List<DangerStation> freshEntries = new ArrayList<>();
 
         for (int i = 0; i < rows.length(); i++) {
             JSONObject row = rows.optJSONObject(i);
-            if (row == null) continue;
-            DangerStation station = parseDanger(row, now, user);
-            if (station == null) continue;
-            active.add(station.key);
-            if (!previous.contains(station.key) && station.distanceKm <= ALERT_RADIUS_KM) {
-                newNearby.add(station);
-            }
+            DangerStation s = row == null ? null : dangerStation(row, now, user);
+            if (s == null || s.distanceKm > ALERT_RADIUS_KM) continue;
+            activeNearby.add(s.key);
+            if (!previous.contains(s.key)) freshEntries.add(s);
         }
 
-        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
-                .putStringSet(ACTIVE_KEY, active)
-                .putLong(LAST_CHECK_KEY, now)
-                .apply();
-
-        for (DangerStation station : newNearby) notifyDanger(station);
+        dangerPrefs.edit().putStringSet(ACTIVE_KEY, activeNearby).putLong("last_check_ms", now).apply();
+        for (DangerStation s : freshEntries) notifyDanger(s);
     }
 
     private Point monitoringPoint() {
@@ -236,31 +213,27 @@ public final class FloodDangerMonitorService extends Service implements Location
         return Double.isFinite(lat) && Double.isFinite(lon) ? new Point(lat, lon) : null;
     }
 
-    private DangerStation parseDanger(JSONObject row, long now, Point user) {
+    private DangerStation dangerStation(JSONObject row, long now, Point user) {
         Double level = number(row, "waterLevel", "water_level", "currentWaterLevel", "level", "value");
         Double danger = number(row, "dangerLevel", "danger_level", "dangerThreshold", "danger_threshold");
         String status = text(row, "status", "status_name", "statusText", "alertStatus", "riskLevel");
-        String measured = text(row, "waterLevelOn", "water_level_on", "measuredOn", "measurementTime",
-                "observationTime", "observedAt", "datetime", "timestamp");
-        long measuredAt = parseTime(measured);
+        long measuredAt = parseTime(text(row, "waterLevelOn", "water_level_on", "measuredOn",
+                "measurementTime", "observationTime", "observedAt", "datetime", "timestamp"));
         if (measuredAt <= 0 || measuredAt > now + FUTURE_ALLOW_MS || now - measuredAt > FRESH_MS) return null;
 
-        boolean dangerByLevel = level != null && danger != null && level >= danger;
+        boolean crossed = level != null && danger != null && level >= danger;
         String upper = status == null ? "" : status.toUpperCase(Locale.ROOT);
-        boolean dangerByStatus = upper.contains("DANGER") || upper.contains("RED");
-        if (!dangerByLevel && !dangerByStatus) return null;
+        if (!crossed && !upper.contains("DANGER") && !upper.contains("RED")) return null;
 
         Double lat = number(row, "latitude", "lat", "stationLatitude");
         Double lon = number(row, "longitude", "lon", "lng", "stationLongitude");
         if (lat == null || lon == null || !insideNepal(lat, lon)) return null;
 
-        String key = text(row, "stationSeriesId", "station_series_id", "stationId", "station_id", "id");
         String name = text(row, "title", "name", "stationName", "station_name", "riverName", "river_name");
-        if (key == null || key.isEmpty()) key = "name:" + (name == null ? lat + "," + lon : name);
         if (name == null || name.isEmpty()) name = "नजिकको नदी स्टेशन";
-        String district = text(row, "district", "districtName", "district_name");
-        String basin = text(row, "basin", "basinName", "basin_name");
-        return new DangerStation(key, name, district, basin, level, danger, measuredAt,
+        String key = text(row, "stationSeriesId", "station_series_id", "stationId", "station_id", "id");
+        if (key == null || key.isEmpty()) key = "name:" + name + ":" + lat + ":" + lon;
+        return new DangerStation(key, name, level, danger, measuredAt,
                 distanceKm(user.lat, user.lon, lat, lon));
     }
 
@@ -270,25 +243,24 @@ public final class FloodDangerMonitorService extends Service implements Location
         NotificationManager nm = getSystemService(NotificationManager.class);
         if (nm == null) return;
 
-        String distance = s.distanceKm < 1
+        String dist = s.distanceKm < 1
                 ? String.format(Locale.US, "%.0f मिटर", s.distanceKm * 1000)
                 : String.format(Locale.US, "%.1f km", s.distanceKm);
-        StringBuilder body = new StringBuilder();
-        body.append(s.name).append(" तपाईंको निगरानी स्थानबाट करिब ").append(distance).append(" टाढा छ। ");
-        if (s.level != null) body.append("हालको जलस्तर ").append(one(s.level)).append(" मि. ");
-        if (s.danger != null) body.append("खतरा तह ").append(one(s.danger)).append(" मि. ");
-        body.append("मापन ").append(clock(s.measuredAt)).append("। नदी/खोला किनारबाट टाढा रहनुहोस् र सुरक्षित उच्च स्थानतर्फ जान तयार हुनुहोस्। स्रोत: BIPAD/DHM official.");
-        if (body.length() > MAX_BODY) body.setLength(MAX_BODY);
+        StringBuilder body = new StringBuilder(s.name)
+                .append(" तपाईंको निगरानी स्थानबाट करिब ").append(dist).append(" टाढा छ। ");
+        if (s.level != null) body.append("हालको जलस्तर ").append(fmt(s.level)).append(" मि. ");
+        if (s.danger != null) body.append("खतरा तह ").append(fmt(s.danger)).append(" मि. ");
+        body.append("मापन ").append(clock(s.measuredAt))
+                .append("। नदी/खोला किनारबाट टाढा रहनुहोस् र सुरक्षित उच्च स्थानतर्फ जान तयार हुनुहोस्। स्रोत: BIPAD/DHM official.");
 
         Intent launch = new Intent(this, VoiceMainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(this, s.key.hashCode(), launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        Notification.Builder builder = Build.VERSION.SDK_INT >= 26
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26
                 ? new Notification.Builder(this, DANGER_CHANNEL)
                 : new Notification.Builder(this);
-        Notification n = builder
-                .setSmallIcon(R.drawable.ic_floodsafe)
+        Notification n = b.setSmallIcon(R.drawable.ic_floodsafe)
                 .setContentTitle("🚨 नजिकै आधिकारिक बाढी खतरा")
                 .setContentText(body.toString())
                 .setStyle(new Notification.BigTextStyle().bigText(body.toString()))
@@ -300,8 +272,8 @@ public final class FloodDangerMonitorService extends Service implements Location
         nm.notify(0x5f000000 ^ s.key.hashCode(), n);
     }
 
-    private static JSONObject fetchJson(String url) throws Exception {
-        HttpURLConnection c = (HttpURLConnection) new URL(url + "?_danger=" + SystemClock.elapsedRealtime()).openConnection();
+    private static JSONObject fetchJson(String base) throws Exception {
+        HttpURLConnection c = (HttpURLConnection) new URL(base + "?_danger=" + SystemClock.elapsedRealtime()).openConnection();
         c.setRequestMethod("GET");
         c.setConnectTimeout(9000);
         c.setReadTimeout(12000);
@@ -311,27 +283,24 @@ public final class FloodDangerMonitorService extends Service implements Location
         int code = c.getResponseCode();
         InputStream in = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
         if (in == null) { c.disconnect(); throw new IllegalStateException("HTTP " + code); }
-        StringBuilder b = new StringBuilder();
+        StringBuilder out = new StringBuilder();
         try (BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             for (String line; (line = r.readLine()) != null;) {
-                if (b.length() > 5_000_000) throw new IllegalStateException("Feed too large");
-                b.append(line);
+                if (out.length() > 5_000_000) throw new IllegalStateException("Feed too large");
+                out.append(line);
             }
         } finally { c.disconnect(); }
         if (code < 200 || code >= 300) throw new IllegalStateException("HTTP " + code);
-        return new JSONObject(b.toString());
+        return new JSONObject(out.toString());
     }
 
     private static Double number(JSONObject o, String... keys) {
         for (String key : keys) {
             Object v = o.opt(key);
             if (v == null || v == JSONObject.NULL) continue;
-            if (v instanceof Number) {
-                double n = ((Number) v).doubleValue();
-                if (Double.isFinite(n)) return n;
-            }
             try {
-                double n = Double.parseDouble(String.valueOf(v).trim());
+                double n = v instanceof Number ? ((Number) v).doubleValue()
+                        : Double.parseDouble(String.valueOf(v).trim());
                 if (Double.isFinite(n)) return n;
             } catch (RuntimeException ignored) {}
         }
@@ -375,13 +344,12 @@ public final class FloodDangerMonitorService extends Service implements Location
         return f.format(new Date(ms)) + " NPT";
     }
 
-    private static String one(double n) { return String.format(Locale.US, "%.2f", n); }
+    private static String fmt(double n) { return String.format(Locale.US, "%.2f", n); }
     private static boolean insideNepal(double lat, double lon) {
         return lat >= 26.0 && lat <= 31.0 && lon >= 79.5 && lon <= 89.0;
     }
     private static double distanceKm(double a, double b, double c, double d) {
-        double r = 6371.0088;
-        double p1 = Math.toRadians(a), p2 = Math.toRadians(c);
+        double r = 6371.0088, p1 = Math.toRadians(a), p2 = Math.toRadians(c);
         double dp = Math.toRadians(c - a), dl = Math.toRadians(d - b);
         double q = Math.sin(dp / 2) * Math.sin(dp / 2)
                 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
@@ -389,9 +357,9 @@ public final class FloodDangerMonitorService extends Service implements Location
     }
 
     @Override public void onDestroy() {
-        try { executor.shutdownNow(); } catch (RuntimeException ignored) {}
+        executor.shutdownNow();
         if (locationManager != null) {
-            try { locationManager.removeUpdates(this); } catch (RuntimeException | SecurityException ignored) {}
+            try { locationManager.removeUpdates(this); } catch (RuntimeException ignored) {}
         }
         super.onDestroy();
     }
@@ -401,14 +369,13 @@ public final class FloodDangerMonitorService extends Service implements Location
         Point(double lat, double lon) { this.lat = lat; this.lon = lon; }
     }
     private static final class DangerStation {
-        final String key, name, district, basin;
+        final String key, name;
         final Double level, danger;
         final long measuredAt;
         final double distanceKm;
-        DangerStation(String key, String name, String district, String basin, Double level, Double danger,
-                      long measuredAt, double distanceKm) {
-            this.key = key; this.name = name; this.district = district; this.basin = basin;
-            this.level = level; this.danger = danger; this.measuredAt = measuredAt; this.distanceKm = distanceKm;
+        DangerStation(String key, String name, Double level, Double danger, long measuredAt, double distanceKm) {
+            this.key = key; this.name = name; this.level = level; this.danger = danger;
+            this.measuredAt = measuredAt; this.distanceKm = distanceKm;
         }
     }
 }

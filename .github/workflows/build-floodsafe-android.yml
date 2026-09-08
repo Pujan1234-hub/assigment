@@ -53,7 +53,8 @@ jobs:
           grep -Fq 'ALERT_RADIUS_KM=15' floodsafe-nepal/v25/flood-only.js
           grep -Fq 'acceptNearbyRiver' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
           grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 15d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
-          grep -Fq "versionName '0.5.0'" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.5.1'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 8' floodsafe-android-app/app/build.gradle
           test -s floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
           test -s .github/workflows/floodsafe-river-alert-push.yml
           echo 'Nearby river + clean news + grounded SATHI AI guard PASS'
@@ -66,8 +67,11 @@ jobs:
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
           unzip -p "$APK" assets/floodsafe-nepal/v25/index.html > /tmp/floodsafe-index.html
+          ! grep -Fq 'id="impact"' /tmp/floodsafe-index.html
+          ! grep -Fq 'impact-live-v1.js' /tmp/floodsafe-index.html
           ! grep -Fq 'id="disasterStatus"' /tmp/floodsafe-index.html
           ! grep -Fq 'disaster-monitor-v2.js' /tmp/floodsafe-index.html
+          ! grep -Fiq 'Human Status' /tmp/floodsafe-index.html
           grep -Fq 'id="bulletin"' /tmp/floodsafe-index.html
           grep -Fq 'news-live-v5.js?v=17' /tmp/floodsafe-index.html
           grep -Fq 'sathi-flood-ai/advanced-server-v1.js?v=1' /tmp/floodsafe-index.html
@@ -76,10 +80,11 @@ jobs:
           ! unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/disaster-monitor-v2.js'
           ! unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/impact-live-v1.js'
           ! unzip -l "$APK" | grep -Fq 'floodsafe-people-status.json'
-          echo 'Corrected APK + grounded SATHI AI content verification PASS'
+          unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
+          echo 'Corrected APK + clean news + grounded SATHI AI content verification PASS'
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-AI-Beta-0.5.0-APK
+          name: FloodSafe-Nepal-Corrected-0.5.1-APK
           path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7

@@ -28,6 +28,22 @@ jobs:
         run: |
           curl -fsSL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
+      - name: Verify Human Status stays removed
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e data/floodsafe-people-status.json
+          test ! -e floodsafe-nepal/v25/human-bootstrap.js
+          test ! -e floodsafe-nepal/v25/human-current-guard.js
+          test ! -e floodsafe-nepal/v25/human-final.js
+          test ! -e floodsafe-nepal/v25/human-final-v2.js
+          test ! -e floodsafe-nepal/v25/people.html
+          grep -q '__fsHumanStatusRemovedV1' floodsafe-nepal/v25/impact-live-v1.js
+          if grep -Eq 'human-status-safe-live|floodsafe-people-status\.json' floodsafe-nepal/v25/impact-live-v1.js; then
+            echo 'Human Status live/fallback source was reintroduced' >&2
+            exit 1
+          fi
+          echo 'Human Status removal guard PASS'
       - name: Build debug APK
         run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4

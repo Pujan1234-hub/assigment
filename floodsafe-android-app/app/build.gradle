@@ -22,16 +22,66 @@ android {
     lint { abortOnError = true }
 }
 
+def generatedFloodSafeAssets = layout.buildDirectory.dir('generated/floodsafe-assets')
+
 def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
-    // Bundle the UI/data inside the APK; no Python, Node or browser server required.
+    // Always start clean so excluded legacy files can never survive from an older build.
+    doFirst {
+        delete generatedFloodSafeAssets.get().asFile
+    }
+
     from(rootProject.file('../floodsafe-nepal')) {
         into 'floodsafe-nepal'
         exclude 'v25/rain-push-v1.js'
+        exclude 'v25/human-bootstrap.js'
+        exclude 'v25/human-current-guard.js'
+        exclude 'v25/human-final.js'
+        exclude 'v25/human-final-v2.js'
+        exclude 'v25/people.html'
+        exclude 'v25/impact-live-v1.js'
+        exclude 'v24/v24-people-status.js'
     }
-    from(rootProject.file('../data')) { into 'data' }
+    from(rootProject.file('../data')) {
+        into 'data'
+        exclude 'floodsafe-people-status.json'
+    }
     from(rootProject.file('android-web')) { into 'floodsafe-nepal/v25' }
     includeEmptyDirs = false
-    into(layout.buildDirectory.dir('generated/floodsafe-assets'))
+    into(generatedFloodSafeAssets)
+
+    // The v25 source keeps a compatibility shell for older web deployments. The Android
+    // package must contain no Human Status card or loader at all.
+    doLast {
+        def entry = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/index.html')
+        if (!entry.isFile()) {
+            throw new GradleException('Missing packaged FloodSafe v25 index.html')
+        }
+        def text = entry.getText('UTF-8')
+        text = text.replaceFirst('(?s)<section class="card" id="impact">.*?</section>', '')
+        text = text.replaceFirst('<script src="\\./impact-live-v1\\.js\\?v=\\d+" defer></script>', '')
+        entry.write(text, 'UTF-8')
+
+        if (text.contains('id="impact"') || text.contains('impact-live-v1.js') || text.contains('बाढीको मानवीय असर')) {
+            throw new GradleException('Human Status UI remained in packaged v25 index')
+        }
+
+        def forbidden = [
+            'floodsafe-nepal/v25/human-bootstrap.js',
+            'floodsafe-nepal/v25/human-current-guard.js',
+            'floodsafe-nepal/v25/human-final.js',
+            'floodsafe-nepal/v25/human-final-v2.js',
+            'floodsafe-nepal/v25/people.html',
+            'floodsafe-nepal/v25/impact-live-v1.js',
+            'floodsafe-nepal/v24/v24-people-status.js',
+            'data/floodsafe-people-status.json'
+        ]
+        forbidden.each { relative ->
+            if (new File(generatedFloodSafeAssets.get().asFile, relative).exists()) {
+                throw new GradleException("Human Status asset was packaged: ${relative}")
+            }
+        }
+        println 'Android bundle Human Status removal PASS'
+    }
 }
 tasks.named('preBuild').configure { dependsOn bundleWeb }
 

@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
 
     const aside=document.querySelector('.hero-aside');
-    if(aside && !aside.querySelector('[data-product="datemate"]')){
+    const hasDateMateTicket=aside && [...aside.querySelectorAll('.ticket h3')].some(h=>(h.textContent||'').trim().toLowerCase()==='datemate');
+    if(aside && !hasDateMateTicket){
       const ticket=document.createElement('div');
       ticket.className='ticket';
       ticket.dataset.product='datemate';
@@ -34,6 +35,12 @@ document.addEventListener('DOMContentLoaded',()=>{
       ticket.style.transform='rotate(.3deg)';
       ticket.innerHTML='<div class="ticket-head"><h3>DateMate</h3><span class="tag">EARLY BUILD</span></div><p>A simple date and expiry reminder app for keeping important renewals and due dates from slipping past.</p><a href="#datemate">View build notes →</a>';
       aside.appendChild(ticket);
+    }
+
+    // Safety cleanup for browsers that may have already executed an older helper version.
+    if(aside){
+      const dateMateTickets=[...aside.querySelectorAll('.ticket')].filter(t=>(t.querySelector('h3')?.textContent||'').trim().toLowerCase()==='datemate');
+      dateMateTickets.slice(1).forEach(t=>t.remove());
     }
 
     if(!document.getElementById('datemate')){

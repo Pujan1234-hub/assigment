@@ -1,22 +1,36 @@
 {
-  "generated_at": "2026-09-09T21:14:17.774010+05:45",
-  "updated_at_npt": "09 Sep 21:14 NPT",
+  "generated_at": "2026-09-10T00:33:57.363038+05:45",
+  "updated_at_npt": "10 Sep 00:33 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भारतबाट उद्धार गरिएका बालबालिकालाई परिवारको जिम्मा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591042/children-rescued-from-india-are-in-the-care-of-their-families",
+      "published_at": "2026-09-10T00:06:44+05:45",
+      "flash": true
+    },
+    {
+      "title": "देवीघाटमा नेपाली सेनाद्वारा ५ दिनमै एक्रो ब्रिज जडान सम्पन्न, भोलिदेखि आवतजावत खुला",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591039/nepal-army-completes-installation-of-acro-bridge-in-devighat-in-5-days-traffic-to-resume-from-tomorrow",
+      "published_at": "2026-09-09T23:02:16+05:45",
+      "flash": false
+    },
     {
       "title": "आन्दोलनपछि इनरुवाका सरकारी कार्यालय : कति जलेकै भवनमा, कति भाडामा (तस्बिरहरू)",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591024/government-offices-in-inaruwa-after-the-protests-how-many-are-in-the-burned-out-buildings-how-many-are-rented-photos",
       "published_at": "2026-09-09T21:08:37+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "गएरातिको भूकम्पबाट लोमान्थाङमा दुई संरचनामा क्षति",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591016/two-structures-damaged-in-lomanthang-by-last-nights-earthquake",
       "published_at": "2026-09-09T20:31:31+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "तनहुँमा एक वर्षभित्र १८९५ घरमा विद्युत् सेवा विस्तार",
@@ -38,55 +52,6 @@
       "url": "https://www.ratopati.com/story/590998/tewan-will-not-celebrate-teej-will-provide-rs-101000-assistance-to-flood-victims",
       "published_at": "2026-09-09T18:56:55+05:45",
       "flash": false
-    },
-    {
-      "title": "बाढीले अवरुद्ध मनास्लु पदमार्ग पुनःसञ्चालनमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590993/manaslu-trekking-route-blocked-by-floods-to-be-reopened",
-      "published_at": "2026-09-09T18:30:39+05:45",
-      "flash": false
-    },
-    {
-      "title": "राप्रपा संसदीय दलका नेता उद्धव थापासहित ४ सांसद पदमुक्त नहुने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590990/rpp-parliamentary-party-leader-uddhav-thapa-and-4-mps-will-not-be-removed-from-office",
-      "published_at": "2026-09-09T18:04:52+05:45",
-      "flash": false
-    },
-    {
-      "title": "भारतबाट उद्धार गरिएका १० नेपाली बालबालिकालाई लगाइयो आफन्तको जिम्मा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590983/10-nepali-children-rescued-from-india-handed-over-to-relatives",
-      "published_at": "2026-09-09T17:26:34+05:45",
-      "flash": false
-    },
-    {
-      "title": "यी हुन् कर्णालीको मन्त्रिपरिषद् बैठकले गरेका निर्णयहरू",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590976/these-are-the-decisions-taken-by-the-karnali-council-of-ministers-meeting",
-      "published_at": "2026-09-09T17:01:59+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : हुम्लाका ४ जनाको दाहसंस्कार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590956/bhotekoshi-flood-4-people-from-humla-cremated",
-      "published_at": "2026-09-09T16:24:58+05:45",
-      "flash": false
-    },
-    {
-      "title": "कर्णालीका सांसदलाई स्वकीय सचिव सुविधा दिने मन्त्रिपरिषद्को निर्णय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590945/cabinet-decides-to-provide-personal-secretary-facilities-to-karnali-mps",
-      "published_at": "2026-09-09T15:58:53+05:45",
-      "flash": false
-    },
-    {
-      "title": "ड्युटीमा रहेका प्रहरीमाथि कुटपिट गरेर फरार अभियुक्त धापाखेलबाट पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590931/accused-absconding-after-assaulting-police-on-duty-arrested-from-dhapakhel",
-      "published_at": "2026-09-09T15:32:20+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -105,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 12
+      "flash": 1,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,

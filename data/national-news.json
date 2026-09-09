@@ -1,15 +1,29 @@
 {
-  "generated_at": "2026-09-10T00:33:57.363038+05:45",
-  "updated_at_npt": "10 Sep 00:33 NPT",
+  "generated_at": "2026-09-10T03:02:05.026753+05:45",
+  "updated_at_npt": "10 Sep 03:02 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढी: ज्यान गुमाएका प्रहरीका परिवारले २५ लाख राहत पाउने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591046/bhotekoshi-flood-families-of-policemen-who-lost-their-lives-will-receive-rs-25-million-in-relief",
+      "published_at": "2026-09-10T01:24:58+05:45",
+      "flash": false
+    },
+    {
+      "title": "आयुष्मा राणाको नेतृत्वमा नुवाकोटमा ३०० बाढीपीडितलाई राहत वितरण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591044/relief-distributed-to-300-flood-victims-in-nuwakot-under-the-leadership-of-ayushma-rana",
+      "published_at": "2026-09-10T00:58:36+05:45",
+      "flash": false
+    },
     {
       "title": "भारतबाट उद्धार गरिएका बालबालिकालाई परिवारको जिम्मा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591042/children-rescued-from-india-are-in-the-care-of-their-families",
       "published_at": "2026-09-10T00:06:44+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "देवीघाटमा नेपाली सेनाद्वारा ५ दिनमै एक्रो ब्रिज जडान सम्पन्न, भोलिदेखि आवतजावत खुला",
@@ -23,34 +37,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591024/government-offices-in-inaruwa-after-the-protests-how-many-are-in-the-burned-out-buildings-how-many-are-rented-photos",
       "published_at": "2026-09-09T21:08:37+05:45",
-      "flash": false
-    },
-    {
-      "title": "गएरातिको भूकम्पबाट लोमान्थाङमा दुई संरचनामा क्षति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591016/two-structures-damaged-in-lomanthang-by-last-nights-earthquake",
-      "published_at": "2026-09-09T20:31:31+05:45",
-      "flash": false
-    },
-    {
-      "title": "तनहुँमा एक वर्षभित्र १८९५ घरमा विद्युत् सेवा विस्तार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591003/electricity-service-extended-to-1895-households-in-tanahun-within-a-year",
-      "published_at": "2026-09-09T19:44:32+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवाको भोर्ले बजारनजिक सुक्खा पहिरो, सडक अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590999/dry-landslide-near-bhorle-bazaar-in-rasuwa-road-blocked",
-      "published_at": "2026-09-09T19:01:52+05:45",
-      "flash": false
-    },
-    {
-      "title": "टेवानले तीज नमनाउने, बाढीपीडितलाई १ लाख १ हजार सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590998/tewan-will-not-celebrate-teej-will-provide-rs-101000-assistance-to-flood-victims",
-      "published_at": "2026-09-09T18:56:55+05:45",
       "flash": false
     }
   ],
@@ -70,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 7
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

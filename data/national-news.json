@@ -1,9 +1,16 @@
 {
-  "generated_at": "2026-09-10T03:02:05.026753+05:45",
-  "updated_at_npt": "10 Sep 03:02 NPT",
+  "generated_at": "2026-09-10T05:06:08.371723+05:45",
+  "updated_at_npt": "10 Sep 05:06 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "लुम्बिनी प्रदेशमा स्वास्थ्य संस्था दर्ता र नवीकरण व्यावहारिक बनाइँदै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591050/health-institution-registration-and-renewal-being-made-practical-in-lumbini-province",
+      "published_at": "2026-09-10T04:29:58+05:45",
+      "flash": true
+    },
     {
       "title": "भोटेकोशी बाढी: ज्यान गुमाएका प्रहरीका परिवारले २५ लाख राहत पाउने",
       "source": "Ratopati",
@@ -24,20 +31,6 @@
       "url": "https://www.ratopati.com/story/591042/children-rescued-from-india-are-in-the-care-of-their-families",
       "published_at": "2026-09-10T00:06:44+05:45",
       "flash": false
-    },
-    {
-      "title": "देवीघाटमा नेपाली सेनाद्वारा ५ दिनमै एक्रो ब्रिज जडान सम्पन्न, भोलिदेखि आवतजावत खुला",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591039/nepal-army-completes-installation-of-acro-bridge-in-devighat-in-5-days-traffic-to-resume-from-tomorrow",
-      "published_at": "2026-09-09T23:02:16+05:45",
-      "flash": false
-    },
-    {
-      "title": "आन्दोलनपछि इनरुवाका सरकारी कार्यालय : कति जलेकै भवनमा, कति भाडामा (तस्बिरहरू)",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591024/government-offices-in-inaruwa-after-the-protests-how-many-are-in-the-burned-out-buildings-how-many-are-rented-photos",
-      "published_at": "2026-09-09T21:08:37+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -56,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 5
+      "flash": 1,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

@@ -1,14 +1,21 @@
 {
-  "generated_at": "2026-09-09T05:17:07.832803+05:45",
-  "updated_at_npt": "09 Sep 05:17 NPT",
+  "generated_at": "2026-09-09T07:14:40.018472+05:45",
+  "updated_at_npt": "09 Sep 07:14 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "सङ्घीय संसद्का दुवै सदनको बैठक आज बस्दै, यस्तो छ कार्यसूची",
+      "title": "म्याग्दी नदीमाथि झोलुङ्गे पुल निर्माण : बाँसबोटका किसानलाई केरा बिक्री गर्न सहज",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/590764/both-houses-of-the-federal-parliament-are-meeting-today-here-is-the-agenda",
-      "published_at": "2026-09-09T05:10:18+05:45",
+      "url": "https://www.ratopati.com/story/590772/construction-of-a-suspension-bridge-over-the-myagdi-river-it-will-be-easier-for-bamboo-farmers-to-sell-bananas",
+      "published_at": "2026-09-09T06:55:45+05:45",
+      "flash": true
+    },
+    {
+      "title": "रौतहटबाट फरार ११७ कैदी अझै सम्पर्कविहीन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/590769/117-prisoners-who-escaped-from-rautahat-still-missing",
+      "published_at": "2026-09-09T06:25:33+05:45",
       "flash": true
     }
   ],
@@ -28,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 1
+      "flash": 2,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,
@@ -38,8 +45,8 @@
       "recent": 0
     },
     "The Rising Nepal": {
-      "ok": true,
-      "candidates": 16,
+      "ok": false,
+      "error": "HTTPSConnectionPool(host='risingnepaldaily.com', port=443): Read timed out. (read timeout=12)",
       "flash": 0,
       "recent": 0
     }

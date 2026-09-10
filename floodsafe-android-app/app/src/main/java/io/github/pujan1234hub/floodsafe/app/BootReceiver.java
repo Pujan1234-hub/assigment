@@ -38,5 +38,13 @@ public final class BootReceiver extends BroadcastReceiver {
         manager.enqueueUniquePeriodicWork("floodsafe-local-river-alerts",
                 ExistingPeriodicWorkPolicy.UPDATE, riverWork);
         FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");
+
+        // Android 14+ will not let a boot receiver create a location FGS from a
+        // while-in-use-only grant. Restart continuous following only when the user
+        // explicitly granted background location; FCM/WorkManager remain restored either way.
+        if (FloodMonitorService.hasForegroundLocation(context)
+                && FloodMonitorService.hasBackgroundLocation(context)) {
+            FloodMonitorService.startIfEnabled(context);
+        }
     }
 }

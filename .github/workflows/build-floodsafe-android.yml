@@ -1,4 +1,4 @@
-name: Build FloodSafe Android APK
+name: Build FloodSafe Android field APK and Play AAB
 
 on:
   workflow_dispatch:
@@ -29,7 +29,8 @@ jobs:
         run: |
           curl -fsSL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
-      - name: Verify local-alert clean-news and grounded-AI contract
+
+      - name: Verify release-candidate safety contract
         shell: bash
         run: |
           set -euo pipefail
@@ -47,6 +48,8 @@ jobs:
           grep -Fq 'news-live-v5.js?v=17' floodsafe-nepal/v25/index.html
           grep -Fq 'native-alert-bridge-v1.js?v=2' floodsafe-nepal/v25/index.html
           grep -Fq 'currentGpsOnly:true' floodsafe-nepal/v25/native-alert-bridge-v1.js
+          grep -Fq 'href="./privacy.html"' floodsafe-nepal/v25/index.html
+          test -s floodsafe-nepal/v25/privacy.html
           grep -Fq 'sathi-flood-ai/advanced-server-v1.js?v=1' floodsafe-nepal/v25/index.html
           test -s floodsafe-nepal/v25/sathi-flood-ai/advanced-server-v1.js
           grep -Fq 'sathi-flood-answer' floodsafe-nepal/v25/sathi-flood-ai/advanced-server-v1.js
@@ -55,14 +58,19 @@ jobs:
           grep -Fq 'acceptNearbyRiver' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
           grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
           grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
-          grep -Fq "versionName '0.5.2'" floodsafe-android-app/app/build.gradle
-          grep -Fq 'versionCode 9' floodsafe-android-app/app/build.gradle
-          test -s floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
-          test -s .github/workflows/floodsafe-river-alert-push.yml
-          echo '2 km current-GPS nearby river + clean news + grounded SATHI AI guard PASS'
-      - name: Build corrected debug APK
-        run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:assembleDebug --no-daemon
-      - name: Verify corrected APK contents
+          grep -Fq 'MAX_FOLLOW_DEVICE_AGE_MS = 5L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MonitoringLocationPolicy.java
+          grep -Fq 'MonitoringLocationPolicy.shouldClearFollowDevice' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MonitoringSafetyProvider.java
+          grep -Fq 'RECEIVE_BOOT_COMPLETED' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq '.BootReceiver' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq '.MonitoringSafetyProvider' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq "versionName '0.6.0'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 10' floodsafe-android-app/app/build.gradle
+          echo 'FloodSafe 0.6.0 release-candidate source contract PASS'
+
+      - name: Run unit tests and build field-test APK
+        run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon
+
+      - name: Verify field-test APK contents
         shell: bash
         run: |
           set -euo pipefail
@@ -77,6 +85,8 @@ jobs:
           grep -Fq 'id="bulletin"' /tmp/floodsafe-index.html
           grep -Fq 'news-live-v5.js?v=17' /tmp/floodsafe-index.html
           grep -Fq 'native-alert-bridge-v1.js?v=2' /tmp/floodsafe-index.html
+          grep -Fq 'href="./privacy.html"' /tmp/floodsafe-index.html
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/privacy.html'
           grep -Fq 'sathi-flood-ai/advanced-server-v1.js?v=1' /tmp/floodsafe-index.html
           unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/sathi-flood-ai/advanced-server-v1.js'
           unzip -p "$APK" assets/floodsafe-nepal/v25/sathi-flood-ai/advanced-server-v1.js | grep -Fq 'sathi-flood-answer'
@@ -86,10 +96,49 @@ jobs:
           ! unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/impact-live-v1.js'
           ! unzip -l "$APK" | grep -Fq 'floodsafe-people-status.json'
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
-          echo 'Corrected 2 km current-GPS APK + clean news + grounded SATHI AI verification PASS'
+          echo 'FloodSafe 0.6.0 field-test APK verification PASS'
+
+      - name: Build signed Play release AAB when upload-key secrets exist
+        id: play_aab
+        shell: bash
+        env:
+          FLOODSAFE_KEYSTORE_B64: ${{ secrets.FLOODSAFE_KEYSTORE_B64 }}
+          FLOODSAFE_KEYSTORE_PASSWORD: ${{ secrets.FLOODSAFE_KEYSTORE_PASSWORD }}
+          FLOODSAFE_KEY_ALIAS: ${{ secrets.FLOODSAFE_KEY_ALIAS }}
+          FLOODSAFE_KEY_PASSWORD: ${{ secrets.FLOODSAFE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          STATUS="$RUNNER_TEMP/floodsafe-release-status.txt"
+          if [[ -z "${FLOODSAFE_KEYSTORE_B64:-}" || -z "${FLOODSAFE_KEYSTORE_PASSWORD:-}" || -z "${FLOODSAFE_KEY_ALIAS:-}" || -z "${FLOODSAFE_KEY_PASSWORD:-}" ]]; then
+            echo 'SIGNED_PLAY_AAB=NO' | tee "$STATUS"
+            echo 'Upload-key GitHub secrets are not configured; field APK is still valid for real-device testing.' | tee -a "$STATUS"
+            cp "$STATUS" floodsafe-android-app/release-status.txt
+            exit 0
+          fi
+          KEYSTORE="$RUNNER_TEMP/floodsafe-upload.jks"
+          printf '%s' "$FLOODSAFE_KEYSTORE_B64" | base64 --decode > "$KEYSTORE"
+          chmod 600 "$KEYSTORE"
+          export FLOODSAFE_KEYSTORE_PATH="$KEYSTORE"
+          /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:bundleRelease --no-daemon
+          AAB='floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab'
+          test -s "$AAB"
+          echo 'SIGNED_PLAY_AAB=YES' | tee "$STATUS"
+          echo 'Artifact: app-release.aab' | tee -a "$STATUS"
+          cp "$STATUS" floodsafe-android-app/release-status.txt
+
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-Corrected-0.5.2-APK
-          path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          name: FloodSafe-Nepal-FieldTest-0.6.0-APK
+          path: |
+            floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+            floodsafe-android-app/FIELD_TEST_RELEASE_GATE.md
+            floodsafe-android-app/release-status.txt
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-Play-0.6.0-AAB
+          path: floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: ignore
+          retention-days: 14

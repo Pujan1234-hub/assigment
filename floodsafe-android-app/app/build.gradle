@@ -22,8 +22,8 @@ android {
         applicationId 'io.github.pujan1234hub.floodsafe.app'
         minSdk 26
         targetSdk 36
-        versionCode 9
-        versionName '0.5.2'
+        versionCode 10
+        versionName '0.6.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
@@ -111,6 +111,13 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
         if (!text.contains('id="bulletin"') || !text.contains('news-live-v5.js?v=17')) {
             throw new GradleException('Primary Nepal news bulletin was removed unexpectedly')
         }
+        if (!text.contains('href="./privacy.html"')) {
+            throw new GradleException('In-app privacy policy link missing from packaged v25 index')
+        }
+        def privacy = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/privacy.html')
+        if (!privacy.isFile() || privacy.length() == 0) {
+            throw new GradleException('Privacy policy missing from Android bundle')
+        }
         if (!text.contains('sathi-flood-ai/advanced-server-v1.js?v=1')) {
             throw new GradleException('Grounded SATHI AI bridge missing from packaged v25 index')
         }
@@ -135,7 +142,7 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
                 throw new GradleException("Forbidden legacy/duplicate asset was packaged: ${relative}")
             }
         }
-        println 'Android clean FloodSafe home/news + grounded SATHI AI bundle PASS'
+        println 'Android clean FloodSafe home/news + privacy + grounded SATHI AI bundle PASS'
     }
 }
 tasks.named('preBuild').configure { dependsOn bundleWeb }

@@ -21,7 +21,9 @@ final class NavigationPolicy {
     static boolean internalPage(String value) {
         if (!trustedOrigin(value)) return false;
         String path = URI.create(value).getPath();
-        return PATH.equals(path) || (PATH + "index.html").equals(path);
+        return PATH.equals(path)
+                || (PATH + "index.html").equals(path)
+                || (PATH + "privacy.html").equals(path);
     }
 
     static boolean externalHttps(String value) {

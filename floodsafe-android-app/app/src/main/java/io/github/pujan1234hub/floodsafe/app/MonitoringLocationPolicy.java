@@ -10,11 +10,20 @@ final class MonitoringLocationPolicy {
     static boolean shouldClearFollowDevice(boolean followDevice, long locationTime,
                                            long now, double lat, double lon) {
         if (!followDevice) return false;
-        if (!Double.isFinite(lat) || !Double.isFinite(lon)) return true;
-        if (!insideNepal(lat, lon)) return true;
-        if (locationTime <= 0L) return true;
+        if (!freshDeviceLocation(locationTime, now, lat, lon)) return true;
+        return !insideNepal(lat, lon);
+    }
+
+    static boolean freshDeviceLocation(long locationTime, long now, double lat, double lon) {
+        if (!Double.isFinite(lat) || !Double.isFinite(lon)) return false;
+        if (lat < -90d || lat > 90d || lon < -180d || lon > 180d) return false;
+        if (locationTime <= 0L) return false;
         long age = now - locationTime;
-        return age > MAX_FOLLOW_DEVICE_AGE_MS || age < -FUTURE_TOLERANCE_MS;
+        return age <= MAX_FOLLOW_DEVICE_AGE_MS && age >= -FUTURE_TOLERANCE_MS;
+    }
+
+    static boolean freshNepalDeviceLocation(long locationTime, long now, double lat, double lon) {
+        return freshDeviceLocation(locationTime, now, lat, lon) && insideNepal(lat, lon);
     }
 
     static boolean insideNepal(double lat, double lon) {

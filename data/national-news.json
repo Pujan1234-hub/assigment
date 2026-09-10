@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-11T00:04:47.027099+05:45",
-  "updated_at_npt": "11 Sep 00:04 NPT",
+  "generated_at": "2026-09-11T02:44:59.988321+05:45",
+  "updated_at_npt": "11 Sep 02:44 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -26,45 +26,10 @@
       "flash": false
     },
     {
-      "title": "नौखोरका बाढीपीडित परिवारका लागि प्रवासी युवाले जुटाए ५ लाख",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591338/migrant-youth-raise-rs-500000-for-flood-affected-families-in-naukhor",
-      "published_at": "2026-09-10T21:24:42+05:45",
-      "flash": false
-    },
-    {
       "title": "रसुवा–भोटेकोशी बाढी प्रभावितलाई राहत र निःशुल्क उपचार दिन संसदीय समितिको निर्देशन",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591328/parliamentary-committee-directs-to-provide-relief-and-free-treatment-to-those-affected-by-rasuwa-bhotekoshi-floods",
       "published_at": "2026-09-10T20:48:30+05:45",
-      "flash": false
-    },
-    {
-      "title": "दुई करोड उद्धार कोषमा पठाउने सुदूरपश्चिम प्रदेश सरकारको निर्णय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591326/sudurpaschim-province-government-decides-to-send-20-million-to-the-rescue-fund",
-      "published_at": "2026-09-10T20:41:22+05:45",
-      "flash": false
-    },
-    {
-      "title": "सुनखोलाले बगाएर महिलाकाे मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591317/woman-dies-after-being-swept-away-by-sunkhola",
-      "published_at": "2026-09-10T19:57:09+05:45",
-      "flash": false
-    },
-    {
-      "title": "पश्चिम सुर्खेत चौकुनेबाट ६ थान भरुवा बन्दुक बरामद",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591314/6-loaded-guns-recovered-from-chaukune-west-surkhet",
-      "published_at": "2026-09-10T19:48:55+05:45",
-      "flash": false
-    },
-    {
-      "title": "मन्त्रालयहरूले दोहोरिएका र अनावश्यक आयोजना छुट्याउनै सकेनन्",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591309/ministries-failed-to-identify-duplicate-and-unnecessary-projects",
-      "published_at": "2026-09-10T19:21:46+05:45",
       "flash": false
     }
   ],
@@ -85,7 +50,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 9
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

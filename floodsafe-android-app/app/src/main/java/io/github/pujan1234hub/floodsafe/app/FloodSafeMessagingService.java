@@ -16,7 +16,7 @@ import java.util.Map;
 /** Displays verified push messages while the app is closed, with local river filtering. */
 public final class FloodSafeMessagingService extends FirebaseMessagingService {
     private static final String CHANNEL_ID = "official_nepal_alerts_v2";
-    private static final double DEFAULT_RIVER_RADIUS_KM = 15d;
+    private static final double DEFAULT_RIVER_RADIUS_KM = 2d;
     private static final String PUSH_PREFS = "floodsafe_push_guard";
     private static final long WARNING_REPEAT_MS = 90L * 60L * 1000L;
     private static final long DANGER_REPEAT_MS = 30L * 60L * 1000L;
@@ -87,6 +87,7 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
         double stationLat = number(data.get("lat"));
         double stationLon = number(data.get("lon"));
         if (!Double.isFinite(stationLat) || !Double.isFinite(stationLon)) return false;
+        if (!insideNepal(stationLat, stationLon)) return false;
 
         SharedPreferences monitor = getSharedPreferences(RainAlertWorker.PREFS, Context.MODE_PRIVATE);
         if (!monitor.getBoolean("enabled", false)) return false;
@@ -94,12 +95,12 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
                 "lat", Double.doubleToRawLongBits(Double.NaN)));
         double homeLon = Double.longBitsToDouble(monitor.getLong(
                 "lon", Double.doubleToRawLongBits(Double.NaN)));
-        if (!Double.isFinite(homeLat) || !Double.isFinite(homeLon)) return false;
+        if (!Double.isFinite(homeLat) || !Double.isFinite(homeLon) || !insideNepal(homeLat, homeLon)) return false;
 
-        double radius = number(data.get("radius_km"));
-        if (!Double.isFinite(radius) || radius <= 0d || radius > 30d) radius = DEFAULT_RIVER_RADIUS_KM;
+        // Never trust a larger server-supplied radius. FloodSafe proximity alerts are
+        // deliberately capped at 2 km around the user's verified current GPS point.
         double distance = haversineKm(homeLat, homeLon, stationLat, stationLon);
-        if (distance > radius) return false;
+        if (distance > DEFAULT_RIVER_RADIUS_KM) return false;
 
         String stage = safe(data.get("stage"));
         if (!("warning".equals(stage) || "danger".equals(stage))) return false;
@@ -137,6 +138,11 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
         edit.apply();
         acceptedRiverDistanceKm = distance;
         return true;
+    }
+
+    private static boolean insideNepal(double lat, double lon) {
+        return Double.isFinite(lat) && Double.isFinite(lon)
+                && lat >= 26.2d && lat <= 30.5d && lon >= 80d && lon <= 88.35d;
     }
 
     private static String safe(String value) { return value == null ? "" : value.trim(); }

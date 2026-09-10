@@ -92,6 +92,7 @@ function boot(){
   $('locateBtn')?.addEventListener('click',locate);
   for(const event of ['fsmapready','fs281mapready','fsmapvisibility'])window.addEventListener(event,mapReady);
   window.addEventListener('fslanguage',label);
+  window.addEventListener('fsfocuschange',event=>{const kind=event?.detail?.kind;if(kind&&kind!=='gps'){rememberDenied();autoRestore=false}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWatch();else{startRememberedLocation();startWatch();label();marker()}});
   window.addEventListener('pagehide',stopWatch);window.addEventListener('pageshow',()=>{startRememberedLocation();startWatch()});
   setInterval(()=>{if(!document.hidden){label();marker()}},30000);

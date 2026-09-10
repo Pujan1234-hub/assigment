@@ -50,10 +50,11 @@ jobs:
           grep -Fq 'currentGpsOnly:true' floodsafe-nepal/v25/native-alert-bridge-v1.js
           grep -Fq 'backgroundNative:true' floodsafe-nepal/v25/native-alert-bridge-v1.js
           grep -Fq 'requestBackgroundLocationForAlerts' floodsafe-nepal/v25/native-alert-bridge-v1.js
-          grep -Fq 'location-click-lock-v1.js?v=8' floodsafe-nepal/v25/index.html
-          grep -Fq 'location-runtime-v3.js?v=5' floodsafe-nepal/v25/location-click-lock-v1.js
+          grep -Fq 'location-click-lock-v1.js?v=9' floodsafe-nepal/v25/index.html
+          grep -Fq 'location-runtime-v3.js?v=6' floodsafe-nepal/v25/location-click-lock-v1.js
           grep -Fq "AUTO_KEY='fs-auto-current-location-v1'" floodsafe-nepal/v25/location-runtime-v3.js
           grep -Fq 'startRememberedLocation' floodsafe-nepal/v25/location-runtime-v3.js
+          grep -Fq "window.addEventListener('fsfocuschange'" floodsafe-nepal/v25/location-runtime-v3.js
           grep -Fq 'setTimeout(startRememberedLocation,260)' floodsafe-nepal/v25/location-runtime-v3.js
           grep -Fq 'href="./privacy.html"' floodsafe-nepal/v25/index.html
           test -s floodsafe-nepal/v25/privacy.html
@@ -97,10 +98,11 @@ jobs:
           grep -Fq 'id="bulletin"' /tmp/floodsafe-index.html
           grep -Fq 'news-live-v5.js?v=17' /tmp/floodsafe-index.html
           grep -Fq 'native-alert-bridge-v1.js?v=3' /tmp/floodsafe-index.html
-          grep -Fq 'location-click-lock-v1.js?v=8' /tmp/floodsafe-index.html
-          unzip -p "$APK" assets/floodsafe-nepal/v25/location-click-lock-v1.js | grep -Fq 'location-runtime-v3.js?v=5'
+          grep -Fq 'location-click-lock-v1.js?v=9' /tmp/floodsafe-index.html
+          unzip -p "$APK" assets/floodsafe-nepal/v25/location-click-lock-v1.js | grep -Fq 'location-runtime-v3.js?v=6'
           unzip -p "$APK" assets/floodsafe-nepal/v25/location-runtime-v3.js | grep -Fq 'startRememberedLocation'
           unzip -p "$APK" assets/floodsafe-nepal/v25/location-runtime-v3.js | grep -Fq "AUTO_KEY='fs-auto-current-location-v1'"
+          unzip -p "$APK" assets/floodsafe-nepal/v25/location-runtime-v3.js | grep -Fq "window.addEventListener('fsfocuschange'"
           grep -Fq 'href="./privacy.html"' /tmp/floodsafe-index.html
           unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/privacy.html'
           grep -Fq 'sathi-flood-ai/advanced-server-v1.js?v=1' /tmp/floodsafe-index.html

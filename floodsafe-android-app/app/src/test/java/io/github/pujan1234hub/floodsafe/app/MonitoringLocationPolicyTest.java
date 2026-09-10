@@ -10,6 +10,8 @@ public final class MonitoringLocationPolicyTest {
     @Test public void freshNepalCurrentGpsIsAccepted() {
         assertFalse(MonitoringLocationPolicy.shouldClearFollowDevice(
                 true, NOW - 60_000L, NOW, 27.7172d, 85.3240d));
+        assertTrue(MonitoringLocationPolicy.freshNepalDeviceLocation(
+                NOW - 60_000L, NOW, 27.7172d, 85.3240d));
     }
 
     @Test public void staleCurrentGpsIsRejected() {
@@ -17,9 +19,13 @@ public final class MonitoringLocationPolicyTest {
                 true, NOW - 6L * 60L * 1000L, NOW, 27.7172d, 85.3240d));
     }
 
-    @Test public void outsideNepalCurrentGpsIsRejectedImmediately() {
-        assertTrue(MonitoringLocationPolicy.shouldClearFollowDevice(
+    @Test public void freshOutsideNepalGpsCanServeRainButNotNepalRiverProximity() {
+        assertFalse(MonitoringLocationPolicy.shouldClearFollowDevice(
                 true, NOW - 30_000L, NOW, 50.7184d, -3.5339d));
+        assertTrue(MonitoringLocationPolicy.freshDeviceLocation(
+                NOW - 30_000L, NOW, 50.7184d, -3.5339d));
+        assertFalse(MonitoringLocationPolicy.freshNepalDeviceLocation(
+                NOW - 30_000L, NOW, 50.7184d, -3.5339d));
     }
 
     @Test public void badFutureTimestampIsRejected() {

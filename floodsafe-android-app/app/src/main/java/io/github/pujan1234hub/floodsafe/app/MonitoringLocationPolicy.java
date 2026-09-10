@@ -1,6 +1,6 @@
 package io.github.pujan1234hub.floodsafe.app;
 
-/** Pure safety policy for current-GPS river monitoring. */
+/** Pure freshness and Nepal-boundary policy for current-device monitoring. */
 final class MonitoringLocationPolicy {
     static final long MAX_FOLLOW_DEVICE_AGE_MS = 5L * 60L * 1000L;
     static final long FUTURE_TOLERANCE_MS = 2L * 60L * 1000L;
@@ -10,8 +10,7 @@ final class MonitoringLocationPolicy {
     static boolean shouldClearFollowDevice(boolean followDevice, long locationTime,
                                            long now, double lat, double lon) {
         if (!followDevice) return false;
-        if (!freshDeviceLocation(locationTime, now, lat, lon)) return true;
-        return !insideNepal(lat, lon);
+        return !freshDeviceLocation(locationTime, now, lat, lon);
     }
 
     static boolean freshDeviceLocation(long locationTime, long now, double lat, double lon) {

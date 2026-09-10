@@ -1,10 +1,12 @@
 (()=>{'use strict';
 if(window.__fsLocationRuntimeV3)return;window.__fsLocationRuntimeV3=true;
-const $=id=>document.getElementById(id),MAX_AGE=120000;
+const $=id=>document.getElementById(id),MAX_AGE=120000,AUTO_KEY='fs-auto-current-location-v1';
 const inside=(la,lo)=>Number.isFinite(la)&&Number.isFinite(lo)&&la>=26.2&&la<=30.5&&lo>=80&&lo<=88.35;
-let last=null,watch=null,requested=false,pendingCenter=false,busy=false,boundMap=null,lastError='';
+let last=null,watch=null,requested=false,pendingCenter=false,autoRestore=false,busy=false,boundMap=null,lastError='';
 const tr=(ne,en)=>(window.FloodSafe?.state?.lang||localStorage.getItem('fs-flood-lang'))==='en'?en:ne;
 const fresh=()=>last&&!lastError&&Date.now()-last.at<=MAX_AGE;
+const wantsAuto=()=>{try{return localStorage.getItem(AUTO_KEY)==='1'}catch{return false}};
+const rememberAuto=()=>{try{localStorage.setItem(AUTO_KEY,'1')}catch{}};
 function label(){
   if(!last||!$('place'))return;
   if(!inside(last.lat,last.lon)){$('place').textContent=tr('🌍 हालको GPS स्थान नेपाल बाहिर छ • मौसम यही स्थानको हो','🌍 Current GPS is outside Nepal • weather is for this location');return}
@@ -48,7 +50,7 @@ function accept(position){
   busy=false;lastError='';last={lat:c.latitude,lon:c.longitude,accuracy:Number.isFinite(c.accuracy)&&c.accuracy>0?c.accuracy:1000,at};
   if($('outsideNotice'))$('outsideNotice').hidden=inside(last.lat,last.lon);
   // Tracking follows the user until they deliberately select another monitoring point.
-  if(inside(last.lat,last.lon)&&(pendingCenter||window.FloodSafe?.state?.kind==='gps'))void window.FloodSafe?.setFocus?.(last.lat,last.lon,'gps');
+  if(inside(last.lat,last.lon)&&(autoRestore||pendingCenter||window.FloodSafe?.state?.kind==='gps')){autoRestore=false;void window.FloodSafe?.setFocus?.(last.lat,last.lon,'gps')}
   marker();label();window.dispatchEvent(new CustomEvent('fscurrentlocation',{detail:{...last}}));
 }
 function fail(error){
@@ -65,13 +67,22 @@ function startWatch(){
   busy=true;
   watch=navigator.geolocation.watchPosition(accept,fail,{enableHighAccuracy:true,timeout:15000,maximumAge:5000});
 }
+function startRememberedLocation(){
+  if(!wantsAuto()||requested||document.hidden)return;
+  requested=true;autoRestore=true;lastError='';
+  // The user already chose Current Location earlier. Re-open the native permission
+  // window silently when permission is still granted, then refresh GPS without opening the map.
+  try{window.FloodSafeNative?.allowLocationPrompt?.()}catch{}
+  setTimeout(startWatch,180);
+}
 function locate(){
   // Current-location is a map action: open the Nepal map first, then request GPS.
   // This keeps the location marker/centering visible as soon as a valid Nepal fix arrives.
+  rememberAuto();
   try{window.FloodSafeMobileMap?.open?.()}catch{}
   // Android WebView needs an explicit native request before geolocation starts.
   try{window.FloodSafeNative?.allowLocationPrompt?.()}catch{}
-  requested=true;pendingCenter=true;lastError='';
+  requested=true;pendingCenter=true;autoRestore=false;lastError='';
   if($('place'))$('place').textContent=tr('📍 हालको स्थान खोजिँदैछ…','📍 Finding current location…');
   stopWatch();startWatch();
 }
@@ -79,11 +90,12 @@ function boot(){
   $('locateBtn')?.addEventListener('click',locate);
   for(const event of ['fsmapready','fs281mapready','fsmapvisibility'])window.addEventListener(event,mapReady);
   window.addEventListener('fslanguage',label);
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWatch();else{startWatch();label();marker()}});
-  window.addEventListener('pagehide',stopWatch);window.addEventListener('pageshow',startWatch);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopWatch();else{startRememberedLocation();startWatch();label();marker()}});
+  window.addEventListener('pagehide',stopWatch);window.addEventListener('pageshow',()=>{startRememberedLocation();startWatch()});
   setInterval(()=>{if(!document.hidden){label();marker()}},30000);
   window.FloodSafeCurrentLocation={locate,get last(){return last&&{...last}},get busy(){return busy},get tracking(){return watch!==null},get fresh(){return !!fresh()}};
   mapReady();
+  setTimeout(startRememberedLocation,260);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

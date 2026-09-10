@@ -1,29 +1,64 @@
 {
-  "generated_at": "2026-09-10T20:45:09.672309+05:45",
-  "updated_at_npt": "10 Sep 20:45 NPT",
+  "generated_at": "2026-09-11T00:04:47.027099+05:45",
+  "updated_at_npt": "11 Sep 00:04 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "उद्धार गरेर ल्याइएको चितुवा फुत्किएर आक्रमण गर्दा एक जना घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591353/one-injured-when-rescued-leopard-breaks-free-and-attacks",
+      "published_at": "2026-09-10T22:57:14+05:45",
+      "flash": false
+    },
+    {
+      "title": "भूकम्पबाट पुरानो दरबारमा क्षति, उपल्लो मुस्ताङ जोखिममा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591350/chinese-president-to-attend-brics-summit",
+      "published_at": "2026-09-10T22:09:46+05:45",
+      "flash": false
+    },
+    {
+      "title": "लोमान्थाङमा भूकम्पबाट ३० घर पूर्ण रूपमा क्षति",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591343/30-houses-completely-damaged-by-earthquake-in-lomanthang",
+      "published_at": "2026-09-10T21:38:28+05:45",
+      "flash": false
+    },
+    {
+      "title": "नौखोरका बाढीपीडित परिवारका लागि प्रवासी युवाले जुटाए ५ लाख",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591338/migrant-youth-raise-rs-500000-for-flood-affected-families-in-naukhor",
+      "published_at": "2026-09-10T21:24:42+05:45",
+      "flash": false
+    },
+    {
+      "title": "रसुवा–भोटेकोशी बाढी प्रभावितलाई राहत र निःशुल्क उपचार दिन संसदीय समितिको निर्देशन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591328/parliamentary-committee-directs-to-provide-relief-and-free-treatment-to-those-affected-by-rasuwa-bhotekoshi-floods",
+      "published_at": "2026-09-10T20:48:30+05:45",
+      "flash": false
+    },
     {
       "title": "दुई करोड उद्धार कोषमा पठाउने सुदूरपश्चिम प्रदेश सरकारको निर्णय",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591326/sudurpaschim-province-government-decides-to-send-20-million-to-the-rescue-fund",
       "published_at": "2026-09-10T20:41:22+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "सुनखोलाले बगाएर महिलाकाे मृत्यु",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591317/woman-dies-after-being-swept-away-by-sunkhola",
       "published_at": "2026-09-10T19:57:09+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "पश्चिम सुर्खेत चौकुनेबाट ६ थान भरुवा बन्दुक बरामद",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591314/6-loaded-guns-recovered-from-chaukune-west-surkhet",
       "published_at": "2026-09-10T19:48:55+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "मन्त्रालयहरूले दोहोरिएका र अनावश्यक आयोजना छुट्याउनै सकेनन्",
@@ -31,68 +66,12 @@
       "url": "https://www.ratopati.com/story/591309/ministries-failed-to-identify-duplicate-and-unnecessary-projects",
       "published_at": "2026-09-10T19:21:46+05:45",
       "flash": false
-    },
-    {
-      "title": "राप्ती नदीमा निर्माणाधीन पुल विस्तार गर्न स्थानीयको माग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591289/locals-demand-expansion-of-under-construction-bridge-on-rapti-river",
-      "published_at": "2026-09-10T18:03:41+05:45",
-      "flash": false
-    },
-    {
-      "title": "ग्यासमा कालोबजारी र कृत्रिम अभाव सिर्जना गर्नेलाई कारबाहीको चेतावनी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591287/bhaktapur-administration-warns-of-strict-action-against-black-marketing-and-artificial-shortage-of-gas",
-      "published_at": "2026-09-10T18:01:42+05:45",
-      "flash": false
-    },
-    {
-      "title": "चट्याङ लागेर एक जना घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591279/one-injured-in-lightning-strike",
-      "published_at": "2026-09-10T17:38:37+05:45",
-      "flash": false
-    },
-    {
-      "title": "मोरङ कारागारमा प्रहरीको छापा, १० लाख नगद र फलामे रड बरामद",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591278/police-raid-morang-prison-seize-rs-1-million-in-cash-and-iron-rods",
-      "published_at": "2026-09-10T17:31:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "गजेन्द्रनारायण सिंह अस्पतालले भन्यो : आमा र बच्चाको स्वास्थ्य सामान्य, दोषीलाई कारबाही हुन्छ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591277/gajendra-narayan-singh-hospital-says-mother-and-child-are-in-good-health-action-will-be-taken-against-the-culprits",
-      "published_at": "2026-09-10T17:26:56+05:45",
-      "flash": false
-    },
-    {
-      "title": "सुदूरपश्चिममा सर्पदंशको जोखिम : दुई वर्षमा १६ जनाको मृत्यु, कहाँ-कहाँ हुन्छ उपचार ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591228/risk-of-snakebite-in-the-far-west-16-deaths-in-two-years-where-is-treatment-available",
-      "published_at": "2026-09-10T16:30:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "हिमाल, पहाड र तराईबाट चुनाव जितेर प्रधानमन्त्री बन्ने रेकर्ड मेरै हो : प्रचण्ड",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591241/i-have-the-record-of-becoming-prime-minister-by-winning-elections-from-himalayas-hills-and-terai-prachanda",
-      "published_at": "2026-09-10T16:18:49+05:45",
-      "flash": false
-    },
-    {
-      "title": "अम्बिका काफ्लेलाई पदमुक्त गर्ने निर्णयप्रति जसपा नेपालको आपत्ति, तत्काल सच्याउन माग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591203/jsp-nepal-objects-to-decision-to-remove-ambika-kafle-from-office-demands-immediate-correction",
-      "published_at": "2026-09-10T14:49:22+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     },
@@ -105,8 +84,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 12
+      "flash": 0,
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,

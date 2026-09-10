@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-11T02:44:59.988321+05:45",
-  "updated_at_npt": "11 Sep 02:44 NPT",
+  "generated_at": "2026-09-11T04:50:30.858042+05:45",
+  "updated_at_npt": "11 Sep 04:50 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -9,27 +9,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591353/one-injured-when-rescued-leopard-breaks-free-and-attacks",
       "published_at": "2026-09-10T22:57:14+05:45",
-      "flash": false
-    },
-    {
-      "title": "भूकम्पबाट पुरानो दरबारमा क्षति, उपल्लो मुस्ताङ जोखिममा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591350/chinese-president-to-attend-brics-summit",
-      "published_at": "2026-09-10T22:09:46+05:45",
-      "flash": false
-    },
-    {
-      "title": "लोमान्थाङमा भूकम्पबाट ३० घर पूर्ण रूपमा क्षति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591343/30-houses-completely-damaged-by-earthquake-in-lomanthang",
-      "published_at": "2026-09-10T21:38:28+05:45",
-      "flash": false
-    },
-    {
-      "title": "रसुवा–भोटेकोशी बाढी प्रभावितलाई राहत र निःशुल्क उपचार दिन संसदीय समितिको निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591328/parliamentary-committee-directs-to-provide-relief-and-free-treatment-to-those-affected-by-rasuwa-bhotekoshi-floods",
-      "published_at": "2026-09-10T20:48:30+05:45",
       "flash": false
     }
   ],
@@ -50,7 +29,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 4
+      "recent": 1
     },
     "Kathmandu Post": {
       "ok": true,

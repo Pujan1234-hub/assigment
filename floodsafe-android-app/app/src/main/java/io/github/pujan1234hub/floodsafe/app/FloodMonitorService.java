@@ -191,26 +191,18 @@ public final class FloodMonitorService extends Service implements LocationListen
         if (!Double.isFinite(lat) || !Double.isFinite(lon)
                 || lat < -90d || lat > 90d || lon < -180d || lon > 180d) return;
 
-        SharedPreferences.Editor edit = prefs.edit()
+        // Keep one fresh current-device point for rain/weather everywhere. River
+        // workers and push independently require that same point to be inside Nepal.
+        prefs.edit()
                 .putLong("device_lat", Double.doubleToRawLongBits(lat))
                 .putLong("device_lon", Double.doubleToRawLongBits(lon))
                 .putLong("device_location_time", now)
-                .putBoolean("follow_device", true);
-
-        if (MonitoringLocationPolicy.insideNepal(lat, lon)) {
-            edit.putLong("lat", Double.doubleToRawLongBits(lat))
-                    .putLong("lon", Double.doubleToRawLongBits(lon))
-                    .putLong("location_time", now)
-                    .putBoolean("location_stale", false);
-        } else {
-            // Never leave an old Nepal river-proximity target active after travelling out.
-            // device_* remains available for local rain/weather alerts anywhere.
-            edit.remove("lat")
-                    .remove("lon")
-                    .remove("location_time")
-                    .putBoolean("location_stale", true);
-        }
-        edit.apply();
+                .putLong("lat", Double.doubleToRawLongBits(lat))
+                .putLong("lon", Double.doubleToRawLongBits(lon))
+                .putLong("location_time", now)
+                .putBoolean("follow_device", true)
+                .putBoolean("location_stale", false)
+                .apply();
     }
 
     @Override public void onProviderEnabled(String provider) {

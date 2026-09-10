@@ -11,12 +11,11 @@ import android.os.Looper;
 import androidx.annotation.Nullable;
 
 /**
- * Process-start safety gate for current-GPS monitoring.
+ * Process-start safety gate for current-device monitoring.
  *
- * If the app still holds a Nepal coordinate after the user has moved away, or
- * if the last current-GPS fix is older than five minutes, the coordinate is
- * removed before a river worker can use it. A light one-minute check also runs
- * while the app process stays alive.
+ * The user's alert opt-in remains enabled, but a current-device coordinate older
+ * than five minutes is removed before workers can use it. Fresh coordinates outside
+ * Nepal may still be used for rain timing; river proximity separately requires Nepal.
  */
 public final class MonitoringSafetyProvider extends ContentProvider {
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -51,10 +50,15 @@ public final class MonitoringSafetyProvider extends ContentProvider {
         if (!MonitoringLocationPolicy.shouldClearFollowDevice(
                 followDevice, locationTime, System.currentTimeMillis(), lat, lon)) return;
 
+        // Do not change "enabled": stale GPS pauses location-based matching until
+        // a fresh service fix arrives; it must never silently turn the user's alerts off.
         prefs.edit()
                 .remove("lat")
                 .remove("lon")
                 .remove("location_time")
+                .remove("device_lat")
+                .remove("device_lon")
+                .remove("device_location_time")
                 .putBoolean("location_stale", true)
                 .apply();
     }

@@ -41,6 +41,9 @@ function boot(){
     window.FloodSafeNative?.syncRainAlertsStatus?.();
     if(gpsPoint())window.FloodSafeNative?.syncBackgroundRainAlerts?.();
     else window.FloodSafeNative?.disableBackgroundRainAlerts?.();
+  }else{
+    window.FloodSafeNative?.setRainAlerts?.(false);
+    window.FloodSafeNative?.disableBackgroundRainAlerts?.();
   }
   window.FloodSafeNearbyAlertPolicy={radiusKm:MAX_KM,currentGpsOnly:true};
 }

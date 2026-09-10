@@ -1,43 +1,85 @@
 {
-  "generated_at": "2026-09-10T16:56:44.962962+05:45",
-  "updated_at_npt": "10 Sep 16:56 NPT",
+  "generated_at": "2026-09-10T20:45:09.672309+05:45",
+  "updated_at_npt": "10 Sep 20:45 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "रसुवा बाढीपछिको पुनर्निर्माणमा ४ अर्ब डलर लाग्ने प्रारम्भिक अनुमान",
+      "title": "दुई करोड उद्धार कोषमा पठाउने सुदूरपश्चिम प्रदेश सरकारको निर्णय",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591259/initial-estimate-for-reconstruction-after-rasuwa-flood-to-cost-4-billion",
-      "published_at": "2026-09-10T16:56:09+05:45",
+      "url": "https://www.ratopati.com/story/591326/sudurpaschim-province-government-decides-to-send-20-million-to-the-rescue-fund",
+      "published_at": "2026-09-10T20:41:22+05:45",
       "flash": true
+    },
+    {
+      "title": "सुनखोलाले बगाएर महिलाकाे मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591317/woman-dies-after-being-swept-away-by-sunkhola",
+      "published_at": "2026-09-10T19:57:09+05:45",
+      "flash": true
+    },
+    {
+      "title": "पश्चिम सुर्खेत चौकुनेबाट ६ थान भरुवा बन्दुक बरामद",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591314/6-loaded-guns-recovered-from-chaukune-west-surkhet",
+      "published_at": "2026-09-10T19:48:55+05:45",
+      "flash": true
+    },
+    {
+      "title": "मन्त्रालयहरूले दोहोरिएका र अनावश्यक आयोजना छुट्याउनै सकेनन्",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591309/ministries-failed-to-identify-duplicate-and-unnecessary-projects",
+      "published_at": "2026-09-10T19:21:46+05:45",
+      "flash": false
+    },
+    {
+      "title": "राप्ती नदीमा निर्माणाधीन पुल विस्तार गर्न स्थानीयको माग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591289/locals-demand-expansion-of-under-construction-bridge-on-rapti-river",
+      "published_at": "2026-09-10T18:03:41+05:45",
+      "flash": false
+    },
+    {
+      "title": "ग्यासमा कालोबजारी र कृत्रिम अभाव सिर्जना गर्नेलाई कारबाहीको चेतावनी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591287/bhaktapur-administration-warns-of-strict-action-against-black-marketing-and-artificial-shortage-of-gas",
+      "published_at": "2026-09-10T18:01:42+05:45",
+      "flash": false
+    },
+    {
+      "title": "चट्याङ लागेर एक जना घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591279/one-injured-in-lightning-strike",
+      "published_at": "2026-09-10T17:38:37+05:45",
+      "flash": false
+    },
+    {
+      "title": "मोरङ कारागारमा प्रहरीको छापा, १० लाख नगद र फलामे रड बरामद",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591278/police-raid-morang-prison-seize-rs-1-million-in-cash-and-iron-rods",
+      "published_at": "2026-09-10T17:31:21+05:45",
+      "flash": false
+    },
+    {
+      "title": "गजेन्द्रनारायण सिंह अस्पतालले भन्यो : आमा र बच्चाको स्वास्थ्य सामान्य, दोषीलाई कारबाही हुन्छ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591277/gajendra-narayan-singh-hospital-says-mother-and-child-are-in-good-health-action-will-be-taken-against-the-culprits",
+      "published_at": "2026-09-10T17:26:56+05:45",
+      "flash": false
     },
     {
       "title": "सुदूरपश्चिममा सर्पदंशको जोखिम : दुई वर्षमा १६ जनाको मृत्यु, कहाँ-कहाँ हुन्छ उपचार ?",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591228/risk-of-snakebite-in-the-far-west-16-deaths-in-two-years-where-is-treatment-available",
       "published_at": "2026-09-10T16:30:00+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "हिमाल, पहाड र तराईबाट चुनाव जितेर प्रधानमन्त्री बन्ने रेकर्ड मेरै हो : प्रचण्ड",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591241/i-have-the-record-of-becoming-prime-minister-by-winning-elections-from-himalayas-hills-and-terai-prachanda",
       "published_at": "2026-09-10T16:18:49+05:45",
-      "flash": true
-    },
-    {
-      "title": "त्रिभुवन विमानस्थलबाट अवैध विदेशी मुद्रासहित भारतीय नागरिक पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591233/indian-national-arrested-with-illegal-foreign-currency-at-tribhuvan-airport",
-      "published_at": "2026-09-10T16:01:05+05:45",
-      "flash": true
-    },
-    {
-      "title": "बागमती सरकारमा सत्ता साझेदार दलबिच भागबन्डाको किचलो, मन्त्रालय बढाउने तयारी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591217/bagmati-government-in-turmoil-over-power-sharing-among-ruling-parties-preparations-to-increase-ministries",
-      "published_at": "2026-09-10T16:00:00+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "अम्बिका काफ्लेलाई पदमुक्त गर्ने निर्णयप्रति जसपा नेपालको आपत्ति, तत्काल सच्याउन माग",
@@ -45,40 +87,12 @@
       "url": "https://www.ratopati.com/story/591203/jsp-nepal-objects-to-decision-to-remove-ambika-kafle-from-office-demands-immediate-correction",
       "published_at": "2026-09-10T14:49:22+05:45",
       "flash": false
-    },
-    {
-      "title": "बागमती प्रदेशसभामा राप्रपाका ५ सांसदलाई पदमुक्त नगर्ने निर्णय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591175/bagmati-provincial-assembly-decides-not-to-remove-5-rpp-mps-from-office",
-      "published_at": "2026-09-10T13:30:34+05:45",
-      "flash": false
-    },
-    {
-      "title": "लुम्बिनीमा घरेलु कार्यालयबाटै यातायात सेवा दिने निर्णय कार्यान्वयनमा आउँदै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591163/decision-to-provide-transportation-services-from-home-offices-in-lumbini-coming-into-effect",
-      "published_at": "2026-09-10T13:09:10+05:45",
-      "flash": false
-    },
-    {
-      "title": "उत्तरका दुई नाका बन्द हुँदा कोरला बन्यो मुख्य व्यापारिक मार्ग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591124/korala-became-the-main-trade-route-after-the-closure-of-two-northern-border-crossings",
-      "published_at": "2026-09-10T11:21:07+05:45",
-      "flash": false
-    },
-    {
-      "title": "डुबेर एकजनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591112/one-person-dies-by-drowning",
-      "published_at": "2026-09-10T11:00:33+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     },
@@ -91,8 +105,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 5,
-      "recent": 10
+      "flash": 3,
+      "recent": 12
     },
     "Kathmandu Post": {
       "ok": true,
@@ -102,7 +116,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     }

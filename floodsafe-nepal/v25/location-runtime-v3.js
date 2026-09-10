@@ -66,6 +66,9 @@ function startWatch(){
   watch=navigator.geolocation.watchPosition(accept,fail,{enableHighAccuracy:true,timeout:15000,maximumAge:5000});
 }
 function locate(){
+  // Current-location is a map action: open the Nepal map first, then request GPS.
+  // This keeps the location marker/centering visible as soon as a valid Nepal fix arrives.
+  try{window.FloodSafeMobileMap?.open?.()}catch{}
   // Android WebView needs an explicit native request before geolocation starts.
   try{window.FloodSafeNative?.allowLocationPrompt?.()}catch{}
   requested=true;pendingCenter=true;lastError='';

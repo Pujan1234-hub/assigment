@@ -1,42 +1,70 @@
 {
-  "generated_at": "2026-09-10T06:59:14.048763+05:45",
-  "updated_at_npt": "10 Sep 06:59 NPT",
+  "generated_at": "2026-09-10T11:48:31.495538+05:45",
+  "updated_at_npt": "10 Sep 11:48 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "फिलिपिन्समा यात्रुवाहक फेरीमा भीषण आगलागी, ५ जनाको मृत्यु; ८७ जना बेपत्ता",
+      "title": "पहिरो हटाइएसँगै १७ घण्टापछि खुल्यो नुवाकोट–धुन्चे सडक",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591063/massive-fire-on-passenger-ferry-in-philippines-5-dead-87-missing",
-      "published_at": "2026-09-10T06:56:54+05:45",
+      "url": "https://www.ratopati.com/story/591135/nuwakot-dhunche-road-reopens-after-17-hours-after-landslide-cleared",
+      "published_at": "2026-09-10T11:46:46+05:45",
       "flash": true
     },
     {
-      "title": "देशभर मनसुनी वायुको प्रभाव कायमै, आज यी ५ प्रदेशमा भारी वर्षाको सम्भावना",
+      "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा रु १२ अर्ब ४३ करोडभन्दा बढी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591060/the-influence-of-monsoon-winds-continues-across-the-country-heavy-rains-are-likely-in-these-5-provinces-today",
-      "published_at": "2026-09-10T06:17:02+05:45",
+      "url": "https://www.ratopati.com/story/591134/over-rs-1243-billion-in-prime-ministers-disaster-relief-fund",
+      "published_at": "2026-09-10T11:46:44+05:45",
       "flash": true
     },
     {
-      "title": "सङ्घीय संसद्का दुवै सदनको बैठक आज बस्दै, यस्तो छ सम्भावित कार्यसूची सार्वजनिक",
+      "title": "पाकिस्तानका लागि हिंसाको नयाँ गढ बन्दै बलुचिस्तानका पश्तुन इलाका",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591056/both-houses-of-the-federal-parliament-are-meeting-today-here-is-the-possible-agenda-made-public",
-      "published_at": "2026-09-10T05:18:44+05:45",
+      "url": "https://www.ratopati.com/story/591131/pashtun-areas-of-balochistan-are-becoming-a-new-hotbed-of-violence-for-pakistan",
+      "published_at": "2026-09-10T11:38:50+05:45",
+      "flash": true
+    },
+    {
+      "title": "उत्तरका दुई नाका बन्द हुँदा कोरला बन्यो मुख्य व्यापारिक मार्ग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591124/korala-became-the-main-trade-route-after-the-closure-of-two-northern-border-crossings",
+      "published_at": "2026-09-10T11:21:07+05:45",
+      "flash": true
+    },
+    {
+      "title": "डुबेर एकजनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591112/one-person-dies-by-drowning",
+      "published_at": "2026-09-10T11:00:33+05:45",
+      "flash": true
+    },
+    {
+      "title": "भन्सार छलेर भित्र्याइएका १७ वटा भारतीय इलेक्ट्रिक स्कुटर प्रहरी नियन्त्रणमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591075/police-seize-17-indian-electric-scooters-imported-after-evading-customs-duties",
+      "published_at": "2026-09-10T08:56:59+05:45",
       "flash": false
     },
     {
-      "title": "लुम्बिनी प्रदेशमा स्वास्थ्य संस्था दर्ता र नवीकरण व्यावहारिक बनाइँदै",
+      "title": "खरानी बनेको गण्डकीको संसद् भवन वर्षदिनसम्म उठेन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591050/health-institution-registration-and-renewal-being-made-practical-in-lumbini-province",
-      "published_at": "2026-09-10T04:29:58+05:45",
+      "url": "https://www.ratopati.com/story/591071/gandakis-parliament-building-reduced-to-ashes-was-not-raised-for-a-year",
+      "published_at": "2026-09-10T08:24:04+05:45",
       "flash": false
     },
     {
-      "title": "भोटेकोशी बाढी: ज्यान गुमाएका प्रहरीका परिवारले २५ लाख राहत पाउने",
+      "title": "भोटेकोशी बाढी : डीएनए परीक्षण तीव्र",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591046/bhotekoshi-flood-families-of-policemen-who-lost-their-lives-will-receive-rs-25-million-in-relief",
-      "published_at": "2026-09-10T01:24:58+05:45",
+      "url": "https://www.ratopati.com/story/591069/bhotekoshi-flood-dna-testing-intensified",
+      "published_at": "2026-09-10T07:59:24+05:45",
+      "flash": false
+    },
+    {
+      "title": "परिवारलाई भविष्यका योजना सुनाएर ढाडस दिने रमेश बाढीमा बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591061/ramesh-who-reassured-his-family-by-telling-them-about-his-future-plans-disappears-in-the-flood",
+      "published_at": "2026-09-10T07:00:00+05:45",
       "flash": false
     }
   ],
@@ -56,8 +84,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 5
+      "flash": 5,
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,

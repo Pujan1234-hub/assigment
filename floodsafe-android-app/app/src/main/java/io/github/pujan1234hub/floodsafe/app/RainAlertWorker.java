@@ -53,6 +53,11 @@ public final class RainAlertWorker extends Worker {
         double lon = Double.longBitsToDouble(prefs.getLong(
                 "lon", Double.doubleToRawLongBits(Double.NaN)));
         if (!Double.isFinite(lat) || !Double.isFinite(lon)) return Result.success();
+        if (prefs.getBoolean("follow_device", false)) {
+            long locationTime = prefs.getLong("location_time", 0L);
+            if (!MonitoringLocationPolicy.freshDeviceLocation(
+                    locationTime, System.currentTimeMillis(), lat, lon)) return Result.success();
+        }
 
         try {
             JSONObject data = fetch(lat, lon);

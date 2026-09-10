@@ -21,7 +21,12 @@
   </section>
   <section class="card">
     <h2>स्थान (Location)</h2>
-    <p>तपाईंले हालको स्थान वा background monitoring सक्रिय गर्दा app ले latitude/longitude प्रयोग गरेर नजिकको official river station, वर्षा र जोखिम मिलाउँछ। Monitoring coordinate app को local preferences मा राखिन सक्छ। Current-GPS mode मा पाँच मिनेटभन्दा पुरानो वा नेपाल बाहिरको coordinate river alert का लागि अमान्य बनाइन्छ। Live weather/flood/AI उत्तरका लागि आवश्यक location सम्बन्धित configured data service मा request को भागका रूपमा जान सक्छ।</p>
+    <p>तपाईंले हालको स्थान प्रयोग गर्दा app ले latitude/longitude प्रयोग गरेर स्थानीय मौसम/वर्षा देखाउँछ र नेपालभित्र हुँदा नजिकको official river station तथा बाढी जोखिम मिलाउँछ। Current-device coordinate app को local preferences मा राखिन सक्छ। Current-GPS mode मा पाँच मिनेटभन्दा पुरानो coordinate alert matching का लागि अमान्य हुन्छ। नेपाल बाहिरको current location स्थानीय rain/weather का लागि प्रयोग हुन सक्छ, तर त्यसबाट Nepal nearby-river alert पठाइँदैन। Live weather/flood/AI उत्तरका लागि आवश्यक location सम्बन्धित configured data service मा request को भागका रूपमा जान सक्छ।</p>
+  </section>
+  <section class="card">
+    <h2>Background location / App बन्द हुँदा</h2>
+    <p>तपाईंले <strong>Warning Alert / बाढी चेतावनी</strong> ON गरेर background safety monitoring स्वीकार गर्नुभयो भने Android ले background location permission माग्न सक्छ। Android 11 वा नयाँ version मा पहिलो permission screen मा “Allow all the time” नदेखिन सक्छ; app ले कारण बताएपछि Android App Settings खोल्न सक्छ ताकि तपाईंले उपलब्ध background-location option आफैं रोज्न सक्नुहोस्।</p>
+    <p>Background location अनुमति हुँदा FloodSafe ले user-visible ongoing foreground-service notification सहित current device location ताजा राख्न सक्छ, app UI बन्द, swipe-away वा screen lock हुँदा पनि। यो location नजिकको official river warning/danger (नेपालभित्र अधिकतम 2 km) र current-area rain/weather मिलाउन प्रयोग हुन्छ। तपाईंले alert बन्द गरेपछि location monitor रोकिन्छ; Android Settings बाट background location permission जहिले पनि हटाउन सकिन्छ। Android को explicit “Force stop” पछि OS ले app फेरि खोल्दासम्म background काम रोक्न सक्छ।</p>
   </section>
   <section class="card">
     <h2>माइक्रोफोन र SATHI voice</h2>
@@ -38,8 +43,8 @@
   <section class="card">
     <h2>तपाईंको नियन्त्रण</h2>
     <ul>
-      <li>Location, microphone र notification permission Android Settings बाट बन्द गर्न सकिन्छ।</li>
-      <li>Background flood/rain monitoring app भित्रबाट बन्द गर्न सकिन्छ।</li>
+      <li>Location, background location, microphone र notification permission Android Settings बाट बन्द गर्न सकिन्छ।</li>
+      <li>Background flood/rain monitoring app भित्रबाट Warning Alert OFF गरेर बन्द गर्न सकिन्छ।</li>
       <li>SATHI always-on voice छुट्टै बन्द गर्न सकिन्छ।</li>
       <li>App data clear वा uninstall गर्दा स्थानीय preferences हट्छन्।</li>
     </ul>

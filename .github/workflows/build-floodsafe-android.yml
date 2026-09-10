@@ -46,8 +46,10 @@ jobs:
           grep -Fq '__floodsafeDisasterCardRemovedV1' floodsafe-nepal/v25/disaster-monitor-v2.js
           grep -Fq 'id="bulletin"' floodsafe-nepal/v25/index.html
           grep -Fq 'news-live-v5.js?v=17' floodsafe-nepal/v25/index.html
-          grep -Fq 'native-alert-bridge-v1.js?v=2' floodsafe-nepal/v25/index.html
+          grep -Fq 'native-alert-bridge-v1.js?v=3' floodsafe-nepal/v25/index.html
           grep -Fq 'currentGpsOnly:true' floodsafe-nepal/v25/native-alert-bridge-v1.js
+          grep -Fq 'backgroundNative:true' floodsafe-nepal/v25/native-alert-bridge-v1.js
+          grep -Fq 'requestBackgroundLocationForAlerts' floodsafe-nepal/v25/native-alert-bridge-v1.js
           grep -Fq 'href="./privacy.html"' floodsafe-nepal/v25/index.html
           test -s floodsafe-nepal/v25/privacy.html
           grep -Fq 'sathi-flood-ai/advanced-server-v1.js?v=1' floodsafe-nepal/v25/index.html
@@ -60,12 +62,17 @@ jobs:
           grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
           grep -Fq 'MAX_FOLLOW_DEVICE_AGE_MS = 5L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MonitoringLocationPolicy.java
           grep -Fq 'MonitoringLocationPolicy.shouldClearFollowDevice' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MonitoringSafetyProvider.java
+          grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq '.FloodMonitorService' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'foregroundServiceType="location"' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'requestBackgroundLocationForAlerts' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          grep -Fq 'START_STICKY' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java
           grep -Fq 'RECEIVE_BOOT_COMPLETED' floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -Fq '.BootReceiver' floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -Fq '.MonitoringSafetyProvider' floodsafe-android-app/app/src/main/AndroidManifest.xml
-          grep -Fq "versionName '0.6.0'" floodsafe-android-app/app/build.gradle
-          grep -Fq 'versionCode 10' floodsafe-android-app/app/build.gradle
-          echo 'FloodSafe 0.6.0 release-candidate source contract PASS'
+          grep -Fq "versionName '0.6.1'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 11' floodsafe-android-app/app/build.gradle
+          echo 'FloodSafe 0.6.1 release-candidate source contract PASS'
 
       - name: Run unit tests and build field-test APK
         run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon
@@ -84,7 +91,7 @@ jobs:
           ! grep -Fiq 'Human Status' /tmp/floodsafe-index.html
           grep -Fq 'id="bulletin"' /tmp/floodsafe-index.html
           grep -Fq 'news-live-v5.js?v=17' /tmp/floodsafe-index.html
-          grep -Fq 'native-alert-bridge-v1.js?v=2' /tmp/floodsafe-index.html
+          grep -Fq 'native-alert-bridge-v1.js?v=3' /tmp/floodsafe-index.html
           grep -Fq 'href="./privacy.html"' /tmp/floodsafe-index.html
           unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/privacy.html'
           grep -Fq 'sathi-flood-ai/advanced-server-v1.js?v=1' /tmp/floodsafe-index.html
@@ -92,11 +99,12 @@ jobs:
           unzip -p "$APK" assets/floodsafe-nepal/v25/sathi-flood-ai/advanced-server-v1.js | grep -Fq 'sathi-flood-answer'
           unzip -p "$APK" assets/floodsafe-nepal/v25/flood-only.js | grep -Fq 'ALERT_RADIUS_KM=2'
           unzip -p "$APK" assets/floodsafe-nepal/v25/native-alert-bridge-v1.js | grep -Fq 'currentGpsOnly:true'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/native-alert-bridge-v1.js | grep -Fq 'backgroundNative:true'
           ! unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/disaster-monitor-v2.js'
           ! unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/impact-live-v1.js'
           ! unzip -l "$APK" | grep -Fq 'floodsafe-people-status.json'
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
-          echo 'FloodSafe 0.6.0 field-test APK verification PASS'
+          echo 'FloodSafe 0.6.1 field-test APK verification PASS'
 
       - name: Build signed Play release AAB when upload-key secrets exist
         id: play_aab
@@ -128,7 +136,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-FieldTest-0.6.0-APK
+          name: FloodSafe-Nepal-FieldTest-0.6.1-APK
           path: |
             floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
             floodsafe-android-app/FIELD_TEST_RELEASE_GATE.md
@@ -138,7 +146,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-Play-0.6.0-AAB
+          name: FloodSafe-Nepal-Play-0.6.1-AAB
           path: floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: ignore
           retention-days: 14

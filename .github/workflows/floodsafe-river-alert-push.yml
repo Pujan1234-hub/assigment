@@ -34,7 +34,7 @@ jobs:
 
           EDGE='https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers'
           TOPIC='nepal-alerts'
-          RADIUS_KM='15'
+          RADIUS_KM='2'
           MAX_AGE_MIN=20
           raw=os.environ.get('FIREBASE_SERVICE_ACCOUNT','').strip()
           if not raw:
@@ -42,7 +42,7 @@ jobs:
                   'server_push':'disabled_missing_firebase_service_account',
                   'android_fallback':'RiverAlertWorker',
                   'fallback_interval_minutes':15,
-                  'radius_km':15
+                  'radius_km':2
               }))
               sys.exit(0)
           service=json.loads(raw)

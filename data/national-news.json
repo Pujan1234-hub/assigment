@@ -1,35 +1,42 @@
 {
-  "generated_at": "2026-09-10T05:06:08.371723+05:45",
-  "updated_at_npt": "10 Sep 05:06 NPT",
+  "generated_at": "2026-09-10T06:59:14.048763+05:45",
+  "updated_at_npt": "10 Sep 06:59 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "फिलिपिन्समा यात्रुवाहक फेरीमा भीषण आगलागी, ५ जनाको मृत्यु; ८७ जना बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591063/massive-fire-on-passenger-ferry-in-philippines-5-dead-87-missing",
+      "published_at": "2026-09-10T06:56:54+05:45",
+      "flash": true
+    },
+    {
+      "title": "देशभर मनसुनी वायुको प्रभाव कायमै, आज यी ५ प्रदेशमा भारी वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591060/the-influence-of-monsoon-winds-continues-across-the-country-heavy-rains-are-likely-in-these-5-provinces-today",
+      "published_at": "2026-09-10T06:17:02+05:45",
+      "flash": true
+    },
+    {
+      "title": "सङ्घीय संसद्का दुवै सदनको बैठक आज बस्दै, यस्तो छ सम्भावित कार्यसूची सार्वजनिक",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591056/both-houses-of-the-federal-parliament-are-meeting-today-here-is-the-possible-agenda-made-public",
+      "published_at": "2026-09-10T05:18:44+05:45",
+      "flash": false
+    },
     {
       "title": "लुम्बिनी प्रदेशमा स्वास्थ्य संस्था दर्ता र नवीकरण व्यावहारिक बनाइँदै",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591050/health-institution-registration-and-renewal-being-made-practical-in-lumbini-province",
       "published_at": "2026-09-10T04:29:58+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढी: ज्यान गुमाएका प्रहरीका परिवारले २५ लाख राहत पाउने",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591046/bhotekoshi-flood-families-of-policemen-who-lost-their-lives-will-receive-rs-25-million-in-relief",
       "published_at": "2026-09-10T01:24:58+05:45",
-      "flash": false
-    },
-    {
-      "title": "आयुष्मा राणाको नेतृत्वमा नुवाकोटमा ३०० बाढीपीडितलाई राहत वितरण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591044/relief-distributed-to-300-flood-victims-in-nuwakot-under-the-leadership-of-ayushma-rana",
-      "published_at": "2026-09-10T00:58:36+05:45",
-      "flash": false
-    },
-    {
-      "title": "भारतबाट उद्धार गरिएका बालबालिकालाई परिवारको जिम्मा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591042/children-rescued-from-india-are-in-the-care-of-their-families",
-      "published_at": "2026-09-10T00:06:44+05:45",
       "flash": false
     }
   ],
@@ -49,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 4
+      "flash": 2,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

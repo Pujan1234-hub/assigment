@@ -68,6 +68,13 @@ public final class RiverAlertWorker extends Worker {
         if (!Double.isFinite(homeLat) || !Double.isFinite(homeLon) || !insideNepal(homeLat, homeLon)) {
             return Result.success();
         }
+        if (monitor.getBoolean("follow_device", false)) {
+            long locationTime = monitor.getLong("location_time", 0L);
+            if (!MonitoringLocationPolicy.freshNepalDeviceLocation(
+                    locationTime, System.currentTimeMillis(), homeLat, homeLon)) {
+                return Result.success();
+            }
+        }
 
         try {
             JSONObject root = fetch();

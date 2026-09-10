@@ -97,8 +97,14 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
                 "lon", Double.doubleToRawLongBits(Double.NaN)));
         if (!Double.isFinite(homeLat) || !Double.isFinite(homeLon) || !insideNepal(homeLat, homeLon)) return false;
 
-        // Never trust a larger server-supplied radius. FloodSafe proximity alerts are
-        // deliberately capped at 2 km around the user's verified current GPS point.
+        // A current-device target must still be fresh at delivery time. This prevents
+        // a prompt FCM message from matching an old location if GPS has stopped.
+        if (monitor.getBoolean("follow_device", false)) {
+            long locationTime = monitor.getLong("location_time", 0L);
+            if (!MonitoringLocationPolicy.freshNepalDeviceLocation(
+                    locationTime, System.currentTimeMillis(), homeLat, homeLon)) return false;
+        }
+
         double distance = haversineKm(homeLat, homeLon, stationLat, stationLon);
         if (distance > DEFAULT_RIVER_RADIUS_KM) return false;
 

@@ -40,7 +40,7 @@ public final class RiverAlertWorker extends Worker {
             "https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers";
     private static final String CHANNEL_ID = "official_nepal_alerts_v2";
     private static final String PUSH_PREFS = "floodsafe_push_guard";
-    private static final double RADIUS_KM = 15d;
+    private static final double RADIUS_KM = 2d;
     private static final long MAX_AGE_MS = 20L * 60L * 1000L;
     private static final long FUTURE_TOLERANCE_MS = 5L * 60L * 1000L;
     private static final long WARNING_REPEAT_MS = 90L * 60L * 1000L;
@@ -65,7 +65,9 @@ public final class RiverAlertWorker extends Worker {
                 "lat", Double.doubleToRawLongBits(Double.NaN)));
         double homeLon = Double.longBitsToDouble(monitor.getLong(
                 "lon", Double.doubleToRawLongBits(Double.NaN)));
-        if (!Double.isFinite(homeLat) || !Double.isFinite(homeLon)) return Result.success();
+        if (!Double.isFinite(homeLat) || !Double.isFinite(homeLon) || !insideNepal(homeLat, homeLon)) {
+            return Result.success();
+        }
 
         try {
             JSONObject root = fetch();
@@ -146,7 +148,7 @@ public final class RiverAlertWorker extends Worker {
         double lat = firstNumber(row, "latitude", "lat", "stationLatitude", "station_latitude");
         double lon = firstNumber(row, "longitude", "lon", "lng", "stationLongitude", "station_longitude");
         if (!Double.isFinite(lat) || !Double.isFinite(lon)) return null;
-        if (lat < 26d || lat > 31.8d || lon < 79.5d || lon > 89d) return null;
+        if (!insideNepal(lat, lon)) return null;
 
         double distance = haversineKm(homeLat, homeLon, lat, lon);
         if (!Double.isFinite(distance) || distance > RADIUS_KM) return null;
@@ -304,6 +306,11 @@ public final class RiverAlertWorker extends Worker {
             return LocalDateTime.parse(s.replace(' ', 'T'), DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                     .atZone(ZoneId.of("Asia/Kathmandu")).toInstant().toEpochMilli();
         } catch (Exception ignored) { return -1L; }
+    }
+
+    private static boolean insideNepal(double lat, double lon) {
+        return Double.isFinite(lat) && Double.isFinite(lon)
+                && lat >= 26.2d && lat <= 30.5d && lon >= 80d && lon <= 88.35d;
     }
 
     private static double haversineKm(double lat1, double lon1, double lat2, double lon2) {

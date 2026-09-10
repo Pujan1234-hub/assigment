@@ -3,8 +3,10 @@ package io.github.pujan1234hub.floodsafe.app;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -14,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
+import android.provider.Settings;
 import android.view.View;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
@@ -46,6 +49,8 @@ import java.util.concurrent.TimeUnit;
 /** Bundled hybrid app. No remote top-level page. */
 public class MainActivity extends Activity {
     private static final int LOCATION_REQUEST = 40;
+    private static final int NOTIFICATION_REQUEST = 41;
+    private static final int BACKGROUND_LOCATION_REQUEST = 42;
     WebView webView;
     private TextView connection;
     private LinearLayout recovery;
@@ -63,9 +68,9 @@ public class MainActivity extends Activity {
     private boolean androidLocationPromptOpen;
     private volatile long locationTapUntil;
     private boolean mainFrameError;
-    private static final int NOTIFICATION_REQUEST = 41;
+    private boolean pendingBackgroundLocationEducation;
 
-    /** A narrowly scoped signal from the bundled location button only. */
+    /** A narrowly scoped signal from the bundled FloodSafe UI only. */
     private final class LocationTapBridge {
         @JavascriptInterface public void allowLocationPrompt() {
             runOnUiThread(MainActivity.this::beginLocationFromTap);
@@ -87,6 +92,9 @@ public class MainActivity extends Activity {
         }
         @JavascriptInterface public void syncBackgroundRainAlerts() {
             runOnUiThread(MainActivity.this::syncBackgroundRainAlerts);
+        }
+        @JavascriptInterface public void requestBackgroundLocationForAlerts() {
+            runOnUiThread(MainActivity.this::requestBackgroundLocationForAlerts);
         }
     }
 
@@ -214,41 +222,79 @@ public class MainActivity extends Activity {
         updateConnection();
     }
 
+    private SharedPreferences alertPrefs() {
+        return getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE);
+    }
+
+    private boolean notificationsAllowed() {
+        return Build.VERSION.SDK_INT < 33
+                || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+    }
+
     private void setRainAlerts(boolean enabled) {
-        if (enabled && Build.VERSION.SDK_INT >= 33
-                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        if (!enabled) {
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("nepal-alerts");
+            disableBackgroundRainAlerts();
+            return;
+        }
+
+        // The user's ON choice is persistent. A temporary network/FCM failure must
+        // never flip the UI or saved preference back to OFF.
+        alertPrefs().edit().putBoolean("enabled", true).apply();
+        if (!notificationsAllowed()) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_REQUEST);
             return;
         }
-        if (enabled) FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts")
-                .addOnCompleteListener(task -> notifyAlertStatus(task.isSuccessful()));
-        else FirebaseMessaging.getInstance().unsubscribeFromTopic("nepal-alerts")
-                .addOnCompleteListener(task -> notifyAlertStatus(false));
+
+        scheduleBackgroundRainAlerts();
+        FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");
+        notifyAlertStatus(true);
     }
 
     private void syncRainAlertsStatus() {
-        if (Build.VERSION.SDK_INT >= 33
-                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            notifyAlertStatus(false);
-            return;
+        boolean enabled = alertPrefs().getBoolean("enabled", false) && notificationsAllowed();
+        if (enabled) {
+            scheduleBackgroundRainAlerts();
+            FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");
         }
-        FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts")
-                .addOnCompleteListener(task -> notifyAlertStatus(task.isSuccessful()));
+        notifyAlertStatus(enabled);
     }
 
     private void enableBackgroundRainAlerts(double lat, double lon) {
-        if (!Double.isFinite(lat) || !Double.isFinite(lon)) { notifyAlertStatus(false); return; }
-        getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).edit()
+        if (!Double.isFinite(lat) || !Double.isFinite(lon)
+                || lat < -90d || lat > 90d || lon < -180d || lon > 180d) {
+            // Keep the user's alert preference; an invalid/transient GPS fix must not disable alerts.
+            notifyAlertStatus(alertPrefs().getBoolean("enabled", false) && notificationsAllowed());
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        SharedPreferences.Editor edit = alertPrefs().edit()
                 .putBoolean("enabled", true)
-                .putLong("lat", Double.doubleToRawLongBits(lat))
-                .putLong("lon", Double.doubleToRawLongBits(lon)).apply();
-        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
+                .putBoolean("follow_device", true)
+                .putLong("device_lat", Double.doubleToRawLongBits(lat))
+                .putLong("device_lon", Double.doubleToRawLongBits(lon))
+                .putLong("device_location_time", now);
+        if (MonitoringLocationPolicy.insideNepal(lat, lon)) {
+            edit.putLong("lat", Double.doubleToRawLongBits(lat))
+                    .putLong("lon", Double.doubleToRawLongBits(lon))
+                    .putLong("location_time", now)
+                    .putBoolean("location_stale", false);
+        } else {
+            // Outside Nepal can still receive local rain timing, but must never keep
+            // an old Nepal river-proximity target active.
+            edit.remove("lat").remove("lon").remove("location_time")
+                    .putBoolean("location_stale", true);
+        }
+        edit.apply();
+
+        if (!notificationsAllowed()) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_REQUEST);
             return;
         }
         scheduleBackgroundRainAlerts();
         notifyAlertStatus(true);
+        maybeRequestBackgroundLocation();
     }
 
     private void scheduleBackgroundRainAlerts() {
@@ -266,26 +312,78 @@ public class MainActivity extends Activity {
                 ExistingPeriodicWorkPolicy.UPDATE, riverWork);
         manager.enqueueUniqueWork("floodsafe-local-river-alert-now",
                 ExistingWorkPolicy.REPLACE, riverNow);
-        // Keep the preferred instant server-push path subscribed whenever Firebase
-        // credentials are configured; the local worker remains an independent fallback.
+        // FCM is the prompt event path; WorkManager remains the independent fallback.
         FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");
+        FloodMonitorService.startIfEnabled(this);
     }
 
     private void disableBackgroundRainAlerts() {
-        getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).edit().putBoolean("enabled", false).apply();
+        alertPrefs().edit().putBoolean("enabled", false).apply();
         WorkManager manager = WorkManager.getInstance(this);
         manager.cancelUniqueWork("floodsafe-local-rain-alerts");
         manager.cancelUniqueWork("floodsafe-local-river-alerts");
         manager.cancelUniqueWork("floodsafe-local-river-alert-now");
+        FloodMonitorService.stop(this);
         notifyAlertStatus(false);
     }
 
     private void syncBackgroundRainAlerts() {
-        boolean enabled = getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).getBoolean("enabled", false)
-                && (Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
-                == PackageManager.PERMISSION_GRANTED);
+        boolean enabled = alertPrefs().getBoolean("enabled", false) && notificationsAllowed();
         if (enabled) scheduleBackgroundRainAlerts();
         notifyAlertStatus(enabled);
+    }
+
+    private void requestBackgroundLocationForAlerts() {
+        pendingBackgroundLocationEducation = true;
+        maybeRequestBackgroundLocation();
+    }
+
+    private void maybeRequestBackgroundLocation() {
+        if (!pendingBackgroundLocationEducation) return;
+        if (!alertPrefs().getBoolean("enabled", false)) {
+            pendingBackgroundLocationEducation = false;
+            return;
+        }
+        if (!hasLocation()) {
+            beginLocationFromTap();
+            return;
+        }
+        if (Build.VERSION.SDK_INT < 29 || FloodMonitorService.hasBackgroundLocation(this)) {
+            pendingBackgroundLocationEducation = false;
+            FloodMonitorService.startIfEnabled(this);
+            return;
+        }
+
+        pendingBackgroundLocationEducation = false;
+        if (Build.VERSION.SDK_INT == 29) {
+            try {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                        BACKGROUND_LOCATION_REQUEST);
+            } catch (RuntimeException ignored) { }
+            return;
+        }
+
+        String option = "Allow all the time";
+        if (Build.VERSION.SDK_INT >= 30) {
+            try { option = getPackageManager().getBackgroundPermissionOptionLabel().toString(); }
+            catch (RuntimeException ignored) { }
+        }
+        final String label = option;
+        new AlertDialog.Builder(this)
+                .setTitle("Background safety monitoring")
+                .setMessage("App बन्द/स्क्रिन लक हुँदा पनि नजिकको official flood/rain alert मिलाउन Location मा ‘"
+                        + label + "’ अनुमति चाहिन्छ। Location केवल safety monitoring का लागि प्रयोग हुन्छ।")
+                .setPositiveButton("Open location settings", (dialog, which) -> openAppSettings())
+                .setNegativeButton("Not now", null)
+                .show();
+    }
+
+    private void openAppSettings() {
+        try {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        } catch (ActivityNotFoundException | SecurityException ignored) { }
     }
 
     private void notifyAlertStatus(boolean enabled) {
@@ -294,7 +392,6 @@ public class MainActivity extends Activity {
                 "window.dispatchEvent(new CustomEvent('floodsafe-alerts-status',{detail:{enabled:"
                         + enabled + "}}));", null));
     }
-
 
     private void refreshConnection() {
         runOnUiThread(() -> { if (!isFinishing() && !isDestroyed()) updateConnection(); });
@@ -313,7 +410,10 @@ public class MainActivity extends Activity {
 
     private void beginLocationFromTap() {
         locationTapUntil = System.currentTimeMillis() + 6000L;
-        if (hasLocation() || androidLocationPromptOpen) return;
+        if (hasLocation() || androidLocationPromptOpen) {
+            maybeRequestBackgroundLocation();
+            return;
+        }
         androidLocationPromptOpen = true;
         try {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
@@ -345,32 +445,51 @@ public class MainActivity extends Activity {
     }
 
     private boolean hasLocation() {
-        return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        return FloodMonitorService.hasForegroundLocation(this);
     }
 
     private void finishLocation(boolean allowed) {
         androidLocationPromptOpen = false;
-        if (pendingLocations.isEmpty()) return;
-        List<PendingLocation> callbacks = new ArrayList<>(pendingLocations);
-        pendingLocations.clear();
-        boolean validPage = allowed && webView != null && NavigationPolicy.internalPage(webView.getUrl());
-        for (PendingLocation item : callbacks) {
-            item.callback.invoke(item.origin, validPage && NavigationPolicy.trustedOrigin(item.origin), false);
+        if (!pendingLocations.isEmpty()) {
+            List<PendingLocation> callbacks = new ArrayList<>(pendingLocations);
+            pendingLocations.clear();
+            boolean validPage = allowed && webView != null && NavigationPolicy.internalPage(webView.getUrl());
+            for (PendingLocation item : callbacks) {
+                item.callback.invoke(item.origin, validPage && NavigationPolicy.trustedOrigin(item.origin), false);
+            }
+        }
+        if (allowed && alertPrefs().getBoolean("enabled", false)) {
+            FloodMonitorService.startIfEnabled(this);
         }
     }
 
     @Override public void onRequestPermissionsResult(int code, String[] permissions, int[] grants) {
         super.onRequestPermissionsResult(code, permissions, grants);
-        if (code == LOCATION_REQUEST) finishLocation(hasLocation() && webView != null
-                && NavigationPolicy.internalPage(webView.getUrl()));
+        if (code == LOCATION_REQUEST) {
+            boolean allowed = hasLocation() && webView != null && NavigationPolicy.internalPage(webView.getUrl());
+            finishLocation(allowed);
+            if (allowed) maybeRequestBackgroundLocation();
+        }
+        if (code == BACKGROUND_LOCATION_REQUEST) {
+            if (FloodMonitorService.hasBackgroundLocation(this)) FloodMonitorService.startIfEnabled(this);
+            notifyAlertStatus(alertPrefs().getBoolean("enabled", false) && notificationsAllowed());
+        }
         if (code == NOTIFICATION_REQUEST) {
-            if (Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
-                    == PackageManager.PERMISSION_GRANTED) {
-                if (getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).getBoolean("enabled", false)) {
-                    scheduleBackgroundRainAlerts(); notifyAlertStatus(true);
-                } else setRainAlerts(true);
-            } else { getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).edit().putBoolean("enabled", false).apply(); notifyAlertStatus(false); }
+            if (notificationsAllowed()) {
+                if (alertPrefs().getBoolean("enabled", false)) {
+                    scheduleBackgroundRainAlerts();
+                    notifyAlertStatus(true);
+                    maybeRequestBackgroundLocation();
+                } else {
+                    setRainAlerts(true);
+                }
+            } else {
+                // Permission denial prevents notifications, so the UI must show OFF; this
+                // is the only permission-related case that clears the alert preference.
+                alertPrefs().edit().putBoolean("enabled", false).apply();
+                FloodMonitorService.stop(this);
+                notifyAlertStatus(false);
+            }
         }
     }
 
@@ -386,12 +505,17 @@ public class MainActivity extends Activity {
         if (webView != null && webView.canGoBack()) webView.goBack();
         else super.onBackPressed();
     }
+
     @Override protected void onPause() {
         if (webView != null) webView.onPause();
         super.onPause();
     }
+
     @Override protected void onResume() {
         super.onResume();
+        if (alertPrefs().getBoolean("enabled", false) && notificationsAllowed()) {
+            FloodMonitorService.startIfEnabled(this);
+        }
         if (webView != null) {
             webView.onResume();
             // Always re-check weather immediately when returning from a closed/background app.
@@ -399,6 +523,7 @@ public class MainActivity extends Activity {
         }
         updateConnection();
     }
+
     @Override protected void onDestroy() {
         finishLocation(false);
         if (connectivity != null && networkCallback != null) connectivity.unregisterNetworkCallback(networkCallback);
@@ -407,6 +532,8 @@ public class MainActivity extends Activity {
             webView.destroy();
             webView = null;
         }
+        // Deliberately do not stop FloodMonitorService here: the user's ON setting
+        // is specifically meant to continue after the app UI is closed/swiped away.
         super.onDestroy();
     }
 }

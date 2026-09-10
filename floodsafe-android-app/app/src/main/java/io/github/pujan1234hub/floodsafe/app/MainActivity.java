@@ -148,15 +148,12 @@ public class MainActivity extends Activity {
         settings.setMediaPlaybackRequiresUserGesture(true);
         settings.setSafeBrowsingEnabled(true);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        // Automatic page scripts cannot show Android's location prompt. The
-        // bundled button explicitly opens a short-lived permission window.
         webView.addJavascriptInterface(new LocationTapBridge(), "FloodSafeNative");
         WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new BundledContent(getAssets())).build();
         webView.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 WebResourceResponse local = loader.shouldInterceptRequest(request.getUrl());
-                // Never fall through to a network page at the privileged local origin.
                 return local != null ? local : NavigationPolicy.trustedOrigin(request.getUrl().toString())
                         ? BundledContent.missing() : null;
             }
@@ -167,8 +164,6 @@ public class MainActivity extends Activity {
                 return true;
             }
             @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {
-                // Android's own permission dialog may briefly cause WebView lifecycle
-                // callbacks. Do not cancel/re-open the same location prompt then.
                 if (!androidLocationPromptOpen) finishLocation(false);
                 mainFrameError = false;
                 updateConnection();
@@ -191,7 +186,6 @@ public class MainActivity extends Activity {
             @Override public void onPermissionRequest(PermissionRequest request) { request.deny(); }
             @Override public boolean onCreateWindow(WebView view, boolean dialog, boolean userGesture, Message result) {
                 if (!userGesture) return false;
-                // Capture a source link in an unprivileged, script-disabled temporary view.
                 WebView popup = new WebView(MainActivity.this);
                 popup.getSettings().setJavaScriptEnabled(false);
                 popup.getSettings().setAllowFileAccess(false);
@@ -210,7 +204,6 @@ public class MainActivity extends Activity {
             }
         });
         webView.setDownloadListener((url, userAgent, disposition, mime, length) -> openSource(url));
-        // Always start with the bundled home screen; ignore incoming URLs and persisted pages.
         webView.loadUrl(NavigationPolicy.HOME);
         connectivity = getSystemService(ConnectivityManager.class);
         networkCallback = new ConnectivityManager.NetworkCallback() {
@@ -237,15 +230,11 @@ public class MainActivity extends Activity {
             disableBackgroundRainAlerts();
             return;
         }
-
-        // The user's ON choice is persistent. A temporary network/FCM failure must
-        // never flip the UI or saved preference back to OFF.
         alertPrefs().edit().putBoolean("enabled", true).apply();
         if (!notificationsAllowed()) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_REQUEST);
             return;
         }
-
         scheduleBackgroundRainAlerts();
         FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");
         notifyAlertStatus(true);
@@ -263,30 +252,22 @@ public class MainActivity extends Activity {
     private void enableBackgroundRainAlerts(double lat, double lon) {
         if (!Double.isFinite(lat) || !Double.isFinite(lon)
                 || lat < -90d || lat > 90d || lon < -180d || lon > 180d) {
-            // Keep the user's alert preference; an invalid/transient GPS fix must not disable alerts.
             notifyAlertStatus(alertPrefs().getBoolean("enabled", false) && notificationsAllowed());
             return;
         }
 
         long now = System.currentTimeMillis();
-        SharedPreferences.Editor edit = alertPrefs().edit()
+        alertPrefs().edit()
                 .putBoolean("enabled", true)
                 .putBoolean("follow_device", true)
                 .putLong("device_lat", Double.doubleToRawLongBits(lat))
                 .putLong("device_lon", Double.doubleToRawLongBits(lon))
-                .putLong("device_location_time", now);
-        if (MonitoringLocationPolicy.insideNepal(lat, lon)) {
-            edit.putLong("lat", Double.doubleToRawLongBits(lat))
-                    .putLong("lon", Double.doubleToRawLongBits(lon))
-                    .putLong("location_time", now)
-                    .putBoolean("location_stale", false);
-        } else {
-            // Outside Nepal can still receive local rain timing, but must never keep
-            // an old Nepal river-proximity target active.
-            edit.remove("lat").remove("lon").remove("location_time")
-                    .putBoolean("location_stale", true);
-        }
-        edit.apply();
+                .putLong("device_location_time", now)
+                .putLong("lat", Double.doubleToRawLongBits(lat))
+                .putLong("lon", Double.doubleToRawLongBits(lon))
+                .putLong("location_time", now)
+                .putBoolean("location_stale", false)
+                .apply();
 
         if (!notificationsAllowed()) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_REQUEST);
@@ -312,7 +293,6 @@ public class MainActivity extends Activity {
                 ExistingPeriodicWorkPolicy.UPDATE, riverWork);
         manager.enqueueUniqueWork("floodsafe-local-river-alert-now",
                 ExistingWorkPolicy.REPLACE, riverNow);
-        // FCM is the prompt event path; WorkManager remains the independent fallback.
         FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");
         FloodMonitorService.startIfEnabled(this);
     }
@@ -431,8 +411,6 @@ public class MainActivity extends Activity {
             callback.invoke(origin, false, false); return;
         }
         if (hasLocation()) { callback.invoke(origin, true, false); return; }
-        // A WebView can ask more than once while Android is showing its permission
-        // sheet. Queue those callbacks instead of repeatedly opening the sheet.
         pendingLocations.add(new PendingLocation(origin, callback));
         if (androidLocationPromptOpen) return;
         androidLocationPromptOpen = true;
@@ -484,8 +462,6 @@ public class MainActivity extends Activity {
                     setRainAlerts(true);
                 }
             } else {
-                // Permission denial prevents notifications, so the UI must show OFF; this
-                // is the only permission-related case that clears the alert preference.
                 alertPrefs().edit().putBoolean("enabled", false).apply();
                 FloodMonitorService.stop(this);
                 notifyAlertStatus(false);
@@ -518,7 +494,6 @@ public class MainActivity extends Activity {
         }
         if (webView != null) {
             webView.onResume();
-            // Always re-check weather immediately when returning from a closed/background app.
             webView.evaluateJavascript("setTimeout(function(){window.FloodSafeRain?.refresh?.(true)},120)", null);
         }
         updateConnection();
@@ -532,8 +507,6 @@ public class MainActivity extends Activity {
             webView.destroy();
             webView = null;
         }
-        // Deliberately do not stop FloodMonitorService here: the user's ON setting
-        // is specifically meant to continue after the app UI is closed/swiped away.
         super.onDestroy();
     }
 }

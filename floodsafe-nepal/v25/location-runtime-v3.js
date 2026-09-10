@@ -1,12 +1,13 @@
 (()=>{'use strict';
 if(window.__fsLocationRuntimeV3)return;window.__fsLocationRuntimeV3=true;
-const $=id=>document.getElementById(id),MAX_AGE=120000,AUTO_KEY='fs-auto-current-location-v1';
+const $=id=>document.getElementById(id),MAX_AGE=120000,AUTO_KEY='fs-auto-current-location-v1',HOME_KEY='fs-nepal-monitor-v1';
 const inside=(la,lo)=>Number.isFinite(la)&&Number.isFinite(lo)&&la>=26.2&&la<=30.5&&lo>=80&&lo<=88.35;
 let last=null,watch=null,requested=false,pendingCenter=false,autoRestore=false,busy=false,boundMap=null,lastError='';
 const tr=(ne,en)=>(window.FloodSafe?.state?.lang||localStorage.getItem('fs-flood-lang'))==='en'?en:ne;
 const fresh=()=>last&&!lastError&&Date.now()-last.at<=MAX_AGE;
-const wantsAuto=()=>{try{return localStorage.getItem(AUTO_KEY)==='1'}catch{return false}};
+const wantsAuto=()=>{try{const choice=localStorage.getItem(AUTO_KEY);if(choice==='1')return true;if(choice==='0')return false;const h=JSON.parse(localStorage.getItem(HOME_KEY)||'null');return !h||h.kind==='gps'}catch{return true}};
 const rememberAuto=()=>{try{localStorage.setItem(AUTO_KEY,'1')}catch{}};
+const rememberDenied=()=>{try{localStorage.setItem(AUTO_KEY,'0')}catch{}};
 function label(){
   if(!last||!$('place'))return;
   if(!inside(last.lat,last.lon)){$('place').textContent=tr('🌍 हालको GPS स्थान नेपाल बाहिर छ • मौसम यही स्थानको हो','🌍 Current GPS is outside Nepal • weather is for this location');return}
@@ -55,7 +56,7 @@ function accept(position){
 }
 function fail(error){
   busy=false;lastError=String(error?.message||'Location unavailable');window.__fsLocationLastError=lastError;
-  if(error?.code===1){requested=false;stopWatch()}
+  if(error?.code===1){rememberDenied();requested=false;stopWatch()}
   if(!last&&$('outsideNotice'))$('outsideNotice').hidden=true;
   if(last)label();else if($('place'))$('place').textContent=tr('📍 Location अनुमति दिनुहोस् वा नेपाल नक्साबाट निगरानी स्थान छान्नुहोस्','📍 Allow location access or choose a monitoring point on the Nepal map');
   marker();window.dispatchEvent(new CustomEvent('fslocationerror',{detail:{message:lastError}}));
@@ -70,8 +71,9 @@ function startWatch(){
 function startRememberedLocation(){
   if(!wantsAuto()||requested||document.hidden)return;
   requested=true;autoRestore=true;lastError='';
-  // The user already chose Current Location earlier. Re-open the native permission
-  // window silently when permission is still granted, then refresh GPS without opening the map.
+  // A previous Current Location choice, or a fresh install with no saved map point,
+  // should refresh GPS automatically without opening the map. Native Android reuses
+  // an already-granted permission; if permission was denied we remember that choice.
   try{window.FloodSafeNative?.allowLocationPrompt?.()}catch{}
   setTimeout(startWatch,180);
 }

@@ -1,28 +1,42 @@
 {
-  "generated_at": "2026-09-11T06:46:53.985222+05:45",
-  "updated_at_npt": "11 Sep 06:46 NPT",
+  "generated_at": "2026-09-11T11:38:02.874768+05:45",
+  "updated_at_npt": "11 Sep 11:38 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "जेनजी आन्दोलनको मौका छोपी फरार जबरजस्ती करणी मुद्दाका कैदी पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591410/prisoner-in-rape-case-who-escaped-seized-opportunity-from-genji-movement-arrested",
+      "published_at": "2026-09-11T11:09:19+05:45",
+      "flash": true
+    },
+    {
+      "title": "सोलुखुम्बुको हुङ्गा खोलामा पहिरो खसेर १०० मिटर लामो ड्यामबाट पानी बग्न थाल्यो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591403/a-landslide-in-the-hunga-river-in-solukhumbu-caused-water-to-flow-from-a-100-meter-long-dam",
+      "published_at": "2026-09-11T10:31:51+05:45",
+      "flash": false
+    },
+    {
+      "title": "जलविद्युत् आयोजनाले बढायो वनको राजस्व",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591384/hydropower-projects-increase-forest-revenue",
+      "published_at": "2026-09-11T08:46:51+05:45",
+      "flash": false
+    },
     {
       "title": "डेढ महिनापछि टरिगाउँ विमानस्थलमा निगमको जहाज",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591369/corporation-aircraft-arrives-at-tarigaun-airport-after-one-and-a-half-months",
       "published_at": "2026-09-11T06:37:09+05:45",
-      "flash": true
-    },
-    {
-      "title": "देशभर मनसुनी वायुको प्रभाव कायमै, आज यी तीन प्रदेशमा भारी वर्षाको सम्भावना",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591366/the-influence-of-monsoon-winds-continues-across-the-country-with-heavy-rain-likely-in-these-three-provinces-today",
-      "published_at": "2026-09-11T06:11:49+05:45",
-      "flash": true
+      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -35,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 2
+      "flash": 1,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,
@@ -46,7 +60,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     }

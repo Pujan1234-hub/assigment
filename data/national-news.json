@@ -1,36 +1,50 @@
 {
-  "generated_at": "2026-09-11T20:20:36.549284+05:45",
-  "updated_at_npt": "11 Sep 20:20 NPT",
+  "generated_at": "2026-09-11T23:39:17.400993+05:45",
+  "updated_at_npt": "11 Sep 23:39 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "शनिबार रातभर ग्लोबल आईएमईको डिजिटल बैंकिङ सेवा अवरुद्ध हुने",
+      "title": "भोटेकोशी बाढीबाट पाठ सिकेर जलविद्युत् पूर्वाधार निर्माण गर्नुपर्नेमा जोड",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591566/global-imes-digital-banking-service-to-be-disrupted-overnight-on-saturday",
-      "published_at": "2026-09-11T20:17:02+05:45",
+      "url": "https://www.ratopati.com/story/591592/emphasis-on-building-hydropower-infrastructure-by-learning-lessons-from-the-bhotekoshi-flood",
+      "published_at": "2026-09-11T23:32:05+05:45",
       "flash": true
     },
     {
-      "title": "आलोचना सहनै नसक्ने नेतृत्वका कारण नेपालका वामपन्थी आन्दोलन सङ्कटमा",
+      "title": "महाराष्ट्रमा भएको सडक दुर्घटनामा छत्तीसगढका ९ जनाको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591508/nepals-leftist-movement-in-crisis-due-to-leadership-unable-to-tolerate-criticism",
-      "published_at": "2026-09-11T20:00:00+05:45",
+      "url": "https://www.ratopati.com/story/591591/9-people-from-chhattisgarh-die-in-road-accident-in-maharashtra",
+      "published_at": "2026-09-11T23:02:35+05:45",
       "flash": true
     },
     {
-      "title": "प्रधानमन्त्रीसँगको संवादपछि विनोद चौधरी उत्साहित, ‘सरकार र निजी क्षेत्र एउटै लयमा अगाडि बढ्न सक्छन्’",
+      "title": "भोटेकोशी बाढी : नेपाल प्रहरीद्वारा ‘टिमुरे टु त्रिवेणी’ अप्रेशन सञ्चालन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591563/binod-chaudhary-excited-after-dialogue-with-prime-minister-government-and-private-sector-can-move-forward-in-the-same-rhythm",
-      "published_at": "2026-09-11T19:56:35+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/591590/bhotekoshi-flood-nepal-police-conducts-timure-to-triveni-operation",
+      "published_at": "2026-09-11T22:33:24+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी पीडितका लागि गण्डकीका यातायात व्यवसायीबाट २७ लाख बढी सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591584/gandaki-transport-entrepreneurs-provide-over-rs-27-million-in-assistance-to-bhotekoshi-flood-victims",
+      "published_at": "2026-09-11T21:55:25+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी : छोराबुहारी बेपत्ता, घर फर्कने आसमा आमाबुवा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591575/bhotekoshi-flood-son-and-daughter-in-law-missing-parents-hoping-to-return-home",
+      "published_at": "2026-09-11T21:08:03+05:45",
+      "flash": false
     },
     {
       "title": "सुदूरपश्चिममा बजेट निर्माण प्रक्रिया तत्काल अघि बढाउने सर्वदलीय निर्णय",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591561/all-party-decision-to-immediately-proceed-with-the-budget-preparation-process-in-the-far-west",
       "published_at": "2026-09-11T19:41:34+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "३ वर्षीय बालिका हत्या प्रकरण : आरोपीलाई अदालतले के आधारमा गर्‍यो धरौटी र साधारण तारेखमा छाड्न आदेश ?",
@@ -38,26 +52,12 @@
       "url": "https://www.ratopati.com/story/591459/3-year-old-girl-murder-case-on-what-basis-did-the-court-order-the-accused-to-be-released-on-bail-and-on-a-regular-date",
       "published_at": "2026-09-11T19:00:00+05:45",
       "flash": false
-    },
-    {
-      "title": "झोलुङ्गे पुल निर्माणपछि घण्टौ लाग्ने दूरी १० मिनेटमा सीमित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591519/after-the-construction-of-the-suspension-bridge-the-distance-that-used-to-take-an-hour-is-reduced-to-10-minutes",
-      "published_at": "2026-09-11T16:45:49+05:45",
-      "flash": false
-    },
-    {
-      "title": "शव पहिचानका लागि पोखरामा अहिलेसम्म २५ आफन्तको ‘डिएनए’ नमुना सङ्कलन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591511/dna-samples-of-25-relatives-collected-in-pokhara-for-body-identification",
-      "published_at": "2026-09-11T16:28:22+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     },
@@ -70,7 +70,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
+      "flash": 2,
       "recent": 7
     },
     "Kathmandu Post": {
@@ -81,7 +81,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     }

@@ -1,21 +1,28 @@
 {
-  "generated_at": "2026-09-11T04:50:30.858042+05:45",
-  "updated_at_npt": "11 Sep 04:50 NPT",
+  "generated_at": "2026-09-11T06:46:53.985222+05:45",
+  "updated_at_npt": "11 Sep 06:46 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "उद्धार गरेर ल्याइएको चितुवा फुत्किएर आक्रमण गर्दा एक जना घाइते",
+      "title": "डेढ महिनापछि टरिगाउँ विमानस्थलमा निगमको जहाज",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591353/one-injured-when-rescued-leopard-breaks-free-and-attacks",
-      "published_at": "2026-09-10T22:57:14+05:45",
-      "flash": false
+      "url": "https://www.ratopati.com/story/591369/corporation-aircraft-arrives-at-tarigaun-airport-after-one-and-a-half-months",
+      "published_at": "2026-09-11T06:37:09+05:45",
+      "flash": true
+    },
+    {
+      "title": "देशभर मनसुनी वायुको प्रभाव कायमै, आज यी तीन प्रदेशमा भारी वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591366/the-influence-of-monsoon-winds-continues-across-the-country-with-heavy-rain-likely-in-these-three-provinces-today",
+      "published_at": "2026-09-11T06:11:49+05:45",
+      "flash": true
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     },
@@ -28,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 1
+      "flash": 2,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,
@@ -39,7 +46,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     }

@@ -1,35 +1,49 @@
 {
-  "generated_at": "2026-09-11T11:38:02.874768+05:45",
-  "updated_at_npt": "11 Sep 11:38 NPT",
+  "generated_at": "2026-09-11T16:16:42.062551+05:45",
+  "updated_at_npt": "11 Sep 16:16 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "वर्षमानको प्रश्न : सत्ता सधैँका लागि होइन, नपत्याए भित्तामा झुन्डिएका पूर्वप्रधानमन्त्रीका तस्बिर हेर्नुहोस्",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591506/varshamans-question-power-is-not-forever-if-you-dont-believe-look-at-the-picture-of-the-former-prime-minister-hanging-on-the-wall",
+      "published_at": "2026-09-11T16:15:07+05:45",
+      "flash": true
+    },
+    {
+      "title": "काठे पुलकै भरमा बेँसीसहर–चामे सडक",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591499/besisahar-chame-road-via-wooden-bridge",
+      "published_at": "2026-09-11T15:57:16+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढी प्रभावित क्षेत्रमा पुनर्निर्माण र राहत तीव्र पार्न संसदीय समितिको निर्देशन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591472/parliamentary-committee-directs-to-accelerate-reconstruction-and-relief-in-flood-affected-areas",
+      "published_at": "2026-09-11T14:57:53+05:45",
+      "flash": false
+    },
+    {
+      "title": "३ वर्षीय बालिका हत्या प्रकरण : आरोपीलाई अदालतले के आधारमा गर्‍यो धरौटी र साधारण तारेखमा छाड्न आदेश ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591459/3-year-old-girl-murder-case-on-what-basis-did-the-court-order-the-accused-to-be-released-on-bail-and-on-a-regular-date",
+      "published_at": "2026-09-11T14:31:24+05:45",
+      "flash": false
+    },
     {
       "title": "जेनजी आन्दोलनको मौका छोपी फरार जबरजस्ती करणी मुद्दाका कैदी पक्राउ",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591410/prisoner-in-rape-case-who-escaped-seized-opportunity-from-genji-movement-arrested",
       "published_at": "2026-09-11T11:09:19+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "सोलुखुम्बुको हुङ्गा खोलामा पहिरो खसेर १०० मिटर लामो ड्यामबाट पानी बग्न थाल्यो",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591403/a-landslide-in-the-hunga-river-in-solukhumbu-caused-water-to-flow-from-a-100-meter-long-dam",
       "published_at": "2026-09-11T10:31:51+05:45",
-      "flash": false
-    },
-    {
-      "title": "जलविद्युत् आयोजनाले बढायो वनको राजस्व",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591384/hydropower-projects-increase-forest-revenue",
-      "published_at": "2026-09-11T08:46:51+05:45",
-      "flash": false
-    },
-    {
-      "title": "डेढ महिनापछि टरिगाउँ विमानस्थलमा निगमको जहाज",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591369/corporation-aircraft-arrives-at-tarigaun-airport-after-one-and-a-half-months",
-      "published_at": "2026-09-11T06:37:09+05:45",
       "flash": false
     }
   ],
@@ -49,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 4
+      "flash": 2,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,

@@ -1,28 +1,42 @@
 {
-  "generated_at": "2026-09-11T23:39:17.400993+05:45",
-  "updated_at_npt": "11 Sep 23:39 NPT",
+  "generated_at": "2026-09-12T02:11:31.470217+05:45",
+  "updated_at_npt": "12 Sep 02:11 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढी पीडितलाई बेनी नगरपालिकाको करिब रु ४० लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591594/beni-municipality-provides-around-rs-4-million-in-assistance-to-bhotekoshi-flood-victims",
+      "published_at": "2026-09-12T00:23:50+05:45",
+      "flash": false
+    },
     {
       "title": "भोटेकोशी बाढीबाट पाठ सिकेर जलविद्युत् पूर्वाधार निर्माण गर्नुपर्नेमा जोड",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591592/emphasis-on-building-hydropower-infrastructure-by-learning-lessons-from-the-bhotekoshi-flood",
       "published_at": "2026-09-11T23:32:05+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "महाराष्ट्रमा भएको सडक दुर्घटनामा छत्तीसगढका ९ जनाको मृत्यु",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591591/9-people-from-chhattisgarh-die-in-road-accident-in-maharashtra",
       "published_at": "2026-09-11T23:02:35+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढी : नेपाल प्रहरीद्वारा ‘टिमुरे टु त्रिवेणी’ अप्रेशन सञ्चालन",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591590/bhotekoshi-flood-nepal-police-conducts-timure-to-triveni-operation",
       "published_at": "2026-09-11T22:33:24+05:45",
+      "flash": false
+    },
+    {
+      "title": "चिलिमे जलविद्युत् आयोजनाको सुरुङसम्म जोडियो पहुँचमार्ग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591588/access-road-connected-to-chilime-hydropower-project-tunnel",
+      "published_at": "2026-09-11T22:26:54+05:45",
       "flash": false
     },
     {
@@ -37,20 +51,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591575/bhotekoshi-flood-son-and-daughter-in-law-missing-parents-hoping-to-return-home",
       "published_at": "2026-09-11T21:08:03+05:45",
-      "flash": false
-    },
-    {
-      "title": "सुदूरपश्चिममा बजेट निर्माण प्रक्रिया तत्काल अघि बढाउने सर्वदलीय निर्णय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591561/all-party-decision-to-immediately-proceed-with-the-budget-preparation-process-in-the-far-west",
-      "published_at": "2026-09-11T19:41:34+05:45",
-      "flash": false
-    },
-    {
-      "title": "३ वर्षीय बालिका हत्या प्रकरण : आरोपीलाई अदालतले के आधारमा गर्‍यो धरौटी र साधारण तारेखमा छाड्न आदेश ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591459/3-year-old-girl-murder-case-on-what-basis-did-the-court-order-the-accused-to-be-released-on-bail-and-on-a-regular-date",
-      "published_at": "2026-09-11T19:00:00+05:45",
       "flash": false
     }
   ],
@@ -70,7 +70,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
+      "flash": 0,
       "recent": 7
     },
     "Kathmandu Post": {

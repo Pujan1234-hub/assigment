@@ -1,56 +1,63 @@
 {
-  "generated_at": "2026-09-11T16:16:42.062551+05:45",
-  "updated_at_npt": "11 Sep 16:16 NPT",
+  "generated_at": "2026-09-11T20:20:36.549284+05:45",
+  "updated_at_npt": "11 Sep 20:20 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "वर्षमानको प्रश्न : सत्ता सधैँका लागि होइन, नपत्याए भित्तामा झुन्डिएका पूर्वप्रधानमन्त्रीका तस्बिर हेर्नुहोस्",
+      "title": "शनिबार रातभर ग्लोबल आईएमईको डिजिटल बैंकिङ सेवा अवरुद्ध हुने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591506/varshamans-question-power-is-not-forever-if-you-dont-believe-look-at-the-picture-of-the-former-prime-minister-hanging-on-the-wall",
-      "published_at": "2026-09-11T16:15:07+05:45",
+      "url": "https://www.ratopati.com/story/591566/global-imes-digital-banking-service-to-be-disrupted-overnight-on-saturday",
+      "published_at": "2026-09-11T20:17:02+05:45",
       "flash": true
     },
     {
-      "title": "काठे पुलकै भरमा बेँसीसहर–चामे सडक",
+      "title": "आलोचना सहनै नसक्ने नेतृत्वका कारण नेपालका वामपन्थी आन्दोलन सङ्कटमा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591499/besisahar-chame-road-via-wooden-bridge",
-      "published_at": "2026-09-11T15:57:16+05:45",
+      "url": "https://www.ratopati.com/story/591508/nepals-leftist-movement-in-crisis-due-to-leadership-unable-to-tolerate-criticism",
+      "published_at": "2026-09-11T20:00:00+05:45",
       "flash": true
     },
     {
-      "title": "बाढी प्रभावित क्षेत्रमा पुनर्निर्माण र राहत तीव्र पार्न संसदीय समितिको निर्देशन",
+      "title": "प्रधानमन्त्रीसँगको संवादपछि विनोद चौधरी उत्साहित, ‘सरकार र निजी क्षेत्र एउटै लयमा अगाडि बढ्न सक्छन्’",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591472/parliamentary-committee-directs-to-accelerate-reconstruction-and-relief-in-flood-affected-areas",
-      "published_at": "2026-09-11T14:57:53+05:45",
-      "flash": false
+      "url": "https://www.ratopati.com/story/591563/binod-chaudhary-excited-after-dialogue-with-prime-minister-government-and-private-sector-can-move-forward-in-the-same-rhythm",
+      "published_at": "2026-09-11T19:56:35+05:45",
+      "flash": true
+    },
+    {
+      "title": "सुदूरपश्चिममा बजेट निर्माण प्रक्रिया तत्काल अघि बढाउने सर्वदलीय निर्णय",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591561/all-party-decision-to-immediately-proceed-with-the-budget-preparation-process-in-the-far-west",
+      "published_at": "2026-09-11T19:41:34+05:45",
+      "flash": true
     },
     {
       "title": "३ वर्षीय बालिका हत्या प्रकरण : आरोपीलाई अदालतले के आधारमा गर्‍यो धरौटी र साधारण तारेखमा छाड्न आदेश ?",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591459/3-year-old-girl-murder-case-on-what-basis-did-the-court-order-the-accused-to-be-released-on-bail-and-on-a-regular-date",
-      "published_at": "2026-09-11T14:31:24+05:45",
+      "published_at": "2026-09-11T19:00:00+05:45",
       "flash": false
     },
     {
-      "title": "जेनजी आन्दोलनको मौका छोपी फरार जबरजस्ती करणी मुद्दाका कैदी पक्राउ",
+      "title": "झोलुङ्गे पुल निर्माणपछि घण्टौ लाग्ने दूरी १० मिनेटमा सीमित",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591410/prisoner-in-rape-case-who-escaped-seized-opportunity-from-genji-movement-arrested",
-      "published_at": "2026-09-11T11:09:19+05:45",
+      "url": "https://www.ratopati.com/story/591519/after-the-construction-of-the-suspension-bridge-the-distance-that-used-to-take-an-hour-is-reduced-to-10-minutes",
+      "published_at": "2026-09-11T16:45:49+05:45",
       "flash": false
     },
     {
-      "title": "सोलुखुम्बुको हुङ्गा खोलामा पहिरो खसेर १०० मिटर लामो ड्यामबाट पानी बग्न थाल्यो",
+      "title": "शव पहिचानका लागि पोखरामा अहिलेसम्म २५ आफन्तको ‘डिएनए’ नमुना सङ्कलन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591403/a-landslide-in-the-hunga-river-in-solukhumbu-caused-water-to-flow-from-a-100-meter-long-dam",
-      "published_at": "2026-09-11T10:31:51+05:45",
+      "url": "https://www.ratopati.com/story/591511/dna-samples-of-25-relatives-collected-in-pokhara-for-body-identification",
+      "published_at": "2026-09-11T16:28:22+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     },
@@ -63,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 6
+      "flash": 4,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -74,7 +81,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     }

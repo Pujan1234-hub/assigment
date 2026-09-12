@@ -1,6 +1,8 @@
 name: FloodSafe nearby river push
 
 on:
+  schedule:
+    - cron: '*/5 * * * *'
   push:
     branches: [main]
     paths:
@@ -34,7 +36,7 @@ jobs:
 
           EDGE='https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers'
           TOPIC='nepal-alerts'
-          RADIUS_KM='2'
+          RADIUS_KM='1'
           MAX_AGE_MIN=20
           raw=os.environ.get('FIREBASE_SERVICE_ACCOUNT','').strip()
           if not raw:
@@ -42,7 +44,7 @@ jobs:
                   'server_push':'disabled_missing_firebase_service_account',
                   'android_fallback':'RiverAlertWorker',
                   'fallback_interval_minutes':15,
-                  'radius_km':2
+                  'radius_km':1
               }))
               sys.exit(0)
           service=json.loads(raw)
@@ -151,5 +153,5 @@ jobs:
               if r.status_code==401:
                   creds.refresh(Request());r=requests.post(send_url,headers={'Authorization':'Bearer '+creds.token,'Content-Type':'application/json'},json=msg,timeout=20)
               r.raise_for_status();submitted+=1
-          print(json.dumps({'official_rows':len(rows),'fresh_warning_danger':len(hazards),'submitted':submitted}))
+          print(json.dumps({'official_rows':len(rows),'fresh_warning_danger':len(hazards),'submitted':submitted,'radius_km':1}))
           PY

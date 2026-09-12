@@ -56,6 +56,9 @@ public final class RiverAlertWorker extends Worker {
         Context app = getApplicationContext();
         SharedPreferences monitor = app.getSharedPreferences(RainAlertWorker.PREFS, Context.MODE_PRIVATE);
         if (!monitor.getBoolean("enabled", false)) return Result.success();
+        // Proximity warnings are strictly current-device alerts. A Nepal point chosen
+        // on the map is for browsing/monitoring UI only and must never drive a push.
+        if (!monitor.getBoolean("follow_device", false)) return Result.success();
         if (Build.VERSION.SDK_INT >= 33 && app.checkSelfPermission(
                 android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             return Result.success();
@@ -68,12 +71,10 @@ public final class RiverAlertWorker extends Worker {
         if (!Double.isFinite(homeLat) || !Double.isFinite(homeLon) || !insideNepal(homeLat, homeLon)) {
             return Result.success();
         }
-        if (monitor.getBoolean("follow_device", false)) {
-            long locationTime = monitor.getLong("location_time", 0L);
-            if (!MonitoringLocationPolicy.freshNepalDeviceLocation(
-                    locationTime, System.currentTimeMillis(), homeLat, homeLon)) {
-                return Result.success();
-            }
+        long locationTime = monitor.getLong("location_time", 0L);
+        if (!MonitoringLocationPolicy.freshNepalDeviceLocation(
+                locationTime, System.currentTimeMillis(), homeLat, homeLon)) {
+            return Result.success();
         }
 
         try {

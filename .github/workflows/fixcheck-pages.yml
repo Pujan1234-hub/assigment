@@ -94,7 +94,7 @@ jobs:
           PY
 
           sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
-          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=4"></script><script src="./portfolio-motion.js?v=2"></script><script src="./portfolio-i18n.js?v=6"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=4"></script><script src="./portfolio-motion.js?v=5"></script><script src="./portfolio-i18n.js?v=6"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
 
           python - <<'PY'
           from pathlib import Path
@@ -155,7 +155,7 @@ jobs:
 
               curl --max-time 15 -fsSL "$BASE/?check=$GITHUB_SHA" -o /tmp/home.html
               grep -Fq 'portfolio-floodsafe.js?v=4' /tmp/home.html
-              grep -Fq 'portfolio-motion.js?v=2' /tmp/home.html
+              grep -Fq 'portfolio-motion.js?v=5' /tmp/home.html
               grep -Fq 'portfolio-i18n.js?v=6' /tmp/home.html
 
               curl --max-time 15 -fsSL "$BASE/portfolio-floodsafe.js?check=$GITHUB_SHA" -o /tmp/portfolio-floodsafe.js

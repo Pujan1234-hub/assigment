@@ -32,6 +32,10 @@
     .float-expiry,.ai-chip{background:rgba(10,16,26,.92)!important;color:#8f9caf!important;border-color:rgba(255,255,255,.10)!important}
     .float-expiry b,.ai-chip b{color:#f7f9fc!important}
 
+    /* PJBuilds is the visible portfolio/product brand. */
+    .pjbuilds-signoff{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid rgba(49,87,213,.18);border-radius:999px;background:linear-gradient(135deg,rgba(49,87,213,.08),rgba(123,85,214,.08));color:#26334b;font-weight:900;letter-spacing:.02em;box-shadow:0 10px 28px rgba(38,51,75,.06)}
+    .pjbuilds-signoff:before{content:'PJB';display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#39c8dc,#7581f2);color:#071019;font-size:.62rem;font-weight:1000}
+
     /* Sathi AI is a FloodSafe Nepal feature, not a separate education/voice app. */
     #sathi .voice{display:none!important}
     #sathi .sathi-chat{position:absolute;left:7%;right:7%;bottom:7%;z-index:5;display:grid;gap:8px}
@@ -46,6 +50,7 @@
       #sathi .sathi-chat{left:4%;right:4%;bottom:5%}
       #sathi .sathi-bubble{font-size:.62rem;padding:9px 10px}
       #sathi .ai-stage{min-height:470px!important}
+      .pjbuilds-signoff{margin-top:4px}
     }
   `;
 
@@ -102,10 +107,29 @@
     }
   }
 
-  function patchPortfolioCopy(){
-    const meta=document.querySelector('meta[name="description"]');
-    if(meta) meta.setAttribute('content','Pujan Chapagain — software developer portfolio featuring Team Tracker, FixCheck, DateMate, FloodSafe Nepal, LifeOS AI and Sathi AI inside FloodSafe Nepal.');
+  function patchBrand(){
+    document.querySelectorAll('a[href*="github.com"],a[href*="github.io"]').forEach(a=>a.remove());
 
+    const codeLabel=document.querySelector('.dev-card .code-label');
+    if(codeLabel) codeLabel.textContent='PJBuilds';
+
+    const meta=document.querySelector('meta[name="description"]');
+    if(meta) meta.setAttribute('content','PJBuilds — Pujan Chapagain software developer portfolio featuring Team Tracker, FixCheck, DateMate, FloodSafe Nepal, LifeOS AI and Sathi AI inside FloodSafe Nepal.');
+
+    const foot=document.querySelector('footer .foot');
+    if(foot){
+      const first=foot.querySelector(':scope > span');
+      if(first) first.textContent='© 2026 Pujan Chapagain · Software Developer Portfolio';
+      if(!foot.querySelector('.pjbuilds-signoff')){
+        const mark=document.createElement('span');
+        mark.className='pjbuilds-signoff';
+        mark.textContent='PJBuilds';
+        foot.appendChild(mark);
+      }
+    }
+  }
+
+  function patchPortfolioCopy(){
     const stats=document.querySelectorAll('.hero-stats .stat');
     if(stats[0]){
       const strong=stats[0].querySelector('strong');
@@ -121,6 +145,7 @@
   function apply(){
     ensureStyle();
     patchSathi();
+    patchBrand();
     patchPortfolioCopy();
   }
 

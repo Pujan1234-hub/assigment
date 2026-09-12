@@ -1,28 +1,49 @@
 {
-  "generated_at": "2026-09-12T06:27:44.375501+05:45",
-  "updated_at_npt": "12 Sep 06:27 NPT",
+  "generated_at": "2026-09-12T10:54:09.320722+05:45",
+  "updated_at_npt": "12 Sep 10:54 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "देशभर मनसुनी वायुको प्रभाव कायमै, आज यी ५ प्रदेशमा भारी वर्षाको सम्भावना",
+      "title": "फिलिपिन्समा फेरीमा भीषण आगलागी : मृतकको सङ्ख्या ३५ पुग्यो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591607/the-influence-of-monsoon-winds-continues-across-the-country-heavy-rains-are-likely-in-these-5-provinces-today",
-      "published_at": "2026-09-12T06:11:28+05:45",
+      "url": "https://www.ratopati.com/story/591626/massive-fire-on-ferry-in-philippines-death-toll-rises-to-35",
+      "published_at": "2026-09-12T10:14:07+05:45",
       "flash": true
     },
     {
-      "title": "आँधीखोलामाथि झोलुङ्गे पुल निर्माण",
+      "title": "गैँडाकोटमा दुई बस एकआपसमा ठोक्किँदा १८ जना घाइते",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591596/construction-of-a-suspension-bridge-over-the-andhikhola",
-      "published_at": "2026-09-12T02:30:00+05:45",
+      "url": "https://www.ratopati.com/story/591625/18-injured-as-two-buses-collide-in-gaindakot",
+      "published_at": "2026-09-12T10:03:45+05:45",
+      "flash": true
+    },
+    {
+      "title": "ब्रिक्स सम्मेलनमा सहभागी हुन चिनियाँ राष्ट्रपति सी भारत प्रस्थान",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591624/chinese-president-xi-leaves-for-india-to-attend-brics-summit",
+      "published_at": "2026-09-12T09:59:08+05:45",
+      "flash": true
+    },
+    {
+      "title": "जनकपुरधामको १५ वटा पोखरीमा आजबाट डोजर चल्ने, सुरक्षा समितिको बैठक जारी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591620/dozers-to-operate-in-15-ponds-in-janakpurdham-from-today-safety-committee-meeting-continues",
+      "published_at": "2026-09-12T09:11:56+05:45",
+      "flash": false
+    },
+    {
+      "title": "छोराको जन्मदिन र बुवाको श्राद्ध गर्नेगरी असोजमा घर आउने बाचा गरेका सुरज बाढीपछि बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591609/suraj-who-promised-to-come-home-in-asoj-for-his-sons-birthday-and-to-perform-his-fathers-shraddha-goes-missing-after-the-flood",
+      "published_at": "2026-09-12T06:43:33+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -35,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 2
+      "flash": 3,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,
@@ -46,7 +67,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     }

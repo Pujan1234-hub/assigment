@@ -1,42 +1,63 @@
 {
-  "generated_at": "2026-09-12T10:54:09.320722+05:45",
-  "updated_at_npt": "12 Sep 10:54 NPT",
+  "generated_at": "2026-09-12T15:06:46.808650+05:45",
+  "updated_at_npt": "12 Sep 15:06 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "फिलिपिन्समा फेरीमा भीषण आगलागी : मृतकको सङ्ख्या ३५ पुग्यो",
+      "title": "आगामी निर्वाचनमा ९ दलीय मोर्चा एउटै चुनाव चिह्नबाट लड्छौँ : रिजवान अन्सारी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591626/massive-fire-on-ferry-in-philippines-death-toll-rises-to-35",
-      "published_at": "2026-09-12T10:14:07+05:45",
+      "url": "https://www.ratopati.com/story/591686/nine-party-front-will-contest-the-upcoming-elections-under-one-election-symbol-rizwan-ansari",
+      "published_at": "2026-09-12T14:50:22+05:45",
       "flash": true
     },
     {
-      "title": "गैँडाकोटमा दुई बस एकआपसमा ठोक्किँदा १८ जना घाइते",
+      "title": "अहिलेको भन्दा अझ बलियो सङ्घीयता आवश्यक : हरिनन्दन रञ्जन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591625/18-injured-as-two-buses-collide-in-gaindakot",
-      "published_at": "2026-09-12T10:03:45+05:45",
+      "url": "https://www.ratopati.com/story/591685/stronger-federalism-is-needed-than-the-current-one-harinandan-ranjan",
+      "published_at": "2026-09-12T14:47:41+05:45",
       "flash": true
     },
     {
-      "title": "ब्रिक्स सम्मेलनमा सहभागी हुन चिनियाँ राष्ट्रपति सी भारत प्रस्थान",
+      "title": "बाढीका कारण विभिन्न बैंकका १७ वटा शाखा प्रभावित",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591624/chinese-president-xi-leaves-for-india-to-attend-brics-summit",
-      "published_at": "2026-09-12T09:59:08+05:45",
+      "url": "https://www.ratopati.com/story/591683/17-branches-of-various-banks-affected-due-to-floods",
+      "published_at": "2026-09-12T14:41:50+05:45",
       "flash": true
     },
     {
-      "title": "जनकपुरधामको १५ वटा पोखरीमा आजबाट डोजर चल्ने, सुरक्षा समितिको बैठक जारी",
+      "title": "उत्तरगयाका बाढी पीडितका लागि पोखरा महानगरपालिकाद्वारा पाँच ट्रक राहत सामग्री हस्तान्तरण",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591620/dozers-to-operate-in-15-ponds-in-janakpurdham-from-today-safety-committee-meeting-continues",
-      "published_at": "2026-09-12T09:11:56+05:45",
+      "url": "https://www.ratopati.com/story/591670/pokhara-metropolitan-city-hands-over-five-trucks-of-relief-materials-to-flood-victims-in-uttar-gaya",
+      "published_at": "2026-09-12T13:49:43+05:45",
       "flash": false
     },
     {
-      "title": "छोराको जन्मदिन र बुवाको श्राद्ध गर्नेगरी असोजमा घर आउने बाचा गरेका सुरज बाढीपछि बेपत्ता",
+      "title": "पाकिस्तानको कराचीमा विद्यालयको पर्खाल भत्किदा पाँच जनाको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591609/suraj-who-promised-to-come-home-in-asoj-for-his-sons-birthday-and-to-perform-his-fathers-shraddha-goes-missing-after-the-flood",
-      "published_at": "2026-09-12T06:43:33+05:45",
+      "url": "https://www.ratopati.com/story/591654/five-killed-as-school-wall-collapses-in-karachi-pakistan",
+      "published_at": "2026-09-12T12:36:48+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढीमा अभिभावक गुमाएका बालबालिकाको उच्च शिक्षासम्मको जिम्मेवारी कागेश्वरी मनोहराले लिने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591652/kageshwari-manohara-will-take-responsibility-for-the-higher-education-of-children-who-lost-their-parents-in-the-floods",
+      "published_at": "2026-09-12T12:29:37+05:45",
+      "flash": false
+    },
+    {
+      "title": "सल्यानमा जिप दुर्घटना हुँदा २ जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591640/2-killed-in-jeep-accident-in-salyan",
+      "published_at": "2026-09-12T11:52:28+05:45",
+      "flash": false
+    },
+    {
+      "title": "दुई दिनदेखि बेपत्ता विवेक सरदारको शव सेफ्टी ट्याङ्कीमा फेला, चार जना पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591629/body-of-vivek-sardar-missing-for-two-days-found-in-safety-tank-four-arrested",
+      "published_at": "2026-09-12T11:04:19+05:45",
       "flash": false
     }
   ],
@@ -57,7 +78,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 3,
-      "recent": 5
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     }

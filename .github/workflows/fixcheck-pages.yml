@@ -82,7 +82,7 @@ jobs:
             {'slug':'floodsafe-nepal','title':'FloodSafe Nepal','started':True,'portfolio':True,'status_en':'Active development','status_np':'सक्रिय विकास','link':'./floodsafe-nepal/'},
             {'slug':'sathi-ai','title':'SATHI AI','started':True,'portfolio':True,'status_en':'FloodSafe Nepal feature','status_np':'FloodSafe Nepal सुविधा','link':'./floodsafe-nepal/'}
           ]
-          payload={'version':6,'mode':'curated-started-projects-only','project_count':len(projects),'projects':projects}
+          payload={'version':7,'mode':'curated-started-projects-only','project_count':len(projects),'projects':projects}
           Path('_site/projects-manifest.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
           PY
 
@@ -93,11 +93,31 @@ jobs:
           s=s.replace('AI-assisted development helps move from idea to prototype quickly, but product quality still depends on the problem definition, user flow, testing and honest limitations.','I develop each product through hands-on design, building, testing and repeated refinement, with the focus on solving the problem clearly and making each version more useful.')
           s=s.replace('I use modern web tools and AI-assisted workflows to move from idea to testable prototype quickly.','I turn ideas into testable prototypes through hands-on design, building, testing and iteration.')
           s=s.replace('AI-assisted development','hands-on development').replace('AI-assisted workflows','hands-on development workflows').replace('AI-assisted','hands-on')
+          s=s.replace('<meta name="theme-color" content="#070a10">','<meta name="theme-color" content="#f7f3eb">')
+
+          # Critical light theme is baked directly into deployed HTML. This keeps
+          # Facebook/in-app browsers light even if they cache or delay JS files.
+          critical='''<style id="portfolio-base-light-v7">
+          :root{--bg:#f7f3eb!important;--bg2:#eee8dd!important;--panel:#fffdf8!important;--panel2:#f5f0e7!important;--text:#171b23!important;--muted:#667085!important;--line:rgba(26,32,44,.12)!important;--cyan:#0d9fb4!important;--blue:#4967e8!important;--purple:#7b5ce1!important;--green:#168a68!important;--orange:#d77b2c!important;--red:#d94f70!important}
+          html,body{background:#f7f3eb!important;color:#171b23!important;color-scheme:light!important}
+          body:before{background:radial-gradient(850px circle at var(--mx) var(--my),rgba(73,103,232,.075),transparent 46%),radial-gradient(680px circle at 12% 76%,rgba(13,159,180,.07),transparent 50%),linear-gradient(180deg,#fbf8f2 0%,#f4efe6 48%,#f8f4ed 100%)!important}
+          body:after{opacity:.46!important;background-image:linear-gradient(rgba(40,48,62,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(40,48,62,.035) 1px,transparent 1px)!important}
+          .nav.scrolled{background:rgba(250,247,240,.94)!important;border-bottom-color:rgba(26,32,44,.10)!important;box-shadow:0 8px 30px rgba(30,35,45,.06)!important}.brand{color:#171b23!important}.navlinks{color:#616b7b!important}.navlinks a:hover,.navlinks a.active{color:#171b23!important}.status-pill{background:#edf8f3!important;border-color:#b9e5d3!important;color:#166b50!important}
+          h1{color:#171b23!important}h1 .grad{background:linear-gradient(95deg,#171b23 5%,#3157d5 46%,#7655d6 92%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}h1 .thin,.hero-copy{color:#596476!important}.stat span{color:#697486!important}.hero-stats{border-top-color:rgba(26,32,44,.11)!important}.eyebrow{background:rgba(255,255,255,.78)!important;border-color:rgba(26,32,44,.12)!important;color:#505b6c!important}
+          .btn{background:#fff!important;border-color:rgba(26,32,44,.13)!important;color:#202632!important}.btn.primary{background:linear-gradient(135deg,#39c8dc,#7581f2)!important;color:#071019!important;border:0!important}
+          .marquee{background:rgba(255,255,255,.42)!important;border-color:rgba(26,32,44,.10)!important}.marquee span{color:#687385!important}.section-index{color:#7b8492!important}.section-title small{color:#3157d5!important}.section-title h2{color:#171b23!important}.section-title p{color:#667085!important}
+          .project{background:linear-gradient(145deg,rgba(255,253,248,.98),rgba(250,247,241,.96))!important;border-color:rgba(26,32,44,.12)!important;box-shadow:0 22px 60px rgba(34,40,52,.08)!important}.project h3{color:#171b23!important}.project-copy>p{color:#5e6879!important}.feature{background:rgba(255,255,255,.78)!important;border-color:rgba(26,32,44,.10)!important;color:#596476!important}.feature b{color:#202632!important}.project-links a{background:#fff!important;border-color:rgba(26,32,44,.12)!important;color:#202632!important}.project-visual{background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(238,242,248,.64))!important;border-left-color:rgba(26,32,44,.10)!important}
+          .gallery figure,.process-card,.about-card,.contact-card{background:linear-gradient(145deg,#fffdf8,#f7f2e9)!important;border-color:rgba(26,32,44,.11)!important;color:#171b23!important}.gallery figcaption,.process-card p,.about-card p,.contact-card p{color:#616c7d!important}.process-card h3,.about-card .big,.contact-card h3{color:#171b23!important}.skills span{background:rgba(255,255,255,.75)!important;color:#505b6c!important;border-color:rgba(26,32,44,.11)!important}.contact-email{color:#202632!important}.foot{border-top-color:rgba(26,32,44,.10)!important;color:#697486!important}
+          /* Product mockups stay dark, but every label/value stays readable. */
+          .dev-card,.browser,.scan,.fake-map,.river-bg,.river-card,.orbit-card,.float-expiry,.ai-chip{color:#eef4fb!important}.browserbar,.metric span,.river-card small,.orbit-card small,.scan-result{color:#9aa8ba!important}.metric strong,.river-card strong,.orbit-card strong,.os-core b{color:#f7f9fc!important}.metric strong em,.browser .task b,.river-card .reading,.river-card .task b,.scan-result b{color:var(--accent)!important}.browser .task,.river-card .task{color:#bdc7d4!important;background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.09)!important}.float-expiry b,.ai-chip b{color:#f7f9fc!important}
+          @media(max-width:700px){body:before{background:linear-gradient(180deg,#fbf8f2 0%,#f5f0e7 52%,#faf7f1 100%)!important}.project{box-shadow:0 14px 34px rgba(34,40,52,.075)!important}.project-copy{background:rgba(255,253,248,.74)!important}.project-visual{border-left:0!important;border-top:1px solid rgba(26,32,44,.09)!important}.section-title p,.project-copy>p{color:#556071!important}.feature{color:#4f5b6c!important}}
+          </style>'''
+          s=s.replace('</head>',critical+'</head>')
           p.write_text(s)
           PY
 
           sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
-          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=4"></script><script src="./portfolio-motion.js?v=6"></script><script src="./portfolio-i18n.js?v=6"></script><script src="./portfolio-content-fix.js?v=1"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=4"></script><script src="./portfolio-motion.js?v=7"></script><script src="./portfolio-i18n.js?v=6"></script><script src="./portfolio-content-fix.js?v=2"></script><script src="./auto-update.js?v=3"></script></body>#' _site/index.html
 
           python - <<'PY'
           from pathlib import Path
@@ -157,10 +177,13 @@ jobs:
               ! grep -Fq 'flood-freshness.js' /tmp/v25.html
 
               curl --max-time 15 -fsSL "$BASE/?check=$GITHUB_SHA" -o /tmp/home.html
+              grep -Fq 'portfolio-base-light-v7' /tmp/home.html
+              grep -Fq 'theme-color" content="#f7f3eb' /tmp/home.html
               grep -Fq 'portfolio-floodsafe.js?v=4' /tmp/home.html
-              grep -Fq 'portfolio-motion.js?v=6' /tmp/home.html
+              grep -Fq 'portfolio-motion.js?v=7' /tmp/home.html
               grep -Fq 'portfolio-i18n.js?v=6' /tmp/home.html
-              grep -Fq 'portfolio-content-fix.js?v=1' /tmp/home.html
+              grep -Fq 'portfolio-content-fix.js?v=2' /tmp/home.html
+              grep -Fq 'auto-update.js?v=3' /tmp/home.html
 
               curl --max-time 15 -fsSL "$BASE/portfolio-floodsafe.js?check=$GITHUB_SHA" -o /tmp/portfolio-floodsafe.js
               grep -Fq 'hasDateMateTicket' /tmp/portfolio-floodsafe.js

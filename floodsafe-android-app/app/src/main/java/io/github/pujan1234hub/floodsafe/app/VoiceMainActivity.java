@@ -2,6 +2,7 @@ package io.github.pujan1234hub.floodsafe.app;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,9 +30,26 @@ public final class VoiceMainActivity extends MainActivity {
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        clearLegacyMapMonitoringPoint();
         if (webView != null) webView.addJavascriptInterface(new SathiBridge(), "SathiNative");
         initTts();
         consumeWakeIntent(getIntent());
+    }
+
+    /**
+     * Older builds allowed a manually selected Nepal map point to overwrite the
+     * native proximity-alert coordinates. Map browsing is display-only for alerts:
+     * river/rain/weather notifications must follow the phone's real GPS position.
+     */
+    private void clearLegacyMapMonitoringPoint() {
+        SharedPreferences prefs = getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE);
+        if (prefs.getBoolean("follow_device", false)) return;
+        prefs.edit()
+                .remove("lat")
+                .remove("lon")
+                .remove("location_time")
+                .putBoolean("location_stale", true)
+                .apply();
     }
 
     @Override protected void onNewIntent(Intent intent) {
@@ -79,13 +97,21 @@ public final class VoiceMainActivity extends MainActivity {
 
         @JavascriptInterface public void updateMonitoringPoint(double lat, double lon, boolean followDevice) {
             runOnUiThread(() -> {
-                if (!Double.isFinite(lat) || !Double.isFinite(lon)) return;
+                if (!followDevice) return; // Map taps must never become notification proximity coordinates.
+                if (!Double.isFinite(lat) || !Double.isFinite(lon)
+                        || lat < -90d || lat > 90d || lon < -180d || lon > 180d) return;
+                long now = System.currentTimeMillis();
                 getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).edit()
                         .putLong("lat", Double.doubleToRawLongBits(lat))
                         .putLong("lon", Double.doubleToRawLongBits(lon))
-                        .putBoolean("follow_device", followDevice)
+                        .putLong("location_time", now)
+                        .putLong("device_lat", Double.doubleToRawLongBits(lat))
+                        .putLong("device_lon", Double.doubleToRawLongBits(lon))
+                        .putLong("device_location_time", now)
+                        .putBoolean("follow_device", true)
+                        .putBoolean("location_stale", false)
                         .apply();
-                if (followDevice && hasLocationPermission()) startWakeService(SathiWakeService.ACTION_REFRESH);
+                if (hasLocationPermission()) startWakeService(SathiWakeService.ACTION_REFRESH);
             });
         }
     }

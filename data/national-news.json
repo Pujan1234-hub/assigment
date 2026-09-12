@@ -1,15 +1,22 @@
 {
-  "generated_at": "2026-09-12T21:55:19.497919+05:45",
-  "updated_at_npt": "12 Sep 21:55 NPT",
+  "generated_at": "2026-09-13T00:09:24.124800+05:45",
+  "updated_at_npt": "13 Sep 00:09 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "मलेसिया रोजगारीबारे प्रश्न उठेपछि मन्त्रालयले भन्यो : कूटनीतिक पहल भइरहेको छ",
+      "title": "बाढीमा घरबास गुमाएकालाई प्रदेश सरकारले आवास बनाइदिने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591744/after-questions-were-raised-about-malaysia-employment-the-ministry-said-diplomatic-initiatives-are-underway",
-      "published_at": "2026-09-12T21:33:35+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/591752/provincial-government-to-build-houses-for-those-who-lost-their-homes-in-the-floods",
+      "published_at": "2026-09-12T22:37:23+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाणगंगा नदीमा फसेका दाइको सकुशल उद्धार, भाइ बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591750/brother-trapped-in-banganga-river-rescued-safely-brother-missing",
+      "published_at": "2026-09-12T22:28:52+05:45",
+      "flash": false
     },
     {
       "title": "सुरक्षाकर्मीको सहयोगमा बाहिरिएका थिए शिक्षामन्त्री पोखरेल",
@@ -17,33 +24,12 @@
       "url": "https://www.ratopati.com/story/591735/education-minister-pokharel-was-escorted-out-with-the-help-of-security-personnel",
       "published_at": "2026-09-12T20:15:27+05:45",
       "flash": false
-    },
-    {
-      "title": "लोमान्थाङमा भूकम्प : स्थानीय र विद्यार्थीकाे बास त्रिपालमुनि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591723/earthquake-in-lomanthang-locals-and-students-live-under-tents",
-      "published_at": "2026-09-12T17:47:36+05:45",
-      "flash": false
-    },
-    {
-      "title": "त्रिशूली बाढीले बगाएर ल्याएको गहना लुकाउने पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591705/arrest-made-for-hiding-jewelry-washed-away-by-trishuli-floods",
-      "published_at": "2026-09-12T16:10:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "बजेट निर्माण प्रक्रिया तत्काल अगाडि बढाउने प्रदेश सरकारको निर्णय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591704/provincial-government-decides-to-immediately-proceed-with-the-budget-preparation-process",
-      "published_at": "2026-09-12T16:07:36+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 8,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     },
@@ -56,8 +42,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 5
+      "flash": 0,
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

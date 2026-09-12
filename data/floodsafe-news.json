@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-12T16:31:52.497693Z",
+  "generated_at": "2026-09-12T18:43:04.533692Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,25 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 2
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "मध्य पूर्वमा ‘अधिकतम संयम’ अपनाउन ‘ब्रिक्स’को आह्वान",
-      "url": "https://radionepalonline.com/2026/09/12/734563.html",
-      "published_at": "2026-09-12T16:22:54Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "युक्रेनी राष्ट्रपति जेलेन्स्की मियामीमा हुने जी–२० मा पुटिनसँग भेट्न तयार",
-      "url": "https://radionepalonline.com/2026/09/12/734560.html",
-      "published_at": "2026-09-12T16:19:01Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

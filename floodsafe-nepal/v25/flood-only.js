@@ -1,6 +1,6 @@
 (()=>{'use strict';
 if(window.__fsFloodCoreV15)return;window.__fsFloodCoreV15=true;
-const $=id=>document.getElementById(id),B={minLon:80,maxLon:88.35,minLat:26.2,maxLat:30.5},HOME_KEY='fs-nepal-monitor-v1',ALERT_KEY='fs-nepal-alerts-on',ALERT_RADIUS_KM=2;
+const $=id=>document.getElementById(id),B={minLon:80,maxLon:88.35,minLat:26.2,maxLat:30.5},HOME_KEY='fs-nepal-monitor-v1',ALERT_KEY='fs-nepal-alerts-on',ALERT_RADIUS_KM=1;
 const S={lat:null,lon:null,kind:null,stations:[],allRiverStations:[],latestRiverStations:[],lastRiverReadings:[],riverObservations:[],alertsOn:localStorage.getItem(ALERT_KEY)==='1',lastRisk:-1,rainNow:null,lang:localStorage.getItem('fs-flood-lang')==='en'?'en':'ne',updatedAt:null};
 const tr=(ne,en)=>S.lang==='en'?en:ne,num=v=>{const n=Number(String(v??'').replace(/[^0-9.+-]/g,''));return Number.isFinite(n)?n:null},val=(o,ks)=>{for(const k of ks){const v=o?.[k];if(v!==undefined&&v!==null&&v!=='')return v}return null};
 function flat(o){return o&&typeof o==='object'&&o.fields&&typeof o.fields==='object'?Object.assign({},o.fields,o):o}

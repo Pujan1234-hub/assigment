@@ -10,6 +10,7 @@ on:
       - auto-update.js
       - portfolio-floodsafe.js
       - portfolio-motion.js
+      - portfolio-content-fix.js
       - portfolio-i18n.js
       - fixcheck/**
       - team-tracker/**
@@ -50,6 +51,7 @@ jobs:
           cp auto-update.js _site/auto-update.js
           cp portfolio-floodsafe.js _site/portfolio-floodsafe.js
           cp portfolio-motion.js _site/portfolio-motion.js
+          cp portfolio-content-fix.js _site/portfolio-content-fix.js
           cp portfolio-i18n.js _site/portfolio-i18n.js
           cp -R fixcheck _site/fixcheck
           cp -R team-tracker _site/team-tracker
@@ -63,6 +65,7 @@ jobs:
           test -s _site/assets/portfolio/floodsafe-map.svg
           test -s _site/assets/portfolio/floodsafe-poster.svg
           test -s _site/portfolio-i18n.js
+          test -s _site/portfolio-content-fix.js
 
           python3 -c "import json; j=json.load(open('_site/data/nepal-waterways-seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']; print('packaging river routes',j['count'])"
           printf '%s' "$GITHUB_SHA" > _site/build-version.txt
@@ -77,9 +80,9 @@ jobs:
             {'slug':'fixcheck','title':'FixCheck','started':True,'portfolio':True,'status_en':'In development','status_np':'विकासमा','link':'./fixcheck/'},
             {'slug':'datemate','title':'DateMate','started':True,'portfolio':True,'status_en':'Active development','status_np':'सक्रिय विकास','link':None},
             {'slug':'floodsafe-nepal','title':'FloodSafe Nepal','started':True,'portfolio':True,'status_en':'Active development','status_np':'सक्रिय विकास','link':'./floodsafe-nepal/'},
-            {'slug':'sathi-ai','title':'SATHI AI','started':True,'portfolio':True,'status_en':'Early prototype','status_np':'प्रारम्भिक नमुना','link':None}
+            {'slug':'sathi-ai','title':'SATHI AI','started':True,'portfolio':True,'status_en':'FloodSafe Nepal feature','status_np':'FloodSafe Nepal सुविधा','link':'./floodsafe-nepal/'}
           ]
-          payload={'version':5,'mode':'curated-started-projects-only','project_count':len(projects),'projects':projects}
+          payload={'version':6,'mode':'curated-started-projects-only','project_count':len(projects),'projects':projects}
           Path('_site/projects-manifest.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
           PY
 
@@ -94,7 +97,7 @@ jobs:
           PY
 
           sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
-          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=4"></script><script src="./portfolio-motion.js?v=5"></script><script src="./portfolio-i18n.js?v=6"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=4"></script><script src="./portfolio-motion.js?v=6"></script><script src="./portfolio-i18n.js?v=6"></script><script src="./portfolio-content-fix.js?v=1"></script><script src="./auto-update.js?v=2"></script></body>#' _site/index.html
 
           python - <<'PY'
           from pathlib import Path
@@ -115,7 +118,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import re,sys
-          files=[Path('_site/index.html'),Path('_site/portfolio-floodsafe.js'),Path('_site/portfolio-motion.js'),Path('_site/portfolio-i18n.js'),Path('_site/projects-manifest.json')]
+          files=[Path('_site/index.html'),Path('_site/portfolio-floodsafe.js'),Path('_site/portfolio-motion.js'),Path('_site/portfolio-content-fix.js'),Path('_site/portfolio-i18n.js'),Path('_site/projects-manifest.json')]
           forbidden=re.compile(r'\b(?:Princesshay|Suroj|Tango|Victor|Chiraag|hotel|siyara|mic|security|cleaner|Exeter|employment|badge|Bedford|Catherine)\b|Roman\s+Walk',re.I)
           attribution=re.compile(r'AI-assisted|artificial intelligence|built\s+(?:with|by)\s+AI|made\s+(?:with|by)\s+AI|using\s+AI\s+to\s+(?:build|develop|create)',re.I)
           for p in files:
@@ -155,12 +158,18 @@ jobs:
 
               curl --max-time 15 -fsSL "$BASE/?check=$GITHUB_SHA" -o /tmp/home.html
               grep -Fq 'portfolio-floodsafe.js?v=4' /tmp/home.html
-              grep -Fq 'portfolio-motion.js?v=5' /tmp/home.html
+              grep -Fq 'portfolio-motion.js?v=6' /tmp/home.html
               grep -Fq 'portfolio-i18n.js?v=6' /tmp/home.html
+              grep -Fq 'portfolio-content-fix.js?v=1' /tmp/home.html
 
               curl --max-time 15 -fsSL "$BASE/portfolio-floodsafe.js?check=$GITHUB_SHA" -o /tmp/portfolio-floodsafe.js
               grep -Fq 'hasDateMateTicket' /tmp/portfolio-floodsafe.js
               grep -Fq 'dateMateTickets.slice(1)' /tmp/portfolio-floodsafe.js
+
+              curl --max-time 15 -fsSL "$BASE/portfolio-content-fix.js?check=$GITHUB_SHA" -o /tmp/content-fix.js
+              grep -Fq 'Typed flood questions' /tmp/content-fix.js
+              grep -Fq 'Built into FloodSafe Nepal' /tmp/content-fix.js
+              grep -Fq '.metric strong' /tmp/content-fix.js
 
               curl --max-time 15 -fsSL "$BASE/portfolio-i18n.js?check=$GITHUB_SHA" -o /tmp/i18n.js
               grep -Fq '__pcPortfolioI18nV6' /tmp/i18n.js
@@ -174,7 +183,7 @@ jobs:
               grep -Fq 'sathi-ai' /tmp/i18n.js
 
               curl --max-time 15 -fsSL "$BASE/projects-manifest.json?check=$GITHUB_SHA" -o /tmp/projects.json
-              python3 -c "import json; j=json.load(open('/tmp/projects.json')); assert j['mode']=='curated-started-projects-only'; assert j['project_count']==5; assert [x['title'] for x in j['projects']]==['Team Tracker','FixCheck','DateMate','FloodSafe Nepal','SATHI AI']; assert all(x['started'] and x['portfolio'] for x in j['projects'])"
+              python3 -c "import json; j=json.load(open('/tmp/projects.json')); assert j['mode']=='curated-started-projects-only'; assert j['project_count']==5; assert [x['title'] for x in j['projects']]==['Team Tracker','FixCheck','DateMate','FloodSafe Nepal','SATHI AI']; assert all(x['started'] and x['portfolio'] for x in j['projects']); assert j['projects'][-1]['status_en']=='FloodSafe Nepal feature'"
               exit 0
             fi
             sleep 5

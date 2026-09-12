@@ -1,22 +1,29 @@
 {
-  "generated_at": "2026-09-12T18:42:41.629550+05:45",
-  "updated_at_npt": "12 Sep 18:42 NPT",
+  "generated_at": "2026-09-12T21:55:19.497919+05:45",
+  "updated_at_npt": "12 Sep 21:55 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "मन्त्री पुनले अपिल गरे लगत्तै दुबईमा अलपत्र श्रमिकको उद्धार",
+      "title": "मलेसिया रोजगारीबारे प्रश्न उठेपछि मन्त्रालयले भन्यो : कूटनीतिक पहल भइरहेको छ",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591726/stranded-workers-rescued-in-dubai-after-minister-pun-appeals",
-      "published_at": "2026-09-12T18:08:17+05:45",
+      "url": "https://www.ratopati.com/story/591744/after-questions-were-raised-about-malaysia-employment-the-ministry-said-diplomatic-initiatives-are-underway",
+      "published_at": "2026-09-12T21:33:35+05:45",
       "flash": true
+    },
+    {
+      "title": "सुरक्षाकर्मीको सहयोगमा बाहिरिएका थिए शिक्षामन्त्री पोखरेल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591735/education-minister-pokharel-was-escorted-out-with-the-help-of-security-personnel",
+      "published_at": "2026-09-12T20:15:27+05:45",
+      "flash": false
     },
     {
       "title": "लोमान्थाङमा भूकम्प : स्थानीय र विद्यार्थीकाे बास त्रिपालमुनि",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591723/earthquake-in-lomanthang-locals-and-students-live-under-tents",
       "published_at": "2026-09-12T17:47:36+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "त्रिशूली बाढीले बगाएर ल्याएको गहना लुकाउने पक्राउ",
@@ -31,33 +38,12 @@
       "url": "https://www.ratopati.com/story/591704/provincial-government-decides-to-immediately-proceed-with-the-budget-preparation-process",
       "published_at": "2026-09-12T16:07:36+05:45",
       "flash": false
-    },
-    {
-      "title": "आगामी निर्वाचनमा ९ दलीय मोर्चा एउटै चुनाव चिह्नबाट लड्छौँ : रिजवान अन्सारी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591686/nine-party-front-will-contest-the-upcoming-elections-under-one-election-symbol-rizwan-ansari",
-      "published_at": "2026-09-12T14:50:22+05:45",
-      "flash": false
-    },
-    {
-      "title": "अहिलेको भन्दा अझ बलियो सङ्घीयता आवश्यक : हरिनन्दन रञ्जन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591685/stronger-federalism-is-needed-than-the-current-one-harinandan-ranjan",
-      "published_at": "2026-09-12T14:47:41+05:45",
-      "flash": false
-    },
-    {
-      "title": "उत्तरगयाका बाढी पीडितका लागि पोखरा महानगरपालिकाद्वारा पाँच ट्रक राहत सामग्री हस्तान्तरण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591670/pokhara-metropolitan-city-hands-over-five-trucks-of-relief-materials-to-flood-victims-in-uttar-gaya",
-      "published_at": "2026-09-12T13:49:43+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     },
@@ -70,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 7
+      "flash": 1,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

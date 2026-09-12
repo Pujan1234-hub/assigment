@@ -7,130 +7,100 @@ const ROOT='https://camkoacuokffryyrygda.supabase.co/functions/v1';
 const DEVICE_ID_KEY='floodsafe_sathi_device_id_v1';
 const DEVICE_TOKEN_KEY='floodsafe_sathi_device_token_v1';
 const HISTORY_KEY='floodsafe_sathi_history_v1';
-const VERSION='2.1.3-context-safe';
-const history=(()=>{
-  try{
-    const a=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
-    return Array.isArray(a)?a.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.content==='string').slice(-12):[];
-  }catch{return[]}
-})();
-const saveHistory=()=>{try{localStorage.setItem(HISTORY_KEY,JSON.stringify(history.slice(-12)))}catch{}};
+const VERSION='2.2.0-live-app-brain';
 const $=s=>document.querySelector(s);
-const add=(text,type='ai')=>{
-  const box=$('#sathiFloodMsgs');if(!box)return null;
-  const d=document.createElement('div');d.className=`sathiMsg ${type}`;d.textContent=String(text||'');box.appendChild(d);box.scrollTop=box.scrollHeight;return d;
-};
-const open=()=>{
-  $('#sathiFloodOverlay')?.classList.add('open');
-  const p=$('#sathiFloodPanel');if(p){p.classList.add('open');p.setAttribute('aria-hidden','false')}
-};
+const norm=s=>String(s||'').toLowerCase().normalize('NFKC').replace(/[?!.:,;()\[\]{}"'`।]/g,' ').replace(/\s+/g,' ').trim();
+const has=(q,...xs)=>xs.some(x=>q.includes(x));
+const firstText=(o,keys)=>{for(const k of keys){const v=o?.[k];if(v!==undefined&&v!==null&&String(v).trim())return String(v).trim()}return''};
+const firstNum=(o,keys)=>{for(const k of keys){const n=Number(o?.[k]);if(Number.isFinite(n))return n}return null};
+const history=(()=>{try{const a=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&['user','assistant'].includes(x.role)&&typeof x.content==='string').slice(-12):[]}catch{return[]}})();
+const saveHistory=()=>{try{localStorage.setItem(HISTORY_KEY,JSON.stringify(history.slice(-12)))}catch{}};
+
+const add=(text,type='ai')=>{const box=$('#sathiFloodMsgs');if(!box)return null;const d=document.createElement('div');d.className=`sathiMsg ${type}`;d.textContent=String(text||'');box.appendChild(d);box.scrollTop=box.scrollHeight;return d};
+const open=()=>{$('#sathiFloodOverlay')?.classList.add('open');const p=$('#sathiFloodPanel');if(p){p.classList.add('open');p.setAttribute('aria-hidden','false')}};
 const setAdvancedLabels=()=>{
-  const input=$('#sathiInput');if(input)input.placeholder='जिल्ला, तापक्रम, वर्षा, नदी/खोला, खतरा वा नजिकको जोखिम सोध्नुहोस्…';
-  const small=$('#sathiFloodPanel .sathiHeadText small');if(small)small.textContent='Advanced live AI • BIPAD/DHM नदी • जिल्ला मौसम • GPS risk';
-  const q=$('#sathiQuick');if(q&&!q.dataset.advanced){
-    q.dataset.advanced='1';
-    q.innerHTML='<button data-q="अहिले नेपालमा कुन कुन खोला danger वा warning मा छन्?">🔴 खतरा नदी</button><button data-q="चितवनको अहिले तापक्रम कति छ र पानी कहिले पर्छ?">🌦️ जिल्ला मौसम</button><button data-q="मेरो नजिक २५ किमिभित्र कुन नदी जोखिममा छ?">📍 मेरो नजिक</button><button data-q="अहिले कुन जिल्लामा active flood वा heavy rain alert छ?">🚨 जिल्ला alert</button>';
-  }
+  const input=$('#sathiInput');if(input)input.placeholder='मौसम, भोलिको forecast, जिल्ला, नदी/खोला, जलस्तर, जोखिम वा समाचार सोध्नुहोस्…';
+  const small=$('#sathiFloodPanel .sathiHeadText small');if(small)small.textContent='Live app AI • BIPAD/DHM नदी • मौसम • GPS risk • समाचार';
+  const q=$('#sathiQuick');if(q&&!q.dataset.advanced){q.dataset.advanced='1';q.innerHTML='<button data-q="अहिले नेपालमा कुन कुन खोला danger वा warning मा छन्?">🔴 खतरा नदी</button><button data-q="काठमाडौंको भोलिको weather कस्तो छ?">🌦️ भोलिको मौसम</button><button data-q="मेरो नजिक १ किमिभित्र कुन नदी जोखिममा छ?">📍 मेरो नजिक</button><button data-q="अहिलेको पछिल्लो समाचार के छ?">📰 समाचार</button>'}
 };
 
-async function post(path,body,timeout=22000){
-  const ctl=new AbortController();const id=setTimeout(()=>ctl.abort(),timeout);
-  try{
-    const r=await fetch(`${ROOT}/${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),cache:'no-store',signal:ctl.signal});
-    const j=await r.json().catch(()=>({}));
-    if(!r.ok||j?.ok===false)throw new Error(j?.error||`HTTP ${r.status}`);
-    return j;
-  }finally{clearTimeout(id)}
-}
-async function ensureDevice(){
-  let id='';let token='';
-  try{id=localStorage.getItem(DEVICE_ID_KEY)||'';token=localStorage.getItem(DEVICE_TOKEN_KEY)||''}catch{}
-  if(id&&token)return{device_id:id,device_token:token};
-  const j=await post('sathi-api',{action:'register_device',device_name:'FloodSafe Nepal SATHI',platform:window.SathiNative?'android':'web',app_version:'0.5.0'},12000);
-  id=String(j?.device_id||'');token=String(j?.device_token||'');
-  if(!id||!token)throw new Error('device_registration_failed');
-  try{localStorage.setItem(DEVICE_ID_KEY,id);localStorage.setItem(DEVICE_TOKEN_KEY,token)}catch{}
-  return{device_id:id,device_token:token};
-}
+async function post(path,body,timeout=22000){const ctl=new AbortController();const id=setTimeout(()=>ctl.abort(),timeout);try{const r=await fetch(`${ROOT}/${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),cache:'no-store',signal:ctl.signal});const j=await r.json().catch(()=>({}));if(!r.ok||j?.ok===false)throw new Error(j?.error||`HTTP ${r.status}`);return j}finally{clearTimeout(id)}}
+async function ensureDevice(){let id='',token='';try{id=localStorage.getItem(DEVICE_ID_KEY)||'';token=localStorage.getItem(DEVICE_TOKEN_KEY)||''}catch{}if(id&&token)return{device_id:id,device_token:token};const j=await post('sathi-api',{action:'register_device',device_name:'FloodSafe Nepal SATHI',platform:window.SathiNative?'android':'web',app_version:'0.6.3'},12000);id=String(j?.device_id||'');token=String(j?.device_token||'');if(!id||!token)throw new Error('device_registration_failed');try{localStorage.setItem(DEVICE_ID_KEY,id);localStorage.setItem(DEVICE_TOKEN_KEY,token)}catch{}return{device_id:id,device_token:token}}
+
 function currentLocation(){
   const candidates=[];
   try{candidates.push(window.FloodSafeRain?.state?.point)}catch{}
   try{candidates.push(window.FloodSafe?.state?.monitorPoint,window.FloodSafe?.state?.selectedPoint,window.FloodSafe?.state?.location)}catch{}
-  for(const p of candidates){
-    const lat=Number(p?.lat??p?.latitude),lon=Number(p?.lon??p?.lng??p?.longitude);
-    if(Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=26&&lat<=31.8&&lon>=79.5&&lon<=89){
-      const label=String(p?.name||p?.label||($('#place')?.textContent||'')).replace(/^📍\s*/,'').trim();
-      return{lat,lon,label:label||'निगरानी स्थान'};
-    }
-  }
+  for(const p of candidates){const lat=Number(p?.lat??p?.latitude),lon=Number(p?.lon??p?.lng??p?.longitude);if(Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180){const label=String(p?.name||p?.label||($('#place')?.textContent||'')).replace(/^📍\s*/,'').trim();return{lat,lon,label:label||'हालको स्थान'}}}
+  try{const p=JSON.parse(localStorage.getItem('fs-v25-location')||'null');if(Array.isArray(p)&&p.length===2&&Number.isFinite(Number(p[0]))&&Number.isFinite(Number(p[1])))return{lat:Number(p[0]),lon:Number(p[1]),label:String($('#place')?.textContent||'हालको GPS स्थान').replace(/^📍\s*/,'').trim()}}catch{}
   return null;
 }
-function remember(role,content){
-  const t=String(content||'').trim();if(!t)return;
-  history.push({role,content:t.slice(0,1400)});if(history.length>12)history.splice(0,history.length-12);saveHistory();
-}
-function localFallback(q){
-  try{return window.SathiFloodAI?.__localAnswer?.(q)||'AI server जोडिन सकेन। उपलब्ध local FloodSafe data बाट फेरि प्रयास गर्नुहोस्।'}catch{return'AI server जोडिन सकेन।'}
-}
-async function advanced(q,{voice=false,placeholder=null}={}){
-  q=String(q||'').trim();if(!q)return'';
-  try{
-    const cred=await ensureDevice();
-    const body={...cred,question:q,recent_messages:history.slice(-10),location:currentLocation(),nearby_radius_km:25,client:'floodsafe-nepal-v25',client_ai_version:VERSION};
-    const j=await post('sathi-flood-answer',body,24000);
-    const answer=String(j?.answer_ne||'').trim();
-    const spoken=String(j?.spoken_text||answer).trim();
-    if(!answer)throw new Error('empty_ai_answer');
-    remember('user',q);remember('assistant',answer);
-    if(placeholder){placeholder.className='sathiMsg ai';placeholder.textContent=answer;placeholder.scrollIntoView({block:'nearest'})}
-    if(voice&&window.SathiNative&&spoken){try{window.SathiNative.speak(spoken)}catch{}}
-    window.dispatchEvent(new CustomEvent('sathi-advanced-answer',{detail:{question:q,answer,spoken,meta:j?.facts_meta||{},sources:j?.sources||[]}}));
-    return answer;
-  }catch(err){
-    const fallback=localFallback(q);
-    remember('user',q);remember('assistant',fallback);
-    if(placeholder){placeholder.className='sathiMsg ai';placeholder.textContent=`${fallback}\n\n⚠️ Advanced AI server उपलब्ध नभएकाले local basic mode प्रयोग भयो।`}
-    if(voice&&window.SathiNative){try{window.SathiNative.speak(fallback)}catch{}}
-    return fallback;
+const inNepal=p=>!!p&&p.lat>=26&&p.lat<=31.8&&p.lon>=79.5&&p.lon<=89;
+function remember(role,content){const t=String(content||'').trim();if(!t)return;history.push({role,content:t.slice(0,1800)});if(history.length>12)history.splice(0,history.length-12);saveHistory()}
+
+function stations(){const s=window.FloodSafe?.state||{};const all=Array.isArray(s.allRiverStations)?s.allRiverStations:(Array.isArray(s.latestRiverStations)?s.latestRiverStations:(Array.isArray(s.stations)?s.stations:[]));const current=Array.isArray(s.currentRiverStations)?s.currentRiverStations:(Array.isArray(s.latestRiverStations)?s.latestRiverStations:all);return{all,current}}
+const stationName=o=>firstText(o,['river_name','riverName','station_name','stationName','name','title'])||'नदी स्टेशन';
+const district=o=>firstText(o,['district','district_name','districtName','district_title','admin2','county','state_district']);
+const placeText=o=>[firstText(o,['municipality','municipality_name','municipalityName','localLevel','local_level','palika']),district(o),firstText(o,['province','province_name','provinceName'])].filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).join(', ');
+const level=o=>firstNum(o,['_lastWaterLevel','_level','waterLevel','water_level','currentWaterLevel','current_level','level','value','latestLevel']);
+const warning=o=>firstNum(o,['_lastWarningLevel','_warning','warningLevel','warning_level','warningThreshold','warning_threshold']);
+const danger=o=>firstNum(o,['_lastDangerLevel','_danger','dangerLevel','danger_level','dangerThreshold','danger_threshold']);
+const discharge=o=>firstNum(o,['_lastDischarge','_discharge','discharge','currentDischarge','flow','streamflow']);
+const measured=o=>firstText(o,['_measurementTime','waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','measurement_time','observationTime','timestamp','updatedAt']);
+function riverStage(o){try{const s=String(window.FloodSafeRiverRealtime?.stage?.(o)||'').toLowerCase();if(['danger','warning','watch','normal','unknown'].includes(s))return s}catch{}const l=level(o),w=warning(o),d=danger(o),raw=norm(firstText(o,['_derivedStatus','_officialStatus','status','status_name','alertStatus','riskLevel']));if((l!==null&&d!==null&&d>0&&l>=d)||has(raw,'danger','red','खतरा'))return'danger';if((l!==null&&w!==null&&w>0&&l>=w)||has(raw,'warning','orange','चेतावनी'))return'warning';if(has(raw,'watch','rising','yellow','सतर्क','निगरानी'))return'watch';return l!==null?'normal':'unknown'}
+const stageNe=s=>s==='danger'?'🔴 खतरा':s==='warning'?'🟠 चेतावनी':s==='watch'?'🟡 निगरानी':s==='normal'?'🟢 सामान्य':'⚪ ताजा reading छैन';
+function coords(o){try{const c=window.FloodSafeRiverRealtime?.coords?.(o);if(Array.isArray(c)&&c.length>=2)return{lon:Number(c[0]),lat:Number(c[1])}}catch{}const lat=firstNum(o,['latitude','lat','stationLatitude','station_latitude']),lon=firstNum(o,['longitude','lon','lng','stationLongitude','station_longitude']);return lat!==null&&lon!==null?{lat,lon}:null}
+function formatMeasured(v){if(!v)return'';const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v);try{return new Intl.DateTimeFormat('ne-NP',{timeZone:'Asia/Kathmandu',dateStyle:'medium',timeStyle:'short'}).format(d)}catch{return String(v)}}
+function stationAnswer(s){const st=riverStage(s),l=level(s),w=warning(s),d=danger(s),flow=discharge(s),t=measured(s),bits=[`${stageNe(st)} — ${stationName(s)}`];const p=placeText(s);if(p)bits.push(p);if(l!==null)bits.push(`हालको जलस्तर ${l.toFixed(2)} मि.`);if(w!==null)bits.push(`चेतावनी तह ${w.toFixed(2)} मि.`);if(d!==null)bits.push(`खतरा तह ${d.toFixed(2)} मि.`);if(flow!==null)bits.push(`बहाव ${flow.toFixed(1)}`);if(t)bits.push(`मापन ${formatMeasured(t)}`);if(st==='unknown')bits.push('यो official station भेटियो तर अहिलेको ताजा official reading उपलब्ध छैन; म अनुमान गर्दिनँ।');else bits.push('स्रोत: BIPAD/DHM official realtime data।');return bits.join(' • ')}
+const STOP=new Set(['ko','ma','maa','ka','ki','ke','yo','tyo','aile','ahile','aahele','bholi','today','tomorrow','status','level','water','river','khola','nadi','kati','kasto','cha','xa','chha','mero','malai','bhana','bhan','sathi','ai','the','of','in','at']);
+function tokens(s){return norm(s).split(' ').filter(x=>x.length>2&&!STOP.has(x))}
+function findStation(q){const {all}=stations();if(!all.length)return null;const nq=norm(q),qt=tokens(q);let best=null,score=0;for(const s of all){const n=norm(stationName(s));if(!n)continue;let sc=nq.includes(n)&&n.length>=3?150+n.length:0;const nt=tokens(n);for(const a of qt)for(const b of nt)if(a===b)sc+=18;else if(a.length>=4&&b.length>=4&&(a.includes(b)||b.includes(a)))sc+=8;const pl=norm(placeText(s));for(const a of qt)if(a.length>=4&&pl.includes(a))sc+=3;if(sc>score){score=sc;best=s}}return score>=18?best:null}
+function districtMatch(q){const {all}=stations(),nq=norm(q);const ds=[...new Set(all.map(district).filter(Boolean))];let best='';for(const d of ds){const nd=norm(d);if(nd.length>=3&&nq.includes(nd)&&nd.length>best.length)best=d}return best}
+function districtAnswer(name){const {all}=stations(),rows=all.filter(s=>norm(district(s))===norm(name)||norm(placeText(s)).includes(norm(name)));if(!rows.length)return null;const active=rows.filter(s=>['danger','warning','watch'].includes(riverStage(s))),current=rows.filter(s=>level(s)!==null);const pick=(active.length?active:current).slice().sort((a,b)=>({danger:3,warning:2,watch:1,normal:0,unknown:-1}[riverStage(b)]??-1)-({danger:3,warning:2,watch:1,normal:0,unknown:-1}[riverStage(a)]??-1)).slice(0,8);const lines=pick.map(s=>`${stageNe(riverStage(s))} ${stationName(s)}${level(s)!==null?` — ${level(s).toFixed(2)} मि.`:''}`);return `📍 ${name} जिल्लामा app को official catalogue मा ${rows.length} नदी स्टेशन छन्; अहिले ताजा reading भएका ${current.length} छन्।${active.length?` जोखिम/निगरानीमा ${active.length} छन्:`:' अहिले उपलब्ध reading मा warning/danger/watch देखिएको छैन।'}${lines.length?'\n'+lines.join('\n'):''}\nस्रोत: BIPAD/DHM official data।`}
+function riskAnswer(){const {current}=stations();if(!current.length)return'अहिले ताजा BIPAD/DHM नदी reading उपलब्ध छैन। म जोखिम अनुमान गर्दिनँ।';const r=current.filter(s=>['danger','warning','watch'].includes(riverStage(s))).sort((a,b)=>({danger:3,warning:2,watch:1}[riverStage(b)]||0)-({danger:3,warning:2,watch:1}[riverStage(a)]||0));if(!r.length)return'🟢 अहिले app मा उपलब्ध ताजा official नदी reading अनुसार warning/danger/watch मा पुगेको station भेटिएन।';return`अहिले जोखिम/निगरानीमा रहेका official station:\n${r.slice(0,10).map(s=>`${stageNe(riverStage(s))} ${stationName(s)}${district(s)?` • ${district(s)}`:''}${level(s)!==null?` • ${level(s).toFixed(2)} मि.`:''}`).join('\n')}${r.length>10?`\n… थप ${r.length-10} station छन्।`:''}\nस्रोत: BIPAD/DHM official realtime data।`}
+function km(a,b){const R=6371,d=x=>x*Math.PI/180,dp=d(b.lat-a.lat),dl=d(b.lon-a.lon),x=Math.sin(dp/2)**2+Math.cos(d(a.lat))*Math.cos(d(b.lat))*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function nearbyAnswer(q){const p=currentLocation();if(!p)return'📍 हालको GPS location app मा उपलब्ध छैन। Location अनुमति दिएर फेरि सोध्नुहोस्।';if(!inNepal(p))return'🇳🇵 तपाईं अहिले नेपाल बाहिर हुनुहुन्छ, त्यसैले nearby Nepal river-risk alert लागू हुँदैन। मौसम भने हालको स्थानका लागि सोध्न सक्नुहुन्छ।';const m=norm(q).match(/(\d+(?:\.\d+)?)\s*(?:km|किमि|कि\.?मि)/);const radius=m?Math.min(100,Math.max(.1,Number(m[1]))):1;const {all}=stations();const rows=all.map(s=>{const c=coords(s);return c?{s,d:km(p,c)}:null}).filter(Boolean).filter(x=>x.d<=radius).sort((a,b)=>a.d-b.d);if(!rows.length)return`📍 ${p.label} वरिपरि ${radius} किमिभित्र coordinates भएको official river station भेटिएन।`;return`📍 ${p.label} वरिपरि ${radius} किमिभित्र:\n${rows.slice(0,8).map(x=>`${stageNe(riverStage(x.s))} ${stationName(x.s)} • ${x.d.toFixed(1)} km${level(x.s)!==null?` • ${level(x.s).toFixed(2)} मि.`:''}`).join('\n')}\nFlood notification policy: हालको GPS बाट 1 km भित्र fresh official warning/danger भए priority alert।`}
+
+function isWeather(q){return has(q,'weather','mausam','mousam','मौसम','temperature','temp','तापक्रम','तापमान','rain','वर्षा','pani','पानी','humidity','आर्द्रता','wind','हावा','forecast','पूर्वानुमान')}
+const isTomorrow=q=>has(q,'tomorrow','bholi','voli','भोलि','भोली','भोलिको','भोलीको');
+function weatherCode(c){const m={0:'सफा',1:'मुख्यतः सफा',2:'आंशिक बादल',3:'बादल',45:'कुहिरो',48:'कुहिरो',51:'हल्का झरी',53:'झरी',55:'घना झरी',61:'हल्का वर्षा',63:'वर्षा',65:'भारी वर्षा',80:'वर्षा झरी',81:'वर्षा झरी',82:'भारी झरी',95:'मेघगर्जन',96:'असिना सहित मेघगर्जन',99:'तीव्र मेघगर्जन'};return m[Number(c)]||'मौसम'}
+function n(v,d=1){const x=Number(v);return Number.isFinite(x)?x.toFixed(d):'—'}
+async function currentPointWeather(q){const p=currentLocation();if(!p)return null;const params=new URLSearchParams({latitude:String(p.lat),longitude:String(p.lon),timezone:'auto',forecast_days:'3',current:'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code,precipitation',hourly:'precipitation_probability,precipitation',daily:'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max'});const r=await fetch('https://api.open-meteo.com/v1/forecast?'+params,{cache:'no-store'});if(!r.ok)throw new Error('weather '+r.status);const j=await r.json(),label=p.label||'हालको स्थान';if(isTomorrow(norm(q))){const i=Math.min(1,(j.daily?.time||[]).length-1),d=j.daily||{};return`🌤️ ${label}मा भोलि ${weatherCode(d.weather_code?.[i])} रहने पूर्वानुमान छ। तापक्रम करिब ${n(d.temperature_2m_min?.[i])}°C–${n(d.temperature_2m_max?.[i])}°C, वर्षा सम्भावना अधिकतम ${n(d.precipitation_probability_max?.[i],0)}%, अनुमानित वर्षा ${n(d.precipitation_sum?.[i])} mm र अधिकतम हावा ${n(d.wind_speed_10m_max?.[i])} km/h हुन सक्छ। स्रोत: Open-Meteo ताजा forecast।`}
+  const c=j.current||{},times=j.hourly?.time||[],pp=j.hourly?.precipitation_probability||[],pr=j.hourly?.precipitation||[];let i=times.findIndex(t=>String(t)>=String(c.time||''));if(i<0)i=0;let start=-1,stop=-1,maxP=0;for(let x=i;x<Math.min(times.length,i+24);x++){maxP=Math.max(maxP,Number(pp[x])||0);const wet=(Number(pr[x])||0)>=0.1||(Number(pp[x])||0)>=40;if(start<0&&wet)start=x;else if(start>=0&&!wet){stop=x;break}}const time=x=>x>=0?String(times[x]||'').split('T')[1]||'':'';return`🌤️ ${label}मा अहिले ${weatherCode(c.weather_code)}, करिब ${n(c.temperature_2m)}°C (महसुस ${n(c.apparent_temperature)}°C), आर्द्रता ${n(c.relative_humidity_2m,0)}% र हावा ${n(c.wind_speed_10m)} km/h छ। वर्षा सम्भावना नजिकका घण्टामा अधिकतम ${n(maxP,0)}%।${start>=0?` सम्भावित वर्षा सुरु ${time(start)}${stop>=0?` र रोकिने ${time(stop)}`:''}।`:' नजिकै वर्षा सुरु हुने स्पष्ट signal छैन।'} स्रोत: Open-Meteo ताजा forecast।`}
+function weatherDomFallback(){const temp=$('#temp')?.textContent?.trim(),text=$('#weatherText')?.textContent?.trim(),rain=$('#rain')?.textContent?.trim(),hum=$('#humidity')?.textContent?.trim(),wind=$('#wind')?.textContent?.trim(),timing=$('#rainTiming')?.textContent?.trim(),place=$('#place')?.textContent?.trim();if(!temp&&!text)return null;return`🌤️ ${place||'हालको स्थान'} • ${text||''} • तापक्रम ${temp||'—'} • वर्षा ${rain||'—'} • आर्द्रता ${hum||'—'} • हावा ${wind||'—'}${timing?` • ${timing}`:''}`}
+function newsAnswer(){const box=$('#liveNews');if(!box)return null;const text=String(box.innerText||box.textContent||'').replace(/\n{3,}/g,'\n\n').trim();if(!text||/जाँच हुँदैछ|loading/i.test(text))return'📰 पछिल्लो समाचार feed अहिले refresh हुँदैछ। केही क्षणपछि फेरि सोध्नुहोस्।';return`📰 FloodSafe मा अहिले देखिएको पछिल्लो समाचार:\n${text.slice(0,1800)}`}
+function featuresAnswer(){return'🤖 SATHI AI ले app भित्रकै live data बाट: अहिले/आज/भोलिको मौसम, तापक्रम, वर्षा timing, humidity/wind, नाम दिएको जिल्ला/सहरको मौसम, कुनै official नदी/खोलाको जलस्तर र warning/danger, जिल्लाका station, नेपालभरको active risk, हालको GPS नजिकको नदी risk, data freshness र app मा देखिएको पछिल्लो समाचारबारे उत्तर दिन सक्छ। Fresh official reading नभए अनुमान गर्दैन।'}
+function freshnessAnswer(){const s=window.__fsRiverRealtimeState||{};return`🕒 Official नदी data: ${s.connected===false?'अहिले source reconnect हुँदैछ':'source connected'}। Current reading ${Number(s.currentCount)||0}/${Number(s.catalogCount)||0} station।${s.newestMeasurement?` सबैभन्दा नयाँ measurement ${formatMeasured(s.newestMeasurement)}।`:''} स्रोत: BIPAD/DHM।`}
+
+async function appAnswer(raw){const q=norm(raw);if(!q)return null;
+  if(has(q,'app ma k','feature','features','k k gar','के के गर्छ','के गर्न सक्छ','sathi le k'))return featuresAnswer();
+  if(has(q,'news','samachar','समाचार','खबर','latest news','pachhilo samachar','पछिल्लो समाचार'))return newsAnswer();
+  const riverish=has(q,'river','khola','nadi','नदी','खोला','जलस्तर','water level','station','gauge','warning','danger','चेतावनी','खतरा','flood','badi','baadi','बाढी');
+  if(riverish){const st=findStation(raw);if(st)return stationAnswer(st);const d=districtMatch(raw);if(d)return districtAnswer(d);if(has(q,'near me','mero najik','najik','नजिक','वरिपरि','around me'))return nearbyAnswer(raw);if(has(q,'latest','fresh','updated','कहिलेको','ताजा','update time'))return freshnessAnswer();if(has(q,'kun','कुन','kata','कहाँ','risk','जोखिम','warning','danger','चेतावनी','खतरा','active'))return riskAnswer()}
+  if(isWeather(q)){
+    try{if(window.SathiPlaceWeather?.shouldHandle?.(raw))return await window.SathiPlaceWeather.answerNamed(raw)}catch{}
+    try{return await currentPointWeather(raw)}catch{return weatherDomFallback()||'🌦️ ताजा weather अहिले ल्याउन सकिनँ। Internet/location जाँचेर फेरि सोध्नुहोस्।'}
   }
+  if(has(q,'location','स्थान','ठेगाना','where am i','ma kata','ma kaha')){const p=currentLocation();return p?`📍 App मा active monitoring/current location: ${p.label} (${p.lat.toFixed(4)}, ${p.lon.toFixed(4)})।`:'📍 App मा current location उपलब्ध छैन।'}
+  return null;
 }
+function appContext(){const {current}=stations();const risky=current.filter(s=>['danger','warning','watch'].includes(riverStage(s))).slice(0,20).map(s=>({name:stationName(s),district:district(s),stage:riverStage(s),level:level(s),warning:warning(s),danger:danger(s),measured:measured(s)}));return{place:String($('#place')?.textContent||'').trim(),weather:{temp:String($('#temp')?.textContent||'').trim(),condition:String($('#weatherText')?.textContent||'').trim(),rain:String($('#rain')?.textContent||'').trim(),humidity:String($('#humidity')?.textContent||'').trim(),wind:String($('#wind')?.textContent||'').trim(),rain_timing:String($('#rainTiming')?.textContent||'').trim()},river:{current_count:current.length,risky},news:String($('#liveNews')?.innerText||'').trim().slice(0,1200)}}
+function localFallback(q){try{return window.SathiFloodAI?.__localAnswer?.(q)||'AI server जोडिन सकेन। उपलब्ध local FloodSafe data बाट फेरि प्रयास गर्नुहोस्।'}catch{return'AI server जोडिन सकेन।'}}
+function applyAnswer(answer,{voice=false,placeholder=null,spoken='' }={}){if(placeholder){placeholder.className='sathiMsg ai';placeholder.textContent=answer;placeholder.scrollIntoView({block:'nearest'})}if(voice&&window.SathiNative&&answer){try{window.SathiNative.speak(spoken||answer)}catch{}}}
+async function advanced(q,{voice=false,placeholder=null}={}){q=String(q||'').trim();if(!q)return'';
+  try{const local=await appAnswer(q);if(local){remember('user',q);remember('assistant',local);applyAnswer(local,{voice,placeholder});window.dispatchEvent(new CustomEvent('sathi-advanced-answer',{detail:{question:q,answer:local,spoken:local,meta:{source:'live-app'},sources:['FloodSafe live app data']}}));return local}}catch{}
+  try{const cred=await ensureDevice();const body={...cred,question:q,recent_messages:history.slice(-10),location:currentLocation(),nearby_radius_km:1,app_context:appContext(),client:'floodsafe-nepal-v25',client_ai_version:VERSION};const j=await post('sathi-flood-answer',body,24000);const answer=String(j?.answer_ne||'').trim(),spoken=String(j?.spoken_text||answer).trim();if(!answer)throw new Error('empty_ai_answer');remember('user',q);remember('assistant',answer);applyAnswer(answer,{voice,placeholder,spoken});window.dispatchEvent(new CustomEvent('sathi-advanced-answer',{detail:{question:q,answer,spoken,meta:j?.facts_meta||{},sources:j?.sources||[]}}));return answer}catch(err){const fallback=localFallback(q);remember('user',q);remember('assistant',fallback);applyAnswer(fallback,{voice,placeholder});return fallback}}
 
-function installWrapper(){
-  const ai=window.SathiFloodAI;
-  if(!ai||typeof ai.answer!=='function'){setTimeout(installWrapper,120);return}
-  if(ai.__advancedInstalled)return;
-  const original=ai.answer.bind(ai);
-  ai.__localAnswer=original;
-  ai.askAdvanced=(q,opts={})=>advanced(q,opts);
-  ai.answer=q=>{
-    const text=String(q||'').trim();
-    if(!text)return original(q);
-    setTimeout(()=>{
-      const box=$('#sathiFloodMsgs');if(!box)return;
-      const bubbles=[...box.querySelectorAll('.sathiMsg.ai')];
-      const placeholder=[...bubbles].reverse().find(x=>x.dataset?.sathiPending==='1'||x.textContent==='🧠 ताजा official data मिलाउँदैछु…');
-      if(placeholder)advanced(text,{placeholder});
-    },0);
-    return'🧠 ताजा official data मिलाउँदैछु…';
-  };
-  ai.__advancedInstalled=true;ai.version=VERSION;
-  setAdvancedLabels();
-  const box=$('#sathiFloodMsgs');if(box){
-    new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes){if(n?.nodeType===1&&n.classList?.contains('ai')&&n.textContent==='🧠 ताजा official data मिलाउँदैछु…')n.dataset.sathiPending='1'}}).observe(box,{childList:true});
-  }
+function submitTyped(text){text=String(text||'').trim();if(!text)return;open();setAdvancedLabels();const input=$('#sathiInput');if(input){input.value='';input.style.height='auto'}add(text,'user');const p=add('🧠 ताजा app data मिलाउँदैछु…','status');advanced(text,{placeholder:p})}
+function installTypedCapture(){if(window.__SATHI_ADVANCED_TYPED_CAPTURE__)return;window.__SATHI_ADVANCED_TYPED_CAPTURE__=true;
+  document.addEventListener('click',e=>{const send=e.target?.closest?.('#sathiSend'),quick=e.target?.closest?.('#sathiQuick button[data-q]');if(!send&&!quick)return;const input=$('#sathiInput'),text=quick?String(quick.dataset.q||'').trim():String(input?.value||'').trim();if(!text)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();submitTyped(text)},true);
+  document.addEventListener('keydown',e=>{if(e.key!=='Enter'||e.shiftKey||e.target?.id!=='sathiInput')return;const text=String(e.target.value||'').trim();if(!text)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();submitTyped(text)},true)
 }
+function installWrapper(){const ai=window.SathiFloodAI;if(!ai||typeof ai.answer!=='function'){setTimeout(installWrapper,120);return}if(ai.__advancedInstalled)return;const original=ai.answer.bind(ai);ai.__localAnswer=original;ai.askAdvanced=(q,opts={})=>advanced(q,opts);ai.answer=q=>{const text=String(q||'').trim();if(!text)return original(q);setTimeout(()=>{const box=$('#sathiFloodMsgs');if(!box)return;const bubbles=[...box.querySelectorAll('.sathiMsg.ai,.sathiMsg.status')];const placeholder=[...bubbles].reverse().find(x=>x.dataset?.sathiPending==='1'||x.textContent==='🧠 ताजा official data मिलाउँदैछु…'||x.textContent==='🧠 ताजा app data मिलाउँदैछु…');if(placeholder)advanced(text,{placeholder})},0);return'🧠 ताजा app data मिलाउँदैछु…'};ai.__advancedInstalled=true;ai.version=VERSION;setAdvancedLabels();const box=$('#sathiFloodMsgs');if(box)new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n?.nodeType===1&&(n.textContent==='🧠 ताजा official data मिलाउँदैछु…'||n.textContent==='🧠 ताजा app data मिलाउँदैछु…'))n.dataset.sathiPending='1'}).observe(box,{childList:true})}
 
-window.addEventListener('sathi-native-transcript',event=>{
-  const text=String(event?.detail?.text||'').trim();if(!text)return;
-  event.stopImmediatePropagation();
-  open();setAdvancedLabels();
-  const input=$('#sathiInput');if(input)input.value='';
-  add(text,'user');
-  const p=add('🧠 ताजा official data मिलाउँदैछु…','status');
-  advanced(text,{voice:true,placeholder:p});
-},true);
+window.addEventListener('sathi-native-transcript',event=>{const text=String(event?.detail?.text||'').trim();if(!text)return;event.stopImmediatePropagation();open();setAdvancedLabels();const input=$('#sathiInput');if(input)input.value='';add(text,'user');const p=add('🧠 ताजा app data मिलाउँदैछु…','status');advanced(text,{voice:true,placeholder:p})},true);
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installWrapper();setTimeout(setAdvancedLabels,300)},{once:true});
-else{installWrapper();setTimeout(setAdvancedLabels,300)}
+const boot=()=>{installWrapper();installTypedCapture();setTimeout(setAdvancedLabels,300)};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 window.addEventListener('online',()=>{if(window.SathiFloodAI?.__advancedInstalled)setAdvancedLabels()});
 })();

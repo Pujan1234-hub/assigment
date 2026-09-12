@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ne">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b6ff4">
+  <title>FloodSafe Nepal — SATHI AI</title>
+  <link rel="stylesheet" href="./ui.css?v=1">
+</head>
+<body>
+  <!-- Existing FloodSafe V25 is loaded unchanged inside a same-origin frame. -->
+  <iframe id="fsFrame" src="../index.html" title="FloodSafe Nepal V25"></iframe>
+
+  <button id="sathiFab" type="button" aria-label="SATHI खोल्नुहोस्">🤖</button>
+
+  <section id="sathiPanel" aria-hidden="true">
+    <header class="sathiHead">
+      <div class="sathiLogo">🤖</div>
+      <div class="sathiTitle">
+        <b>SATHI • FloodSafe Nepal</b>
+        <small id="sathiSource">FloodSafe data जडान हुँदैछ…</small>
+      </div>
+      <button id="wakeBtn" class="sathiClose" type="button" style="width:auto;padding:0 10px;font-size:12px">🎙️ Ye Sathi</button>
+      <button id="sathiClose" class="sathiClose" type="button" aria-label="बन्द">×</button>
+    </header>
+
+    <div id="sathiMessages" aria-live="polite"></div>
+    <div id="sathiTyping"></div>
+
+    <div class="sathiQuick">
+      <button type="button" data-q="ये साथी, अहिले कुन खोला वा नदीमा बाढीको जोखिम छ?">अहिले कहाँ जोखिम छ?</button>
+      <button type="button" data-q="ये साथी, आज पानी कति बजे पर्छ र कति बजे रोकिन्छ?">आज पानी कहिले?</button>
+      <button type="button" data-q="ये साथी, मेरो क्षेत्र नजिक बाढीको जोखिम कस्तो छ?">मेरो नजिक जोखिम</button>
+      <button type="button" data-q="ये साथी, बाढी आए के गर्ने?">बाढी आए के गर्ने?</button>
+    </div>
+
+    <div id="sathiComposer">
+      <button id="sathiListen" class="sathiRound" type="button" aria-label="आवाजबाट सोध्नुहोस्">🎤</button>
+      <textarea id="sathiInput" rows="1" enterkeyhint="send" placeholder="बाढी, नदी वा वर्षाबारे सोध्नुहोस्…"></textarea>
+      <button id="sathiSend" class="sathiRound" type="button" aria-label="पठाउनुहोस्">➤</button>
+    </div>
+  </section>
+
+  <script src="./engine.js?v=2"></script>
+  <script src="./knowledge-v1.js?v=1"></script>
+  <script src="./controller.js?v=2"></script>
+</body>
+</html>

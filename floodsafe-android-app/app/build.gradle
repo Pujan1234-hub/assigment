@@ -22,8 +22,8 @@ android {
         applicationId 'io.github.pujan1234hub.floodsafe.app'
         minSdk 26
         targetSdk 36
-        versionCode 12
-        versionName '0.6.2'
+        versionCode 13
+        versionName '0.6.3'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
@@ -62,11 +62,7 @@ android {
 def generatedFloodSafeAssets = layout.buildDirectory.dir('generated/floodsafe-assets')
 
 def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
-    // Always start clean so excluded legacy files can never survive from an older build.
-    doFirst {
-        delete generatedFloodSafeAssets.get().asFile
-    }
-
+    doFirst { delete generatedFloodSafeAssets.get().asFile }
     from(rootProject.file('../floodsafe-nepal')) {
         into 'floodsafe-nepal'
         exclude 'v25/rain-push-v1.js'
@@ -86,62 +82,26 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
     from(rootProject.file('android-web')) { into 'floodsafe-nepal/v25' }
     includeEmptyDirs = false
     into(generatedFloodSafeAssets)
-
-    // Android keeps the real national-news bulletin only. Remove the retired Human
-    // Status shell and the duplicate disaster/news card so unrelated stories can never
-    // be presented under a flood heading.
     doLast {
         def entry = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/index.html')
-        if (!entry.isFile()) {
-            throw new GradleException('Missing packaged FloodSafe v25 index.html')
-        }
+        if (!entry.isFile()) throw new GradleException('Missing packaged FloodSafe v25 index.html')
         def text = entry.getText('UTF-8')
         text = text.replaceFirst('(?s)<section class="card" id="impact"[^>]*>.*?</section>', '')
         text = text.replaceFirst('<script src="\\./impact-live-v1\\.js\\?v=\\d+" defer></script>', '')
         text = text.replaceFirst('(?s)<section class="card" id="disasterStatus"[^>]*>.*?</section>', '')
         text = text.replaceFirst('<script src="\\./disaster-monitor-v2\\.js\\?v=\\d+" defer></script>', '')
         entry.write(text, 'UTF-8')
-
-        if (text.contains('id="impact"') || text.contains('impact-live-v1.js') || text.contains('बाढीको मानवीय असर')) {
-            throw new GradleException('Human Status UI remained in packaged v25 index')
-        }
-        if (text.contains('id="disasterStatus"') || text.contains('disaster-monitor-v2.js')) {
-            throw new GradleException('Duplicate disaster/news card remained in packaged v25 index')
-        }
-        if (!text.contains('id="bulletin"') || !text.contains('news-live-v5.js?v=17')) {
-            throw new GradleException('Primary Nepal news bulletin was removed unexpectedly')
-        }
-        if (!text.contains('href="./privacy.html"')) {
-            throw new GradleException('In-app privacy policy link missing from packaged v25 index')
-        }
+        if (text.contains('id="impact"') || text.contains('impact-live-v1.js') || text.contains('बाढीको मानवीय असर')) throw new GradleException('Human Status UI remained in packaged v25 index')
+        if (text.contains('id="disasterStatus"') || text.contains('disaster-monitor-v2.js')) throw new GradleException('Duplicate disaster/news card remained in packaged v25 index')
+        if (!text.contains('id="bulletin"') || !text.contains('news-live-v5.js?v=17')) throw new GradleException('Primary Nepal news bulletin was removed unexpectedly')
+        if (!text.contains('href="./privacy.html"')) throw new GradleException('In-app privacy policy link missing from packaged v25 index')
         def privacy = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/privacy.html')
-        if (!privacy.isFile() || privacy.length() == 0) {
-            throw new GradleException('Privacy policy missing from Android bundle')
-        }
-        if (!text.contains('sathi-flood-ai/advanced-server-v1.js?v=1')) {
-            throw new GradleException('Grounded SATHI AI bridge missing from packaged v25 index')
-        }
+        if (!privacy.isFile() || privacy.length() == 0) throw new GradleException('Privacy policy missing from Android bundle')
+        if (!text.contains('sathi-flood-ai/advanced-server-v1.js?v=1')) throw new GradleException('Grounded SATHI AI bridge missing from packaged v25 index')
         def advancedAi = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/sathi-flood-ai/advanced-server-v1.js')
-        if (!advancedAi.isFile() || advancedAi.length() == 0) {
-            throw new GradleException('Grounded SATHI AI bridge asset missing from Android bundle')
-        }
-
-        def forbidden = [
-            'floodsafe-nepal/v25/human-bootstrap.js',
-            'floodsafe-nepal/v25/human-current-guard.js',
-            'floodsafe-nepal/v25/human-final.js',
-            'floodsafe-nepal/v25/human-final-v2.js',
-            'floodsafe-nepal/v25/people.html',
-            'floodsafe-nepal/v25/impact-live-v1.js',
-            'floodsafe-nepal/v25/disaster-monitor-v2.js',
-            'floodsafe-nepal/v24/v24-people-status.js',
-            'data/floodsafe-people-status.json'
-        ]
-        forbidden.each { relative ->
-            if (new File(generatedFloodSafeAssets.get().asFile, relative).exists()) {
-                throw new GradleException("Forbidden legacy/duplicate asset was packaged: ${relative}")
-            }
-        }
+        if (!advancedAi.isFile() || advancedAi.length() == 0) throw new GradleException('Grounded SATHI AI bridge asset missing from Android bundle')
+        def forbidden = ['floodsafe-nepal/v25/human-bootstrap.js','floodsafe-nepal/v25/human-current-guard.js','floodsafe-nepal/v25/human-final.js','floodsafe-nepal/v25/human-final-v2.js','floodsafe-nepal/v25/people.html','floodsafe-nepal/v25/impact-live-v1.js','floodsafe-nepal/v25/disaster-monitor-v2.js','floodsafe-nepal/v24/v24-people-status.js','data/floodsafe-people-status.json']
+        forbidden.each { relative -> if (new File(generatedFloodSafeAssets.get().asFile, relative).exists()) throw new GradleException("Forbidden legacy/duplicate asset was packaged: ${relative}") }
         println 'Android clean FloodSafe home/news + privacy + grounded SATHI AI bundle PASS'
     }
 }

@@ -34,6 +34,10 @@ function weatherIntent(raw){
   const rainTiming=(has(q,'पानी','pani')&&has(q,'कहिले','kahile','kati baje','कति बजे','parcha','parxa','पर्छ','rok','रोकिन','start','stop'));
   return temperature?'temperature':(explicitRain||rainTiming)?'rain':weather?'weather':'';
 }
+function requestedDay(raw){
+  const q=norm(raw);
+  return has(q,'tomorrow','bholi','voli','भोलि','भोली','भोलिको','भोलीको')?'tomorrow':'today';
+}
 function selfLocation(q){
   return has(q,'mero area','mero location','my location','near me','yaha','yahaa','eta','here','मेरो स्थान','मेरो ठाउँ','मेरो क्षेत्र','यहाँ','यता','हालको gps','current gps');
 }
@@ -46,7 +50,7 @@ function fixedPlace(q){
 function cleanCandidate(s){
   return String(s||'')
     .replace(/\b(hey|ye|sathi|ai|please|plz|malai|bhana|bhan|vana|van|tell|me)\b/gi,' ')
-    .replace(/\b(aaj|aaja|aja|aahele|aile|ahile|now|today|currently)\b/gi,' ')
+    .replace(/\b(aaj|aaja|aja|aahele|aile|ahile|now|today|currently|bholi|voli|tomorrow)\b/gi,' ')
     .replace(/\b(kati|kasto|cha|xa|chha|ho|ra|ani|please)\b/gi,' ')
     .replace(/\s+/g,' ').trim();
 }
@@ -55,10 +59,10 @@ function explicitPlaceText(raw){
   if(selfLocation(q))return'';
   const fp=fixedPlace(q);if(fp)return fp.en;
   const patterns=[
-    /^(.+?)\s+(?:ko|ma|maa)\s+(?:temperature|temp|weather|mausam|mousam|rain|barsa|barsha|pani)\b/i,
-    /^(?:temperature|temp|weather|mausam|mousam|rain)\s+(?:in|at|of)\s+(.+?)(?:\s+(?:kati|kasto|cha|xa|chha|now|today|aahele|aile|ahile)\b|$)/i,
-    /^(.+?)\s+(?:ma|maa)\s+pani\s+(?:kahile|kati|parcha|parxa|rok)/i,
-    /^(.+?)(?:को|मा)\s*(?:तापक्रम|तापमान|मौसम|वर्षा|पानी)/,
+    /^(.+?)\s+(?:ko|ma|maa)\s+(?:(?:bholi|voli|tomorrow|aaj|aaja|today)\s+)?(?:temperature|temp|weather|mausam|mousam|rain|barsa|barsha|pani)\b/i,
+    /^(?:temperature|temp|weather|mausam|mousam|rain)\s+(?:in|at|of)\s+(.+?)(?:\s+(?:kati|kasto|cha|xa|chha|now|today|tomorrow|bholi|aahele|aile|ahile)\b|$)/i,
+    /^(.+?)\s+(?:ma|maa)\s+(?:(?:bholi|voli|tomorrow)\s+)?pani\s+(?:kahile|kati|parcha|parxa|rok)/i,
+    /^(.+?)(?:को|मा)\s*(?:(?:भोलि|भोली|आज)\s*)?(?:तापक्रम|तापमान|मौसम|वर्षा|पानी)/,
     /^(?:तापक्रम|तापमान|मौसम|वर्षा)\s*(?:कति|कस्तो)?\s*(?:छ)?\s*(?:भन्नुहोस्)?\s*(.+)$/
   ];
   for(const re of patterns){
@@ -75,7 +79,7 @@ function shouldHandle(raw){
   const q=norm(raw);if(selfLocation(q))return null;
   const fixed=fixedPlace(q);
   const text=fixed?fixed.en:explicitPlaceText(raw);
-  return text?{kind,text,fixed}:null;
+  return text?{kind,text,fixed,day:requestedDay(raw)}:null;
 }
 
 async function geocodeNepal(name){
@@ -91,9 +95,10 @@ async function geocodeNepal(name){
 }
 async function forecast(p){
   const params=new URLSearchParams({
-    latitude:String(p.lat),longitude:String(p.lon),timezone:NEPAL_TZ,forecast_days:'2',
+    latitude:String(p.lat),longitude:String(p.lon),timezone:NEPAL_TZ,forecast_days:'3',
     current:'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code,precipitation',
-    hourly:'precipitation_probability,precipitation,temperature_2m'
+    hourly:'precipitation_probability,precipitation,temperature_2m',
+    daily:'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max'
   });
   const r=await fetch('https://api.open-meteo.com/v1/forecast?'+params.toString(),{cache:'no-store'});
   if(!r.ok)throw new Error('forecast '+r.status);
@@ -129,7 +134,26 @@ function rainWindow(j){
   let maxP=0,total=0;for(let i=i0;i<limit;i++){maxP=Math.max(maxP,Number(pp[i])||0);total+=Number(pr[i])||0}
   return {nowWet,start:start>=0?times[start]:null,stop:stop>=0?times[stop]:null,maxP,total};
 }
+function tomorrowIndex(j){return Math.min(1,Math.max(0,(j?.daily?.time||[]).length-1))}
+function tomorrowRainWindow(j){
+  const d=j?.daily||{},h=j?.hourly||{},di=tomorrowIndex(j),date=String(d.time?.[di]||'');
+  const idx=(h.time||[]).map((t,i)=>String(t).startsWith(date)?i:-1).filter(i=>i>=0);
+  const wet=i=>(Number(h.precipitation?.[i])>=0.1)||(Number(h.precipitation_probability?.[i])>=40);
+  let start=-1,stop=-1;for(const i of idx){if(start<0&&wet(i))start=i;else if(start>=0&&!wet(i)){stop=i;break}}
+  return {start:start>=0?h.time[start]:null,stop:stop>=0?h.time[stop]:null};
+}
 function label(p){return p.district&&norm(p.district)!==norm(p.en)?`${p.name||p.en} (${p.district})`:(p.name||p.en)}
+function tomorrowReply(p,j,kind){
+  const d=j?.daily||{},i=tomorrowIndex(j),hi=Number(d.temperature_2m_max?.[i]),lo=Number(d.temperature_2m_min?.[i]),feelsHi=Number(d.apparent_temperature_max?.[i]),feelsLo=Number(d.apparent_temperature_min?.[i]),chance=Number(d.precipitation_probability_max?.[i]),sum=Number(d.precipitation_sum?.[i]),wind=Number(d.wind_speed_10m_max?.[i]),rw=tomorrowRainWindow(j);
+  if(kind==='temperature')return `🌡️ ${label(p)}मा भोलि न्यूनतम करिब ${neNum(lo)}°C र अधिकतम ${neNum(hi)}°C हुने पूर्वानुमान छ। महसुस हुने दायरा करिब ${neNum(feelsLo)}°C–${neNum(feelsHi)}°C हुन सक्छ। वर्षा सम्भावना अधिकतम ${neNum(chance,0)}%। स्रोत: Open-Meteo ताजा पूर्वानुमान।`;
+  if(kind==='rain'){
+    const bits=[`🌧️ ${label(p)}मा भोलि वर्षा सम्भावना अधिकतम करिब ${neNum(chance,0)}% र अनुमानित कुल वर्षा ${neNum(sum)} mm छ।`];
+    if(rw.start)bits.push(`वर्षा सुरु हुने सम्भावित समय ${neTime(rw.start)} हो।`);else bits.push('भोलिको hourly forecast मा स्पष्ट वर्षा सुरु हुने समय भेटिएन।');
+    if(rw.stop)bits.push(`रोकिने सम्भावित समय ${neTime(rw.stop)} हो।`);
+    bits.push('यो forecast हो; समय/मात्रा बदलिन सक्छ। स्रोत: Open-Meteo।');return bits.join(' ');
+  }
+  return `🌤️ ${label(p)}मा भोलि तापक्रम करिब ${neNum(lo)}°C देखि ${neNum(hi)}°C सम्म रहने पूर्वानुमान छ। वर्षा सम्भावना अधिकतम ${neNum(chance,0)}%, अनुमानित वर्षा ${neNum(sum)} mm र अधिकतम हावा करिब ${neNum(wind)} km/h हुन सक्छ। स्रोत: Open-Meteo ताजा मौसम पूर्वानुमान।`;
+}
 function temperatureReply(p,j){
   const c=j?.current||{},i=hourlyIndex(j),chance=Number(j?.hourly?.precipitation_probability?.[i]);
   const bits=[`🌡️ ${label(p)}मा अहिले करिब ${neNum(c.temperature_2m)}°C छ।`];
@@ -160,6 +184,7 @@ async function answerNamed(raw){
   let p=req.fixed||await geocodeNepal(req.text);
   if(!p)return `📍 “${req.text}” नेपालभित्र स्पष्ट रूपमा भेटिएन। जिल्ला वा सहरको नाम अलि स्पष्ट लेख्नुहोस्। म यस्तो अवस्थामा GPS मा चुपचाप fallback गर्दिनँ।`;
   const j=await forecast(p);
+  if(req.day==='tomorrow')return tomorrowReply(p,j,req.kind);
   if(req.kind==='temperature')return temperatureReply(p,j);
   if(req.kind==='rain')return rainReply(p,j);
   return weatherReply(p,j);
@@ -174,7 +199,7 @@ function openPanel(){
 async function handleUiQuestion(text,{alreadyAdded=false,speak=false}={}){
   const req=shouldHandle(text);if(!req)return false;
   openPanel();if(!alreadyAdded)add(text,'user');
-  const status=document.createElement('div');status.className='sathiMsg status';status.textContent=`📍 ${req.text}को मौसम खोज्दैछु…`;$('#sathiFloodMsgs')?.appendChild(status);
+  const when=req.day==='tomorrow'?'भोलिको ':' ';const status=document.createElement('div');status.className='sathiMsg status';status.textContent=`📍 ${req.text}को ${when}मौसम खोज्दैछु…`;$('#sathiFloodMsgs')?.appendChild(status);
   try{
     const reply=await answerNamed(text);status.remove();add(reply,'ai');
     if(speak)try{window.SathiNative?.speak?.(reply)}catch{}
@@ -184,7 +209,6 @@ async function handleUiQuestion(text,{alreadyAdded=false,speak=false}={}){
   return true;
 }
 
-// Capture typed named-place weather questions before the original GPS-first handler.
 document.addEventListener('click',e=>{
   const send=e.target?.closest?.('#sathiSend');
   const quick=e.target?.closest?.('#sathiQuick button[data-q]');
@@ -201,8 +225,6 @@ document.addEventListener('keydown',e=>{
   e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();e.target.value='';e.target.style.height='auto';handleUiQuestion(text);
 },true);
 
-// Native transcript events are dispatched on window. Capture phase runs before
-// the existing generic handler, so named-place weather never falls back to GPS.
 window.addEventListener('sathi-native-transcript',e=>{
   const text=String(e?.detail?.text||'').trim();if(!text||!shouldHandle(text))return;
   e.stopImmediatePropagation();
@@ -210,5 +232,5 @@ window.addEventListener('sathi-native-transcript',e=>{
   handleUiQuestion(text,{speak:true});
 },true);
 
-window.SathiPlaceWeather={answerNamed,extract:explicitPlaceText,shouldHandle,version:'1.0'};
+window.SathiPlaceWeather={answerNamed,extract:explicitPlaceText,shouldHandle,version:'1.1-today-tomorrow'};
 })();

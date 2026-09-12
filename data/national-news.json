@@ -1,49 +1,28 @@
 {
-  "generated_at": "2026-09-12T04:29:33.327517+05:45",
-  "updated_at_npt": "12 Sep 04:29 NPT",
+  "generated_at": "2026-09-12T06:27:44.375501+05:45",
+  "updated_at_npt": "12 Sep 06:27 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "देशभर मनसुनी वायुको प्रभाव कायमै, आज यी ५ प्रदेशमा भारी वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591607/the-influence-of-monsoon-winds-continues-across-the-country-heavy-rains-are-likely-in-these-5-provinces-today",
+      "published_at": "2026-09-12T06:11:28+05:45",
+      "flash": true
+    },
     {
       "title": "आँधीखोलामाथि झोलुङ्गे पुल निर्माण",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591596/construction-of-a-suspension-bridge-over-the-andhikhola",
       "published_at": "2026-09-12T02:30:00+05:45",
       "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी पीडितलाई बेनी नगरपालिकाको करिब रु ४० लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591594/beni-municipality-provides-around-rs-4-million-in-assistance-to-bhotekoshi-flood-victims",
-      "published_at": "2026-09-12T00:23:50+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीबाट पाठ सिकेर जलविद्युत् पूर्वाधार निर्माण गर्नुपर्नेमा जोड",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591592/emphasis-on-building-hydropower-infrastructure-by-learning-lessons-from-the-bhotekoshi-flood",
-      "published_at": "2026-09-11T23:32:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "महाराष्ट्रमा भएको सडक दुर्घटनामा छत्तीसगढका ९ जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591591/9-people-from-chhattisgarh-die-in-road-accident-in-maharashtra",
-      "published_at": "2026-09-11T23:02:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : नेपाल प्रहरीद्वारा ‘टिमुरे टु त्रिवेणी’ अप्रेशन सञ्चालन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591590/bhotekoshi-flood-nepal-police-conducts-timure-to-triveni-operation",
-      "published_at": "2026-09-11T22:33:24+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     },
@@ -56,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 5
+      "flash": 1,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +46,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     }

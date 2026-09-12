@@ -40,7 +40,7 @@ public final class RiverAlertWorker extends Worker {
             "https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers";
     private static final String CHANNEL_ID = "official_nepal_alerts_v2";
     private static final String PUSH_PREFS = "floodsafe_push_guard";
-    private static final double RADIUS_KM = 2d;
+    private static final double RADIUS_KM = 1d;
     private static final long MAX_AGE_MS = 20L * 60L * 1000L;
     private static final long FUTURE_TOLERANCE_MS = 5L * 60L * 1000L;
     private static final long WARNING_REPEAT_MS = 90L * 60L * 1000L;

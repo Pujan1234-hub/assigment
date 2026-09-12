@@ -91,17 +91,18 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
 
         SharedPreferences monitor = getSharedPreferences(RainAlertWorker.PREFS, Context.MODE_PRIVATE);
         if (!monitor.getBoolean("enabled", false)) return false;
+        // River push proximity is strictly relative to the phone's current GPS.
+        // A map-selected Nepal point is informational only and cannot authorize a push.
+        if (!monitor.getBoolean("follow_device", false)) return false;
         double homeLat = Double.longBitsToDouble(monitor.getLong(
                 "lat", Double.doubleToRawLongBits(Double.NaN)));
         double homeLon = Double.longBitsToDouble(monitor.getLong(
                 "lon", Double.doubleToRawLongBits(Double.NaN)));
         if (!Double.isFinite(homeLat) || !Double.isFinite(homeLon) || !insideNepal(homeLat, homeLon)) return false;
 
-        if (monitor.getBoolean("follow_device", false)) {
-            long locationTime = monitor.getLong("location_time", 0L);
-            if (!MonitoringLocationPolicy.freshNepalDeviceLocation(
-                    locationTime, System.currentTimeMillis(), homeLat, homeLon)) return false;
-        }
+        long locationTime = monitor.getLong("location_time", 0L);
+        if (!MonitoringLocationPolicy.freshNepalDeviceLocation(
+                locationTime, System.currentTimeMillis(), homeLat, homeLon)) return false;
 
         double distance = haversineKm(homeLat, homeLon, stationLat, stationLon);
         if (distance > DEFAULT_RIVER_RADIUS_KM) return false;

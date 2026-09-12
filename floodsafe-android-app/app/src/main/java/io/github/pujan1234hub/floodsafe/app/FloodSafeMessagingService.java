@@ -16,7 +16,7 @@ import java.util.Map;
 /** Displays verified push messages while the app is closed, with local river filtering. */
 public final class FloodSafeMessagingService extends FirebaseMessagingService {
     private static final String CHANNEL_ID = "official_nepal_alerts_v2";
-    private static final double DEFAULT_RIVER_RADIUS_KM = 2d;
+    private static final double DEFAULT_RIVER_RADIUS_KM = 1d;
     private static final String PUSH_PREFS = "floodsafe_push_guard";
     private static final long WARNING_REPEAT_MS = 90L * 60L * 1000L;
     private static final long DANGER_REPEAT_MS = 30L * 60L * 1000L;
@@ -97,8 +97,6 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
                 "lon", Double.doubleToRawLongBits(Double.NaN)));
         if (!Double.isFinite(homeLat) || !Double.isFinite(homeLon) || !insideNepal(homeLat, homeLon)) return false;
 
-        // A current-device target must still be fresh at delivery time. This prevents
-        // a prompt FCM message from matching an old location if GPS has stopped.
         if (monitor.getBoolean("follow_device", false)) {
             long locationTime = monitor.getLong("location_time", 0L);
             if (!MonitoringLocationPolicy.freshNepalDeviceLocation(

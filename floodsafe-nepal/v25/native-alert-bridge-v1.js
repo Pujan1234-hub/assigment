@@ -1,50 +1,12 @@
 (()=>{'use strict';
 if(window.__fsNativeAlertBridgeV1)return;window.__fsNativeAlertBridgeV1=true;
-const MAX_KM=1;
+const MAX_KM=2;
 const devicePoint=()=>{const d=window.FloodSafeCurrentLocation?.last;return d&&Number.isFinite(d.lat)&&Number.isFinite(d.lon)?{lat:d.lat,lon:d.lon}:null};
 const gpsPoint=()=>{const s=window.FloodSafe?.state;return s?.kind==='gps'&&Number.isFinite(s.lat)&&Number.isFinite(s.lon)&&window.FloodSafe?.insideNepal?.(s.lat,s.lon)?{lat:s.lat,lon:s.lon}:null};
-function updateRadiusText(){const el=document.getElementById('outsideNoticeText');if(!el)return;const en=(window.FloodSafe?.state?.lang||localStorage.getItem('fs-flood-lang'))==='en';el.textContent=en?'When you are outside Nepal, nearby river warnings are not sent. Inside Nepal, only official warning/danger within 1 km of your current GPS location can trigger a nearby notification.':'तपाईं नेपाल बाहिर हुँदा नजिकको नदी चेतावनी पठाइँदैन। नेपालभित्र हालको GPS स्थान सक्रिय हुँदा १ कि.मि. भित्रको official warning/danger मात्रै notification आउँछ।'}
-function syncFromUserAction(){
-  const native=window.FloodSafeNative,s=window.FloodSafe?.state;if(!native||!s)return;
-  if(s.alertsOn){
-    native.setRainAlerts?.(true);
-    const p=devicePoint()||gpsPoint();
-    if(p)native.setBackgroundRainAlerts?.(p.lat,p.lon);
-    else setTimeout(()=>window.FloodSafeCurrentLocation?.locate?.(),0);
-    native.requestBackgroundLocationForAlerts?.();
-  }else{
-    native.setRainAlerts?.(false);
-    native.disableBackgroundRainAlerts?.();
-  }
-}
-function syncPoint(){
-  const native=window.FloodSafeNative,s=window.FloodSafe?.state;if(!native||!s?.alertsOn)return;
-  const p=devicePoint()||gpsPoint();
-  if(p)native.setBackgroundRainAlerts?.(p.lat,p.lon);
-  else native.syncBackgroundRainAlerts?.();
-}
-function currentLocationChanged(event){
-  const native=window.FloodSafeNative,s=window.FloodSafe?.state,d=event?.detail;
-  if(!native||!s?.alertsOn||!d||!Number.isFinite(d.lat)||!Number.isFinite(d.lon))return;
-  native.setBackgroundRainAlerts?.(d.lat,d.lon);
-}
-function boot(){
-  const btn=document.getElementById('alertBtn');
-  if(btn)btn.addEventListener('click',()=>setTimeout(syncFromUserAction,0));
-  window.addEventListener('fsfocuschange',()=>setTimeout(syncPoint,0));
-  window.addEventListener('fscurrentlocation',currentLocationChanged);
-  window.addEventListener('fslanguage',updateRadiusText);
-  updateRadiusText();
-  if(window.FloodSafe?.state?.alertsOn){
-    window.FloodSafeNative?.syncRainAlertsStatus?.();
-    window.FloodSafeNative?.syncBackgroundRainAlerts?.();
-    const p=devicePoint()||gpsPoint();
-    if(p)window.FloodSafeNative?.setBackgroundRainAlerts?.(p.lat,p.lon);
-  }else{
-    window.FloodSafeNative?.setRainAlerts?.(false);
-    window.FloodSafeNative?.disableBackgroundRainAlerts?.();
-  }
-  window.FloodSafeNearbyAlertPolicy={radiusKm:MAX_KM,currentGpsOnly:true,backgroundNative:true};
-}
+function updateRadiusText(){const el=document.getElementById('outsideNoticeText');if(!el)return;const en=(window.FloodSafe?.state?.lang||localStorage.getItem('fs-flood-lang'))==='en';el.textContent=en?'When you are outside Nepal, nearby river warnings are not sent. Inside Nepal, only official warning/danger within 2 km of your current GPS location can trigger a nearby notification.':'तपाईं नेपाल बाहिर हुँदा नजिकको नदी चेतावनी पठाइँदैन। नेपालभित्र हालको GPS स्थान सक्रिय हुँदा २ कि.मि. भित्रको official warning/danger मात्रै notification आउँछ।'}
+function syncFromUserAction(){const native=window.FloodSafeNative,s=window.FloodSafe?.state;if(!native||!s)return;if(s.alertsOn){native.setRainAlerts?.(true);const p=devicePoint()||gpsPoint();if(p)native.setBackgroundRainAlerts?.(p.lat,p.lon);else setTimeout(()=>window.FloodSafeCurrentLocation?.locate?.(),0);native.requestBackgroundLocationForAlerts?.()}else{native.setRainAlerts?.(false);native.disableBackgroundRainAlerts?.()}}
+function syncPoint(){const native=window.FloodSafeNative,s=window.FloodSafe?.state;if(!native||!s?.alertsOn)return;const p=devicePoint()||gpsPoint();if(p)native.setBackgroundRainAlerts?.(p.lat,p.lon);else native.syncBackgroundRainAlerts?.()}
+function currentLocationChanged(event){const native=window.FloodSafeNative,s=window.FloodSafe?.state,d=event?.detail;if(!native||!s?.alertsOn||!d||!Number.isFinite(d.lat)||!Number.isFinite(d.lon))return;native.setBackgroundRainAlerts?.(d.lat,d.lon)}
+function boot(){const btn=document.getElementById('alertBtn');if(btn)btn.addEventListener('click',()=>setTimeout(syncFromUserAction,0));window.addEventListener('fsfocuschange',()=>setTimeout(syncPoint,0));window.addEventListener('fscurrentlocation',currentLocationChanged);window.addEventListener('fslanguage',updateRadiusText);updateRadiusText();if(window.FloodSafe?.state?.alertsOn){window.FloodSafeNative?.syncRainAlertsStatus?.();window.FloodSafeNative?.syncBackgroundRainAlerts?.();const p=devicePoint()||gpsPoint();if(p)window.FloodSafeNative?.setBackgroundRainAlerts?.(p.lat,p.lon)}else{window.FloodSafeNative?.setRainAlerts?.(false);window.FloodSafeNative?.disableBackgroundRainAlerts?.()}window.FloodSafeNearbyAlertPolicy={radiusKm:MAX_KM,currentGpsOnly:true,backgroundNative:true}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

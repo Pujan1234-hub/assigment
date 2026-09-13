@@ -154,5 +154,6 @@ footer{padding:28px 0 40px}.foot{border-top:1px solid var(--line);padding-top:22
  const c=document.getElementById('fx');if(c&&!reduced){const ctx=c.getContext('2d');let w,h,dpr,pts=[];function resize(){dpr=Math.min(devicePixelRatio||1,2);w=c.clientWidth;h=c.clientHeight;c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);const n=Math.min(54,Math.floor(w/24));pts=Array.from({length:n},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.4+.4,v:(Math.random()*.18+.06),a:Math.random()*.5+.16}))}function frame(){ctx.clearRect(0,0,w,h);for(const p of pts){p.y-=p.v;if(p.y<-5){p.y=h+5;p.x=Math.random()*w}ctx.beginPath();ctx.fillStyle=`rgba(110,180,255,${p.a})`;ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()}requestAnimationFrame(frame)}resize();addEventListener('resize',resize,{passive:true});frame()}
 })();
 </script>
+<script src="./auto-update.js" defer></script>
 </body>
 </html>

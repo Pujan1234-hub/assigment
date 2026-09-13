@@ -1,21 +1,28 @@
 {
-  "generated_at": "2026-09-14T01:30:40.349549+05:45",
-  "updated_at_npt": "14 Sep 01:30 NPT",
+  "generated_at": "2026-09-14T03:32:33.301928+05:45",
+  "updated_at_npt": "14 Sep 03:32 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "कन्काइ नगर अस्पताललाई स्वास्थ्य उपकरण प्रदान",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591971/providing-health-equipment-to-kankai-city-hospital",
+      "published_at": "2026-09-14T02:20:36+05:45",
+      "flash": false
+    },
+    {
+      "title": "च्याउ टिप्न घरबाट निस्किएका युवक ६ दिनदेखि बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591970/young-man-who-left-home-to-pick-mushrooms-has-been-missing-for-6-days",
+      "published_at": "2026-09-14T02:18:42+05:45",
+      "flash": false
+    },
     {
       "title": "बाढी प्रभावितको उद्धार, राहत र पुनः स्थापना प्रदेश सरकारको पहिलो प्राथमिकता : मुख्यमन्त्री थापा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591968/rescue-relief-and-rehabilitation-of-flood-victims-are-the-first-priority-of-the-provincial-government-chief-minister-thapa",
       "published_at": "2026-09-14T01:09:26+05:45",
-      "flash": true
-    },
-    {
-      "title": "वर्षात्ले जम्मा गरेको माटोले नागेश्वर मन्दिर प्रवेशमा समस्या",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591960/mud-deposited-by-rain-causes-problems-in-entering-nageshwor-temple",
-      "published_at": "2026-09-13T22:46:28+05:45",
       "flash": false
     },
     {
@@ -30,27 +37,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591950/nepal-army-disposes-of-abandoned-socket-bomb",
       "published_at": "2026-09-13T21:56:02+05:45",
-      "flash": false
-    },
-    {
-      "title": "विनाशकारी बाढी : जलविद्युत आयोजनाका ९०९ जना अझै सम्पर्कविहीन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591944/devastating-floods-909-people-from-hydroelectric-projects-still-without-contact",
-      "published_at": "2026-09-13T21:22:26+05:45",
-      "flash": false
-    },
-    {
-      "title": "धनगढीमा अटोको ठक्करबाट एक जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591942/one-person-dies-in-auto-accident-in-dhangadhi",
-      "published_at": "2026-09-13T21:07:32+05:45",
-      "flash": false
-    },
-    {
-      "title": "२. सैनिक अस्पतालको आईसीयूमै अन्तर्वार्ता, स्वास्थ्य प्रोटोकलमाथि गम्भीर प्रश्न",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591941/interview-in-the-icu-of-the-military-hospital-serious-questions-about-health-protocols",
-      "published_at": "2026-09-13T20:59:47+05:45",
       "flash": false
     }
   ],
@@ -70,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 8
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

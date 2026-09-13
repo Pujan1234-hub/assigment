@@ -1,36 +1,22 @@
 {
-  "generated_at": "2026-09-13T23:20:38.720079+05:45",
-  "updated_at_npt": "13 Sep 23:20 NPT",
+  "generated_at": "2026-09-14T01:30:40.349549+05:45",
+  "updated_at_npt": "14 Sep 01:30 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "बाढी प्रभावितको उद्धार, राहत र पुनः स्थापना प्रदेश सरकारको पहिलो प्राथमिकता : मुख्यमन्त्री थापा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591968/rescue-relief-and-rehabilitation-of-flood-victims-are-the-first-priority-of-the-provincial-government-chief-minister-thapa",
+      "published_at": "2026-09-14T01:09:26+05:45",
+      "flash": true
+    },
     {
       "title": "वर्षात्ले जम्मा गरेको माटोले नागेश्वर मन्दिर प्रवेशमा समस्या",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591960/mud-deposited-by-rain-causes-problems-in-entering-nageshwor-temple",
       "published_at": "2026-09-13T22:46:28+05:45",
-      "flash": true
-    },
-    {
-      "title": "अमेरिकी मध्यकालीन चुनावपछि इरानसँगको युद्ध अन्त्य हुने ट्रम्पको अपेक्षा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591959/trump-hopes-war-with-iran-will-end-after-us-midterm-elections",
-      "published_at": "2026-09-13T22:41:50+05:45",
-      "flash": true
-    },
-    {
-      "title": "१० खेलाडीमा समेटिएको कोभेन्ट्रीविरुद्ध ब्राइटनको गोल वर्षा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591958/brightons-goal-rain-against-coventry-with-10-players-included",
-      "published_at": "2026-09-13T22:37:19+05:45",
-      "flash": true
-    },
-    {
-      "title": "युक्रेनलाई रुसी तेल प्रशोधन गृहमा आक्रमण रोक्न अमेरिकी राष्ट्रपति ट्रम्पको चेतावनी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591956/us-president-trump-warns-ukraine-to-stop-attack-on-russian-oil-refinery",
-      "published_at": "2026-09-13T22:31:35+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "बाणगङ्गा नदीमा बेपत्ता बालकको शव भारतमा फेला",
@@ -47,6 +33,13 @@
       "flash": false
     },
     {
+      "title": "विनाशकारी बाढी : जलविद्युत आयोजनाका ९०९ जना अझै सम्पर्कविहीन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591944/devastating-floods-909-people-from-hydroelectric-projects-still-without-contact",
+      "published_at": "2026-09-13T21:22:26+05:45",
+      "flash": false
+    },
+    {
       "title": "धनगढीमा अटोको ठक्करबाट एक जनाको मृत्यु",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591942/one-person-dies-in-auto-accident-in-dhangadhi",
@@ -58,13 +51,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591941/interview-in-the-icu-of-the-military-hospital-serious-questions-about-health-protocols",
       "published_at": "2026-09-13T20:59:47+05:45",
-      "flash": false
-    },
-    {
-      "title": "अरिङ्गालले चिलेर एक जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591910/one-person-dies-after-being-struck-by-a-poisonous-snake",
-      "published_at": "2026-09-13T17:59:03+05:45",
       "flash": false
     }
   ],
@@ -84,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 9
+      "flash": 1,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,

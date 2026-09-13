@@ -1,35 +1,63 @@
 {
-  "generated_at": "2026-09-13T20:13:24.129948+05:45",
-  "updated_at_npt": "13 Sep 20:13 NPT",
+  "generated_at": "2026-09-13T23:20:38.720079+05:45",
+  "updated_at_npt": "13 Sep 23:20 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बाढी प्रभावितका लागि आर्या फार्माको अर्को पहल, नुवाकोटमा सातदिने निःशुल्क स्वास्थ्य शिविर",
+      "title": "वर्षात्ले जम्मा गरेको माटोले नागेश्वर मन्दिर प्रवेशमा समस्या",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591933/arya-pharmas-next-initiative-for-flood-victims-seven-day-free-health-camp-in-nuwakot",
-      "published_at": "2026-09-13T20:09:24+05:45",
+      "url": "https://www.ratopati.com/story/591960/mud-deposited-by-rain-causes-problems-in-entering-nageshwor-temple",
+      "published_at": "2026-09-13T22:46:28+05:45",
       "flash": true
     },
     {
-      "title": "राप्ती र कर्णाली स्वास्थ्य विज्ञान प्रतिष्ठानबिच विविध विषयमा सहकार्य",
+      "title": "अमेरिकी मध्यकालीन चुनावपछि इरानसँगको युद्ध अन्त्य हुने ट्रम्पको अपेक्षा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591931/cooperation-agreement-between-rapti-and-karnali-health-sciences-institutes",
-      "published_at": "2026-09-13T20:01:15+05:45",
+      "url": "https://www.ratopati.com/story/591959/trump-hopes-war-with-iran-will-end-after-us-midterm-elections",
+      "published_at": "2026-09-13T22:41:50+05:45",
       "flash": true
     },
     {
-      "title": "इन्डोनेसियामा डुङ्गा डुब्दा ६ जनाको मृत्यु, १३० बेपत्ता",
+      "title": "१० खेलाडीमा समेटिएको कोभेन्ट्रीविरुद्ध ब्राइटनको गोल वर्षा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591928/6-dead-130-missing-after-boat-sinks-in-indonesia",
-      "published_at": "2026-09-13T19:12:13+05:45",
+      "url": "https://www.ratopati.com/story/591958/brightons-goal-rain-against-coventry-with-10-players-included",
+      "published_at": "2026-09-13T22:37:19+05:45",
+      "flash": true
+    },
+    {
+      "title": "युक्रेनलाई रुसी तेल प्रशोधन गृहमा आक्रमण रोक्न अमेरिकी राष्ट्रपति ट्रम्पको चेतावनी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591956/us-president-trump-warns-ukraine-to-stop-attack-on-russian-oil-refinery",
+      "published_at": "2026-09-13T22:31:35+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाणगङ्गा नदीमा बेपत्ता बालकको शव भारतमा फेला",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591954/body-of-missing-boy-found-in-banganga-river-in-india",
+      "published_at": "2026-09-13T22:15:35+05:45",
       "flash": false
     },
     {
-      "title": "तीजको दरखाने खर्च बाढीपीडितलाई",
+      "title": "बेवारिसे सकेट बम नेपाली सेनाले गर्‍यो डिस्पोज",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591919/teej-festival-expenses-to-be-paid-to-flood-victims",
-      "published_at": "2026-09-13T18:26:57+05:45",
+      "url": "https://www.ratopati.com/story/591950/nepal-army-disposes-of-abandoned-socket-bomb",
+      "published_at": "2026-09-13T21:56:02+05:45",
+      "flash": false
+    },
+    {
+      "title": "धनगढीमा अटोको ठक्करबाट एक जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591942/one-person-dies-in-auto-accident-in-dhangadhi",
+      "published_at": "2026-09-13T21:07:32+05:45",
+      "flash": false
+    },
+    {
+      "title": "२. सैनिक अस्पतालको आईसीयूमै अन्तर्वार्ता, स्वास्थ्य प्रोटोकलमाथि गम्भीर प्रश्न",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591941/interview-in-the-icu-of-the-military-hospital-serious-questions-about-health-protocols",
+      "published_at": "2026-09-13T20:59:47+05:45",
       "flash": false
     },
     {
@@ -38,19 +66,12 @@
       "url": "https://www.ratopati.com/story/591910/one-person-dies-after-being-struck-by-a-poisonous-snake",
       "published_at": "2026-09-13T17:59:03+05:45",
       "flash": false
-    },
-    {
-      "title": "पश्चिमाञ्चल पेट्रोलियम डिलर्स एशोसिएसनद्वारा प्रधानमन्त्री राहत कोषमा ४० लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591888/western-petroleum-dealers-association-donates-rs-4-million-to-prime-ministers-relief-fund",
-      "published_at": "2026-09-13T16:25:20+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     },
@@ -63,8 +84,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 6
+      "flash": 4,
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,
@@ -74,7 +95,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-09-13",
+  "projects": {
+    "teamtracker": {"source": "GitHub source"},
+    "fixcheck": {"source": "GitHub source"},
+    "datemate": {"source": "GitHub source"},
+    "floodsafe": {"version": "0.7.0", "source": "GitHub Actions verified"},
+    "lifeos": {"source": "GitHub source"},
+    "sathi": {"source": "GitHub source"}
+  }
+}

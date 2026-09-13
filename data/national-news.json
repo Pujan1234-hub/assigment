@@ -1,42 +1,70 @@
 {
-  "generated_at": "2026-09-13T10:53:07.786882+05:45",
-  "updated_at_npt": "13 Sep 10:53 NPT",
+  "generated_at": "2026-09-13T16:01:39.648736+05:45",
+  "updated_at_npt": "13 Sep 16:01 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "‘एलिफेन्ट्स इन द फग : तिनीहरू’ लाई प्रधानमन्त्रीले दिए शुभकामना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591884/prime-minister-congratulates-oscar-nominated-elephants-in-the-fog-them",
+      "published_at": "2026-09-13T16:00:35+05:45",
+      "flash": true
+    },
+    {
+      "title": "विपद्को पीडामा खल्लो बन्दै तीज",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591883/teej-turns-sour-in-the-pain-of-disaster",
+      "published_at": "2026-09-13T15:56:38+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीपीडितलाई सहयोगार्थ ‘फ्लड रिलिफ १०के ट्रेल रन’ हुने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591881/flood-relief-10k-trail-run-to-be-held-to-support-flood-victims",
+      "published_at": "2026-09-13T15:43:39+05:45",
+      "flash": true
+    },
+    {
+      "title": "रसुवागढीदेखि चितवनको देवघाटसम्म भोटेकोशी बाढीको गति कति ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591878/what-is-the-speed-of-the-bhotekoshi-flood-from-rasuwagadhi-to-devghat-in-chitwan",
+      "published_at": "2026-09-13T15:38:46+05:45",
+      "flash": true
+    },
+    {
+      "title": "बुटवल अस्पतालले दियो भोटेकोशी बाढी प्रभावितलाई ७ लाख",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591848/butwal-hospital-donates-rs-7-lakh-to-bhotekoshi-flood-victims",
+      "published_at": "2026-09-13T13:48:31+05:45",
+      "flash": false
+    },
+    {
+      "title": "रुकुम पश्चिम जिप दुर्घटना : मृतकको सनाखत, घाइतेको हेलिकप्टरमार्फत उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591843/rukum-west-jeep-accident-dead-identified-injured-rescued-by-helicopter",
+      "published_at": "2026-09-13T13:15:55+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाणगंगा नदीमा फसेका १२ जनाको सकुशल उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591811/12-people-trapped-in-banganga-river-rescued-safely",
+      "published_at": "2026-09-13T11:10:23+05:45",
+      "flash": false
+    },
     {
       "title": "रुकुम पश्चिममा जिप दुर्घटना हुँदा दुई जनाको मृत्यु, १० जना घाइते",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/591804/two-killed-10-injured-in-jeep-accident-in-rukum-west",
       "published_at": "2026-09-13T10:30:47+05:45",
-      "flash": true
-    },
-    {
-      "title": "बनेपामा मोटरसाइकलको ठक्करबाट पैदलयात्रीको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591802/pedestrian-dies-after-being-hit-by-motorcycle-in-banepa",
-      "published_at": "2026-09-13T10:26:16+05:45",
-      "flash": true
-    },
-    {
-      "title": "मागपत्र प्रमाणीकरण झन्झटमुक्त बनाउन विदेशस्थित नेपाली नियोगहरूलाई निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591799/instructions-to-nepali-missions-abroad-to-make-requisition-verification-hassle-free",
-      "published_at": "2026-09-13T10:17:02+05:45",
-      "flash": true
-    },
-    {
-      "title": "सुर्खेतमा मोटरसाइकलको ठक्करबाट ५५ वर्षीया महिला गम्भीर घाइते*",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591786/55-year-old-woman-dies-after-being-hit-by-motorcycle-in-surkhet",
-      "published_at": "2026-09-13T08:04:52+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -49,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 4
+      "flash": 4,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -60,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     }

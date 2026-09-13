@@ -34,6 +34,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ensure portfolio runtime is loaded
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text()
+          tag = '<script src="./auto-update.js" defer></script>'
+          if tag not in text:
+              text = text.replace('</body>', tag + '\n</body>')
+              p.write_text(text)
+          PY
+
       - name: Generate portfolio status
         shell: bash
         run: |
@@ -78,15 +91,15 @@ jobs:
           Path('build-version.txt').write_text(data['commit'] + '\n')
           PY
 
-      - name: Commit sync metadata
+      - name: Commit portfolio sync
         shell: bash
         run: |
-          if git diff --quiet -- data/portfolio-status.json build-version.txt; then
-            echo 'Portfolio metadata already current.'
+          if git diff --quiet -- index.html data/portfolio-status.json build-version.txt; then
+            echo 'Portfolio already current.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/portfolio-status.json build-version.txt
+          git add index.html data/portfolio-status.json build-version.txt
           git commit -m 'chore: sync portfolio project status [skip ci]'
           git push

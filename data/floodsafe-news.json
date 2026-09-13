@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-13T00:51:45.878394Z",
+  "generated_at": "2026-09-13T05:36:06.724444Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,37 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 4
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "आजका लागि तोकियो विदेशी मुद्राको विनिमयदर",
-      "url": "https://radionepalonline.com/2026/09/13/734583.html",
-      "published_at": "2026-09-13T00:48:44Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "सुदूरपश्चिममा जडीबुटीः न प्रशोधन केन्द्र, न त औषधि उद्योग नै",
-      "url": "https://radionepalonline.com/2026/09/13/734580.html",
-      "published_at": "2026-09-13T00:44:23Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "कुष्ठरोग प्रभावितको कानुनी, सामाजिक र आर्थिक अधिकार दिने मस्यौदा तयार गरिँदै",
-      "url": "https://radionepalonline.com/2026/09/13/734577.html",
-      "published_at": "2026-09-13T00:38:25Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "तीज आजदेखि, व्रत बस्ने शक्तिका लागि दर खाने तयारी",
-      "url": "https://radionepalonline.com/2026/09/13/734575.html",
-      "published_at": "2026-09-13T00:34:02Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

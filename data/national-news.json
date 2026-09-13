@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-14T03:32:33.301928+05:45",
-  "updated_at_npt": "14 Sep 03:32 NPT",
+  "generated_at": "2026-09-14T05:25:24.091770+05:45",
+  "updated_at_npt": "14 Sep 05:25 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -24,20 +24,6 @@
       "url": "https://www.ratopati.com/story/591968/rescue-relief-and-rehabilitation-of-flood-victims-are-the-first-priority-of-the-provincial-government-chief-minister-thapa",
       "published_at": "2026-09-14T01:09:26+05:45",
       "flash": false
-    },
-    {
-      "title": "बाणगङ्गा नदीमा बेपत्ता बालकको शव भारतमा फेला",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591954/body-of-missing-boy-found-in-banganga-river-in-india",
-      "published_at": "2026-09-13T22:15:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "बेवारिसे सकेट बम नेपाली सेनाले गर्‍यो डिस्पोज",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591950/nepal-army-disposes-of-abandoned-socket-bomb",
-      "published_at": "2026-09-13T21:56:02+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -57,7 +43,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 5
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

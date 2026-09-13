@@ -1,0 +1,92 @@
+name: Sync portfolio project status
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'team-tracker/**'
+      - 'fixcheck/**'
+      - 'fixcheck-app/**'
+      - 'datemate-build/**'
+      - 'datemate-camera-v2/**'
+      - 'datemate-playstore/**'
+      - 'floodsafe-nepal/**'
+      - 'floodsafe-android-app/**'
+      - 'floodsafe-backend/**'
+      - 'lifeos-ai/**'
+      - 'sathi-ai/**'
+      - 'index.html'
+      - 'auto-update.js'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: portfolio-sync-main
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate portfolio status
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, re, subprocess
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          def last_update(*paths):
+              cmd = ['git','log','-1','--format=%cI','--',*paths]
+              try:
+                  value = subprocess.check_output(cmd, text=True).strip()
+                  return value or None
+              except Exception:
+                  return None
+
+          version = None
+          gradle = Path('floodsafe-android-app/app/build.gradle')
+          if gradle.exists():
+              m = re.search(r'versionName\s+[\"\']([^\"\']+)', gradle.read_text(errors='ignore'))
+              if m:
+                  version = m.group(1)
+
+          projects = {
+              'teamtracker': {'updatedAt': last_update('team-tracker'), 'source': 'GitHub source'},
+              'fixcheck': {'updatedAt': last_update('fixcheck','fixcheck-app'), 'source': 'GitHub source'},
+              'datemate': {'updatedAt': last_update('datemate-build','datemate-camera-v2','datemate-playstore'), 'source': 'GitHub source'},
+              'floodsafe': {'updatedAt': last_update('floodsafe-nepal','floodsafe-android-app','floodsafe-backend'), 'source': 'GitHub source'},
+              'lifeos': {'updatedAt': last_update('lifeos-ai'), 'source': 'GitHub source'},
+              'sathi': {'updatedAt': last_update('sathi-ai'), 'source': 'GitHub source'},
+          }
+          if version:
+              projects['floodsafe']['version'] = version
+
+          data = {
+              'generatedAt': datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),
+              'commit': subprocess.check_output(['git','rev-parse','--short=12','HEAD'], text=True).strip(),
+              'projects': projects,
+          }
+          Path('data').mkdir(exist_ok=True)
+          Path('data/portfolio-status.json').write_text(json.dumps(data, indent=2) + '\n')
+          Path('build-version.txt').write_text(data['commit'] + '\n')
+          PY
+
+      - name: Commit sync metadata
+        shell: bash
+        run: |
+          if git diff --quiet -- data/portfolio-status.json build-version.txt; then
+            echo 'Portfolio metadata already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/portfolio-status.json build-version.txt
+          git commit -m 'chore: sync portfolio project status [skip ci]'
+          git push

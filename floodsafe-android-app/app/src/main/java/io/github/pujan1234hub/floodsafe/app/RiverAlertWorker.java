@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -38,9 +40,9 @@ import java.util.Locale;
 public final class RiverAlertWorker extends Worker {
     private static final String ENDPOINT =
             "https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers";
-    private static final String CHANNEL_ID = "official_nepal_alerts_v2";
+    private static final String CHANNEL_ID = "official_nepal_alerts_v3";
     private static final String PUSH_PREFS = "floodsafe_push_guard";
-    private static final double RADIUS_KM = 1d;
+    private static final double RADIUS_KM = 2d;
     private static final long MAX_AGE_MS = 20L * 60L * 1000L;
     private static final long FUTURE_TOLERANCE_MS = 5L * 60L * 1000L;
     private static final long WARNING_REPEAT_MS = 90L * 60L * 1000L;
@@ -56,8 +58,6 @@ public final class RiverAlertWorker extends Worker {
         Context app = getApplicationContext();
         SharedPreferences monitor = app.getSharedPreferences(RainAlertWorker.PREFS, Context.MODE_PRIVATE);
         if (!monitor.getBoolean("enabled", false)) return Result.success();
-        // Proximity warnings are strictly current-device alerts. A Nepal point chosen
-        // on the map is for browsing/monitoring UI only and must never drive a push.
         if (!monitor.getBoolean("follow_device", false)) return Result.success();
         if (Build.VERSION.SDK_INT >= 33 && app.checkSelfPermission(
                 android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -237,8 +237,13 @@ public final class RiverAlertWorker extends Worker {
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     "Nearby river and Nepal alerts", NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("Nearby official river warning/danger and verified Nepal alerts");
+            channel.setDescription("Nearby official river warning/danger and verified Nepal alerts within 2 km");
             channel.enableVibration(true);
+            Uri sound = android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;
+            AudioAttributes audio = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();
+            channel.setSound(sound, audio);
             manager.createNotificationChannel(channel);
         }
 
@@ -268,6 +273,7 @@ public final class RiverAlertWorker extends Worker {
                 .setStyle(new android.app.Notification.BigTextStyle().bigText(body.toString()))
                 .setAutoCancel(true)
                 .setContentIntent(open)
+                .setSound(Build.VERSION.SDK_INT < 26 ? android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI : null)
                 .build();
         manager.notify(requestCode, notification);
     }

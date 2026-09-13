@@ -118,3 +118,5 @@
   setInterval(check,60000);
   check();
 })();
+
+// Portfolio runtime sync enabled.

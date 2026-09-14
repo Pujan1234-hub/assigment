@@ -3,12 +3,14 @@ from pathlib import Path
 path = Path(__file__).resolve().parent / 'app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java'
 text = path.read_text(encoding='utf-8')
 
+# Import beside an import that is guaranteed to exist in the current activity.
 if 'import android.webkit.RenderProcessGoneDetail;' not in text:
-    text = text.replace(
-        'import android.webkit.PermissionRequest;\n',
-        'import android.webkit.PermissionRequest;\nimport android.webkit.RenderProcessGoneDetail;\n',
-        1,
-    )
+    anchor = 'import android.webkit.PermissionRequest;\n'
+    if anchor not in text:
+        anchor = 'import android.webkit.WebChromeClient;\n'
+    if anchor not in text:
+        raise SystemExit('WebView import marker not found')
+    text = text.replace(anchor, anchor + 'import android.webkit.RenderProcessGoneDetail;\n', 1)
 
 text = text.replace(
     'retry.setOnClickListener(v -> { if (webView != null) webView.reload(); });',
@@ -66,6 +68,8 @@ if text.count('onRenderProcessGone(') < 2:
 
 if text.count('onRenderProcessGone(') < 2:
     raise SystemExit('WebView renderer crash handlers were not installed')
+if 'import android.webkit.RenderProcessGoneDetail;' not in text:
+    raise SystemExit('RenderProcessGoneDetail import was not installed')
 if 'else recreate();' not in text:
     raise SystemExit('WebView recovery retry was not installed')
 

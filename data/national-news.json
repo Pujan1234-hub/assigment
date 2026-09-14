@@ -1,9 +1,30 @@
 {
-  "generated_at": "2026-09-14T05:25:24.091770+05:45",
-  "updated_at_npt": "14 Sep 05:25 NPT",
+  "generated_at": "2026-09-14T07:27:31.884410+05:45",
+  "updated_at_npt": "14 Sep 07:27 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "सँगै सुत्ने व्यक्तिको घुराइले तपाईंको मानसिक र शारीरिक स्वास्थ्यमा कस्तो असर गर्छ ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591995/how-does-the-snoring-of-someone-you-sleep-with-affect-your-mental-and-physical-health",
+      "published_at": "2026-09-14T07:13:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "मुख्य राजमार्गमा बाढी-पहिरोको असर : यस्तो छ सडक अवरोधको ताजा अवस्था",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591994/impact-of-floods-and-landslides-on-main-highways-this-is-the-latest-status-of-road-blockages",
+      "published_at": "2026-09-14T07:03:54+05:45",
+      "flash": true
+    },
+    {
+      "title": "बीस वर्षअघि श्रीमान् र अहिले छोरा बेपत्ता: रोग र वियोगको दोहोरो मारमा नरमाया",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/591983/husband-and-son-missing-twenty-years-ago-narmaya-suffers-double-blow-from-illness-and-separation",
+      "published_at": "2026-09-14T06:08:04+05:45",
+      "flash": false
+    },
     {
       "title": "कन्काइ नगर अस्पताललाई स्वास्थ्य उपकरण प्रदान",
       "source": "Ratopati",
@@ -17,19 +38,12 @@
       "url": "https://www.ratopati.com/story/591970/young-man-who-left-home-to-pick-mushrooms-has-been-missing-for-6-days",
       "published_at": "2026-09-14T02:18:42+05:45",
       "flash": false
-    },
-    {
-      "title": "बाढी प्रभावितको उद्धार, राहत र पुनः स्थापना प्रदेश सरकारको पहिलो प्राथमिकता : मुख्यमन्त्री थापा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/591968/rescue-relief-and-rehabilitation-of-flood-victims-are-the-first-priority-of-the-provincial-government-chief-minister-thapa",
-      "published_at": "2026-09-14T01:09:26+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     },
@@ -42,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 3
+      "flash": 2,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,
@@ -53,7 +67,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     }

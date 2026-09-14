@@ -55,8 +55,14 @@ replacement = r"""    val barcodeScanner = remember {
                     ?.getStringExtra(ExpiryCameraActivity.EXTRA_OCR_TEXT)
                     .orEmpty()
 
+            val cameraIso =
+                result.data
+                    ?.getStringExtra(ExpiryCameraActivity.EXTRA_EXPIRY_ISO)
+                    .orEmpty()
+
             val detectedIso =
-                findExpiryDate(ocrText)
+                cameraIso.takeIf { it.isNotBlank() }
+                    ?: findExpiryDate(ocrText)
 
             pendingExpiry =
                 detectedIso
@@ -90,7 +96,7 @@ replacement = r"""    val barcodeScanner = remember {
         }
 
     fun openExpiryCamera() {
-        scanStage = "Scan the expiry date..."
+        scanStage = "Auto-scanning expiry date..."
 
         try {
             expiryCameraLauncher.launch(
@@ -177,4 +183,4 @@ if '.ExpiryCameraActivity' not in m:
 
 manifest_path.write_text(m, encoding="utf-8")
 
-print("Patched MainActivity, Gradle, and Manifest for CameraX in-app expiry capture.")
+print("Patched MainActivity for CameraX live auto-expiry capture and direct ISO handoff.")

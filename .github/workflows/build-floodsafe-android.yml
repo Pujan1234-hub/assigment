@@ -23,6 +23,8 @@ jobs:
           sdkmanager "platforms;android-36" "build-tools;35.0.0"
           curl -fsSL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
+      - name: Apply WebView renderer crash hardening
+        run: python3 floodsafe-android-app/patch_webview_crash.py
       - name: Safety source gate
         shell: bash
         run: |
@@ -37,6 +39,8 @@ jobs:
           test -s floodsafe-nepal/v25/human-status-v1.js
           grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          grep -Fq 'RenderProcessGoneDetail' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           echo 'FloodSafe v0.7.0 source safety gate PASS'
       - name: Unit tests and APK build
         run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon

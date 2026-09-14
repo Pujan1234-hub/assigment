@@ -86,7 +86,21 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
         text = text.replaceFirst('<script src="\\./impact-live-v1\\.js\\?v=\\d+" defer></script>', '')
         text = text.replaceFirst('(?s)<section class="card" id="disasterStatus"[^>]*>.*?</section>', '')
         text = text.replaceFirst('<script src="\\./disaster-monitor-v2\\.js\\?v=\\d+" defer></script>', '')
+
+        // Android WebView preflights Cache-Control/Pragma headers used by the shared
+        // river runtime. Load the Android-only fetch guard before that runtime so
+        // official BIPAD/Supabase GET requests remain simple CORS requests.
+        def riverMarker = '<script src="./trusted-river-runtime-v3.js'
+        if (!text.contains(riverMarker)) throw new GradleException('Trusted river runtime marker missing from Android entry')
+        if (!text.contains('android-cors-fetch-fix.js')) {
+            text = text.replace(riverMarker,
+                    '<script src="./android-cors-fetch-fix.js?v=1"></script>' + riverMarker)
+        }
         entry.write(text, 'UTF-8')
+        if (!text.contains('android-cors-fetch-fix.js?v=1')) throw new GradleException('Android river CORS guard missing from packaged entry')
+        if (text.indexOf('android-cors-fetch-fix.js?v=1') > text.indexOf('trusted-river-runtime-v3.js')) throw new GradleException('Android river CORS guard loaded after river runtime')
+        def corsGuard = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/android-cors-fetch-fix.js')
+        if (!corsGuard.isFile() || corsGuard.length() == 0) throw new GradleException('Android river CORS guard asset missing')
         if (text.contains('id="impact"') || text.contains('impact-live-v1.js') || text.contains('बाढीको मानवीय असर')) throw new GradleException('Legacy Human Status UI remained in packaged v25 index')
         if (text.contains('id="disasterStatus"') || text.contains('disaster-monitor-v2.js')) throw new GradleException('Duplicate disaster/news card remained in packaged v25 index')
         if (!text.contains('id="humanStatus"') || !text.contains('human-status-v1.js?v=1')) throw new GradleException('Dynamic 10-day Human Status missing from Android bundle')
@@ -101,7 +115,7 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
         if (!humanStatus.isFile() || humanStatus.length() == 0) throw new GradleException('Dynamic Human Status asset missing from Android bundle')
         def forbidden = ['floodsafe-nepal/v25/human-bootstrap.js','floodsafe-nepal/v25/human-current-guard.js','floodsafe-nepal/v25/human-final.js','floodsafe-nepal/v25/human-final-v2.js','floodsafe-nepal/v25/people.html','floodsafe-nepal/v25/impact-live-v1.js','floodsafe-nepal/v25/disaster-monitor-v2.js','floodsafe-nepal/v24/v24-people-status.js','data/floodsafe-people-status.json']
         forbidden.each { relative -> if (new File(generatedFloodSafeAssets.get().asFile, relative).exists()) throw new GradleException("Forbidden legacy/duplicate asset was packaged: ${relative}") }
-        println 'Android FloodSafe dynamic Human Status + privacy + grounded SATHI AI bundle PASS'
+        println 'Android FloodSafe dynamic Human Status + privacy + grounded SATHI AI + river CORS guard bundle PASS'
     }
 }
 tasks.named('preBuild').configure { dependsOn bundleWeb }

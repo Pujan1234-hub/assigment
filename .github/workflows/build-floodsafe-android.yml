@@ -25,6 +25,10 @@ jobs:
           unzip -q /tmp/gradle.zip -d /tmp
       - name: Apply WebView renderer crash hardening
         run: python3 floodsafe-android-app/patch_webview_crash.py
+      - name: Apply automatic alerts and river field hardening
+        run: |
+          python3 floodsafe-android-app/patch_auto_alerts.py
+          python3 floodsafe-android-app/patch_river_waterlevel.py
       - name: Safety source gate
         shell: bash
         run: |
@@ -41,6 +45,8 @@ jobs:
           grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -Fq 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           grep -Fq 'RenderProcessGoneDetail' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          grep -Fq 'enableAutomaticSafetyMonitoring();' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          grep -Fq "const level=o=>num(val(o,['_lastWaterLevel','waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level']));" floodsafe-nepal/v25/trusted-river-runtime-v3.js
           echo 'FloodSafe v0.7.0 source safety gate PASS'
       - name: Bundle verified Android assets
         run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
@@ -64,12 +70,16 @@ jobs:
           ]
           for src in lazy:
             text=text.replace(f'<script src="{src}" defer></script>','')
-          marker='<script src="./android-fast-start-v1.js?v=1" defer></script>'
-          if marker not in text:
-            text=text.replace('</body>',marker+'</body>')
+          fast='<script src="./android-fast-start-v1.js?v=1" defer></script>'
+          auto='<script src="./auto-alert-ui-v1.js?v=1" defer></script>'
+          if fast not in text:
+            text=text.replace('</body>',fast+'</body>')
+          if auto not in text:
+            text=text.replace('</body>',auto+'</body>')
           p.write_text(text,encoding='utf-8')
           PY
           grep -Fq 'android-fast-start-v1.js?v=1' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/index.html
+          grep -Fq 'auto-alert-ui-v1.js?v=1' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/index.html
       - name: Unit tests and APK build
         run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon
       - name: Verify APK
@@ -82,7 +92,10 @@ jobs:
           grep -Fq 'id="humanStatus"' /tmp/index.html
           grep -Fq 'human-status-v1.js?v=1' /tmp/index.html
           grep -Fq 'android-fast-start-v1.js?v=1' /tmp/index.html
+          grep -Fq 'auto-alert-ui-v1.js?v=1' /tmp/index.html
           unzip -p "$APK" assets/floodsafe-nepal/v25/native-alert-bridge-v1.js | grep -Fq 'const MAX_KM=2'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/trusted-river-runtime-v3.js | grep -Fq "const level=o=>num(val(o,['_lastWaterLevel','waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level']));"
+          unzip -p "$APK" assets/floodsafe-nepal/v25/auto-alert-ui-v1.js | grep -Fq '__fsAutoAlertUiV1'
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
           echo 'FloodSafe v0.7.0 APK verification PASS'
       - uses: actions/upload-artifact@v4

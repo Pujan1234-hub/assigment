@@ -107,12 +107,24 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
         }
 
         // If the user previously chose Current Location, do not briefly render
-        // saved Nepal weather while fresh GPS is still resolving.
+        // saved Nepal weather while fresh GPS is still resolving. Also restore
+        // the last valid GPS/weather card for up to 30 minutes while refreshing.
         def rainTimingMarker = '<script type="module" src="./rain-timing-v4.js'
         if (!text.contains(rainTimingMarker)) throw new GradleException('Rain timing marker missing from Android entry')
         if (!text.contains('weather-startup-guard-v1.js')) {
             text = text.replace(rainTimingMarker,
                     '<script src="./weather-startup-guard-v1.js?v=1" defer></script>' + rainTimingMarker)
+        }
+        if (!text.contains('startup-cache-30m-v1.js')) {
+            text = text.replace(rainTimingMarker,
+                    '<script src="./startup-cache-30m-v1.js?v=1" defer></script>' + rainTimingMarker)
+        }
+
+        // River panel colors must communicate status, not imply safety: normal blue,
+        // watch yellow, warning orange, danger red, stale/unknown non-green.
+        if (!text.contains('river-status-color-fix-v1.js')) {
+            text = text.replace('</body>',
+                    '<script src="./river-status-color-fix-v1.js?v=1" defer></script></body>')
         }
 
         entry.write(text, 'UTF-8')
@@ -121,6 +133,8 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
         if (!text.contains('latest-official-display-policy-v1.js?v=1')) throw new GradleException('Latest official river display policy missing from packaged entry')
         if (text.contains('official-stale-safety-v1.js')) throw new GradleException('Strict display-only stale guard still packaged')
         if (!text.contains('weather-startup-guard-v1.js?v=1')) throw new GradleException('GPS weather startup guard missing from packaged entry')
+        if (!text.contains('startup-cache-30m-v1.js?v=1')) throw new GradleException('30-minute GPS/weather startup cache missing from packaged entry')
+        if (!text.contains('river-status-color-fix-v1.js?v=1')) throw new GradleException('River status color fix missing from packaged entry')
         if (!text.contains('rain-timing-v4.js')) throw new GradleException('Rain timing runtime missing from packaged entry')
         def corsGuard = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/android-cors-fetch-fix.js')
         if (!corsGuard.isFile() || corsGuard.length() == 0) throw new GradleException('Android river CORS guard asset missing')
@@ -128,6 +142,10 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
         if (!riverDisplay.isFile() || riverDisplay.length() == 0) throw new GradleException('Latest river display policy asset missing')
         def weatherGuard = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/weather-startup-guard-v1.js')
         if (!weatherGuard.isFile() || weatherGuard.length() == 0) throw new GradleException('Weather startup guard asset missing')
+        def startupCache = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/startup-cache-30m-v1.js')
+        if (!startupCache.isFile() || startupCache.length() == 0) throw new GradleException('30-minute startup cache asset missing')
+        def riverColors = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/river-status-color-fix-v1.js')
+        if (!riverColors.isFile() || riverColors.length() == 0) throw new GradleException('River status color fix asset missing')
         if (text.contains('android-river-reading-recovery.js')) throw new GradleException('Obsolete direct river recovery still loaded')
         if (text.contains('id="impact"') || text.contains('impact-live-v1.js') || text.contains('बाढीको मानवीय असर')) throw new GradleException('Legacy Human Status UI remained in packaged v25 index')
         if (text.contains('id="disasterStatus"') || text.contains('disaster-monitor-v2.js')) throw new GradleException('Duplicate disaster/news card remained in packaged v25 index')
@@ -143,7 +161,7 @@ def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
         if (!humanStatus.isFile() || humanStatus.length() == 0) throw new GradleException('Dynamic Human Status asset missing from Android bundle')
         def forbidden = ['floodsafe-nepal/v25/human-bootstrap.js','floodsafe-nepal/v25/human-current-guard.js','floodsafe-nepal/v25/human-final.js','floodsafe-nepal/v25/human-final-v2.js','floodsafe-nepal/v25/people.html','floodsafe-nepal/v25/impact-live-v1.js','floodsafe-nepal/v25/disaster-monitor-v2.js','floodsafe-nepal/v24/v24-people-status.js','data/floodsafe-people-status.json']
         forbidden.each { relative -> if (new File(generatedFloodSafeAssets.get().asFile, relative).exists()) throw new GradleException("Forbidden legacy/duplicate asset was packaged: ${relative}") }
-        println 'Android FloodSafe bundle PASS: working river display + strict native alert safety + GPS weather startup guard'
+        println 'Android FloodSafe bundle PASS: working river display + strict native alert safety + 30m GPS weather startup cache + corrected river colors'
     }
 }
 tasks.named('preBuild').configure { dependsOn bundleWeb }

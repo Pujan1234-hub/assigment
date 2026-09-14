@@ -42,12 +42,14 @@ jobs:
           grep -Fq 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           grep -Fq 'RenderProcessGoneDetail' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           echo 'FloodSafe v0.7.0 source safety gate PASS'
+      - name: Bundle verified Android assets
+        run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
       - name: Apply Android fast-start first-paint transform
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('floodsafe-nepal/v25/index.html')
+          p=Path('floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/index.html')
           text=p.read_text(encoding='utf-8')
           lazy=[
             './official-live-fetch-fix-v1.js?v=1','./trusted-river-runtime-v3.js?v=37','./trusted-rain-runtime-v1.js?v=4',
@@ -67,9 +69,9 @@ jobs:
             text=text.replace('</body>',marker+'</body>')
           p.write_text(text,encoding='utf-8')
           PY
-          grep -Fq 'android-fast-start-v1.js?v=1' floodsafe-nepal/v25/index.html
+          grep -Fq 'android-fast-start-v1.js?v=1' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/index.html
       - name: Unit tests and APK build
-        run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon
+        run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon
       - name: Verify APK
         shell: bash
         run: |

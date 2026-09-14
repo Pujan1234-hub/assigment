@@ -68,19 +68,24 @@
 
         <activity
             android:name=".VoiceMainActivity"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleTop"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".NativeHomeActivity"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
+        <activity
+            android:name=".PJBuiltsSplashActivity"
+            android:exported="true"
+            android:theme="@style/PJBuiltsSplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".PJBuiltsSplashActivity"
-            android:exported="false"
-            android:theme="@style/PJBuiltsSplashTheme" />
     </application>
 </manifest>

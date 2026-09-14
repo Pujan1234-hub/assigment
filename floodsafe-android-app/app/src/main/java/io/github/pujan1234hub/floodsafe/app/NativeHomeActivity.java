@@ -24,11 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.json.JSONObject;
 
-/**
- * Native Android replacement foundation for the old WebView home screen.
- * No HTML/JS/WebView is used here. Location/weather state is native and the
- * last verified device location is reused if GPS is later disabled.
- */
+/** Native Android FloodSafe home. No WebView/HTML/JS is used here. */
 public final class NativeHomeActivity extends Activity implements LocationListener {
     private static final int LOCATION_REQUEST = 740;
     private static final String PREFS = "floodsafe-native-home";
@@ -44,6 +40,9 @@ public final class NativeHomeActivity extends Activity implements LocationListen
     private TextView weatherText;
     private TextView detailText;
     private TextView statusText;
+    private double cachedLat = Double.NaN;
+    private double cachedLon = Double.NaN;
+    private long cachedAt;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -54,6 +53,7 @@ public final class NativeHomeActivity extends Activity implements LocationListen
         locationManager = getSystemService(LocationManager.class);
         setContentView(buildUi());
         restoreLastLocationAndWeather();
+        requestCurrentLocation();
     }
 
     private View buildUi() {
@@ -109,7 +109,7 @@ public final class NativeHomeActivity extends Activity implements LocationListen
         river.setTextColor(Color.rgb(13, 42, 87));
         root.addView(river);
 
-        TextView riverInfo = text("Official BIPAD/DHM river status, 2 km verified Warning/Danger rule, notifications and background monitor will reuse the existing native workers while the WebView UI is removed.", 14, false);
+        TextView riverInfo = text("Official BIPAD/DHM river status, 2 km verified Warning/Danger rule, notifications and background monitor use the existing native safety workers while the WebView UI is removed.", 14, false);
         riverInfo.setTextColor(Color.rgb(72, 95, 120));
         root.addView(riverInfo);
         return scroll;
@@ -134,51 +134,90 @@ public final class NativeHomeActivity extends Activity implements LocationListen
 
     private void restoreLastLocationAndWeather() {
         SharedPreferences p = getSharedPreferences(PREFS, MODE_PRIVATE);
-        long at = p.getLong(KEY_AT, 0L);
-        double lat = Double.longBitsToDouble(p.getLong(KEY_LAT, Double.doubleToRawLongBits(Double.NaN)));
-        double lon = Double.longBitsToDouble(p.getLong(KEY_LON, Double.doubleToRawLongBits(Double.NaN)));
-        if (Double.isFinite(lat) && Double.isFinite(lon) && at > 0L
-                && System.currentTimeMillis() - at <= LAST_LOCATION_MAX_AGE_MS) {
-            locationText.setText("📍 पछिल्लो verified GPS • weather यही स्थानको हो");
-            fetchWeather(lat, lon, true);
+        cachedAt = p.getLong(KEY_AT, 0L);
+        cachedLat = Double.longBitsToDouble(p.getLong(KEY_LAT, Double.doubleToRawLongBits(Double.NaN)));
+        cachedLon = Double.longBitsToDouble(p.getLong(KEY_LON, Double.doubleToRawLongBits(Double.NaN)));
+        if (hasUsableCache()) {
+            showCachedLocationLabel();
+            fetchWeather(cachedLat, cachedLon, true);
         } else {
+            cachedLat = Double.NaN;
+            cachedLon = Double.NaN;
+            cachedAt = 0L;
             locationText.setText("📍 Location उपलब्ध छैन");
             weatherText.setText("Location अनुमति दिनुहोस्");
             temperatureText.setText("—°");
         }
-        requestCurrentLocation();
+    }
+
+    private boolean hasUsableCache() {
+        return Double.isFinite(cachedLat) && Double.isFinite(cachedLon) && cachedAt > 0L
+                && System.currentTimeMillis() - cachedAt <= LAST_LOCATION_MAX_AGE_MS;
+    }
+
+    private void showCachedLocationLabel() {
+        if (!hasUsableCache()) return;
+        boolean nepal = isNepal(cachedLat, cachedLon);
+        locationText.setText(nepal
+                ? "📍 पछिल्लो verified GPS • weather यही स्थानको हो"
+                : "🌍 पछिल्लो verified GPS Nepal बाहिर • weather यही स्थानको हो");
     }
 
     private void requestCurrentLocation() {
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (!hasUsableCache()) {
+                locationText.setText("📍 Location अनुमति आवश्यक छ");
+                weatherText.setText("Location अनुमति दिनुहोस्");
+            }
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST);
             return;
         }
-        if (locationManager == null) return;
-        locationText.setText("📍 हालको GPS खोजिँदैछ…");
+        if (locationManager == null) {
+            showCachedLocationLabel();
+            return;
+        }
         try {
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                locationText.setText("📍 हालको GPS खोजिँदैछ…");
                 locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, getMainLooper());
             } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationText.setText("📍 हालको network location खोजिँदैछ…");
                 locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, getMainLooper());
             } else {
-                restoreLastLocationAndWeather();
+                // Critical: GPS OFF must never recurse or jump to Kathmandu.
+                if (hasUsableCache()) {
+                    showCachedLocationLabel();
+                    statusText.setText("📍 GPS बन्द छ • पछिल्लो verified location सुरक्षित रूपमा प्रयोग भइरहेको छ।");
+                } else {
+                    locationText.setText("📍 GPS बन्द छ • पछिल्लो location छैन");
+                    weatherText.setText("Location unavailable");
+                    temperatureText.setText("—°");
+                }
             }
-        } catch (SecurityException ignored) { }
+        } catch (SecurityException ignored) {
+            showCachedLocationLabel();
+        }
     }
 
     @Override public void onLocationChanged(Location location) {
         if (location == null) return;
-        double lat = location.getLatitude(), lon = location.getLongitude();
+        cachedLat = location.getLatitude();
+        cachedLon = location.getLongitude();
+        cachedAt = System.currentTimeMillis();
         getSharedPreferences(PREFS, MODE_PRIVATE).edit()
-                .putLong(KEY_LAT, Double.doubleToRawLongBits(lat))
-                .putLong(KEY_LON, Double.doubleToRawLongBits(lon))
-                .putLong(KEY_AT, System.currentTimeMillis()).apply();
-        boolean nepal = lat >= 26.2 && lat <= 30.5 && lon >= 80.0 && lon <= 88.35;
-        locationText.setText(nepal ? "📍 हालको GPS • Nepal" : "🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो");
-        fetchWeather(lat, lon, false);
+                .putLong(KEY_LAT, Double.doubleToRawLongBits(cachedLat))
+                .putLong(KEY_LON, Double.doubleToRawLongBits(cachedLon))
+                .putLong(KEY_AT, cachedAt).apply();
+        locationText.setText(isNepal(cachedLat, cachedLon)
+                ? "📍 हालको GPS • Nepal"
+                : "🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो");
+        fetchWeather(cachedLat, cachedLon, false);
+    }
+
+    private static boolean isNepal(double lat, double lon) {
+        return lat >= 26.2 && lat <= 30.5 && lon >= 80.0 && lon <= 88.35;
     }
 
     private void fetchWeather(double lat, double lon, boolean cachedLocation) {
@@ -188,9 +227,12 @@ public final class NativeHomeActivity extends Activity implements LocationListen
                         "https://api.open-meteo.com/v1/forecast?latitude=%.6f&longitude=%.6f&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&timezone=auto",
                         lat, lon);
                 HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
-                c.setConnectTimeout(9000); c.setReadTimeout(9000); c.setRequestProperty("Accept", "application/json");
+                c.setConnectTimeout(9000);
+                c.setReadTimeout(9000);
+                c.setRequestProperty("Accept", "application/json");
                 try (BufferedReader r = new BufferedReader(new InputStreamReader(c.getInputStream()))) {
-                    StringBuilder b = new StringBuilder(); String line;
+                    StringBuilder b = new StringBuilder();
+                    String line;
                     while ((line = r.readLine()) != null) b.append(line);
                     JSONObject j = new JSONObject(b.toString());
                     JSONObject cur = j.getJSONObject("current");
@@ -200,17 +242,24 @@ public final class NativeHomeActivity extends Activity implements LocationListen
                     double wind = cur.optDouble("wind_speed_10m", Double.NaN);
                     String zone = j.optString("timezone", "local");
                     runOnUiThread(() -> {
+                        if (isFinishing() || isDestroyed()) return;
                         temperatureText.setText(Double.isFinite(temp) ? Math.round(temp) + "°" : "—°");
                         weatherText.setText(rain >= .5 ? "पूर्वानुमान: वर्षा" : "पूर्वानुमान: अहिले वर्षा छैन");
                         detailText.setText(String.format(Locale.US,
                                 "%.1f mm वर्षा  •  %.0f%% आर्द्रता  •  %.0f km/h हावा\n%s%s",
-                                rain, humidity, wind, zone, cachedLocation ? " • last verified GPS" : ""));
+                                rain, humidity, wind, zone,
+                                cachedLocation ? " • last verified GPS" : ""));
                     });
+                } finally {
+                    c.disconnect();
                 }
             } catch (Exception e) {
                 runOnUiThread(() -> {
-                    weatherText.setText("मौसम अपडेट उपलब्ध छैन");
-                    statusText.setText("Network/weather retry आवश्यक छ; cached GPS सुरक्षित राखिएको छ।");
+                    if (isFinishing() || isDestroyed()) return;
+                    if (!hasUsableCache()) {
+                        weatherText.setText("मौसम अपडेट उपलब्ध छैन");
+                    }
+                    statusText.setText("Network/weather retry आवश्यक छ; verified GPS cache सुरक्षित छ।");
                 });
             }
         });
@@ -218,7 +267,15 @@ public final class NativeHomeActivity extends Activity implements LocationListen
 
     @Override public void onRequestPermissionsResult(int code, String[] permissions, int[] grants) {
         super.onRequestPermissionsResult(code, permissions, grants);
-        if (code == LOCATION_REQUEST) requestCurrentLocation();
+        if (code != LOCATION_REQUEST) return;
+        boolean granted = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        if (granted) requestCurrentLocation();
+        else if (hasUsableCache()) showCachedLocationLabel();
+        else {
+            locationText.setText("📍 Location अनुमति दिइएको छैन");
+            weatherText.setText("Location unavailable");
+        }
     }
 
     @Override protected void onDestroy() {

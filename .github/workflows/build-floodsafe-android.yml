@@ -47,9 +47,12 @@ jobs:
           grep -Fq 'RenderProcessGoneDetail' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           grep -Fq 'enableAutomaticSafetyMonitoring();' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           grep -Fq "const level=o=>num(val(o,['_lastWaterLevel','waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level']));" floodsafe-nepal/v25/trusted-river-runtime-v3.js
+          test -s floodsafe-android-app/patch_pjbuilts_intro.py
           echo 'FloodSafe v0.7.0 source safety gate PASS'
       - name: Bundle verified Android assets
         run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
+      - name: Apply smooth PJBUILTS launch intro
+        run: python3 floodsafe-android-app/patch_pjbuilts_intro.py
       - name: Apply Android fast-start first-paint transform
         shell: bash
         run: |
@@ -80,6 +83,7 @@ jobs:
           PY
           grep -Fq 'android-fast-start-v1.js?v=1' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/index.html
           grep -Fq 'auto-alert-ui-v1.js?v=1' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/index.html
+          grep -Fq 'id="pjbuiltsIntro"' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/index.html
       - name: Unit tests and APK build
         run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon
       - name: Verify APK
@@ -93,6 +97,8 @@ jobs:
           grep -Fq 'human-status-v1.js?v=1' /tmp/index.html
           grep -Fq 'android-fast-start-v1.js?v=1' /tmp/index.html
           grep -Fq 'auto-alert-ui-v1.js?v=1' /tmp/index.html
+          grep -Fq 'id="pjbuiltsIntro"' /tmp/index.html
+          grep -Fq 'class="pj-name">BUILTS<' /tmp/index.html
           unzip -p "$APK" assets/floodsafe-nepal/v25/native-alert-bridge-v1.js | grep -Fq 'const MAX_KM=2'
           unzip -p "$APK" assets/floodsafe-nepal/v25/trusted-river-runtime-v3.js | grep -Fq "const level=o=>num(val(o,['_lastWaterLevel','waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level']));"
           unzip -p "$APK" assets/floodsafe-nepal/v25/auto-alert-ui-v1.js | grep -Fq '__fsAutoAlertUiV1'

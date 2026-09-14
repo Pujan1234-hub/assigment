@@ -34,7 +34,9 @@ public final class PJBuiltsSplashActivity extends Activity {
         if (launched || isFinishing() || isDestroyed()) return;
         launched = true;
         Intent source = getIntent();
-        Intent app = new Intent(this, NativeHomeActivity.class);
+        // Restore the proven full FloodSafe experience while the 1:1 native clone is built.
+        // This prevents the temporary native prototype from replacing the real map/features.
+        Intent app = new Intent(this, VoiceMainActivity.class);
         if (source != null) {
             app.setAction(source.getAction());
             app.setData(source.getData());

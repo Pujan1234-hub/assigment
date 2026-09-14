@@ -85,12 +85,18 @@ async function refresh(force=false){
     const j=await response.json(),parsed=parseForecast(j);if(generation!==serial)return;
     raw=j;forecast=parsed;fetchedAt=Date.now();error='';render();await alerts.check();
   }catch(e){
-    // The 15-minute endpoint can be temporarily unavailable on some mobile
-    // networks. Keep the weather card useful with the smaller current-weather request.
-    if(generation===serial) try {
-      forecast=await fetchBasicForecast(next,active.signal);fetchedAt=Date.now();
-      error='';render();
-    } catch(fallbackError) { error=String(fallbackError);render(); }
+    // The 15-minute endpoint can be unavailable or time out on some mobile networks.
+    // Never reuse its aborted signal for the fallback: an already-aborted signal makes
+    // the basic request fail instantly and leaves the card stuck on dashes.
+    if(generation===serial) {
+      const fallbackController=new AbortController();
+      const fallbackTimeout=setTimeout(()=>fallbackController.abort(),10000);
+      try {
+        forecast=await fetchBasicForecast(next,fallbackController.signal);fetchedAt=Date.now();
+        error='';render();await alerts.check();
+      } catch(fallbackError) { error=String(fallbackError);render(); }
+      finally { clearTimeout(fallbackTimeout); }
+    }
   }
   finally{clearTimeout(to);if(generation===serial){controller=null;schedule(error?60000:POLL)}}
 }

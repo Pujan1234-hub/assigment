@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-15T01:02:39.111417+05:45",
-  "updated_at_npt": "15 Sep 01:02 NPT",
+  "generated_at": "2026-09-15T04:20:22.216462+05:45",
+  "updated_at_npt": "15 Sep 04:20 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -9,41 +9,13 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592181/bhotekoshi-flood-1395-bodies-found",
       "published_at": "2026-09-15T01:00:55+05:45",
-      "flash": true
-    },
-    {
-      "title": "रसुवा र भोटेकोसीका बाढी प्रभावित विद्यार्थीलाई राजधानी मोडेल कलेजले ७० लाखभन्दा बढीको छात्रवृत्ति दिने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592177/rajdhani-model-college-to-provide-scholarships-of-over-rs-7-million-to-flood-affected-students-of-rasuwa-and-bhotekoshi",
-      "published_at": "2026-09-14T23:55:24+05:45",
       "flash": false
     },
     {
-      "title": "युक्रेन र रुसबिच ऊर्जा क्षेत्रमा लक्षित आक्रमण नगर्ने सहमति : राष्ट्रपति ट्रम्प",
+      "title": "भोटेकोशी बाढी प्रभावित क्षेत्रमा प्रहरीको ‘टिमुरे टु त्रिवेणी’ अभियान ५ घण्टा अगाडि",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592175/ukraine-russia-agree-not-to-target-energy-sector-president-trump",
-      "published_at": "2026-09-14T23:27:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "मनोहर खोलाको बहाव बढ्दो,सुरक्षित स्थानमा रहन माइकिङ गर्दै प्रहरी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592163/the-flow-of-the-manohar-river-is-increasing-police-are-miking-to-stay-in-safe-places",
-      "published_at": "2026-09-14T22:05:19+05:45",
-      "flash": false
-    },
-    {
-      "title": "‘ओलीमाथि प्रश्न उठ्यो, तर हटाउने निर्णयमा ब्रेक लाग्याे’",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592159/questions-were-raised-about-kp-oli-but-the-decision-to-remove-him-was-put-on-hold",
-      "published_at": "2026-09-14T21:36:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "मोरङमा सवारी दुर्घटना हुँदा सशस्त्रका सहायक हवल्दारको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592148/armed-forces-assistant-constable-dies-in-road-accident-in-morang",
-      "published_at": "2026-09-14T19:57:16+05:45",
+      "url": "https://www.ratopati.com/story/592170/police-launch-timure-to-triveni-campaign-in-bhotekoshi-flood-affected-areas",
+      "published_at": "2026-09-14T22:49:00+05:45",
       "flash": false
     }
   ],
@@ -63,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 8
+      "flash": 0,
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

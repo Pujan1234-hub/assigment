@@ -32,10 +32,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Closed-app fallback for nearby official river warnings. The preferred path is
- * Firebase push; this worker independently checks the FloodSafe BIPAD/DHM mirror
- * so a missing server push credential cannot leave Android users without alerts.
- * Android WorkManager enforces a 15-minute minimum periodic interval.
+ * Closed-app fallback for nearby official river warnings. Only fresh, verified
+ * BIPAD/DHM warning/danger observations inside 2 km of the current device location
+ * can trigger. Android WorkManager enforces a 15-minute minimum periodic interval.
  */
 public final class RiverAlertWorker extends Worker {
     private static final String ENDPOINT =
@@ -43,7 +42,7 @@ public final class RiverAlertWorker extends Worker {
     private static final String CHANNEL_ID = "official_nepal_alerts_v3";
     private static final String PUSH_PREFS = "floodsafe_push_guard";
     private static final double RADIUS_KM = 2d;
-    private static final long MAX_AGE_MS = 20L * 60L * 1000L;
+    private static final long MAX_AGE_MS = 10L * 60L * 1000L;
     private static final long FUTURE_TOLERANCE_MS = 5L * 60L * 1000L;
     private static final long WARNING_REPEAT_MS = 90L * 60L * 1000L;
     private static final long DANGER_REPEAT_MS = 30L * 60L * 1000L;
@@ -108,11 +107,13 @@ public final class RiverAlertWorker extends Worker {
     }
 
     private static JSONObject fetch() throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) new URL(ENDPOINT).openConnection();
+        HttpURLConnection connection = (HttpURLConnection) new URL(ENDPOINT + "?_fs=" + System.currentTimeMillis()).openConnection();
         connection.setConnectTimeout(15000);
         connection.setReadTimeout(20000);
+        connection.setUseCaches(false);
         connection.setRequestProperty("Accept", "application/json");
-        connection.setRequestProperty("Cache-Control", "no-cache");
+        connection.setRequestProperty("Cache-Control", "no-cache, no-store");
+        connection.setRequestProperty("Pragma", "no-cache");
         int code = connection.getResponseCode();
         if (code != 200) {
             connection.disconnect();
@@ -168,23 +169,25 @@ public final class RiverAlertWorker extends Worker {
         double danger = firstNumber(row, "dangerLevel", "danger_level", "dangerThreshold",
                 "danger_threshold", "_lastDangerLevel");
         String official = firstString(row, "status", "status_name", "alertStatus", "alert_status",
-                "riskLevel", "risk_level").toUpperCase(Locale.ROOT);
+                "riskLevel", "risk_level", "_officialStatus").toUpperCase(Locale.ROOT);
 
         String stage = "";
         if (Double.isFinite(level) && Double.isFinite(danger) && danger > 0d && level >= danger) {
             stage = "danger";
-        } else if (official.contains("DANGER") || official.contains("RED")) {
+        } else if ((official.contains("DANGER") || official.contains("RED"))
+                && !official.contains("BELOW DANGER")) {
             stage = "danger";
         } else if (Double.isFinite(level) && Double.isFinite(warning) && warning > 0d && level >= warning) {
             stage = "warning";
-        } else if (official.contains("WARNING") || official.contains("ORANGE")) {
+        } else if ((official.contains("WARNING") || official.contains("ORANGE"))
+                && !official.contains("BELOW WARNING")) {
             stage = "warning";
         }
         if (stage.isEmpty()) return null;
 
         String measured = firstString(row, "waterLevelOn", "water_level_on", "measuredOn",
                 "measured_on", "measurementTime", "measurement_time", "observationTime",
-                "observation_time", "observedAt", "observed_at", "datetime", "timestamp");
+                "observation_time", "observedAt", "observed_at", "datetime", "timestamp", "_measurementTime");
         long measuredAt = parseTime(measured);
         if (measuredAt <= 0L || now - measuredAt > MAX_AGE_MS || measuredAt - now > FUTURE_TOLERANCE_MS) {
             return null;

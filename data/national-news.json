@@ -1,77 +1,49 @@
 {
-  "generated_at": "2026-09-14T19:47:51.426230+05:45",
-  "updated_at_npt": "14 Sep 19:47 NPT",
+  "generated_at": "2026-09-15T01:02:39.111417+05:45",
+  "updated_at_npt": "15 Sep 01:02 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "संस्थापनले गरेको निर्णय नमान्ने देउवा समूहको निर्णय १ घण्टा अगाडि",
+      "title": "भोटेकोशी बाढीः एक हजार ३९५ शव फेला",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592061/deuba-groups-decision-to-reject-the-decision-made-by-the-establishment",
-      "published_at": "2026-09-14T18:45:00+05:45",
+      "url": "https://www.ratopati.com/story/592181/bhotekoshi-flood-1395-bodies-found",
+      "published_at": "2026-09-15T01:00:55+05:45",
+      "flash": true
+    },
+    {
+      "title": "रसुवा र भोटेकोसीका बाढी प्रभावित विद्यार्थीलाई राजधानी मोडेल कलेजले ७० लाखभन्दा बढीको छात्रवृत्ति दिने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592177/rajdhani-model-college-to-provide-scholarships-of-over-rs-7-million-to-flood-affected-students-of-rasuwa-and-bhotekoshi",
+      "published_at": "2026-09-14T23:55:24+05:45",
       "flash": false
     },
     {
-      "title": "प्रधानमन्त्री राहत कोषमा रु १३ अर्ब ६८ करोड मौज्दात",
+      "title": "युक्रेन र रुसबिच ऊर्जा क्षेत्रमा लक्षित आक्रमण नगर्ने सहमति : राष्ट्रपति ट्रम्प",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592141/prime-ministers-relief-fund-has-rs-1368-billion-in-balance",
-      "published_at": "2026-09-14T18:36:52+05:45",
+      "url": "https://www.ratopati.com/story/592175/ukraine-russia-agree-not-to-target-energy-sector-president-trump",
+      "published_at": "2026-09-14T23:27:35+05:45",
       "flash": false
     },
     {
-      "title": "रास्वपा संसदीय दलका सदस्यले प्रधानमन्त्री राहत कोषमा जनही १५ हजार सहयाेग गर्ने १ घण्टा अगाडि",
+      "title": "मनोहर खोलाको बहाव बढ्दो,सुरक्षित स्थानमा रहन माइकिङ गर्दै प्रहरी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592135/members-of-the-rsvp-parliamentary-party-will-contribute-15000-each-to-the-prime-ministers-relief-fund",
-      "published_at": "2026-09-14T18:12:11+05:45",
+      "url": "https://www.ratopati.com/story/592163/the-flow-of-the-manohar-river-is-increasing-police-are-miking-to-stay-in-safe-places",
+      "published_at": "2026-09-14T22:05:19+05:45",
       "flash": false
     },
     {
-      "title": "सर्वोच्चको फैसला : खरिद सम्झौतापछि सार्वजनिक निकायले एकतर्फी सर्त परिवर्तन गर्न पाउँदैनन्",
+      "title": "‘ओलीमाथि प्रश्न उठ्यो, तर हटाउने निर्णयमा ब्रेक लाग्याे’",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592088/supreme-court-ruling-public-bodies-cannot-unilaterally-change-terms-after-a-public-procurement-agreement",
-      "published_at": "2026-09-14T17:30:00+05:45",
+      "url": "https://www.ratopati.com/story/592159/questions-were-raised-about-kp-oli-but-the-decision-to-remove-him-was-put-on-hold",
+      "published_at": "2026-09-14T21:36:20+05:45",
       "flash": false
     },
     {
-      "title": "बाढी प्रभावित क्षेत्रका सडक सञ्जाल असोजभित्रै सञ्चालन हुन्छ : मन्त्री लम्साल २ घण्टा अगाडि",
+      "title": "मोरङमा सवारी दुर्घटना हुँदा सशस्त्रका सहायक हवल्दारको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592122/road-network-in-flood-affected-areas-to-be-operational-by-asoj-minister-lamsal",
-      "published_at": "2026-09-14T17:09:51+05:45",
-      "flash": false
-    },
-    {
-      "title": "देउवा समूहले भन्यो– अदालतको फैसला नपर्खी एकलौटी रूपमा अगाडि बढ्नु उचित मान्न सकिन्न",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592117/deuba-group-says-it-is-not-appropriate-to-move-forward-unilaterally-without-waiting-for-the-courts-decision",
-      "published_at": "2026-09-14T16:47:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "लागुऔषध दुर्व्यसनीविरुद्ध प्रहरीको अप्रेशन : सर्लाहीबाट आठ जना पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592115/police-operation-against-drug-addicts-eight-arrested-from-sarlahi",
-      "published_at": "2026-09-14T16:40:09+05:45",
-      "flash": false
-    },
-    {
-      "title": "कन्काइ पुल अलपत्र पार्नेलाई जरिवाना",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592078/fine-for-blocking-kankai-bridge",
-      "published_at": "2026-09-14T15:07:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "राज्यमन्त्री चढ्ने गाडीलाई ट्राफिक प्रहरीले चिट काट्यो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592067/traffic-police-ticket-vehicle-carrying-state-minister",
-      "published_at": "2026-09-14T14:22:44+05:45",
-      "flash": false
-    },
-    {
-      "title": "जेनजी आन्दोलनमा घाइते आयुषलाई काठमाडौँ विश्वविद्यालयले पूर्ण छात्रवृत्ति दिने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592065/kathmandu-university-to-provide-full-scholarship-to-ayush-injured-in-genji-movement",
-      "published_at": "2026-09-14T14:15:51+05:45",
+      "url": "https://www.ratopati.com/story/592148/armed-forces-assistant-constable-dies-in-road-accident-in-morang",
+      "published_at": "2026-09-14T19:57:16+05:45",
       "flash": false
     }
   ],
@@ -91,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 10
+      "flash": 2,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -102,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

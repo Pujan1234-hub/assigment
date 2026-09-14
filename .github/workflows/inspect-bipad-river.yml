@@ -1,0 +1,39 @@
+name: Inspect BIPAD river feed
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-bipad-river.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect edge and official feeds
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, urllib.request
+          urls={
+            'edge':'https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers',
+            'stations':'https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=5',
+            'river':'https://bipadportal.gov.np/api/v1/river/?limit=5',
+          }
+          for name,url in urls.items():
+            print('\n###',name,url)
+            req=urllib.request.Request(url,headers={'Accept':'application/json','Cache-Control':'no-cache','User-Agent':'FloodSafe-Debug/1.0'})
+            try:
+              with urllib.request.urlopen(req,timeout=20) as r:
+                body=r.read().decode('utf-8','replace')
+                print('HTTP',r.status,'len',len(body))
+                j=json.loads(body)
+                print('top keys', list(j)[:40] if isinstance(j,dict) else type(j).__name__)
+                rows=j if isinstance(j,list) else j.get('results') or j.get('data') or []
+                if isinstance(rows,dict): rows=rows.get('results') or []
+                print('row_count',len(rows) if isinstance(rows,list) else 'not-list')
+                for i,row in enumerate((rows or [])[:3]):
+                  print('ROW',i,json.dumps(row,ensure_ascii=False)[:8000])
+            except Exception as e:
+              print('ERROR',repr(e))
+          PY

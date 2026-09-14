@@ -34,6 +34,19 @@ entry_text = re.sub(
     '',
     entry_text,
 )
+
+# Android WebView treats Cache-Control/Pragma as non-simple CORS request headers.
+# Install a tiny fetch guard before the official river runtime so those two headers
+# are stripped while cache:'no-store' and the timestamp query continue to prevent
+# stale data. This keeps the normal web build untouched.
+river_marker = '<script src="./trusted-river-runtime-v3.js'
+if river_marker not in entry_text:
+    raise SystemExit('Missing trusted river runtime marker in packaged v25 entry')
+entry_text = entry_text.replace(
+    river_marker,
+    '<script src="./android-cors-fetch-fix.js?v=1"></script>\n' + river_marker,
+    1,
+)
 entry.write_text(entry_text, encoding='utf-8')
 
 # Do not package obsolete Human Status routes/runtimes/data in the APK.

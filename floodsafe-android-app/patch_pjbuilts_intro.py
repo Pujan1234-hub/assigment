@@ -5,26 +5,38 @@ text = p.read_text(encoding='utf-8')
 
 if 'id="pjbuiltsIntro"' not in text:
     style = '''<style id="pjbuiltsIntroStyle">
-#pjbuiltsIntro{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:linear-gradient(160deg,#f7fcff 0%,#eaf6ff 52%,#dff3ff 100%);overflow:hidden;pointer-events:none;opacity:1;transition:opacity .28s ease}
+#pjbuiltsIntro{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:radial-gradient(circle at 50% 47%,#082038 0%,#030b18 46%,#020713 100%);overflow:hidden;pointer-events:none;opacity:1;transition:opacity .2s ease}
 #pjbuiltsIntro.pj-out{opacity:0}
-#pjbuiltsIntro .pj-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;transform:translateY(-2vh)}
-#pjbuiltsIntro .pj-mark{display:flex;align-items:center;justify-content:center;font:900 clamp(58px,18vw,92px)/.9 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:-.12em;color:#0878b9;filter:drop-shadow(0 9px 18px rgba(8,120,185,.16))}
-#pjbuiltsIntro .pj-p{opacity:0;transform:translate3d(-70px,0,0) scale(.9)}
-#pjbuiltsIntro .pj-j{opacity:0;transform:translate3d(70px,0,0) scale(.9)}
-#pjbuiltsIntro.pj-go .pj-p,#pjbuiltsIntro.pj-go .pj-j{opacity:1;transform:translate3d(0,0,0) scale(1);transition:transform .46s cubic-bezier(.2,.9,.2,1),opacity .28s ease}
-#pjbuiltsIntro .pj-name{font:800 clamp(18px,5vw,26px)/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.28em;color:#0b5f91;opacity:0;transform:translateY(12px);margin-left:.28em}
-#pjbuiltsIntro.pj-go .pj-name{opacity:1;transform:translateY(0);transition:opacity .32s ease .38s,transform .38s cubic-bezier(.2,.9,.2,1) .38s}
-#pjbuiltsIntro .pj-line{width:0;height:2px;border-radius:2px;background:#0aa7cf;opacity:.7}
-#pjbuiltsIntro.pj-go .pj-line{width:118px;transition:width .42s ease .58s}
-@media (prefers-reduced-motion:reduce){#pjbuiltsIntro *{transition:none!important;animation:none!important}#pjbuiltsIntro .pj-p,#pjbuiltsIntro .pj-j,#pjbuiltsIntro .pj-name{opacity:1;transform:none}#pjbuiltsIntro .pj-line{width:118px}}
+#pjbuiltsIntro .pj-wrap{position:relative;display:flex;flex-direction:column;align-items:center;transform:translateY(-2vh)}
+#pjbuiltsIntro .pj-mark{position:relative;display:flex;align-items:center;justify-content:center;font:950 clamp(72px,22vw,116px)/.86 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:-.14em;color:#e9fbff;filter:drop-shadow(0 0 8px #28d9ff) drop-shadow(0 0 20px rgba(39,211,255,.65))}
+#pjbuiltsIntro .pj-p,#pjbuiltsIntro .pj-j{display:inline-block;opacity:0;transform:scale(.72) translateY(8px)}
+#pjbuiltsIntro.pj-go .pj-p{animation:pjZapIn .34s cubic-bezier(.14,.9,.18,1) .08s forwards}
+#pjbuiltsIntro.pj-go .pj-j{animation:pjZapIn .34s cubic-bezier(.14,.9,.18,1) .19s forwards}
+#pjbuiltsIntro .pj-bolt{position:absolute;height:2px;border-radius:5px;background:linear-gradient(90deg,transparent,#fff 30%,#49e8ff 62%,transparent);box-shadow:0 0 5px #fff,0 0 12px #24d8ff;opacity:0;transform-origin:left center}
+#pjbuiltsIntro .b1{width:96px;left:50%;top:9px;transform:translateX(-105px) rotate(12deg)}
+#pjbuiltsIntro .b2{width:88px;right:50%;top:52px;transform:translateX(102px) rotate(-15deg)}
+#pjbuiltsIntro .b3{width:70px;left:50%;bottom:5px;transform:translateX(-76px) rotate(-8deg)}
+#pjbuiltsIntro.pj-go .pj-bolt{animation:pjCurrent .7s steps(2,end) .05s both}
+#pjbuiltsIntro .pj-name{margin-top:18px;font:850 clamp(18px,5vw,27px)/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.3em;color:#aeeeff;opacity:0;transform:translateY(8px) scale(.96);margin-left:.3em;text-shadow:0 0 12px rgba(57,211,255,.6)}
+#pjbuiltsIntro.pj-go .pj-name{animation:pjBuilt .32s ease .5s forwards}
+#pjbuiltsIntro .pj-line{margin-top:10px;width:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#38dfff,transparent);box-shadow:0 0 10px #23d6ff}
+#pjbuiltsIntro.pj-go .pj-line{animation:pjLine .34s ease .58s forwards}
+#pjbuiltsIntro .pj-tag{margin-top:9px;font:650 9px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.18em;color:rgba(172,231,247,.72);opacity:0}
+#pjbuiltsIntro.pj-go .pj-tag{animation:pjFade .24s ease .67s forwards}
+@keyframes pjZapIn{0%{opacity:0;transform:scale(.72) translateY(8px);filter:brightness(2.8)}45%{opacity:1;transform:scale(1.12) translateY(-2px);filter:brightness(2.6)}70%{transform:scale(.96)}100%{opacity:1;transform:scale(1) translateY(0);filter:brightness(1)}}
+@keyframes pjCurrent{0%,9%,21%,39%,58%,76%{opacity:0}5%,14%,29%,46%,66%,82%{opacity:1}100%{opacity:0}}
+@keyframes pjBuilt{to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes pjLine{to{width:136px}}
+@keyframes pjFade{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#pjbuiltsIntro *{animation:none!important;transition:none!important}#pjbuiltsIntro .pj-p,#pjbuiltsIntro .pj-j,#pjbuiltsIntro .pj-name,#pjbuiltsIntro .pj-tag{opacity:1;transform:none}#pjbuiltsIntro .pj-line{width:136px}}
 </style>'''
-    splash = '''<div id="pjbuiltsIntro" aria-hidden="true"><div class="pj-wrap"><div class="pj-mark"><span class="pj-p">P</span><span class="pj-j">J</span></div><div class="pj-name">BUILTS</div><div class="pj-line"></div></div></div><script id="pjbuiltsIntroScript">(()=>{const e=document.getElementById('pjbuiltsIntro');if(!e)return;requestAnimationFrame(()=>requestAnimationFrame(()=>e.classList.add('pj-go')));const reduced=matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;setTimeout(()=>{e.classList.add('pj-out');setTimeout(()=>e.remove(),300)},reduced?420:1450)})();</script>'''
+    splash = '''<div id="pjbuiltsIntro" aria-hidden="true"><div class="pj-wrap"><div class="pj-mark"><span class="pj-p">P</span><span class="pj-j">J</span><i class="pj-bolt b1"></i><i class="pj-bolt b2"></i><i class="pj-bolt b3"></i></div><div class="pj-name">BUILTS</div><div class="pj-line"></div><div class="pj-tag">IDEA • BUILD • INNOVATE</div></div></div><script id="pjbuiltsIntroScript">(()=>{const e=document.getElementById('pjbuiltsIntro');if(!e)return;requestAnimationFrame(()=>requestAnimationFrame(()=>e.classList.add('pj-go')));const reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;setTimeout(()=>{e.classList.add('pj-out');setTimeout(()=>e.remove(),220)},reduced?300:1050)})();</script>'''
     if '</head>' not in text or '<body>' not in text:
         raise SystemExit('HTML markers missing for PJBUILTS intro')
     text = text.replace('</head>', style + '</head>', 1)
     text = text.replace('<body>', '<body>' + splash, 1)
 
 p.write_text(text, encoding='utf-8')
-if 'id="pjbuiltsIntro"' not in text or 'PJBUILTS' in text:
-    pass
-print('PJBUILTS smooth launch intro applied')
+if 'id="pjbuiltsIntro"' not in text or 'class="pj-name">BUILTS<' not in text:
+    raise SystemExit('PJBUILTS intro marker missing')
+print('PJBUILTS electric fast launch intro applied')

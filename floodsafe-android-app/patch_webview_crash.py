@@ -3,7 +3,6 @@ from pathlib import Path
 path = Path(__file__).resolve().parent / 'app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java'
 text = path.read_text(encoding='utf-8')
 
-# Import beside an import that is guaranteed to exist in the current activity.
 if 'import android.webkit.RenderProcessGoneDetail;' not in text:
     anchor = 'import android.webkit.PermissionRequest;\n'
     if anchor not in text:
@@ -12,31 +11,49 @@ if 'import android.webkit.RenderProcessGoneDetail;' not in text:
         raise SystemExit('WebView import marker not found')
     text = text.replace(anchor, anchor + 'import android.webkit.RenderProcessGoneDetail;\n', 1)
 
-# Recovery state lives in the Activity rather than inside JavaScript so it still
-# works when the renderer is blank, wedged, or has died while backgrounded.
+# Keep one conservative recovery flag. Normal warm resumes must never reload the page.
 field_anchor = '    private boolean pendingBackgroundLocationEducation;\n'
-fields = field_anchor + '''    private long webLoadGeneration;\n    private int webLoadRecoveryCount;\n    private boolean webContentVisible;\n'''
-if 'private long webLoadGeneration;' not in text:
+if 'private boolean resumeRecoveryUsed;' not in text:
     if field_anchor not in text:
         raise SystemExit('MainActivity recovery field marker not found')
-    text = text.replace(field_anchor, fields, 1)
+    text = text.replace(field_anchor, field_anchor + '    private boolean resumeRecoveryUsed;\n', 1)
 
+# Retry always performs a clean local navigation, not WebView.reload() on a bad document.
 text = text.replace(
     'retry.setOnClickListener(v -> { if (webView != null) webView.reload(); });',
-    'retry.setOnClickListener(v -> { webLoadRecoveryCount = 0; if (webView != null) { mainFrameError = false; webView.loadUrl(NavigationPolicy.HOME); } else recreate(); });',
+    'retry.setOnClickListener(v -> { resumeRecoveryUsed = false; mainFrameError = false; if (webView != null) webView.loadUrl(NavigationPolicy.HOME); else recreate(); });',
     1,
 )
 
-old_started = '''            @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {\n                if (!androidLocationPromptOpen) finishLocation(false);\n                mainFrameError = false;\n                updateConnection();\n            }\n'''
-new_started = '''            @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {\n                if (!androidLocationPromptOpen) finishLocation(false);\n                mainFrameError = false;\n                webContentVisible = false;\n                final long generation = ++webLoadGeneration;\n                updateConnection();\n                // The top-level page is bundled locally, so it should paint quickly.\n                // If Android System WebView gets stuck on an empty surface, force a\n                // fresh local navigation instead of leaving the user on a blank page.\n                view.postDelayed(() -> {\n                    if (view != webView || generation != webLoadGeneration\n                            || webContentVisible || isFinishing() || isDestroyed()) return;\n                    try {\n                        if (webLoadRecoveryCount < 2) {\n                            webLoadRecoveryCount++;\n                            view.stopLoading();\n                            view.loadUrl(NavigationPolicy.HOME + "?recover=" + System.currentTimeMillis());\n                        } else {\n                            mainFrameError = true;\n                            connection.setText(R.string.load_error);\n                            recovery.setVisibility(View.VISIBLE);\n                        }\n                    } catch (RuntimeException deadRenderer) {\n                        if (view == webView) webView = null;\n                        recreate();\n                    }\n                }, 4500L);\n            }\n            @Override public void onPageCommitVisible(WebView view, String url) {\n                if (view == webView) {\n                    webContentVisible = true;\n                    webLoadRecoveryCount = 0;\n                    mainFrameError = false;\n                    updateConnection();\n                }\n            }\n            @Override public void onPageFinished(WebView view, String url) {\n                if (view == webView) {\n                    webContentVisible = true;\n                    webLoadRecoveryCount = 0;\n                    mainFrameError = false;\n                    updateConnection();\n                }\n            }\n'''
-if 'view.loadUrl(NavigationPolicy.HOME + "?recover="' not in text:
-    if old_started not in text:
+# Keep the renderer bound to the app process and preraster the WebView. This avoids
+# Android reclaiming the renderer immediately after the app is backgrounded, which
+# was the main source of white/skeleton reopen states on some Samsung devices.
+webview_anchor = '        webView.setBackgroundColor(Color.rgb(234, 246, 255));\n'
+if 'setRendererPriorityPolicy' not in text:
+    if webview_anchor not in text:
+        raise SystemExit('WebView setup marker not found')
+    text = text.replace(
+        webview_anchor,
+        webview_anchor + '        webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND, false);\n',
+        1,
+    )
+settings_anchor = '        settings.setCacheMode(WebSettings.LOAD_DEFAULT);\n'
+if 'settings.setOffscreenPreRaster(true);' not in text:
+    if settings_anchor not in text:
+        raise SystemExit('WebSettings cache marker not found')
+    text = text.replace(settings_anchor, settings_anchor + '        settings.setOffscreenPreRaster(true);\n', 1)
+
+# A visible commit proves the top-level bundled page painted. Reset recovery state.
+started = '''            @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {\n                if (!androidLocationPromptOpen) finishLocation(false);\n                mainFrameError = false;\n                updateConnection();\n            }\n'''
+started_plus = started + '''            @Override public void onPageCommitVisible(WebView view, String url) {\n                if (view == webView) {\n                    resumeRecoveryUsed = false;\n                    mainFrameError = false;\n                    updateConnection();\n                }\n            }\n            @Override public void onPageFinished(WebView view, String url) {\n                if (view == webView) {\n                    resumeRecoveryUsed = false;\n                    mainFrameError = false;\n                    updateConnection();\n                }\n            }\n'''
+if 'onPageCommitVisible(WebView view' not in text:
+    if started not in text:
         raise SystemExit('Main WebView onPageStarted marker not found')
-    text = text.replace(old_started, new_started, 1)
+    text = text.replace(started, started_plus, 1)
 
 main_marker = '''            @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {\n                if (request.isForMainFrame()) { mainFrameError = true; updateConnection(); }\n            }\n'''
-main_handler = main_marker + '''            @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {\n                // Handle a crashed/outdated Android System WebView renderer without\n                // killing FloodSafe. The dead instance is never reused.\n                mainFrameError = true;\n                webContentVisible = false;\n                ++webLoadGeneration;\n                finishLocation(false);\n                if (view != null) {\n                    android.view.ViewParent parent = view.getParent();\n                    if (parent instanceof android.view.ViewGroup) {\n                        ((android.view.ViewGroup) parent).removeView(view);\n                    }\n                    try { view.destroy(); } catch (RuntimeException ignored) { }\n                }\n                if (view == webView) webView = null;\n                progress.setVisibility(View.GONE);\n                connection.setText(R.string.load_error);\n                recovery.setVisibility(View.VISIBLE);\n                // Recreate the Activity with a brand-new WebView on the next loop tick.\n                getWindow().getDecorView().post(() -> {\n                    if (!isFinishing() && !isDestroyed()) recreate();\n                });\n                return true;\n            }\n'''
-if 'Handle a crashed/outdated Android System WebView renderer' not in text:
+main_handler = main_marker + '''            @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {\n                // This is the only eager recreate path. A dead renderer cannot recover.\n                finishLocation(false);\n                if (view != null) {\n                    android.view.ViewParent parent = view.getParent();\n                    if (parent instanceof android.view.ViewGroup) {\n                        ((android.view.ViewGroup) parent).removeView(view);\n                    }\n                    try { view.destroy(); } catch (RuntimeException ignored) { }\n                }\n                if (view == webView) webView = null;\n                getWindow().getDecorView().post(() -> {\n                    if (!isFinishing() && !isDestroyed()) recreate();\n                });\n                return true;\n            }\n'''
+if 'This is the only eager recreate path' not in text:
     if main_marker not in text:
         raise SystemExit('Main WebViewClient marker not found')
     text = text.replace(main_marker, main_handler, 1)
@@ -48,25 +65,23 @@ if text.count('onRenderProcessGone(') < 2:
         raise SystemExit('Popup WebViewClient marker not found')
     text = text.replace(popup_marker, popup_handler, 1)
 
-# A renderer can die or remain alive with an empty document while the Activity is
-# backgrounded. Probe the DOM on every resume. If the actual FloodSafe root is not
-# present, navigate directly to the bundled HOME page. This does not depend on JS
-# app state and works even if a previous load was interrupted mid-render.
 old_resume = '''    @Override protected void onResume() {\n        super.onResume();\n        if (alertPrefs().getBoolean("enabled", false) && notificationsAllowed()) {\n            FloodMonitorService.startIfEnabled(this);\n        }\n        if (webView != null) {\n            webView.onResume();\n            webView.evaluateJavascript("setTimeout(function(){window.FloodSafeRain?.refresh?.(true)},120)", null);\n        }\n        updateConnection();\n    }\n'''
-new_resume = '''    @Override protected void onResume() {\n        super.onResume();\n        if (alertPrefs().getBoolean("enabled", false) && notificationsAllowed()) {\n            FloodMonitorService.startIfEnabled(this);\n        }\n        if (webView == null) {\n            recreate();\n            return;\n        }\n        final WebView current = webView;\n        try {\n            current.onResume();\n            current.resumeTimers();\n        } catch (RuntimeException deadRenderer) {\n            webView = null;\n            recreate();\n            return;\n        }\n        current.postDelayed(() -> {\n            if (current != webView || isFinishing() || isDestroyed()) return;\n            try {\n                String url = current.getUrl();\n                if (url == null || url.isEmpty() || "about:blank".equals(url) || mainFrameError) {\n                    mainFrameError = false;\n                    webLoadRecoveryCount = 0;\n                    current.stopLoading();\n                    current.loadUrl(NavigationPolicy.HOME + "?resume=" + System.currentTimeMillis());\n                    return;\n                }\n                current.evaluateJavascript(\n                        "(function(){try{return !!(document.body&&document.querySelector('.app')&&document.body.children.length)}catch(e){return false}})()",\n                        value -> {\n                            if (current != webView || isFinishing() || isDestroyed()) return;\n                            if (!"true".equals(value)) {\n                                webContentVisible = false;\n                                webLoadRecoveryCount = 0;\n                                try {\n                                    current.stopLoading();\n                                    current.loadUrl(NavigationPolicy.HOME + "?resume=" + System.currentTimeMillis());\n                                } catch (RuntimeException dead) {\n                                    webView = null;\n                                    recreate();\n                                }\n                            } else {\n                                webContentVisible = true;\n                                current.evaluateJavascript("setTimeout(function(){window.FloodSafeRain?.refresh?.(true)},120)", null);\n                            }\n                        });\n            } catch (RuntimeException deadRenderer) {\n                webView = null;\n                recreate();\n            }\n        }, 500L);\n        updateConnection();\n    }\n'''
-if 'document.querySelector(\'.app\')' not in text:
+new_resume = '''    @Override protected void onResume() {\n        super.onResume();\n        if (alertPrefs().getBoolean("enabled", false) && notificationsAllowed()) {\n            FloodMonitorService.startIfEnabled(this);\n        }\n        if (webView == null) {\n            recreate();\n            return;\n        }\n        final WebView current = webView;\n        try {\n            current.onResume();\n            current.resumeTimers();\n            current.invalidate();\n        } catch (RuntimeException deadRenderer) {\n            webView = null;\n            recreate();\n            return;\n        }\n\n        // Root-cause fix: never reload a healthy WebView merely because the app resumed.\n        // The previous 500 ms probe + cache-busting navigation restarted every heavy map,\n        // river, news and SATHI script and left the user staring at the skeleton UI.\n        current.postDelayed(() -> {\n            if (current != webView || isFinishing() || isDestroyed()) return;\n            try {\n                String url = current.getUrl();\n                if (url == null || url.isEmpty() || "about:blank".equals(url)) {\n                    if (!resumeRecoveryUsed) {\n                        resumeRecoveryUsed = true;\n                        current.loadUrl(NavigationPolicy.HOME);\n                    }\n                    return;\n                }\n                current.evaluateJavascript(\n                        "(function(){try{return !!(document.body&&document.querySelector('.app'))}catch(e){return false}})()",\n                        value -> {\n                            if (current != webView || isFinishing() || isDestroyed()) return;\n                            if ("true".equals(value)) {\n                                resumeRecoveryUsed = false;\n                                current.evaluateJavascript("setTimeout(function(){window.FloodSafeRain?.refresh?.(true)},120)", null);\n                                return;\n                            }\n                            // One delayed second chance only. Do not loop or cache-bust.\n                            current.postDelayed(() -> {\n                                if (current != webView || isFinishing() || isDestroyed() || resumeRecoveryUsed) return;\n                                try {\n                                    current.evaluateJavascript(\n                                            "(function(){try{return !!(document.body&&document.querySelector('.app'))}catch(e){return false}})()",\n                                            second -> {\n                                                if (current != webView || isFinishing() || isDestroyed()) return;\n                                                if (!"true".equals(second) && !resumeRecoveryUsed) {\n                                                    resumeRecoveryUsed = true;\n                                                    current.loadUrl(NavigationPolicy.HOME);\n                                                }\n                                            });\n                                } catch (RuntimeException dead) {\n                                    webView = null;\n                                    recreate();\n                                }\n                            }, 1800L);\n                        });\n            } catch (RuntimeException deadRenderer) {\n                webView = null;\n                recreate();\n            }\n        }, 1400L);\n        updateConnection();\n    }\n'''
+if 'Root-cause fix: never reload a healthy WebView' not in text:
     if old_resume not in text:
         raise SystemExit('MainActivity onResume marker not found')
     text = text.replace(old_resume, new_resume, 1)
 
 if text.count('onRenderProcessGone(') < 2:
     raise SystemExit('WebView renderer crash handlers were not installed')
-if 'import android.webkit.RenderProcessGoneDetail;' not in text:
-    raise SystemExit('RenderProcessGoneDetail import was not installed')
-if '?recover=' not in text or 'onPageCommitVisible' not in text:
-    raise SystemExit('WebView blank-screen watchdog was not installed')
-if 'document.querySelector(\'.app\')' not in text or '?resume=' not in text:
-    raise SystemExit('WebView resume DOM probe was not installed')
+if 'setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND, false)' not in text:
+    raise SystemExit('Renderer retention policy missing')
+if 'settings.setOffscreenPreRaster(true);' not in text:
+    raise SystemExit('WebView preraster setting missing')
+if 'Root-cause fix: never reload a healthy WebView' not in text:
+    raise SystemExit('Conservative resume recovery missing')
+if '?resume=' in text or '?recover=' in text:
+    raise SystemExit('Aggressive cache-busting recovery is still present')
 
 path.write_text(text, encoding='utf-8')
-print('FloodSafe WebView renderer + blank-screen recovery applied')
+print('FloodSafe stable WebView reopen recovery applied')

@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.Collections;
+import java.util.Map;
 
 final class BundledContent implements WebViewAssetLoader.PathHandler {
     private final AssetManager assets;
@@ -22,9 +23,16 @@ final class BundledContent implements WebViewAssetLoader.PathHandler {
             else if (path.endsWith(".css")) mime = "text/css";
             else if (path.endsWith(".wasm")) mime = "application/wasm";
             else if (path.endsWith(".woff2")) mime = "font/woff2";
+
+            // index/privacy stay uncached so navigation always gets the current APK HTML.
+            // Versioned bundled JS/CSS/map assets are immutable inside one install; a short
+            // cache window lets Android System WebView reuse resource + V8 code cache on
+            // close/reopen instead of reparsing every script from scratch.
+            boolean html = path.endsWith(".html");
+            Map<String, String> headers = Collections.singletonMap(
+                    "Cache-Control", html ? "no-store" : "public, max-age=300");
             return new WebResourceResponse(mime == null ? "application/octet-stream" : mime,
-                    "UTF-8", 200, "OK", Collections.singletonMap("Cache-Control", "no-store"),
-                    assets.open(path));
+                    "UTF-8", 200, "OK", headers, assets.open(path));
         } catch (IOException absent) { return missing(); }
     }
 

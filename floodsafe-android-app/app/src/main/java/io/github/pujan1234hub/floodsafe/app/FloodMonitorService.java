@@ -77,7 +77,12 @@ public final class FloodMonitorService extends Service implements LocationListen
         prefs = getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE);
         locationManager = getSystemService(LocationManager.class);
         ensureChannel();
-        promoteToForeground();
+        // Android 14+ can reject a location foreground-service promotion when the
+        // app is backgrounded or only while-in-use location is granted. Never let
+        // that OS policy exception terminate the whole FloodSafe process.
+        if (!promoteToForeground()) {
+            stopSelf();
+        }
     }
 
     @Override public int onStartCommand(Intent intent, int flags, int startId) {
@@ -85,7 +90,10 @@ public final class FloodMonitorService extends Service implements LocationListen
             stopSelf();
             return START_NOT_STICKY;
         }
-        promoteToForeground();
+        if (!promoteToForeground()) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
         startLocationUpdates();
         return START_STICKY;
     }
@@ -94,13 +102,17 @@ public final class FloodMonitorService extends Service implements LocationListen
         if (Build.VERSION.SDK_INT < 26) return;
         NotificationManager manager = getSystemService(NotificationManager.class);
         if (manager == null) return;
-        NotificationChannel channel = new NotificationChannel(
-                CHANNEL_ID, "FloodSafe background safety monitoring",
-                NotificationManager.IMPORTANCE_LOW);
-        channel.setDescription("Keeps current location available for nearby FloodSafe alerts when the app is closed");
-        channel.setSound(null, null);
-        channel.enableVibration(false);
-        manager.createNotificationChannel(channel);
+        try {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID, "FloodSafe background safety monitoring",
+                    NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription("Keeps current location available for nearby FloodSafe alerts when the app is closed");
+            channel.setSound(null, null);
+            channel.enableVibration(false);
+            manager.createNotificationChannel(channel);
+        } catch (RuntimeException ignored) {
+            // A broken vendor notification service must not crash FloodSafe.
+        }
     }
 
     private Notification monitorNotification() {
@@ -122,12 +134,19 @@ public final class FloodMonitorService extends Service implements LocationListen
                 .build();
     }
 
-    private void promoteToForeground() {
-        Notification notification = monitorNotification();
-        if (Build.VERSION.SDK_INT >= 29) {
-            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
-        } else {
-            startForeground(NOTIFICATION_ID, notification);
+    private boolean promoteToForeground() {
+        try {
+            Notification notification = monitorNotification();
+            if (Build.VERSION.SDK_INT >= 29) {
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
+            } else {
+                startForeground(NOTIFICATION_ID, notification);
+            }
+            return true;
+        } catch (RuntimeException denied) {
+            // Covers ForegroundServiceStartNotAllowedException, SecurityException,
+            // vendor notification failures and missing while-in-use/background grants.
+            return false;
         }
     }
 
@@ -216,7 +235,7 @@ public final class FloodMonitorService extends Service implements LocationListen
     @Override public void onDestroy() {
         if (locationManager != null) {
             try { locationManager.removeUpdates(this); }
-            catch (SecurityException ignored) { }
+            catch (SecurityException | IllegalArgumentException ignored) { }
         }
         updatesStarted = false;
         super.onDestroy();

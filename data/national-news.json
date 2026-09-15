@@ -1,84 +1,63 @@
 {
-  "generated_at": "2026-09-15T11:31:57.509347+05:45",
-  "updated_at_npt": "15 Sep 11:31 NPT",
+  "generated_at": "2026-09-15T16:14:39.146227+05:45",
+  "updated_at_npt": "15 Sep 16:14 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "जर्मनीमा दक्षिणपन्थी अतिवादी पार्टी एएफडी किन बलियो बन्दैछ ?",
+      "title": "संसद्‌मा सांसदको न्यून उपस्थितिप्रति दुलालको असन्तुष्टि",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592238/why-is-the-far-right-afd-party-gaining-strength-in-germany",
-      "published_at": "2026-09-15T11:20:08+05:45",
+      "url": "https://www.ratopati.com/story/592339/dulals-dissatisfaction-with-the-low-attendance-of-mps-in-parliament",
+      "published_at": "2026-09-15T15:54:26+05:45",
       "flash": true
     },
     {
-      "title": "प्रधानमन्त्री राहत कोषमा मौज्दात रु १४ अर्ब पुग्यो",
+      "title": "डिजिटल संसद्‌को परीक्षण गरिँदै",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592234/balance-in-prime-ministers-relief-fund-reaches-rs-14-billion",
-      "published_at": "2026-09-15T11:03:03+05:45",
+      "url": "https://www.ratopati.com/story/592335/testing-the-digital-parliament",
+      "published_at": "2026-09-15T15:51:17+05:45",
       "flash": true
     },
     {
-      "title": "संघीय संसद्को अधिवेशन अन्त्य गर्ने तयारीमा सरकार",
+      "title": "जसपा नेपालले राहत कोषमा जम्मा गर्‍यो २१ लाख ३४ मिनेट अगाडि",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592233/government-preparing-to-end-the-session-of-the-federal-parliament",
-      "published_at": "2026-09-15T11:00:31+05:45",
+      "url": "https://www.ratopati.com/story/592326/jsp-nepal-deposited-rs-21-million-in-the-relief-fund",
+      "published_at": "2026-09-15T15:39:33+05:45",
       "flash": true
     },
     {
-      "title": "मंगलबार यी जिल्लामा बाढीको जोखिम, यस्तो छ बाढी पूर्वानुमान",
+      "title": "नवलपरासीमा खुर्पा प्रहार गरी श्रीमतीको हत्या",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592232/flood-risk-in-these-districts-on-tuesday-this-is-the-flood-forecast",
-      "published_at": "2026-09-15T10:57:03+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/592306/wife-murdered-with-a-hatchet-in-nawalparasi",
+      "published_at": "2026-09-15T14:51:02+05:45",
+      "flash": false
+    },
+    {
+      "title": "आईसीयूभित्र अन्तर्वार्ता लिइएको विषयबारे संसद्‍मा प्रश्न",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592289/questions-raised-in-parliament-regarding-interviews-conducted-inside-the-icu",
+      "published_at": "2026-09-15T13:45:46+05:45",
+      "flash": false
+    },
+    {
+      "title": "इलामको राजदुवाली खण्ड असोज ६ र ७ गते पूर्ण रूपमा बन्द रहने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592284/rajduwali-section-of-ilam-to-remain-completely-closed-on-asoj-22-and-23",
+      "published_at": "2026-09-15T13:36:12+05:45",
+      "flash": false
+    },
+    {
+      "title": "मिनी ट्रकको ठक्करबाट पाँच वर्षीय बालकको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592277/five-year-old-boy-dies-after-being-hit-by-mini-truck",
+      "published_at": "2026-09-15T13:24:34+05:45",
+      "flash": false
     },
     {
       "title": "सिराहामा मोटरसाइकलको ठक्करबाट चार वर्षीय बालकको मृत्यु",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592230/four-year-old-boy-dies-after-being-hit-by-motorcycle-in-siraha",
       "published_at": "2026-09-15T10:39:44+05:45",
-      "flash": true
-    },
-    {
-      "title": "बाढीले क्षति पुर्‍याएका झोलुङ्गे पुल मर्मत सुरु, त्रिशूली वारिपारिको सम्बन्ध जोडिने अपेक्षा (तस्बिरहरू)",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592227/repairs-to-flood-damaged-suspension-bridge-begin-hopes-to-reconnect-people-across-trishuli-photos",
-      "published_at": "2026-09-15T10:12:08+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीपछि चिन्तित छन् त्रिशूली किनारका बासिन्दा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592217/residents-of-trishuli-banks-are-worried-after-the-bhotekoshi-flood",
-      "published_at": "2026-09-15T09:10:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : अझै सुदूरपश्चिमका १४३ सम्पर्कविहीन, ७१ जना सम्पर्कमा आए",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592214/bhotekoshi-flood-143-people-still-uncontacted-in-the-far-west-71-people-have-been-contacted",
-      "published_at": "2026-09-15T08:36:37+05:45",
-      "flash": false
-    },
-    {
-      "title": "पर्सा प्रहरीद्वारा ११ लाख बढीको भन्सार छलीको लत्ताकपडा बरामद",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592213/parsa-police-seizes-customs-evaded-clothes-worth-over-rs-11-million",
-      "published_at": "2026-09-15T08:29:54+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशीका बाढी पीडितका लागि कास्कीबाट १ करोड १८ लाखभन्दा बढी राहत संकलन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592209/over-rs-18-million-relief-collected-from-kaski-for-flood-victims-in-bhotekoshi",
-      "published_at": "2026-09-15T08:03:39+05:45",
-      "flash": false
-    },
-    {
-      "title": "बक्सिङमा स्वर्ण जितेकी स्वस्तिका अहिले बेडमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592207/swastika-who-won-gold-in-boxing-is-now-bedridden",
-      "published_at": "2026-09-15T08:00:00+05:45",
       "flash": false
     }
   ],
@@ -99,7 +78,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 5,
-      "recent": 11
+      "recent": 10
     },
     "Kathmandu Post": {
       "ok": true,

@@ -23,6 +23,7 @@ const scripts=[
  './clean-user-lines-v1.js?v=1',
  './sathi-flood-ai/live.js?v=1',
  './sathi-flood-ai/floating-ui-v2.js?v=2',
+ './sathi-app-aware-v1.js?v=1',
  './sathi-flood-ai/place-weather-v1.js?v=1',
  './sathi-flood-ai/river-match-lock-v1.js?v=1',
  './sathi-flood-ai/advanced-server-v1.js?v=1'

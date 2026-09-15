@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'io.github.pujan1234hub.floodsafe.sathi'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'io.github.pujan1234hub.floodsafe.sathi'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets.main.assets.srcDir(layout.buildDirectory.dir('generated/sathi-assets'))
+
+    lint {
+        abortOnError = true
+    }
+}
+
+def bundleWeb = tasks.register('bundleFloodSafeSathi', Copy) {
+    // Copy the already-working FloodSafe web app into this APK without changing it.
+    from(rootProject.file('../floodsafe-nepal')) {
+        into 'floodsafe-nepal'
+        exclude 'v25/rain-push-v1.js'
+    }
+    from(rootProject.file('../data')) {
+        into 'data'
+    }
+    // Reuse the existing Android-specific compatibility shim as-is.
+    from(rootProject.file('../floodsafe-android-app/android-web')) {
+        into 'floodsafe-nepal/v25'
+    }
+    includeEmptyDirs = false
+    into(layout.buildDirectory.dir('generated/sathi-assets'))
+}
+
+tasks.named('preBuild').configure { dependsOn bundleWeb }
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+}

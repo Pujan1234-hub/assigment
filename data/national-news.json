@@ -1,45 +1,9 @@
 {
-  "generated_at": "2026-09-16T00:49:25.973019+05:45",
-  "updated_at_npt": "16 Sep 00:49 NPT",
+  "generated_at": "2026-09-16T03:56:15.979193+05:45",
+  "updated_at_npt": "16 Sep 03:56 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
-  "items": [
-    {
-      "title": "सानेठिमीमा दुर्घटना गरेपछि फरार प्रतिवादी १९ वर्षपछि पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592406/defendant-absconding-after-accident-in-sanethimi-arrested-after-19-years",
-      "published_at": "2026-09-15T21:51:46+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रधान सेनापतिले गरे बेइजिङस्थित नेपाली दूतावासकाे भ्रमण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592402/chief-of-army-staff-sigdel-visits-nepali-embassy-in-beijing",
-      "published_at": "2026-09-15T21:36:56+05:45",
-      "flash": false
-    },
-    {
-      "title": "कारमा ढुङ्गा खस्दा दुई जना घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592392/two-injured-after-stone-falls-on-car",
-      "published_at": "2026-09-15T20:28:25+05:45",
-      "flash": false
-    },
-    {
-      "title": "मकवानपुर दुर्घटना : मृतक दुई जनाको सनाखत",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592387/two-people-killed-in-makawanpur-accident-identified",
-      "published_at": "2026-09-15T19:53:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "धरौटीमा रिहा गर्न अदालतले आदेश दियाे, किस्पाङका अध्यक्ष फेरि पक्राउ परे",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592383/court-orders-release-on-bail-kispang-chairman-arrested-again",
-      "published_at": "2026-09-15T19:06:27+05:45",
-      "flash": false
-    }
-  ],
+  "items": [],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
@@ -57,7 +21,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 5
+      "recent": 0
     },
     "Kathmandu Post": {
       "ok": true,

@@ -1,70 +1,63 @@
 {
-  "generated_at": "2026-09-15T16:14:39.146227+05:45",
-  "updated_at_npt": "15 Sep 16:14 NPT",
+  "generated_at": "2026-09-15T20:59:33.319085+05:45",
+  "updated_at_npt": "15 Sep 20:59 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "संसद्‌मा सांसदको न्यून उपस्थितिप्रति दुलालको असन्तुष्टि",
+      "title": "बाढीपीडितका लागि गरिमा विकास बैंकको १ करोड १ लाख ११ हजार सहयोग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592339/dulals-dissatisfaction-with-the-low-attendance-of-mps-in-parliament",
-      "published_at": "2026-09-15T15:54:26+05:45",
+      "url": "https://www.ratopati.com/story/592393/garima-bikas-bank-provides-rs-1111-million-assistance-to-flood-victims",
+      "published_at": "2026-09-15T20:43:34+05:45",
       "flash": true
     },
     {
-      "title": "डिजिटल संसद्‌को परीक्षण गरिँदै",
+      "title": "विपत्ति भोगिरहने मनोहरा किनारलाई बाढीको अर्को पीडा (भिडियो रिपोर्ट)",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592335/testing-the-digital-parliament",
-      "published_at": "2026-09-15T15:51:17+05:45",
+      "url": "https://www.ratopati.com/story/592375/another-flood-disaster-hits-manohara-kinar-video-report",
+      "published_at": "2026-09-15T20:37:09+05:45",
       "flash": true
     },
     {
-      "title": "जसपा नेपालले राहत कोषमा जम्मा गर्‍यो २१ लाख ३४ मिनेट अगाडि",
+      "title": "कारमा ढुङ्गा खस्दा दुई जना घाइते",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592326/jsp-nepal-deposited-rs-21-million-in-the-relief-fund",
-      "published_at": "2026-09-15T15:39:33+05:45",
+      "url": "https://www.ratopati.com/story/592392/two-injured-after-stone-falls-on-car",
+      "published_at": "2026-09-15T20:28:25+05:45",
       "flash": true
     },
     {
-      "title": "नवलपरासीमा खुर्पा प्रहार गरी श्रीमतीको हत्या",
+      "title": "चिलिमे सुरुङकाे १३० मिटरभित्र पुग्यो उद्धार टोली, ८ जना फसेको आशङ्का",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592306/wife-murdered-with-a-hatchet-in-nawalparasi",
-      "published_at": "2026-09-15T14:51:02+05:45",
+      "url": "https://www.ratopati.com/story/592391/rescue-workers-reach-within-130-meters-of-chilime-hydropower",
+      "published_at": "2026-09-15T20:15:21+05:45",
+      "flash": true
+    },
+    {
+      "title": "‘आमा सुरक्षा कार्यक्रम’का बाबजुद अस्पतालको गेट र बाटोमै सुत्केरी हुन बाध्य छन् महिला",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592388/despite-the-mother-safety-program-women-are-forced-to-give-birth-at-the-hospital-gate-and-on-the-road",
+      "published_at": "2026-09-15T19:57:40+05:45",
       "flash": false
     },
     {
-      "title": "आईसीयूभित्र अन्तर्वार्ता लिइएको विषयबारे संसद्‍मा प्रश्न",
+      "title": "मकवानपुर दुर्घटना : मृतक दुई जनाको सनाखत",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592289/questions-raised-in-parliament-regarding-interviews-conducted-inside-the-icu",
-      "published_at": "2026-09-15T13:45:46+05:45",
+      "url": "https://www.ratopati.com/story/592387/two-people-killed-in-makawanpur-accident-identified",
+      "published_at": "2026-09-15T19:53:20+05:45",
       "flash": false
     },
     {
-      "title": "इलामको राजदुवाली खण्ड असोज ६ र ७ गते पूर्ण रूपमा बन्द रहने",
+      "title": "धरौटीमा रिहा गर्न अदालतले आदेश दियाे, किस्पाङका अध्यक्ष फेरि पक्राउ परे",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592284/rajduwali-section-of-ilam-to-remain-completely-closed-on-asoj-22-and-23",
-      "published_at": "2026-09-15T13:36:12+05:45",
-      "flash": false
-    },
-    {
-      "title": "मिनी ट्रकको ठक्करबाट पाँच वर्षीय बालकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592277/five-year-old-boy-dies-after-being-hit-by-mini-truck",
-      "published_at": "2026-09-15T13:24:34+05:45",
-      "flash": false
-    },
-    {
-      "title": "सिराहामा मोटरसाइकलको ठक्करबाट चार वर्षीय बालकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592230/four-year-old-boy-dies-after-being-hit-by-motorcycle-in-siraha",
-      "published_at": "2026-09-15T10:39:44+05:45",
+      "url": "https://www.ratopati.com/story/592383/court-orders-release-on-bail-kispang-chairman-arrested-again",
+      "published_at": "2026-09-15T19:06:27+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     },
@@ -77,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 5,
-      "recent": 10
+      "flash": 4,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -88,7 +81,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     }

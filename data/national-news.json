@@ -1,21 +1,21 @@
 {
-  "generated_at": "2026-09-15T04:20:22.216462+05:45",
-  "updated_at_npt": "15 Sep 04:20 NPT",
+  "generated_at": "2026-09-15T06:38:18.240654+05:45",
+  "updated_at_npt": "15 Sep 06:38 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "भोटेकोशी बाढीः एक हजार ३९५ शव फेला",
+      "title": "देशभर मनसुनी वायुको प्रभाव कायमै, आज यी ३ प्रदेशमा भारी वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592197/the-influence-of-monsoon-winds-continues-across-the-country-heavy-rains-are-likely-in-these-3-provinces-today",
+      "published_at": "2026-09-15T06:11:52+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढीः एक हजार ३९५ शव फेला ५ घण्टा अगाडि",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592181/bhotekoshi-flood-1395-bodies-found",
       "published_at": "2026-09-15T01:00:55+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी प्रभावित क्षेत्रमा प्रहरीको ‘टिमुरे टु त्रिवेणी’ अभियान ५ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592170/police-launch-timure-to-triveni-campaign-in-bhotekoshi-flood-affected-areas",
-      "published_at": "2026-09-14T22:49:00+05:45",
       "flash": false
     }
   ],
@@ -35,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 3
+      "flash": 1,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,
@@ -46,7 +46,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     }

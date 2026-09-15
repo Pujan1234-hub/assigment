@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T12:14:19.723169Z",
+  "generated_at": "2026-09-15T17:07:12.241281Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,31 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 3
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "राष्ट्रिय हितलाई केन्द्रबिन्दुमा राखेर परराष्ट्र नीति सञ्चालन गर्न सरकार प्रतिबद्ध छः मन्त्री खनाल",
-      "url": "https://radionepalonline.com/2026/09/15/735236.html",
-      "published_at": "2026-09-15T12:06:10Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "गुठी विधेयक चाँडै ल्याइन्छ : मन्त्री रावल",
-      "url": "https://radionepalonline.com/2026/09/15/735233.html",
-      "published_at": "2026-09-15T12:03:25Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "जलवायु चुनौतीको समाधानमा साझा सङ्कल्प : मन्त्री चौधरी",
-      "url": "https://radionepalonline.com/2026/09/15/735230.html",
-      "published_at": "2026-09-15T12:00:32Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

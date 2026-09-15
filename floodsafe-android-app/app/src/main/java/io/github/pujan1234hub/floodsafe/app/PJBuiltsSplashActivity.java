@@ -66,10 +66,11 @@ public final class PJBuiltsSplashActivity extends Activity {
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
         Intent app = new Intent(this, VoiceMainActivity.class);
-        // Always create a fresh WebView task on launcher open. Reusing a paused
-        // WebView can leave some Android System WebView builds on a blank frame
-        // after the app was closed from Recents and then reopened.
-        app.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        // Do NOT clear the task here. Clearing it destroyed the already-loaded WebView
+        // on every launcher reopen, forcing a full cold reload of map, river, news and
+        // SATHI. CLEAR_TOP + SINGLE_TOP reuses the existing VoiceMainActivity when it
+        // is alive, while still creating it normally on a genuine cold start.
+        app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (source != null) {
             app.setData(source.getData());
             if (source.getExtras() != null) app.putExtras(source.getExtras());

@@ -66,12 +66,69 @@ if text.count('onRenderProcessGone(') < 2:
         raise SystemExit('Popup WebViewClient marker not found')
     text = text.replace(popup_marker, popup_handler, 1)
 
+# A renderer can die while the activity is in the background. The crash callback
+# then leaves webView == null. Previously, reopening the app resumed the same
+# activity with an empty content area. Recreate immediately in that case, and
+# also self-heal about:blank / failed main-frame resumes.
+old_resume = '''    @Override protected void onResume() {
+        super.onResume();
+        if (alertPrefs().getBoolean("enabled", false) && notificationsAllowed()) {
+            FloodMonitorService.startIfEnabled(this);
+        }
+        if (webView != null) {
+            webView.onResume();
+            webView.evaluateJavascript("setTimeout(function(){window.FloodSafeRain?.refresh?.(true)},120)", null);
+        }
+        updateConnection();
+    }
+'''
+new_resume = '''    @Override protected void onResume() {
+        super.onResume();
+        if (alertPrefs().getBoolean("enabled", false) && notificationsAllowed()) {
+            FloodMonitorService.startIfEnabled(this);
+        }
+        if (webView == null) {
+            recreate();
+            return;
+        }
+        final WebView current = webView;
+        try {
+            current.onResume();
+            current.resumeTimers();
+        } catch (RuntimeException deadRenderer) {
+            recreate();
+            return;
+        }
+        current.postDelayed(() -> {
+            if (current != webView || isFinishing() || isDestroyed()) return;
+            try {
+                String url = current.getUrl();
+                if (url == null || url.isEmpty() || "about:blank".equals(url) || mainFrameError) {
+                    mainFrameError = false;
+                    current.loadUrl(NavigationPolicy.HOME);
+                    return;
+                }
+                current.evaluateJavascript("setTimeout(function(){window.FloodSafeRain?.refresh?.(true)},120)", null);
+            } catch (RuntimeException deadRenderer) {
+                recreate();
+            }
+        }, 180L);
+        updateConnection();
+    }
+'''
+if 'current.resumeTimers();' not in text:
+    if old_resume not in text:
+        raise SystemExit('MainActivity onResume marker not found')
+    text = text.replace(old_resume, new_resume, 1)
+
 if text.count('onRenderProcessGone(') < 2:
     raise SystemExit('WebView renderer crash handlers were not installed')
 if 'import android.webkit.RenderProcessGoneDetail;' not in text:
     raise SystemExit('RenderProcessGoneDetail import was not installed')
 if 'else recreate();' not in text:
     raise SystemExit('WebView recovery retry was not installed')
+if 'current.resumeTimers();' not in text or '"about:blank".equals(url)' not in text:
+    raise SystemExit('WebView resume self-heal was not installed')
 
 path.write_text(text, encoding='utf-8')
 print('FloodSafe WebView renderer crash hardening applied')

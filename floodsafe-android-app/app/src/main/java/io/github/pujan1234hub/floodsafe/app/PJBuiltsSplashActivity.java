@@ -27,7 +27,6 @@ public final class PJBuiltsSplashActivity extends Activity {
         window.setNavigationBarColor(Color.rgb(2, 7, 18));
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         setContentView(buildSplash());
-        // Never depend on draw/animation callbacks to leave the splash screen.
         handler.postDelayed(launchTask, 1450L);
     }
 
@@ -37,7 +36,6 @@ public final class PJBuiltsSplashActivity extends Activity {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setGravity(Gravity.CENTER);
-
         TextView pujan = label("PUJAN", 42f, Color.rgb(232,251,255));
         TextView pj = label("PJ", 88f, Color.rgb(232,251,255));
         TextView builts = label("BUILTS", 24f, Color.rgb(184,241,255));
@@ -45,8 +43,6 @@ public final class PJBuiltsSplashActivity extends Activity {
         pj.setAlpha(0f); builts.setAlpha(0f); tag.setAlpha(0f);
         box.addView(pujan); box.addView(pj); box.addView(builts); box.addView(tag);
         root.addView(box, new FrameLayout.LayoutParams(-1,-1));
-
-        // PUJAN first, then P/J electric-style reveal, then PJBUILTS.
         pujan.animate().alpha(0f).scaleX(.88f).scaleY(.88f).setStartDelay(330).setDuration(230);
         pj.animate().alpha(1f).scaleX(1.08f).scaleY(1.08f).setStartDelay(500).setDuration(230)
                 .withEndAction(() -> pj.animate().scaleX(1f).scaleY(1f).setDuration(120));
@@ -70,8 +66,10 @@ public final class PJBuiltsSplashActivity extends Activity {
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
         Intent app = new Intent(this, VoiceMainActivity.class);
+        // Launcher reopen must reuse the existing FloodSafe activity instead of
+        // stacking a second WebView behind the splash.
+        app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (source != null) {
-            app.setAction(source.getAction());
             app.setData(source.getData());
             if (source.getExtras() != null) app.putExtras(source.getExtras());
         }

@@ -66,9 +66,10 @@ public final class PJBuiltsSplashActivity extends Activity {
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
         Intent app = new Intent(this, VoiceMainActivity.class);
-        // Launcher reopen must reuse the existing FloodSafe activity instead of
-        // stacking a second WebView behind the splash.
-        app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        // Always create a fresh WebView task on launcher open. Reusing a paused
+        // WebView can leave some Android System WebView builds on a blank frame
+        // after the app was closed from Recents and then reopened.
+        app.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         if (source != null) {
             app.setData(source.getData());
             if (source.getExtras() != null) app.putExtras(source.getExtras());

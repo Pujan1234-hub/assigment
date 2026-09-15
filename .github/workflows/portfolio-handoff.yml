@@ -1,0 +1,155 @@
+name: Build portfolio handoff source ZIP
+
+on:
+  push:
+    branches:
+      - portfolio-handoff-zip-2026-09-15
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Build sanitized source package
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/pujan-portfolio-source"
+          ZIP="$GITHUB_WORKSPACE/Pujan-Portfolio-Latest-Source-2026-09-15.zip"
+          rm -rf "$OUT" "$ZIP"
+          mkdir -p "$OUT"
+
+          # Keep source/config/dependency manifests, but skip VCS data and dependency/build caches.
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='node_modules/' \
+            --exclude='.gradle/' \
+            --exclude='.next/' \
+            --exclude='.cache/' \
+            --exclude='coverage/' \
+            ./ "$OUT/"
+
+          # The packaging workflow is temporary and is not part of the portfolio source snapshot.
+          rm -f "$OUT/.github/workflows/portfolio-handoff.yml"
+
+          # Remove environment files except safe examples/templates.
+          find "$OUT" -type f \( -name '.env' -o -name '.env.*' \) ! -name '.env.example' ! -name '*.example' -delete
+
+          # Remove common private-key / signing / local-machine credential files.
+          find "$OUT" -type f \( \
+            -name '*.pem' -o -name '*.key' -o -name '*.p12' -o -name '*.pfx' -o \
+            -name '*.jks' -o -name '*.keystore' -o -name 'service-account*.json' -o \
+            -name 'firebase-adminsdk*.json' -o -name 'google-services.json' -o \
+            -name 'local.properties' -o -name '.npmrc' -o -name '.pypirc' \
+          \) -delete
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          out = Path(os.environ['RUNNER_TEMP']) / 'pujan-portfolio-source'
+          text_exts = {
+              '.html','.htm','.js','.mjs','.cjs','.ts','.tsx','.jsx','.json','.md','.txt','.css','.scss','.sass',
+              '.yml','.yaml','.xml','.toml','.ini','.cfg','.conf','.properties','.gradle','.kts','.kt','.java',
+              '.py','.rb','.php','.sh','.bash','.zsh','.sql','.env','.example','.swift','.plist','.xcconfig'
+          }
+
+          env_names = set()
+          env_patterns = [
+              re.compile(r'process\.env\.([A-Z][A-Z0-9_]*)'),
+              re.compile(r'import\.meta\.env\.([A-Z][A-Z0-9_]*)'),
+              re.compile(r'os\.getenv\([\"\']([A-Z][A-Z0-9_]*)[\"\']'),
+              re.compile(r'getenv\([\"\']([A-Z][A-Z0-9_]*)[\"\']'),
+          ]
+
+          private_key = re.compile(r'-----BEGIN(?: [A-Z0-9]+)* PRIVATE KEY-----.*?-----END(?: [A-Z0-9]+)* PRIVATE KEY-----', re.S)
+          sk_token = re.compile(r'\bsk-[A-Za-z0-9_-]{20,}\b')
+          google_key = re.compile(r'\bAIza[0-9A-Za-z_-]{20,}\b')
+          assignment_secret = re.compile(
+              r'(?im)^(\s*(?:api[_-]?key|secret|token|password|passwd|client[_-]?secret|service[_-]?role[_-]?key|private[_-]?key|storePassword|keyPassword)\s*[:=]\s*)([^\n#]{6,})$'
+          )
+
+          for p in out.rglob('*'):
+              if not p.is_file():
+                  continue
+              if p.name == '.env.example':
+                  continue
+              if p.stat().st_size > 3_000_000:
+                  continue
+              if p.suffix.lower() not in text_exts and p.name not in {'Dockerfile','Makefile','Procfile'}:
+                  continue
+              try:
+                  data = p.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+
+              for pat in env_patterns:
+                  env_names.update(pat.findall(data))
+
+              cleaned = private_key.sub('[REDACTED_PRIVATE_KEY]', data)
+              cleaned = sk_token.sub('[REDACTED_API_TOKEN]', cleaned)
+              cleaned = google_key.sub('[REDACTED_API_KEY]', cleaned)
+              cleaned = assignment_secret.sub(lambda m: m.group(1) + '[REDACTED_SECRET]', cleaned)
+              if cleaned != data:
+                  p.write_text(cleaned, encoding='utf-8')
+
+          env_path = out / '.env.example'
+          header = [
+              '# Safe environment template for portfolio handoff.',
+              '# Secrets/passwords/private keys are intentionally excluded from this ZIP.',
+              '# Fill only the variables your deployment actually uses.',
+              ''
+          ]
+          lines = header + [f'{name}=' for name in sorted(env_names)]
+          if not env_names:
+              lines += ['# No runtime environment variables were detected in the portfolio root source.']
+          env_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+          handoff = out / 'PORTFOLIO_HANDOFF.md'
+          handoff.write_text(
+              '# Pujan Chapagain Portfolio — Source Handoff\n\n'
+              'This ZIP is a sanitized snapshot of the latest GitHub `main` state used by the portfolio and linked project demos.\n\n'
+              '## Primary portfolio files\n'
+              '- `index.html` — main portfolio frontend (HTML/CSS/JS)\n'
+              '- `auto-update.js` — live project-status updater\n'
+              '- `portfolio-*.js` — portfolio-specific content/motion/localization helpers\n'
+              '- `assets/portfolio/` — portfolio screenshots/visual assets\n'
+              '- `data/portfolio-status.json` — generated project-status data\n\n'
+              '## Security\n'
+              '- Real `.env` files are excluded.\n'
+              '- Private keys, signing stores, service-account files and common hard-coded secret patterns are removed/redacted.\n'
+              '- Use `.env.example` as the safe configuration template.\n\n'
+              '## Continue in another ChatGPT chat\n'
+              'Upload this ZIP and say: “Continue editing this portfolio from the included latest source. Keep the current design and functionality unless I explicitly ask to change them.”\n',
+              encoding='utf-8'
+          )
+          PY
+
+          # Record the exact repository commit the snapshot came from (parent of this temporary packaging commit).
+          SOURCE_COMMIT="$(git rev-parse HEAD^)"
+          printf '%s\n' "$SOURCE_COMMIT" > "$OUT/SOURCE_COMMIT.txt"
+
+          # Final guard: no raw private key block may remain.
+          if grep -RIl --exclude='*.zip' 'BEGIN .*PRIVATE KEY' "$OUT" >/tmp/private-key-hits.txt; then
+            echo 'Private key material still detected; refusing to publish artifact.' >&2
+            cat /tmp/private-key-hits.txt >&2
+            exit 1
+          fi
+
+          cd "$RUNNER_TEMP"
+          zip -qr "$ZIP" "pujan-portfolio-source"
+
+      - name: Upload source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pujan-Portfolio-Latest-Source-2026-09-15
+          path: Pujan-Portfolio-Latest-Source-2026-09-15.zip
+          if-no-files-found: error
+          retention-days: 7

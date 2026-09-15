@@ -1,42 +1,28 @@
 {
-  "generated_at": "2026-09-15T20:59:33.319085+05:45",
-  "updated_at_npt": "15 Sep 20:59 NPT",
+  "generated_at": "2026-09-16T00:49:25.973019+05:45",
+  "updated_at_npt": "16 Sep 00:49 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बाढीपीडितका लागि गरिमा विकास बैंकको १ करोड १ लाख ११ हजार सहयोग",
+      "title": "सानेठिमीमा दुर्घटना गरेपछि फरार प्रतिवादी १९ वर्षपछि पक्राउ",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592393/garima-bikas-bank-provides-rs-1111-million-assistance-to-flood-victims",
-      "published_at": "2026-09-15T20:43:34+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/592406/defendant-absconding-after-accident-in-sanethimi-arrested-after-19-years",
+      "published_at": "2026-09-15T21:51:46+05:45",
+      "flash": false
     },
     {
-      "title": "विपत्ति भोगिरहने मनोहरा किनारलाई बाढीको अर्को पीडा (भिडियो रिपोर्ट)",
+      "title": "प्रधान सेनापतिले गरे बेइजिङस्थित नेपाली दूतावासकाे भ्रमण",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592375/another-flood-disaster-hits-manohara-kinar-video-report",
-      "published_at": "2026-09-15T20:37:09+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/592402/chief-of-army-staff-sigdel-visits-nepali-embassy-in-beijing",
+      "published_at": "2026-09-15T21:36:56+05:45",
+      "flash": false
     },
     {
       "title": "कारमा ढुङ्गा खस्दा दुई जना घाइते",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592392/two-injured-after-stone-falls-on-car",
       "published_at": "2026-09-15T20:28:25+05:45",
-      "flash": true
-    },
-    {
-      "title": "चिलिमे सुरुङकाे १३० मिटरभित्र पुग्यो उद्धार टोली, ८ जना फसेको आशङ्का",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592391/rescue-workers-reach-within-130-meters-of-chilime-hydropower",
-      "published_at": "2026-09-15T20:15:21+05:45",
-      "flash": true
-    },
-    {
-      "title": "‘आमा सुरक्षा कार्यक्रम’का बाबजुद अस्पतालको गेट र बाटोमै सुत्केरी हुन बाध्य छन् महिला",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592388/despite-the-mother-safety-program-women-are-forced-to-give-birth-at-the-hospital-gate-and-on-the-road",
-      "published_at": "2026-09-15T19:57:40+05:45",
       "flash": false
     },
     {
@@ -57,7 +43,7 @@
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -70,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 7
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,
@@ -81,7 +67,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 8,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     }

@@ -40,6 +40,7 @@ jobs:
           python3 floodsafe-android-app/patch_map_smooth_v075.py
           python3 floodsafe-android-app/patch_full_native_v080.py
           python3 floodsafe-android-app/patch_native_v081_polish.py
+          python3 floodsafe-android-app/patch_native_v081_escape_fix.py
 
       - name: Verify locked safety and full-native requirements
         shell: bash

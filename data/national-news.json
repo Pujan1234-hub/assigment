@@ -1,9 +1,31 @@
 {
-  "generated_at": "2026-09-16T03:56:15.979193+05:45",
-  "updated_at_npt": "16 Sep 03:56 NPT",
+  "generated_at": "2026-09-16T06:08:27.006782+05:45",
+  "updated_at_npt": "16 Sep 06:08 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
-  "items": [],
+  "items": [
+    {
+      "title": "‘बाढीले वंश मात्रै खोसेन, बुढेसकालको सहारा पनि लग्यो’",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592413/the-flood-not-only-took-away-the-lineage-it-also-took-away-the-support-of-old-age",
+      "published_at": "2026-09-16T06:06:55+05:45",
+      "flash": true
+    },
+    {
+      "title": "मनसुनी वायुको प्रभाव : आज कुन-कुन प्रदेशमा भारी वर्षा हुनसक्छ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592412/impact-of-monsoon-winds-which-regions-are-likely-to-experience-heavy-rain-today",
+      "published_at": "2026-09-16T05:59:25+05:45",
+      "flash": true
+    },
+    {
+      "title": "संसद्का दुवै सदनको बैठक आज बस्दै, यस्तो छ सम्भावित कार्यसूची",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592409/both-houses-of-parliament-to-meet-today-here-is-the-possible-agenda",
+      "published_at": "2026-09-16T05:46:43+05:45",
+      "flash": true
+    }
+  ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
@@ -20,8 +42,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 0
+      "flash": 3,
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,
@@ -31,7 +53,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

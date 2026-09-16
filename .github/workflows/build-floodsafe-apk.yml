@@ -27,13 +27,14 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Apply FloodSafe safety patches
+      - name: Apply FloodSafe safety and startup patches
         run: |
           python3 floodsafe-android-app/patch_webview_crash.py
           python3 floodsafe-android-app/patch_launcher_reopen_hard_reset.py
           python3 floodsafe-android-app/patch_auto_alerts.py
           python3 floodsafe-android-app/patch_river_waterlevel.py
           python3 floodsafe-android-app/patch_two_hour_weather.py
+          python3 floodsafe-android-app/patch_cold_start_blank.py
 
       - name: Verify locked safety requirements
         shell: bash
@@ -45,22 +46,42 @@ jobs:
           grep -Fq 'smart_weather_updates_v3' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -Fq 'Samsung blank-compositor resumes' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/VoiceMainActivity.java
-          grep -Fq 'versionCode 15' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.7.1'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'firstPageCommitted' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          if grep -Fq 'settings.setOffscreenPreRaster(true);' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java; then echo 'offscreen preraster must stay disabled'; exit 1; fi
+          grep -Fq 'versionCode 16' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.7.2'" floodsafe-android-app/app/build.gradle
 
-      - name: Build debug APK
-        run: gradle -p floodsafe-android-app clean assembleDebug --stacktrace
+      - name: Bundle verified Android assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
 
-      - name: Verify APK exists
-        run: test -s floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+      - name: Optimize SATHI and map startup load
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+
+      - name: Build and unit test debug APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify APK exists and packaged home
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -p "$APK" assets/floodsafe-nepal/v25/index.html > /tmp/floodsafe-index.html
+          grep -Fq 'class="app"' /tmp/floodsafe-index.html
+          grep -Fq 'human-status-v1.js?v=1' /tmp/floodsafe-index.html
+          if grep -Fq 'id="alertBtn"' /tmp/floodsafe-index.html; then echo 'removed alert button returned'; exit 1; fi
+          unzip -p "$APK" assets/floodsafe-nepal/v25/sathi-flood-ai/live.js | grep -Fq '__FS_LOW_END_SATHI_V1__'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/river-line-style-v1.js | grep -Fq 'setInterval(()=>{if(mapBusy())return;animate()},850)'
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.7.1-reopen-fix.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.7.2-blank-fix.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-APK
-          path: FloodSafe-Nepal-v0.7.1-reopen-fix.apk
+          path: FloodSafe-Nepal-v0.7.2-blank-fix.apk
           if-no-files-found: error
           retention-days: 14

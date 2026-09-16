@@ -45,4 +45,34 @@ if new_interval not in text:
     raise SystemExit('281 station watchdog throttle failed')
 write(p, text)
 
-print('Low-end Android map performance patch PASS')
+# 77 DOM district labels are useful on desktop but expensive while a phone GPU is also
+# drawing raster tiles + the national river network. Keep the district polygons, station
+# points and all data; omit only the decorative text markers on small Android screens.
+p, text = read('map-smooth-v3.js')
+mobile_call = 'if(window.innerWidth>=760)addLabels()'
+if mobile_call not in text:
+    call = 'addLabels()}'
+    if call not in text:
+        raise SystemExit('district label call marker missing')
+    text = text.replace(call, mobile_call + '}', 1)
+if mobile_call not in text:
+    raise SystemExit('mobile district label throttle failed')
+write(p, text)
+
+# Biggest gesture win: while the user is actively dragging/zooming, MapLibre should move
+# the raster/district canvas without re-rasterising thousands of national river segments,
+# shadows, glow and hit-test lines every frame. Hide only those hydro layers during the
+# gesture, then restore them shortly after touch release. Official station data and alert
+# calculations remain unchanged; this is presentation-only.
+p, text = read('hydro-smooth-v2.js')
+old_events = "map.on('movestart',()=>{interaction=true;moveEpoch++;renderToken++;clearTimeout(refreshTimer);clearTimeout(retryTimer)});map.on('moveend',()=>{interaction=false;scheduleViewport(260)});"
+new_events = "const __fsGestureLayers=['hydro-complete-shadow','hydro-complete-lines','hydro-complete-status-glow','hydro-complete-live-flow','hydro-complete-flood-glow','hydro-complete-flood-pulse','hydro-complete-selected','hydro-complete-hit'];let __fsRestoreTimer=0;function __fsHydroVisibility(show){for(const id of __fsGestureLayers){try{if(map.getLayer(id))map.setLayoutProperty(id,'visibility',show?'visible':'none')}catch{}}}map.on('movestart',()=>{interaction=true;moveEpoch++;renderToken++;clearTimeout(refreshTimer);clearTimeout(retryTimer);clearTimeout(__fsRestoreTimer);__fsHydroVisibility(false)});map.on('moveend',()=>{interaction=false;clearTimeout(__fsRestoreTimer);__fsRestoreTimer=setTimeout(()=>{__fsHydroVisibility(true);scheduleViewport(90)},90)});"
+if '__fsGestureLayers' not in text:
+    if old_events not in text:
+        raise SystemExit('hydro gesture event marker missing')
+    text = text.replace(old_events, new_events, 1)
+if "__fsHydroVisibility(false)" not in text or "__fsHydroVisibility(true)" not in text:
+    raise SystemExit('hydro gesture visibility patch failed')
+write(p, text)
+
+print('Low-end Android map performance patch PASS: gesture mode + mobile labels')

@@ -1,56 +1,28 @@
 {
-  "generated_at": "2026-09-17T00:08:41.746207+05:45",
-  "updated_at_npt": "17 Sep 00:08 NPT",
+  "generated_at": "2026-09-17T03:16:46.738066+05:45",
+  "updated_at_npt": "17 Sep 03:16 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "युक्रेनमा रुसी ड्रोन आक्रमणबाट बसमा सवार पाँच जनाको मृत्यु",
+      "title": "भोटेकोशी बाढी: पोखरामा शव गृह (पोर्टेवल मर्चरी हाउस) निर्माण",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592657/five-people-on-bus-killed-in-russian-drone-attack-in-ukraine",
-      "published_at": "2026-09-16T23:05:35+05:45",
+      "url": "https://www.ratopati.com/story/592666/bhotekoshi-flood-construction-of-a-portable-mortuary-house-in-pokhara",
+      "published_at": "2026-09-17T01:06:23+05:45",
       "flash": false
     },
     {
-      "title": "गाजामा भवन भत्किँदा कम्तीमा १९ जनाको मृत्यु",
+      "title": "स्वास्थ्य स्वयंसेविकाद्वारा बाढी पीडितलाई आर्थिक सहयोग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592653/at-least-19-killed-in-gaza-building-collapse",
-      "published_at": "2026-09-16T22:26:35+05:45",
+      "url": "https://www.ratopati.com/story/592665/health-volunteers-provide-financial-assistance-to-flood-victims",
+      "published_at": "2026-09-17T00:47:36+05:45",
       "flash": false
     },
     {
-      "title": "बाढीपहिरो र मन्दीको मारमा मूर्ति व्यवसाय, भन्छन्, ‘यसपालि साँवा पनि उठ्दैन’",
+      "title": "भोटेकोशी बाढी: आयोगद्वारा बाढीपीडितका लागि ६१ लाखभन्दा बढी सहयोग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592637/statue-business-hit-by-floods-landslides-and-recession-says-this-year-even-the-capital-wont-be-raised",
-      "published_at": "2026-09-16T20:34:07+05:45",
-      "flash": false
-    },
-    {
-      "title": "कुकुरलाई सेती नदीमा फाल्ने महिला खोज्दै प्रहरी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592630/police-searching-for-woman-who-threw-dog-into-seti-river",
-      "published_at": "2026-09-16T19:44:53+05:45",
-      "flash": false
-    },
-    {
-      "title": "मुख्यमन्त्री तथा मन्त्रिपरिषद्कै कार्यालयको कार्यसम्पादन नाजुक",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592629/the-performance-of-the-chief-ministers-and-council-of-ministers-offices-in-karnali-is-poor-the-chief-minister-and-chief-secretary-themselves-are-dissatisfied",
-      "published_at": "2026-09-16T19:40:28+05:45",
-      "flash": false
-    },
-    {
-      "title": "मुगु कांग्रेसको निर्णय : महामन्त्री घिमिरेलाई जिल्ला प्रवेश निषेध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592626/mugu-congress-decision-general-secretary-ghimire-banned-from-entering-the-district",
-      "published_at": "2026-09-16T19:17:41+05:45",
-      "flash": false
-    },
-    {
-      "title": "नेपाल–चीन सीमा वार्तामा नाम्खा–पुलानबिच भगिनी सम्बन्धको पहल",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592621/initiative-for-sisterly-relations-between-namkha-and-pulan-in-nepal-china-border-talks",
-      "published_at": "2026-09-16T18:28:32+05:45",
+      "url": "https://www.ratopati.com/story/592662/bhotekoshi-flood-commission-provides-over-rs-61-million-in-assistance-to-flood-victims",
+      "published_at": "2026-09-17T00:18:05+05:45",
       "flash": false
     }
   ],
@@ -71,7 +43,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 7
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,
@@ -80,8 +52,8 @@
       "recent": 0
     },
     "The Rising Nepal": {
-      "ok": false,
-      "error": "HTTPSConnectionPool(host='risingnepaldaily.com', port=443): Read timed out. (read timeout=12)",
+      "ok": true,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     }

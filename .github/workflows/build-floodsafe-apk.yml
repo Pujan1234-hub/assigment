@@ -37,6 +37,7 @@ jobs:
           python3 floodsafe-android-app/patch_cold_start_blank.py
           python3 floodsafe-android-app/patch_cross_device_navigation.py
           python3 floodsafe-android-app/patch_native_compat_fallback.py
+          python3 floodsafe-android-app/patch_map_smooth_v075.py
 
       - name: Verify locked safety requirements
         shell: bash
@@ -56,13 +57,13 @@ jobs:
           grep -Fq 'new Intent(this, NativeHomeActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
           grep -Fq 'Fully native FloodSafe Nepal dashboard' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeHomeActivity.java
           if grep -Fq 'settings.setOffscreenPreRaster(true);' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java; then echo 'offscreen preraster must stay disabled'; exit 1; fi
-          grep -Fq 'versionCode 18' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.7.4'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 19' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.7.5'" floodsafe-android-app/app/build.gradle
 
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
 
-      - name: Optimize SATHI and map startup load
+      - name: Optimize SATHI and map interaction load
         run: |
           python3 floodsafe-android-app/patch_low_end_sathi.py
           python3 floodsafe-android-app/patch_low_end_map.py
@@ -82,14 +83,17 @@ jobs:
           if grep -Fq 'id="alertBtn"' /tmp/floodsafe-index.html; then echo 'removed alert button returned'; exit 1; fi
           unzip -p "$APK" assets/floodsafe-nepal/v25/sathi-flood-ai/live.js | grep -Fq '__FS_LOW_END_SATHI_V1__'
           unzip -p "$APK" assets/floodsafe-nepal/v25/river-line-style-v1.js | grep -Fq 'setInterval(()=>{if(mapBusy())return;animate()},850)'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/map-smooth-v3.js | grep -Fq 'if(window.innerWidth>=760)addLabels()'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/hydro-smooth-v2.js | grep -Fq '__fsHydroVisibility(false)'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/hydro-smooth-v2.js | grep -Fq '__fsHydroVisibility(true)'
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.7.4-auto-native-fallback.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.7.5-map-smooth.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-APK
-          path: FloodSafe-Nepal-v0.7.4-auto-native-fallback.apk
+          path: FloodSafe-Nepal-v0.7.5-map-smooth.apk
           if-no-files-found: error
           retention-days: 14

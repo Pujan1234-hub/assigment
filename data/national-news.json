@@ -1,36 +1,50 @@
 {
-  "generated_at": "2026-09-16T20:16:45.155021+05:45",
-  "updated_at_npt": "16 Sep 20:16 NPT",
+  "generated_at": "2026-09-17T00:08:41.746207+05:45",
+  "updated_at_npt": "17 Sep 00:08 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बाढीबाट प्रभावित जलविद्युत आयोजनाका लागि विशेष प्याकेज घोषणा गर्न माग",
+      "title": "युक्रेनमा रुसी ड्रोन आक्रमणबाट बसमा सवार पाँच जनाको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592633/demand-to-announce-special-package-for-flood-affected-hydropower-projects",
-      "published_at": "2026-09-16T20:03:22+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/592657/five-people-on-bus-killed-in-russian-drone-attack-in-ukraine",
+      "published_at": "2026-09-16T23:05:35+05:45",
+      "flash": false
+    },
+    {
+      "title": "गाजामा भवन भत्किँदा कम्तीमा १९ जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592653/at-least-19-killed-in-gaza-building-collapse",
+      "published_at": "2026-09-16T22:26:35+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढीपहिरो र मन्दीको मारमा मूर्ति व्यवसाय, भन्छन्, ‘यसपालि साँवा पनि उठ्दैन’",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592637/statue-business-hit-by-floods-landslides-and-recession-says-this-year-even-the-capital-wont-be-raised",
+      "published_at": "2026-09-16T20:34:07+05:45",
+      "flash": false
     },
     {
       "title": "कुकुरलाई सेती नदीमा फाल्ने महिला खोज्दै प्रहरी",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592630/police-searching-for-woman-who-threw-dog-into-seti-river",
       "published_at": "2026-09-16T19:44:53+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "मुख्यमन्त्री तथा मन्त्रिपरिषद्कै कार्यालयको कार्यसम्पादन नाजुक",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592629/the-performance-of-the-chief-ministers-and-council-of-ministers-offices-in-karnali-is-poor-the-chief-minister-and-chief-secretary-themselves-are-dissatisfied",
       "published_at": "2026-09-16T19:40:28+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "मुगु कांग्रेसको निर्णय : महामन्त्री घिमिरेलाई जिल्ला प्रवेश निषेध",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592626/mugu-congress-decision-general-secretary-ghimire-banned-from-entering-the-district",
       "published_at": "2026-09-16T19:17:41+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "नेपाल–चीन सीमा वार्तामा नाम्खा–पुलानबिच भगिनी सम्बन्धको पहल",
@@ -38,54 +52,12 @@
       "url": "https://www.ratopati.com/story/592621/initiative-for-sisterly-relations-between-namkha-and-pulan-in-nepal-china-border-talks",
       "published_at": "2026-09-16T18:28:32+05:45",
       "flash": false
-    },
-    {
-      "title": "बाढीप्रभावित क्षेत्रमा स्वास्थ्य टोली",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592605/health-team-in-flood-affected-areas",
-      "published_at": "2026-09-16T17:34:34+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी : १४ शव पहिचान, ८१ जनाको डीएनए सङ्कलन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592604/bhotekoshi-flood-14-bodies-identified-dna-collected-from-81-people",
-      "published_at": "2026-09-16T17:31:27+05:45",
-      "flash": false
-    },
-    {
-      "title": "मधेस सरकारलाई दिएको समर्थन फिर्ता लिने एमालेको चेतावनी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592593/uml-warns-of-withdrawing-support-to-madhesh-government",
-      "published_at": "2026-09-16T17:08:38+05:45",
-      "flash": false
-    },
-    {
-      "title": "भिरबाट ट्याक्टर खस्दा दुई जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592587/two-killed-as-tractor-falls-off-cliff",
-      "published_at": "2026-09-16T16:37:54+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी पीडितलाई एबी ग्रुपको साढे ५ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592583/ab-group-provides-rs-55-lakh-assistance-to-flood-victims",
-      "published_at": "2026-09-16T16:28:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "बेपत्ताका परिवार डीएनए परीक्षण रिपोर्टको पर्खाइमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592544/family-of-missing-person-awaits-dna-test-report",
-      "published_at": "2026-09-16T15:05:23+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     },
@@ -98,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 11
+      "flash": 0,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -108,8 +80,8 @@
       "recent": 0
     },
     "The Rising Nepal": {
-      "ok": true,
-      "candidates": 10,
+      "ok": false,
+      "error": "HTTPSConnectionPool(host='risingnepaldaily.com', port=443): Read timed out. (read timeout=12)",
       "flash": 0,
       "recent": 0
     }

@@ -1,70 +1,84 @@
 {
-  "generated_at": "2026-09-16T15:37:29.721995+05:45",
-  "updated_at_npt": "16 Sep 15:37 NPT",
+  "generated_at": "2026-09-16T20:16:45.155021+05:45",
+  "updated_at_npt": "16 Sep 20:16 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "भोटेकोशी बाढी प्रभावित क्षेत्रका होल्डिङ सेन्टरको स्थलगत अनुगमन गर्ने संसदीय समितिको निर्णय",
+      "title": "बाढीबाट प्रभावित जलविद्युत आयोजनाका लागि विशेष प्याकेज घोषणा गर्न माग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592557/parliamentary-committee-decides-to-conduct-on-site-monitoring-of-holding-centers-in-bhotekoshi-flood-affected-areas",
-      "published_at": "2026-09-16T15:35:02+05:45",
+      "url": "https://www.ratopati.com/story/592633/demand-to-announce-special-package-for-flood-affected-hydropower-projects",
+      "published_at": "2026-09-16T20:03:22+05:45",
       "flash": true
+    },
+    {
+      "title": "कुकुरलाई सेती नदीमा फाल्ने महिला खोज्दै प्रहरी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592630/police-searching-for-woman-who-threw-dog-into-seti-river",
+      "published_at": "2026-09-16T19:44:53+05:45",
+      "flash": true
+    },
+    {
+      "title": "मुख्यमन्त्री तथा मन्त्रिपरिषद्कै कार्यालयको कार्यसम्पादन नाजुक",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592629/the-performance-of-the-chief-ministers-and-council-of-ministers-offices-in-karnali-is-poor-the-chief-minister-and-chief-secretary-themselves-are-dissatisfied",
+      "published_at": "2026-09-16T19:40:28+05:45",
+      "flash": true
+    },
+    {
+      "title": "मुगु कांग्रेसको निर्णय : महामन्त्री घिमिरेलाई जिल्ला प्रवेश निषेध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592626/mugu-congress-decision-general-secretary-ghimire-banned-from-entering-the-district",
+      "published_at": "2026-09-16T19:17:41+05:45",
+      "flash": true
+    },
+    {
+      "title": "नेपाल–चीन सीमा वार्तामा नाम्खा–पुलानबिच भगिनी सम्बन्धको पहल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592621/initiative-for-sisterly-relations-between-namkha-and-pulan-in-nepal-china-border-talks",
+      "published_at": "2026-09-16T18:28:32+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढीप्रभावित क्षेत्रमा स्वास्थ्य टोली",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592605/health-team-in-flood-affected-areas",
+      "published_at": "2026-09-16T17:34:34+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी : १४ शव पहिचान, ८१ जनाको डीएनए सङ्कलन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592604/bhotekoshi-flood-14-bodies-identified-dna-collected-from-81-people",
+      "published_at": "2026-09-16T17:31:27+05:45",
+      "flash": false
+    },
+    {
+      "title": "मधेस सरकारलाई दिएको समर्थन फिर्ता लिने एमालेको चेतावनी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592593/uml-warns-of-withdrawing-support-to-madhesh-government",
+      "published_at": "2026-09-16T17:08:38+05:45",
+      "flash": false
+    },
+    {
+      "title": "भिरबाट ट्याक्टर खस्दा दुई जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592587/two-killed-as-tractor-falls-off-cliff",
+      "published_at": "2026-09-16T16:37:54+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढी पीडितलाई एबी ग्रुपको साढे ५ लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592583/ab-group-provides-rs-55-lakh-assistance-to-flood-victims",
+      "published_at": "2026-09-16T16:28:00+05:45",
+      "flash": false
     },
     {
       "title": "बेपत्ताका परिवार डीएनए परीक्षण रिपोर्टको पर्खाइमा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592544/family-of-missing-person-awaits-dna-test-report",
       "published_at": "2026-09-16T15:05:23+05:45",
-      "flash": true
-    },
-    {
-      "title": "१. यस्ता छन् सर्वदलीय बैठकले गरेका तीन निर्णय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592532/these-are-the-three-decisions-taken-by-the-all-party-meeting",
-      "published_at": "2026-09-16T14:26:09+05:45",
-      "flash": false
-    },
-    {
-      "title": "कपिलवस्तु कांग्रेसमा विवाद चुलियो, असन्तुष्ट पक्षद्वारा विद्रोहको चेतावनी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592498/dispute-flares-up-in-kapilvastu-congress-disgruntled-faction-warns-of-rebellion",
-      "published_at": "2026-09-16T12:57:44+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीबाट अभिभावक गुमाएका १७० बालबालिका कास्कीका बालगृहले राख्ने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592481/kaski-orphanage-to-take-care-of-170-children-who-lost-their-parents-in-the-bhotekoshi-flood",
-      "published_at": "2026-09-16T11:33:42+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीको क्षति मूल्याङ्कन गर्न रसुवामा २५ सदस्यीय समिति गठन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592476/25-member-committee-formed-in-rasuwa-to-assess-flood-damage",
-      "published_at": "2026-09-16T11:23:10+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीले १३ घरमा क्षति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592475/13-houses-affected-by-flood-in-eklekhet",
-      "published_at": "2026-09-16T11:22:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "मस्र्याङ्दी नदीमा पानीको सतह बढ्यो, सतर्कता अपनाउन आग्रह",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592469/water-level-rises-in-marsyangdi-river-urges-caution",
-      "published_at": "2026-09-16T11:02:07+05:45",
-      "flash": false
-    },
-    {
-      "title": "शारदानगर स्वास्थ्यचौकीबाट विशेषज्ञ स्वास्थ्य सेवा दिइने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592455/specialized-health-services-will-be-provided-from-shardanagar-health-post",
-      "published_at": "2026-09-16T09:38:03+05:45",
       "flash": false
     }
   ],
@@ -84,8 +98,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 9
+      "flash": 4,
+      "recent": 11
     },
     "Kathmandu Post": {
       "ok": true,
@@ -95,7 +109,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     }

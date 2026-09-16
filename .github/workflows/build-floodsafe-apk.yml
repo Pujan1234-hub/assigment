@@ -30,6 +30,7 @@ jobs:
       - name: Apply FloodSafe safety patches
         run: |
           python3 floodsafe-android-app/patch_webview_crash.py
+          python3 floodsafe-android-app/patch_launcher_reopen_hard_reset.py
           python3 floodsafe-android-app/patch_auto_alerts.py
           python3 floodsafe-android-app/patch_river_waterlevel.py
           python3 floodsafe-android-app/patch_two_hour_weather.py
@@ -43,6 +44,9 @@ jobs:
           grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 2L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           grep -Fq 'smart_weather_updates_v3' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'Samsung blank-compositor resumes' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/VoiceMainActivity.java
+          grep -Fq 'versionCode 15' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.7.1'" floodsafe-android-app/app/build.gradle
 
       - name: Build debug APK
         run: gradle -p floodsafe-android-app clean assembleDebug --stacktrace
@@ -51,12 +55,12 @@ jobs:
         run: test -s floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-2hr-latest.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.7.1-reopen-fix.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-APK
-          path: FloodSafe-Nepal-2hr-latest.apk
+          path: FloodSafe-Nepal-v0.7.1-reopen-fix.apk
           if-no-files-found: error
           retention-days: 14

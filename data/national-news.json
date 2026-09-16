@@ -1,9 +1,23 @@
 {
-  "generated_at": "2026-09-17T03:16:46.738066+05:45",
-  "updated_at_npt": "17 Sep 03:16 NPT",
+  "generated_at": "2026-09-17T05:32:43.432690+05:45",
+  "updated_at_npt": "17 Sep 05:32 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढीले खोसेको खुसी: सम्पर्कविहीन परिवारमा आएनन् चाडपर्व",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592676/bhotekoshi-flood-robs-happiness-festivals-not-coming-to-families-without-contact",
+      "published_at": "2026-09-17T05:18:45+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढी: जुम्लाका ६३ जना अझै सम्पर्कविहीन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592670/bhotekoshi-flood-63-people-from-jumla-still-missing",
+      "published_at": "2026-09-17T04:42:44+05:45",
+      "flash": true
+    },
     {
       "title": "भोटेकोशी बाढी: पोखरामा शव गृह (पोर्टेवल मर्चरी हाउस) निर्माण",
       "source": "Ratopati",
@@ -16,13 +30,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592665/health-volunteers-provide-financial-assistance-to-flood-victims",
       "published_at": "2026-09-17T00:47:36+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी: आयोगद्वारा बाढीपीडितका लागि ६१ लाखभन्दा बढी सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592662/bhotekoshi-flood-commission-provides-over-rs-61-million-in-assistance-to-flood-victims",
-      "published_at": "2026-09-17T00:18:05+05:45",
       "flash": false
     }
   ],
@@ -42,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 3
+      "flash": 2,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

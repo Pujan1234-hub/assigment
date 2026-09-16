@@ -1,29 +1,92 @@
 {
-  "generated_at": "2026-09-16T06:08:27.006782+05:45",
-  "updated_at_npt": "16 Sep 06:08 NPT",
+  "generated_at": "2026-09-16T10:48:22.072813+05:45",
+  "updated_at_npt": "16 Sep 10:48 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "सर्वोच्च अदालतको मुद्दा फाँटमा आगलागी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592464/fire-breaks-out-in-supreme-court-case-field",
+      "published_at": "2026-09-16T10:39:44+05:45",
+      "flash": true
+    },
+    {
+      "title": "तिलगंगा आँखा प्रतिष्ठानभित्र आर्थिक अपचलन र श्रम शोषणको दाबीसहित संसदीय समितिमा उजुरी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592461/complaint-filed-with-parliamentary-committee-alleging-financial-mismanagement-and-labor-exploitation-within-tilganga-eye-institute",
+      "published_at": "2026-09-16T10:29:59+05:45",
+      "flash": true
+    },
+    {
+      "title": "लस एन्जलसमा समाचार सङ्कलनमा रहेको हेलिकप्टर दुर्घटना, तीन जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592459/three-dead-in-news-helicopter-crash-in-los-angeles",
+      "published_at": "2026-09-16T10:16:27+05:45",
+      "flash": true
+    },
+    {
+      "title": "शारदानगर स्वास्थ्यचौकीबाट विशेषज्ञ स्वास्थ्य सेवा दिइने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592455/specialized-health-services-will-be-provided-from-shardanagar-health-post",
+      "published_at": "2026-09-16T09:38:03+05:45",
+      "flash": false
+    },
+    {
+      "title": "सिधनियाघाटको राप्ती नदीमा निर्माणाधीन पुलप्रति स्थानीय असन्तुष्ट",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592453/locals-unhappy-with-under-construction-bridge-over-rapti-river-in-sidhaniyaghat",
+      "published_at": "2026-09-16T09:33:41+05:45",
+      "flash": false
+    },
+    {
+      "title": "अस्ट्रेलिया पठाउन लागिएको एक हजार प्याकेट अवैध चुरोट विमानस्थलबाट बरामद",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592442/1000-packets-of-illegal-cigarettes-destined-for-australia-seized-at-airport",
+      "published_at": "2026-09-16T08:56:32+05:45",
+      "flash": false
+    },
+    {
+      "title": "सेनाको जागिर छाडेर गाउँमा तरकारी खेती, लालबहादुरको प्रेरणाले २५ परिवार बने आत्मनिर्भर",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592439/leaving-the-army-to-farm-vegetables-in-the-village-25-families-became-self-reliant-thanks-to-lal-bahadurs-inspiration",
+      "published_at": "2026-09-16T08:49:15+05:45",
+      "flash": false
+    },
+    {
+      "title": "प्राकृतिक प्रकोपबाट प्रभावित तनहुँका किसानलाई राहत",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592436/relief-for-farmers-in-tanahun-affected-by-natural-disasters",
+      "published_at": "2026-09-16T08:22:06+05:45",
+      "flash": false
+    },
+    {
+      "title": "मोटरसाइकल आपसमा ठोक्किँदा दुईको मृत्यु, दुई जना गम्भीर घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592432/two-killed-two-seriously-injured-in-motorcycle-collision",
+      "published_at": "2026-09-16T07:52:12+05:45",
+      "flash": false
+    },
+    {
+      "title": "लाखौँ ठगीका आरोपित रामेश्वर महोत्तरी प्रहरी कार्यालयबाटै फरार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592418/rameshwor-accused-of-defrauding-millions-of-rupees-absconds-from-mahottari-police-office",
+      "published_at": "2026-09-16T06:36:41+05:45",
+      "flash": false
+    },
+    {
+      "title": "मुगु केन्द्रबिन्दु भएर लगातार दुई पटक भूकम्प",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592416/two-consecutive-earthquakes-with-mugu-as-their-epicenter",
+      "published_at": "2026-09-16T06:16:58+05:45",
+      "flash": false
+    },
     {
       "title": "‘बाढीले वंश मात्रै खोसेन, बुढेसकालको सहारा पनि लग्यो’",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592413/the-flood-not-only-took-away-the-lineage-it-also-took-away-the-support-of-old-age",
       "published_at": "2026-09-16T06:06:55+05:45",
-      "flash": true
-    },
-    {
-      "title": "मनसुनी वायुको प्रभाव : आज कुन-कुन प्रदेशमा भारी वर्षा हुनसक्छ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592412/impact-of-monsoon-winds-which-regions-are-likely-to-experience-heavy-rain-today",
-      "published_at": "2026-09-16T05:59:25+05:45",
-      "flash": true
-    },
-    {
-      "title": "संसद्का दुवै सदनको बैठक आज बस्दै, यस्तो छ सम्भावित कार्यसूची",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592409/both-houses-of-parliament-to-meet-today-here-is-the-possible-agenda",
-      "published_at": "2026-09-16T05:46:43+05:45",
-      "flash": true
+      "flash": false
     }
   ],
   "sources": {
@@ -43,7 +106,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 3,
-      "recent": 3
+      "recent": 12
     },
     "Kathmandu Post": {
       "ok": true,

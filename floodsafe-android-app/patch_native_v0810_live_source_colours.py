@@ -10,26 +10,16 @@ activity = activity_path.read_text(encoding='utf-8')
 helper = map_path.read_text(encoding='utf-8')
 gradle = gradle_path.read_text(encoding='utf-8')
 
-# v0.8.10: BIPAD realtime page is backed by latest/trimmed station-watch datasets.
-activity = activity.replace(
-    'JSONObject official=getJson(BIPAD+"river/?limit=1000&_nativefull="+now);',
-    'JSONObject official=getJson(BIPAD+"river-trimed/?limit=1000&_nativefull="+now);', 1)
+activity = activity.replace('JSONObject official=getJson(BIPAD+"river/?limit=1000&_nativefull="+now);','JSONObject official=getJson(BIPAD+"river-trimed/?limit=1000&_nativefull="+now);',1)
 activity = activity.replace(
     'if(out.isEmpty()){\n                    JSONObject root=getJson(RIVER_ENDPOINT+"?_nativefull="+now); JSONArray rr=rows(root);',
-    'if(out.isEmpty()){\n                    try{JSONObject raw=getJson(BIPAD+"river/?limit=1000&_nativefull="+now);JSONArray rawRows=rows(raw);for(int i=0;i<rawRows.length();i++){RiverStation s=parseStation(rawRows.optJSONObject(i),now);if(s!=null)out.add(s);}}catch(Exception ignored){}\n                }\n                if(out.isEmpty()){\n                    JSONObject root=getJson(RIVER_ENDPOINT+"?_nativefull="+now); JSONArray rr=rows(root);', 1)
-
-old_rain = 'try{rr=rows(getJson(BIPAD+"rain/?limit=1000&_nativefull="+now));}catch(Exception ignored){}\n                if(rr.length()==0){try{rr=rows(getJson(BIPAD+"rain-trimed/?limit=1000&_nativefull="+now));}catch(Exception ignored){}}'
-new_rain = 'try{rr=rows(getJson(BIPAD+"rain-trimed/?limit=1000&_nativefull="+now));}catch(Exception ignored){}\n                if(rr.length()==0){try{rr=rows(getJson(BIPAD+"rain/?limit=1000&_nativefull="+now));}catch(Exception ignored){}}'
+    'if(out.isEmpty()){\n                    try{JSONObject raw=getJson(BIPAD+"river/?limit=1000&_nativefull="+now);JSONArray rawRows=rows(raw);for(int i=0;i<rawRows.length();i++){RiverStation s=parseStation(rawRows.optJSONObject(i),now);if(s!=null)out.add(s);}}catch(Exception ignored){}\n                }\n                if(out.isEmpty()){\n                    JSONObject root=getJson(RIVER_ENDPOINT+"?_nativefull="+now); JSONArray rr=rows(root);',1)
+old_rain='try{rr=rows(getJson(BIPAD+"rain/?limit=1000&_nativefull="+now));}catch(Exception ignored){}\n                if(rr.length()==0){try{rr=rows(getJson(BIPAD+"rain-trimed/?limit=1000&_nativefull="+now));}catch(Exception ignored){}}'
+new_rain='try{rr=rows(getJson(BIPAD+"rain-trimed/?limit=1000&_nativefull="+now));}catch(Exception ignored){}\n                if(rr.length()==0){try{rr=rows(getJson(BIPAD+"rain/?limit=1000&_nativefull="+now));}catch(Exception ignored){}}'
 if old_rain not in activity: raise SystemExit('v0.8.9 rain feed anchor missing')
-activity = activity.replace(old_rain, new_rain, 1)
-
-activity = activity.replace(
-    '"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime","time"',
-    '"waterLevelOn","water_level_on","riverLevelOn","river_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","dateTime","date_time","timestamp","_measurementTime","time"', 1)
-activity = activity.replace(
-    '"measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","createdOn","updatedOn","time"',
-    '"rainfallOn","rainfall_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","dateTime","date_time","timestamp","createdOn","updatedOn","date","time"', 1)
-
+activity=activity.replace(old_rain,new_rain,1)
+activity=activity.replace('"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime","time"','"waterLevelOn","water_level_on","riverLevelOn","river_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","dateTime","date_time","timestamp","_measurementTime","time"',1)
+activity=activity.replace('"measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","createdOn","updatedOn","time"','"rainfallOn","rainfall_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","dateTime","date_time","timestamp","createdOn","updatedOn","date","time"',1)
 old_return='return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank);'
 if old_return not in activity: raise SystemExit('RiverStation constructor call anchor missing')
 activity=activity.replace(old_return,'return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank,raw);',1)
@@ -38,10 +28,7 @@ new_cls='private static final class RiverStation{final String name,district,stag
 if old_cls not in activity: raise SystemExit('RiverStation class anchor missing')
 activity=activity.replace(old_cls,new_cls,1)
 
-# Unknown/stale river geometry is neutral grey. Fresh direct gauges add coloured overlays.
 helper=helper.replace('lineColor("#22e7ff"), lineWidth(2.45f), lineOpacity(1.0f)','lineColor("#7f939c"), lineWidth(2.45f), lineOpacity(0.92f)',1)
-
-# Make moving flow visible regardless of the exact radius used by earlier patches.
 flow_pat=r'ensurePointSource\("fs-flow-particles",\s*"fs-flow-particles-layer",\s*"#[0-9A-Fa-f]{6}",\s*[0-9.]+f,\s*[0-9.]+f\);'
 helper,n=re.subn(flow_pat,'ensurePointSource("fs-flow-particles", "fs-flow-particles-layer", "#f4feff", 4.0f, 1.0f);',helper,count=1)
 if n!=1: raise SystemExit('flow particle pattern missing')
@@ -62,8 +49,7 @@ method_anchor='    private void ensurePointSource(String sourceId, String layerI
 status_methods=r'''    private void ensureRiverStatusLayer(String sourceId,String layerId,String color) {
         if(style==null||style.getSource(sourceId)!=null)return;
         style.addSource(new GeoJsonSource(sourceId,emptyFeatureCollection()));
-        style.addLayer(new LineLayer(layerId,sourceId).withProperties(
-                lineColor(color),lineWidth(3.55f),lineOpacity(1.0f),lineCap(LINE_CAP_ROUND),lineJoin(LINE_JOIN_ROUND)));
+        style.addLayer(new LineLayer(layerId,sourceId).withProperties(lineColor(color),lineWidth(3.55f),lineOpacity(1.0f),lineCap(LINE_CAP_ROUND),lineJoin(LINE_JOIN_ROUND)));
     }
 
     private void refreshRiverStatusSources() {
@@ -101,13 +87,9 @@ if 'private void ensureRiverStatusLayer(' not in helper:
     if method_anchor not in helper: raise SystemExit('ensurePointSource anchor missing')
     helper=helper.replace(method_anchor,status_methods+method_anchor,1)
 
-old_refresh='''        setGeo("fs-danger", stationGeo(snapshot, "danger"));
-    }'''
-new_refresh='''        setGeo("fs-danger", stationGeo(snapshot, "danger"));
-        refreshRiverStatusSources();
-    }'''
-if old_refresh not in helper: raise SystemExit('refreshStationSources anchor missing')
-helper=helper.replace(old_refresh,new_refresh,1)
+danger_line='        setGeo("fs-danger", stationGeo(snapshot, "danger"));'
+if danger_line not in helper: raise SystemExit('danger station source line missing')
+helper=helper.replace(danger_line,danger_line+'\n        refreshRiverStatusSources();',1)
 helper=helper.replace('setGeo("fs-river-labels", riverLabelsGeoJson);','setGeo("fs-river-labels", riverLabelsGeoJson); refreshRiverStatusSources();')
 helper=helper.replace('setGeo("fs-river-labels", labels);','setGeo("fs-river-labels", labels); refreshRiverStatusSources();')
 

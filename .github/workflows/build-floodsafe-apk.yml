@@ -46,7 +46,7 @@ jobs:
           grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 2L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           grep -Fq 'smart_weather_updates_v3' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
-          grep -Fq 'Samsung blank-compositor resumes' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/VoiceMainActivity.java
+          grep -Fq 'Samsung blank-compositor recovery' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/VoiceMainActivity.java
           grep -Fq 'firstPageCommitted' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           grep -Fq 'vendor WebViews preserve the last internal page' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/VoiceMainActivity.java
           grep -Fq 'currentUrl.endsWith("/privacy.html")' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java

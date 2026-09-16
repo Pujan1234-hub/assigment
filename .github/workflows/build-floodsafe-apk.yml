@@ -36,6 +36,7 @@ jobs:
           python3 floodsafe-android-app/patch_two_hour_weather.py
           python3 floodsafe-android-app/patch_cold_start_blank.py
           python3 floodsafe-android-app/patch_cross_device_navigation.py
+          python3 floodsafe-android-app/patch_native_compat_fallback.py
 
       - name: Verify locked safety requirements
         shell: bash
@@ -50,9 +51,13 @@ jobs:
           grep -Fq 'firstPageCommitted' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           grep -Fq 'vendor WebViews preserve the last internal page' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/VoiceMainActivity.java
           grep -Fq 'currentUrl.endsWith("/privacy.html")' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          grep -Fq 'launchNativeCompatibilityFallback()' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          grep -Fq 'new Intent(this, NativeHomeActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          grep -Fq 'new Intent(this, NativeHomeActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
+          grep -Fq 'Fully native FloodSafe Nepal dashboard' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeHomeActivity.java
           if grep -Fq 'settings.setOffscreenPreRaster(true);' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java; then echo 'offscreen preraster must stay disabled'; exit 1; fi
-          grep -Fq 'versionCode 17' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.7.3'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 18' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.7.4'" floodsafe-android-app/app/build.gradle
 
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
@@ -79,12 +84,12 @@ jobs:
           unzip -p "$APK" assets/floodsafe-nepal/v25/river-line-style-v1.js | grep -Fq 'setInterval(()=>{if(mapBusy())return;animate()},850)'
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.7.3-cross-device-fix.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.7.4-auto-native-fallback.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-APK
-          path: FloodSafe-Nepal-v0.7.3-cross-device-fix.apk
+          path: FloodSafe-Nepal-v0.7.4-auto-native-fallback.apk
           if-no-files-found: error
           retention-days: 14

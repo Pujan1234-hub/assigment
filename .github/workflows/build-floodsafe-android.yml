@@ -54,11 +54,14 @@ jobs:
           grep -Fq "const level=o=>num(val(o,['_lastWaterLevel','waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level']));" floodsafe-nepal/v25/trusted-river-runtime-v3.js
           test -s floodsafe-android-app/patch_pjbuilts_intro.py
           test -s floodsafe-android-app/patch_low_end_sathi.py
+          test -s floodsafe-android-app/patch_low_end_map.py
           echo 'FloodSafe v0.7.0 source safety gate PASS'
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
       - name: Optimize SATHI for low-end Android
         run: python3 floodsafe-android-app/patch_low_end_sathi.py
+      - name: Optimize map for low-end Android
+        run: python3 floodsafe-android-app/patch_low_end_map.py
       - name: Apply smooth PJBUILTS launch intro
         run: python3 floodsafe-android-app/patch_pjbuilts_intro.py
       - name: Prepare reliable direct startup
@@ -92,6 +95,8 @@ jobs:
           grep -Fq 'id="pjbuiltsIntro"' "$INDEX"
           grep -Fq '__FS_LOW_END_SATHI_V1__' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/sathi-flood-ai/live.js
           grep -Fq 'window.__fsSathiTyping' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/trusted-river-runtime-v3.js
+          grep -Fq 'setInterval(()=>{if(mapBusy())return;animate()},850)' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/river-line-style-v1.js
+          grep -Fq 'setInterval(()=>{const m=window.FloodSafeMap?.map;' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/permanent-281-map-v1.js
           if grep -Fq 'android-fast-start-v1.js' "$INDEX"; then echo 'serial fast-start loader must not be active'; exit 1; fi
           if grep -Fq 'id="alertBtn"' "$INDEX"; then exit 1; fi
       - name: Unit tests and APK build
@@ -120,8 +125,69 @@ jobs:
           unzip -p "$APK" assets/floodsafe-nepal/v25/sathi-app-aware-v1.js | grep -Fq '__SATHI_APP_AWARE_V1__'
           unzip -p "$APK" assets/floodsafe-nepal/v25/sathi-flood-ai/live.js | grep -Fq '__FS_LOW_END_SATHI_V1__'
           unzip -p "$APK" assets/floodsafe-nepal/v25/trusted-river-runtime-v3.js | grep -Fq 'window.__fsSathiTyping'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/river-line-style-v1.js | grep -Fq 'setInterval(()=>{if(mapBusy())return;animate()},850)'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/permanent-281-map-v1.js | grep -Fq 'setInterval(()=>{const m=window.FloodSafeMap?.map;'
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
           echo 'FloodSafe v0.7.0 APK verification PASS'
+      - name: Android cold + warm reopen smoke test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            PKG='io.github.pujan1234hub.floodsafe.app'
+            APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+            adb install -r "$APK"
+            adb shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS || true
+            adb shell pm grant "$PKG" android.permission.ACCESS_COARSE_LOCATION || true
+            adb shell pm grant "$PKG" android.permission.ACCESS_FINE_LOCATION || true
+            adb shell pm grant "$PKG" android.permission.ACCESS_BACKGROUND_LOCATION || true
+            adb shell input keyevent 82 || true
+            adb logcat -c
+            check_ui() {
+              local tag="$1"
+              for i in $(seq 1 18); do
+                adb shell uiautomator dump /sdcard/floodsafe.xml >/dev/null 2>&1 || true
+                adb pull /sdcard/floodsafe.xml "/tmp/floodsafe-${tag}.xml" >/dev/null 2>&1 || true
+                if grep -Eq 'FloodSafe Nepal|प्रत्यक्ष नदी नक्सा|मेरो हालको स्थान' "/tmp/floodsafe-${tag}.xml" 2>/dev/null; then
+                  adb shell dumpsys activity activities | grep -q 'VoiceMainActivity'
+                  return 0
+                fi
+                sleep 1
+              done
+              echo "UI did not become interactive after ${tag}"
+              adb shell dumpsys activity activities | tail -n 120 || true
+              return 1
+            }
+            # Genuine cold launch.
+            adb shell am force-stop "$PKG"
+            adb shell am start -W -n "$PKG/.PJBuiltsSplashActivity"
+            check_ui cold-1
+            # Warm reopen: Home -> launcher again, which reproduces the reported failure mode.
+            adb shell input keyevent KEYCODE_HOME
+            sleep 2
+            adb shell am start -W -n "$PKG/.PJBuiltsSplashActivity"
+            check_ui warm-1
+            adb shell input keyevent KEYCODE_HOME
+            sleep 2
+            adb shell am start -W -n "$PKG/.PJBuiltsSplashActivity"
+            check_ui warm-2
+            # Cold reopen once more after force-stop.
+            adb shell am force-stop "$PKG"
+            sleep 1
+            adb shell am start -W -n "$PKG/.PJBuiltsSplashActivity"
+            check_ui cold-2
+            adb logcat -d -v brief > /tmp/floodsafe-logcat.txt
+            if grep -q "ANR in $PKG" /tmp/floodsafe-logcat.txt; then
+              echo 'FloodSafe ANR detected'; exit 1
+            fi
+            if grep -A8 'FATAL EXCEPTION' /tmp/floodsafe-logcat.txt | grep -q "$PKG"; then
+              echo 'FloodSafe fatal exception detected'; exit 1
+            fi
+            echo 'FloodSafe cold/warm reopen emulator smoke PASS'
       - uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-FieldTest-0.7.0-APK

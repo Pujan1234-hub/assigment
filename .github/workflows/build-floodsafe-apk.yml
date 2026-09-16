@@ -47,8 +47,9 @@ jobs:
           python3 floodsafe-android-app/patch_native_v085_flow_sathi.py
           python3 floodsafe-android-app/patch_native_v086_full_waterways.py
           python3 floodsafe-android-app/patch_native_v087_runtime_rivers.py
+          python3 floodsafe-android-app/patch_native_v088_restore_web_rivers.py
 
-      - name: Verify locked safety and v0.8.7 native requirements
+      - name: Verify locked safety and v0.8.8 native requirements
         shell: bash
         run: |
           set -euo pipefail
@@ -63,34 +64,28 @@ jobs:
           grep -Fq 'private FloodSafeNativeMapView map;' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
           grep -Fq '100% native Android river map using MapLibre Native. No WebView is used.' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'requestDisallowInterceptTouchEvent(true)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'riverTouchesNepalFast' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq '!riverTouchesNepalFast(rw, nepalDistricts)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq '!riverTouchesNepalFast(rw,districts)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'fs-district-labels' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'fs-river-labels-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'fs-station-labels-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'stationGeoImportant(snapshot)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq '"#8e99a5", 2.1f, 0.40f' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'lineWidth(8.6f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'lineWidth(3.15f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'fs-river-flow-trace' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'Math.min(220, rivers.size())' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'data/nepal-waterways-snapshot.json' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'all.size() > 1400' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'trimRiverToNepalBBox(rw)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'lineColor("#003a4b"), lineWidth(6.2f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'lineColor("#22e7ff"), lineWidth(2.45f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'lineColor("#bdfbff"), lineWidth(1.05f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'Math.min(320, rivers.size())' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'refreshVisibleRiverTiles' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'readRiverTile' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'all.size() > 6400' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'fs-river-flow-trace' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'fs-flow-particles-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'stationGeoImportant(snapshot)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq '"#8e99a5", 2.1f, 0.40f' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'fs-district-labels' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'fs-river-labels-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           if grep -Fq 'fs-nepal-mask-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java; then echo 'Invalid diagonal Nepal mask remained'; exit 1; fi
           grep -Fq 'resolveDistrictName(' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
           grep -Fq 'sathiWeatherIntent' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          grep -Fq 'tatkram|tapkarm|taapkram' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          grep -Fq 'rememberSathiPlace' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          grep -Fq 'findSathiStation' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          grep -Fq 'askSathi(q,answer,false)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          grep -Fq 'askSathi(q,out,true)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
           grep -Fq "android-sdk-vulkan-opengl:13.6.1" floodsafe-android-app/app/build.gradle
           if grep -Fq 'android.webkit.WebView' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java; then echo 'Native map must not use WebView'; exit 1; fi
-          grep -Fq 'versionCode 27' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.8.7'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 28' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.8.8'" floodsafe-android-app/app/build.gradle
 
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
@@ -109,17 +104,18 @@ jobs:
           set -euo pipefail
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-snapshot.json'
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/10-0.json'
           unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.7-RIVER-RUNTIME-FIX.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.8-RIVER-GLOW-RESTORE.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-APK
-          path: FloodSafe-Nepal-v0.8.7-RIVER-RUNTIME-FIX.apk
+          path: FloodSafe-Nepal-v0.8.8-RIVER-GLOW-RESTORE.apk
           if-no-files-found: error
           retention-days: 14

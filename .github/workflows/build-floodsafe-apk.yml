@@ -27,7 +27,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Apply FloodSafe safety and startup patches
+      - name: Apply FloodSafe safety and native-app patches
         run: |
           python3 floodsafe-android-app/patch_webview_crash.py
           python3 floodsafe-android-app/patch_launcher_reopen_hard_reset.py
@@ -38,8 +38,9 @@ jobs:
           python3 floodsafe-android-app/patch_cross_device_navigation.py
           python3 floodsafe-android-app/patch_native_compat_fallback.py
           python3 floodsafe-android-app/patch_map_smooth_v075.py
+          python3 floodsafe-android-app/patch_full_native_v080.py
 
-      - name: Verify locked safety requirements
+      - name: Verify locked safety and full-native requirements
         shell: bash
         run: |
           set -euo pipefail
@@ -48,52 +49,44 @@ jobs:
           grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 2L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           grep -Fq 'smart_weather_updates_v3' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
-          grep -Fq 'Samsung blank-compositor recovery' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/VoiceMainActivity.java
-          grep -Fq 'firstPageCommitted' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
-          grep -Fq 'vendor WebViews preserve the last internal page' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/VoiceMainActivity.java
-          grep -Fq 'currentUrl.endsWith("/privacy.html")' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
-          grep -Fq 'launchNativeCompatibilityFallback()' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
-          grep -Fq 'new Intent(this, NativeHomeActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
-          grep -Fq 'new Intent(this, NativeHomeActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
-          grep -Fq 'Fully native FloodSafe Nepal dashboard' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeHomeActivity.java
-          if grep -Fq 'settings.setOffscreenPreRaster(true);' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java; then echo 'offscreen preraster must stay disabled'; exit 1; fi
-          grep -Fq 'versionCode 19' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.7.5'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'android:name=".NativeFullActivity"' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'new Intent(this, NativeFullActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
+          grep -Fq 'new Intent(this, NativeFullActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/SathiWakeService.java
+          grep -Fq 'Full native Android implementation of the FloodSafe Nepal web dashboard. No WebView is used.' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          grep -Fq 'NativeRiverMap' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          grep -Fq 'data/nepal-waterways-tiles/overview.json' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          grep -Fq 'floodsafe-nepal/v24/nepal-districts.geojson' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          if grep -Fq 'android.webkit.WebView' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java; then echo 'NativeFullActivity must not use WebView'; exit 1; fi
+          grep -Fq 'versionCode 20' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.8.0'" floodsafe-android-app/app/build.gradle
 
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
 
-      - name: Optimize SATHI and map interaction load
+      - name: Optimize retained web assets
         run: |
           python3 floodsafe-android-app/patch_low_end_sathi.py
           python3 floodsafe-android-app/patch_low_end_map.py
 
-      - name: Build and unit test debug APK
+      - name: Build and unit test full native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
 
-      - name: Verify APK exists and packaged home
+      - name: Verify APK exists and native class packaged
         shell: bash
         run: |
           set -euo pipefail
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
-          unzip -p "$APK" assets/floodsafe-nepal/v25/index.html > /tmp/floodsafe-index.html
-          grep -Fq 'class="app"' /tmp/floodsafe-index.html
-          grep -Fq 'human-status-v1.js?v=1' /tmp/floodsafe-index.html
-          if grep -Fq 'id="alertBtn"' /tmp/floodsafe-index.html; then echo 'removed alert button returned'; exit 1; fi
-          unzip -p "$APK" assets/floodsafe-nepal/v25/sathi-flood-ai/live.js | grep -Fq '__FS_LOW_END_SATHI_V1__'
-          unzip -p "$APK" assets/floodsafe-nepal/v25/river-line-style-v1.js | grep -Fq 'setInterval(()=>{if(mapBusy())return;animate()},850)'
-          unzip -p "$APK" assets/floodsafe-nepal/v25/map-smooth-v3.js | grep -Fq 'if(window.innerWidth>=760)addLabels()'
-          unzip -p "$APK" assets/floodsafe-nepal/v25/hydro-smooth-v2.js | grep -Fq '__fsHydroVisibility(false)'
-          unzip -p "$APK" assets/floodsafe-nepal/v25/hydro-smooth-v2.js | grep -Fq '__fsHydroVisibility(true)'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.7.5-map-smooth.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.0-FULL-NATIVE.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-APK
-          path: FloodSafe-Nepal-v0.7.5-map-smooth.apk
+          path: FloodSafe-Nepal-v0.8.0-FULL-NATIVE.apk
           if-no-files-found: error
           retention-days: 14

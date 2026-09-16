@@ -1,25 +1,29 @@
 from pathlib import Path
 import re
 
-root = Path(__file__).resolve().parent
-src = root / 'app/src/main/java/io/github/pujan1234hub/floodsafe/app'
-activity_path = src / 'NativeFullActivity.java'
-map_path = src / 'FloodSafeNativeMapView.java'
-gradle_path = root / 'app/build.gradle'
-activity = activity_path.read_text(encoding='utf-8')
-helper = map_path.read_text(encoding='utf-8')
-gradle = gradle_path.read_text(encoding='utf-8')
+root=Path(__file__).resolve().parent
+src=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+activity_path=src/'NativeFullActivity.java'
+map_path=src/'FloodSafeNativeMapView.java'
+gradle_path=root/'app/build.gradle'
+activity=activity_path.read_text(encoding='utf-8')
+helper=map_path.read_text(encoding='utf-8')
+gradle=gradle_path.read_text(encoding='utf-8')
 
-activity = activity.replace('JSONObject official=getJson(BIPAD+"river/?limit=1000&_nativefull="+now);','JSONObject official=getJson(BIPAD+"river-trimed/?limit=1000&_nativefull="+now);',1)
-activity = activity.replace(
+# Prefer the BIPAD/DHM current watch datasets; history/Supabase are fallback only.
+activity=activity.replace('JSONObject official=getJson(BIPAD+"river/?limit=1000&_nativefull="+now);','JSONObject official=getJson(BIPAD+"river-trimed/?limit=1000&_nativefull="+now);',1)
+activity=activity.replace(
     'if(out.isEmpty()){\n                    JSONObject root=getJson(RIVER_ENDPOINT+"?_nativefull="+now); JSONArray rr=rows(root);',
     'if(out.isEmpty()){\n                    try{JSONObject raw=getJson(BIPAD+"river/?limit=1000&_nativefull="+now);JSONArray rawRows=rows(raw);for(int i=0;i<rawRows.length();i++){RiverStation s=parseStation(rawRows.optJSONObject(i),now);if(s!=null)out.add(s);}}catch(Exception ignored){}\n                }\n                if(out.isEmpty()){\n                    JSONObject root=getJson(RIVER_ENDPOINT+"?_nativefull="+now); JSONArray rr=rows(root);',1)
 old_rain='try{rr=rows(getJson(BIPAD+"rain/?limit=1000&_nativefull="+now));}catch(Exception ignored){}\n                if(rr.length()==0){try{rr=rows(getJson(BIPAD+"rain-trimed/?limit=1000&_nativefull="+now));}catch(Exception ignored){}}'
 new_rain='try{rr=rows(getJson(BIPAD+"rain-trimed/?limit=1000&_nativefull="+now));}catch(Exception ignored){}\n                if(rr.length()==0){try{rr=rows(getJson(BIPAD+"rain/?limit=1000&_nativefull="+now));}catch(Exception ignored){}}'
 if old_rain not in activity: raise SystemExit('v0.8.9 rain feed anchor missing')
 activity=activity.replace(old_rain,new_rain,1)
+
+# Accept time aliases observed across BIPAD/DHM payload versions.
 activity=activity.replace('"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime","time"','"waterLevelOn","water_level_on","riverLevelOn","river_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","dateTime","date_time","timestamp","_measurementTime","time"',1)
 activity=activity.replace('"measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","createdOn","updatedOn","time"','"rainfallOn","rainfall_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","dateTime","date_time","timestamp","createdOn","updatedOn","date","time"',1)
+
 old_return='return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank);'
 if old_return not in activity: raise SystemExit('RiverStation constructor call anchor missing')
 activity=activity.replace(old_return,'return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank,raw);',1)
@@ -28,19 +32,22 @@ new_cls='private static final class RiverStation{final String name,district,stag
 if old_cls not in activity: raise SystemExit('RiverStation class anchor missing')
 activity=activity.replace(old_cls,new_cls,1)
 
+# Stale/unknown geometry is neutral; fresh same-river gauge paints a status overlay.
 helper=helper.replace('lineColor("#22e7ff"), lineWidth(2.45f), lineOpacity(1.0f)','lineColor("#7f939c"), lineWidth(2.45f), lineOpacity(0.92f)',1)
+
+# Make visual flow unmistakable while keeping it separate from official status truth.
 flow_pat=r'ensurePointSource\("fs-flow-particles",\s*"fs-flow-particles-layer",\s*"#[0-9A-Fa-f]{6}",\s*[0-9.]+f,\s*[0-9.]+f\);'
 helper,n=re.subn(flow_pat,'ensurePointSource("fs-flow-particles", "fs-flow-particles-layer", "#f4feff", 4.0f, 1.0f);',helper,count=1)
 if n!=1: raise SystemExit('flow particle pattern missing')
 helper=helper.replace('float glow=(float)(0.42+0.42*(0.5+0.5*Math.sin(ph*Math.PI*2.0)));flowTrace.setProperties(lineOpacity(glow),lineWidth(0.75f+0.45f*glow));','float glow=(float)(0.48+0.50*(0.5+0.5*Math.sin(ph*Math.PI*2.0)));flowTrace.setProperties(lineOpacity(glow),lineWidth(1.05f+0.80f*glow));',1)
 
+flow_line='            ensurePointSource("fs-flow-particles", "fs-flow-particles-layer", "#f4feff", 4.0f, 1.0f);'
 status_install='''            ensureRiverStatusLayer("fs-river-normal-status","fs-river-normal-status-layer","#2d8cff");
             ensureRiverStatusLayer("fs-river-alert-status","fs-river-alert-status-layer","#ffc928");
             ensureRiverStatusLayer("fs-river-warning-status","fs-river-warning-status-layer","#ff8a1f");
             ensureRiverStatusLayer("fs-river-danger-status","fs-river-danger-status-layer","#f22f4b");
             refreshRiverStatusSources();
 '''
-flow_line='            ensurePointSource("fs-flow-particles", "fs-flow-particles-layer", "#f4feff", 4.0f, 1.0f);'
 if 'fs-river-danger-status-layer' not in helper:
     if flow_line not in helper: raise SystemExit('normalized flow particle anchor missing')
     helper=helper.replace(flow_line,status_install+flow_line,1)
@@ -78,7 +85,7 @@ status_methods=r'''    private void ensureRiverStatusLayer(String sourceId,Strin
 
     private StationDot routeGaugeFor(RiverWay r){
         if(r==null||r.points.isEmpty())return null;
-        double[] p=r.points.get(r.points.size()/2);
+        double[]p=r.points.get(r.points.size()/2);
         return directGaugeFor(r,p[1],p[0]);
     }
 
@@ -93,8 +100,20 @@ helper=helper.replace(danger_line,danger_line+'\n        refreshRiverStatusSourc
 helper=helper.replace('setGeo("fs-river-labels", riverLabelsGeoJson);','setGeo("fs-river-labels", riverLabelsGeoJson); refreshRiverStatusSources();')
 helper=helper.replace('setGeo("fs-river-labels", labels);','setGeo("fs-river-labels", labels); refreshRiverStatusSources();')
 
+# Preserve exact source status in StationDot. Earlier patches changed its declaration shape,
+# so add rawStatus by inspecting the actual generated class instead of relying on one literal.
 helper=helper.replace('s.stage = getString(c, o, "stage", "normal").toLowerCase(Locale.ROOT);','s.stage = getString(c, o, "stage", "normal").toLowerCase(Locale.ROOT);\n            s.rawStatus = getString(c, o, "rawStatus", s.stage);',1)
-helper=helper.replace('Object original; String name, stage; double lat, lon, level; boolean fresh;','Object original; String name, stage, rawStatus; double lat, lon, level; boolean fresh;',1)
+start=helper.find('private static final class StationDot')
+if start<0: raise SystemExit('StationDot class missing')
+end=helper.find('private static final class',start+20)
+if end<0: end=len(helper)
+block=helper[start:end]
+if 'rawStatus' not in block:
+    m=re.search(r'String\s+([^;]+);',block)
+    if not m: raise SystemExit('StationDot String fields missing')
+    block=block[:m.start()]+'String '+m.group(1).strip()+', rawStatus;'+block[m.end():]
+    helper=helper[:start]+block+helper[end:]
+
 helper=helper.replace('msg.append("\\nStatus: ").append(direct.fresh?direct.stage.toUpperCase(Locale.ROOT):"STALE / UNKNOWN");','msg.append("\\nOfficial status: ").append(direct.fresh&&direct.rawStatus!=null&&!direct.rawStatus.isEmpty()?direct.rawStatus:"STALE / UNKNOWN");\n            msg.append("\\nMap colour: ").append(direct.fresh?direct.stage.toUpperCase(Locale.ROOT):"GREY / STALE");',1)
 
 if "versionName '0.8.10'" not in gradle:
@@ -109,6 +128,6 @@ gradle_path.write_text(gradle,encoding='utf-8')
 a=activity_path.read_text(encoding='utf-8');h=map_path.read_text(encoding='utf-8')
 for marker in ['river-trimed/?limit=1000','rain-trimed/?limit=1000','river/?limit=1000','rain/?limit=1000','rawStatus=rs','rainfallOn','RIVER_FRESH_MS=10L*60L*1000L','RAIN_FRESH_MS=30L*60L*1000L']:
     if marker not in a: raise SystemExit('v0.8.10 activity marker missing: '+marker)
-for marker in ['fs-river-normal-status-layer','fs-river-alert-status-layer','fs-river-warning-status-layer','fs-river-danger-status-layer','refreshRiverStatusSources','routeGaugeFor','lineColor("#7f939c")','"#f4feff", 4.0f, 1.0f']:
+for marker in ['fs-river-normal-status-layer','fs-river-alert-status-layer','fs-river-warning-status-layer','fs-river-danger-status-layer','refreshRiverStatusSources','routeGaugeFor','lineColor("#7f939c")','"#f4feff", 4.0f, 1.0f','rawStatus']:
     if marker not in h: raise SystemExit('v0.8.10 map marker missing: '+marker)
 print('FloodSafe v0.8.10 latest BIPAD/DHM feeds + live river colour overlays PASS')

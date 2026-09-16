@@ -53,6 +53,7 @@ jobs:
           test -s floodsafe-android-app/patch_pjbuilts_intro.py
           test -s floodsafe-android-app/patch_low_end_sathi.py
           test -s floodsafe-android-app/patch_low_end_map.py
+          test -s floodsafe-android-app/ci_reopen_smoke.sh
           test -s floodsafe-android-app/app/src/androidTest/java/io/github/pujan1234hub/floodsafe/app/ReopenSmokeTest.java
           echo 'FloodSafe source safety gate PASS'
 
@@ -123,49 +124,14 @@ jobs:
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
           echo 'FloodSafe APK package verification PASS'
 
-      - name: Android real-launcher reopen + SATHI smoke test
+      - name: Android real-launcher reopen + WebView smoke test
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
           arch: x86_64
           profile: pixel_2
           disable-animations: true
-          script: |
-            set -u
-            PKG='io.github.pujan1234hub.floodsafe.app'
-            TEST_PKG='io.github.pujan1234hub.floodsafe.app.test'
-            APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
-            TEST_APK='floodsafe-android-app/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk'
-            gradle -p floodsafe-android-app :app:assembleDebugAndroidTest -x bundleFloodSafe --no-daemon
-            test -s "$APK" || exit 1
-            test -s "$TEST_APK" || exit 1
-            adb install -r "$APK" || exit 1
-            adb install -r "$TEST_APK" || exit 1
-            adb shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS || true
-            adb shell pm grant "$PKG" android.permission.ACCESS_COARSE_LOCATION || true
-            adb shell pm grant "$PKG" android.permission.ACCESS_FINE_LOCATION || true
-            adb shell pm grant "$PKG" android.permission.ACCESS_BACKGROUND_LOCATION || true
-            adb logcat -c
-            set +e
-            adb shell am instrument -w \
-              -e class io.github.pujan1234hub.floodsafe.app.ReopenSmokeTest \
-              "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner" | tee /tmp/reopen-test.txt
-            INSTRUMENT_STATUS=${PIPESTATUS[0]}
-            set -e
-            adb logcat -d -v brief > /tmp/floodsafe-logcat.txt || true
-            if [ "$INSTRUMENT_STATUS" -ne 0 ]; then
-              echo "Instrumentation command failed: $INSTRUMENT_STATUS"; exit 1
-            fi
-            if ! grep -Eq 'OK \(1 test\)' /tmp/reopen-test.txt; then
-              echo 'Reopen regression test did not pass'; cat /tmp/reopen-test.txt; exit 1
-            fi
-            if grep -q "ANR in $PKG" /tmp/floodsafe-logcat.txt; then
-              echo 'FloodSafe ANR detected'; exit 1
-            fi
-            if grep -A10 'FATAL EXCEPTION' /tmp/floodsafe-logcat.txt | grep -q "$PKG"; then
-              echo 'FloodSafe fatal exception detected'; exit 1
-            fi
-            echo 'FloodSafe real-launcher cold/warm reopen + SATHI smoke PASS'
+          script: bash floodsafe-android-app/ci_reopen_smoke.sh
 
       - name: Upload reopen diagnostics on failure
         if: failure()

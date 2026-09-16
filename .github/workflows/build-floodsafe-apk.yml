@@ -42,8 +42,9 @@ jobs:
           python3 floodsafe-android-app/patch_native_v081_polish.py
           python3 floodsafe-android-app/patch_native_v081_escape_fix.py
           python3 floodsafe-android-app/patch_native_maplibre_v082.py
+          python3 floodsafe-android-app/patch_native_map_detail_v083.py
 
-      - name: Verify locked safety and full-native requirements
+      - name: Verify locked safety and v0.8.3 native requirements
         shell: bash
         run: |
           set -euo pipefail
@@ -55,18 +56,19 @@ jobs:
           grep -Fq 'android:name=".NativeFullActivity"' floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -Fq 'new Intent(this, NativeFullActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
           grep -Fq 'new Intent(this, NativeFullActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/SathiWakeService.java
-          grep -Fq 'Full native Android implementation of the FloodSafe Nepal web dashboard. No WebView is used.' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
           grep -Fq 'private FloodSafeNativeMapView map;' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          grep -Fq 'new FloodSafeNativeMapView(this' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
           grep -Fq '100% native Android river map using MapLibre Native. No WebView is used.' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'requestDisallowInterceptTouchEvent(true)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'data/nepal-waterways-snapshot.json' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'floodsafe-nepal/v24/nepal-districts.geojson' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'fs-nepal-mask-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'fs-district-labels' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'fs-station-labels-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'makeNepalOutsideMask' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'EditText input=new EditText(this)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          grep -Fq 'send.setOnClickListener' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
           grep -Fq "android-sdk-vulkan-opengl:13.6.1" floodsafe-android-app/app/build.gradle
           if grep -Fq 'android.webkit.WebView' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java; then echo 'Native map must not use WebView'; exit 1; fi
-          grep -Fq 'versionCode 22' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.8.2'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 23' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.8.3'" floodsafe-android-app/app/build.gradle
 
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
@@ -79,7 +81,7 @@ jobs:
       - name: Build and unit test full native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
 
-      - name: Verify APK exists and native class packaged
+      - name: Verify APK exists and native assets packaged
         shell: bash
         run: |
           set -euo pipefail
@@ -89,12 +91,12 @@ jobs:
           unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.2-NATIVE-WEB-MAP.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.3-DETAILED-NATIVE-MAP.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-APK
-          path: FloodSafe-Nepal-v0.8.2-NATIVE-WEB-MAP.apk
+          path: FloodSafe-Nepal-v0.8.3-DETAILED-NATIVE-MAP.apk
           if-no-files-found: error
           retention-days: 14

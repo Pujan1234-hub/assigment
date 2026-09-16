@@ -40,7 +40,11 @@ jobs:
           grep -Fq 'human-status-v1.js?v=1' floodsafe-nepal/v25/index.html
           if grep -Fq 'id="alertBtn"' floodsafe-nepal/v25/index.html; then echo 'alert button must not exist'; exit 1; fi
           test -s floodsafe-nepal/v25/human-status-v1.js
-          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 4L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'smart_weather_updates_v2' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'last_weather_digest_v2_at' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'if (followDevice && !safetyLocationFresh) return Result.success();' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'floodsafe-local-rain-alert-now' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -Fq 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           grep -Fq 'RenderProcessGoneDetail' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
@@ -49,9 +53,12 @@ jobs:
           grep -Fq 'new Intent(this, VoiceMainActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
           grep -Fq "const level=o=>num(val(o,['_lastWaterLevel','waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level']));" floodsafe-nepal/v25/trusted-river-runtime-v3.js
           test -s floodsafe-android-app/patch_pjbuilts_intro.py
+          test -s floodsafe-android-app/patch_low_end_sathi.py
           echo 'FloodSafe v0.7.0 source safety gate PASS'
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
+      - name: Optimize SATHI for low-end Android
+        run: python3 floodsafe-android-app/patch_low_end_sathi.py
       - name: Apply smooth PJBUILTS launch intro
         run: python3 floodsafe-android-app/patch_pjbuilts_intro.py
       - name: Prepare reliable direct startup
@@ -83,6 +90,8 @@ jobs:
           grep -Fq 'sathi-flood-ai/advanced-server-v1.js?v=1' "$INDEX"
           grep -Fq 'auto-alert-ui-v1.js?v=1' "$INDEX"
           grep -Fq 'id="pjbuiltsIntro"' "$INDEX"
+          grep -Fq '__FS_LOW_END_SATHI_V1__' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/sathi-flood-ai/live.js
+          grep -Fq 'window.__fsSathiTyping' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/trusted-river-runtime-v3.js
           if grep -Fq 'android-fast-start-v1.js' "$INDEX"; then echo 'serial fast-start loader must not be active'; exit 1; fi
           if grep -Fq 'id="alertBtn"' "$INDEX"; then exit 1; fi
       - name: Unit tests and APK build
@@ -109,6 +118,8 @@ jobs:
           unzip -p "$APK" assets/floodsafe-nepal/v25/trusted-river-runtime-v3.js | grep -Fq "const level=o=>num(val(o,['_lastWaterLevel','waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level']));"
           unzip -p "$APK" assets/floodsafe-nepal/v25/auto-alert-ui-v1.js | grep -Fq '__fsAutoAlertUiV1'
           unzip -p "$APK" assets/floodsafe-nepal/v25/sathi-app-aware-v1.js | grep -Fq '__SATHI_APP_AWARE_V1__'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/sathi-flood-ai/live.js | grep -Fq '__FS_LOW_END_SATHI_V1__'
+          unzip -p "$APK" assets/floodsafe-nepal/v25/trusted-river-runtime-v3.js | grep -Fq 'window.__fsSathiTyping'
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
           echo 'FloodSafe v0.7.0 APK verification PASS'
       - uses: actions/upload-artifact@v4

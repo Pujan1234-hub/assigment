@@ -9,84 +9,90 @@ m=m_path.read_text(encoding='utf-8')
 a=a_path.read_text(encoding='utf-8')
 g=g_path.read_text(encoding='utf-8')
 
-# v0.8.38 field fix from the user's real-phone video/screenshot:
-# 1) National view must cover the WHOLE Nepal OSM overview network. v0.8.29 still
-#    sampled/capped the national network to a balanced <=1200 subset; on a phone that
-#    leaves real rivers/streams missing. v0.8.37 assets are already strictly Nepal-preclipped,
-#    so national rendering can safely publish every overview river/stream in view.
-# 2) The in-map river detail close X must never sit under the native +/- zoom controls.
-# MAP/UI ONLY. Official source parsing and 2 km Warning/Danger notification logic untouched.
+# v0.8.38 real-device fix:
+# - v0.8.35 restores a lightweight renderer after replacing the older renderer, so patch the
+#   renderer that ACTUALLY ships on the phone.
+# - Always retain the complete preclipped Nepal overview as the base network. At local zoom,
+#   ADD detailed visible tiles instead of replacing the overview; this prevents blank/missing
+#   river regions while panning/zooming.
+# - Move the river detail card left of the native +/- control rail and enlarge its X target.
+# Official BIPAD/DHM parsing and 2 km Warning/Danger alert logic are untouched.
 
-old_dense=r'''                }else{
-                    // Dense but balanced Nepal-wide context. Never invent geometry: every line
-                    // still comes from the bundled OSM river/stream source.
-                    int[] cellCount=new int[96];
-                    for(RiverWay src:overviewRivers){
-                        if(src==null||src.points.size()<2||!riverIntersectsBox(src,fw,fs,fe,fn))continue;
-                        boolean named=src.name!=null&&!src.name.trim().isEmpty()&&!"नदी / खोला".equals(src.name);
-                        boolean mainRiver="river".equalsIgnoreCase(src.type);
-                        if(!mainRiver&&!named)continue;
-                        double[] mid=src.points.get(src.points.size()/2);
-                        int gx=Math.max(0,Math.min(11,(int)Math.floor((mid[0]-80.0)/0.70)));
-                        int gy=Math.max(0,Math.min(7,(int)Math.floor((mid[1]-26.2)/0.55)));
-                        int cell=gy*12+gx;
-                        if(cellCount[cell]>=14)continue;
-                        String k=riverKey(src);if(seen.add(k)){candidates.add(copyRiverStrict(src));cellCount[cell]++;}
-                        if(candidates.size()>=1100)break;
-                    }
-                    // Fill sparse cells with additional real waterways so district edges do not
-                    // look disconnected. This remains presentation geometry, not fake live flow.
-                    if(candidates.size()<900){
-                        for(RiverWay src:overviewRivers){
-                            if(src==null||src.points.size()<2||!riverIntersectsBox(src,fw,fs,fe,fn))continue;
-                            double[] mid=src.points.get(src.points.size()/2);
-                            int gx=Math.max(0,Math.min(11,(int)Math.floor((mid[0]-80.0)/0.70)));
-                            int gy=Math.max(0,Math.min(7,(int)Math.floor((mid[1]-26.2)/0.55)));
-                            int cell=gy*12+gx;
-                            if(cellCount[cell]>=18)continue;
-                            String k=riverKey(src);if(seen.add(k)){candidates.add(copyRiverStrict(src));cellCount[cell]++;}
-                            if(candidates.size()>=1200)break;
+start=m.find('    private void refreshVisibleRiverTiles(){')
+end=m.find('    private void installGeoLayers() {',start)
+if start<0 or end<0:
+    raise SystemExit('v0.8.38 restored renderer anchors missing')
+
+renderer=r'''    private void refreshVisibleRiverTiles(){
+        if(!styleReady||style==null||map==null||overviewRivers.isEmpty())return;
+        CameraPosition cp=map.getCameraPosition();final double zoom=cp.zoom;LatLng center=cp.target;
+        double west=center.getLongitude()-0.7,east=center.getLongitude()+0.7;
+        double south=center.getLatitude()-0.5,north=center.getLatitude()+0.5;
+        try{
+            LatLngBounds vb=map.getProjection().getVisibleRegion().latLngBounds;
+            west=vb.getLonWest();east=vb.getLonEast();south=vb.getLatSouth();north=vb.getLatNorth();
+        }catch(Exception ignored){}
+        if(east<west){double t=west;west=east;east=t;}if(north<south){double t=south;south=north;north=t;}
+        double padLon=Math.max(0.012,(east-west)*0.14),padLat=Math.max(0.012,(north-south)*0.14);
+        final double fw=Math.max(79.95,west-padLon),fe=Math.min(88.35,east+padLon);
+        final double fs=Math.max(26.15,south-padLat),fn=Math.min(30.60,north+padLat);
+        final int minX=Math.max(0,Math.min(11,(int)Math.floor((fw-80.0)/0.7)));
+        final int maxX=Math.max(0,Math.min(11,(int)Math.floor((fe-80.0)/0.7)));
+        final int minY=Math.max(0,Math.min(7,(int)Math.floor((fs-26.2)/0.6)));
+        final int maxY=Math.max(0,Math.min(7,(int)Math.floor((fn-26.2)/0.6)));
+        final String key="FULL:"+minX+":"+maxX+":"+minY+":"+maxY+":"+
+                Math.round(center.getLatitude()*250d)+":"+Math.round(center.getLongitude()*250d)+":"+Math.round(zoom*5d);
+        if(key.equals(lastRiverTileKey))return;lastRiverTileKey=key;
+
+        io.execute(()->{
+            try{
+                List<RiverWay> candidates=new ArrayList<>();java.util.HashSet<String> seen=new java.util.HashSet<>();
+
+                // FULL_NEPAL_OVERVIEW: these overview assets were already intersected with the
+                // Nepal 77-district union by CI. Keep every real OSM river/stream that touches
+                // the visible bounds. No national sampling/count cap and no named-only filter.
+                for(RiverWay r:overviewRivers){
+                    if(r==null||r.points.size()<2||!v835Intersects(r,fw,fs,fe,fn))continue;
+                    if(seen.add(riverKey(r)))candidates.add(r);
+                }
+
+                // FULL_NEPAL_DETAIL_MERGE: at closer zoom, add all visible preclipped tile
+                // geometry instead of replacing the overview. The overview therefore prevents
+                // holes while detailed OSM streams/rivers appear as the user zooms in.
+                if(zoom>=7.8){
+                    for(int x=minX;x<=maxX;x++)for(int y=minY;y<=maxY;y++){
+                        for(RiverWay r:v835ReadRiverTile(x,y)){
+                            if(r==null||r.points.size()<2||!v835Intersects(r,fw,fs,fe,fn))continue;
+                            if(seen.add(riverKey(r)))candidates.add(r);
                         }
                     }
                 }
-'''
-old_legacy=r'''                }else{
-                    // National view is context, not a spaghetti plot: real named rivers only.
-                    for(RiverWay r:overviewRivers){
-                        if(r==null||r.points.size()<2||!"river".equalsIgnoreCase(r.type))continue;
-                        if(r.name==null||r.name.trim().isEmpty()||"नदी / खोला".equals(r.name))continue;
-                        if(!riverIntersectsBox(r,fw,fs,fe,fn))continue;
-                        String k=riverKey(r); if(seen.add(k))candidates.add(copyRiver(r));
-                        if(candidates.size()>=320)break;
-                    }
-                }
-'''
-new_national=r'''                }else{
-                    // FULL_NEPAL_OVERVIEW: build assets are already clipped to Nepal.
-                    // Publish EVERY real OSM river/stream in the visible national bounds.
-                    // No count cap, no named-only filter, no river-only filter.
-                    for(RiverWay src:overviewRivers){
-                        if(src==null||src.points.size()<2||!riverIntersectsBox(src,fw,fs,fe,fn))continue;
-                        String k=riverKey(src);if(seen.add(k))candidates.add(copyRiverStrict(src));
-                    }
-                }
-'''
-if old_dense in m:
-    m=m.replace(old_dense,new_national,1)
-elif old_legacy in m:
-    m=m.replace(old_legacy,new_national,1)
-else:
-    raise SystemExit('v0.8.38 current national selector block missing')
+                if(candidates.isEmpty())return;
 
-# Keep the detail card clear of the right-side + / - controls. The card remains anchored
-# at the bottom, but its right edge stops before the control rail; elevation keeps it crisp.
+                // PRECLIPPED_RENDER_DIRECT: v0.8.37 clips overview + every tile at build time,
+                // so the phone can publish immediately without an expensive polygon pass.
+                final String geo=makeRiversGeoJson(candidates);final List<RiverWay> publish=new ArrayList<>(candidates);
+                main.post(()->{
+                    if(!key.equals(lastRiverTileKey))return;
+                    rivers.clear();rivers.addAll(publish);riversGeoJson=geo;riverLabelsGeoJson=emptyFeatureCollection();
+                    setGeo("fs-rivers",geo);setGeo("fs-river-labels",emptyFeatureCollection());
+                    refreshRiverStatusSources();
+                });
+            }catch(Exception ignored){}
+        });
+    }
+
+'''
+m=m[:start]+renderer+m[end:]
+
+# Keep the detail card clear of the right-side + / - controls.
 old_margin='detailLp.setMargins(dp(12),0,dp(12),dp(12));mapHolder.addView(mapDetailPanel,detailLp);'
-new_margin='detailLp.setMargins(dp(12),0,dp(72),dp(12));mapDetailPanel.setElevation(dp(14));mapHolder.addView(mapDetailPanel,detailLp);'
+new_margin='detailLp.setMargins(dp(12),0,dp(78),dp(12));mapDetailPanel.setElevation(dp(14));mapHolder.addView(mapDetailPanel,detailLp);'
 if old_margin not in a:
     raise SystemExit('v0.8.38 detail panel margin anchor missing')
 a=a.replace(old_margin,new_margin,1)
 
-# Slightly enlarge the X touch target while keeping the visual size compact.
+# Larger X target so it is easy to close on a phone.
 old_x='x.setPadding(dp(10),dp(5),dp(4),dp(5));'
 new_x='x.setPadding(dp(12),dp(8),dp(10),dp(8));x.setMinWidth(dp(42));x.setMinHeight(dp(42));'
 if old_x in a:
@@ -99,22 +105,21 @@ g=g.replace('versionCode 57','versionCode 58',1).replace("versionName '0.8.37'",
 if 'versionCode 58' not in g or "versionName '0.8.38'" not in g:
     raise SystemExit('v0.8.38 version bump failed')
 
-# Hard gates for the two user-reported defects.
 for marker in [
     'FULL_NEPAL_OVERVIEW',
-    'for(RiverWay src:overviewRivers)',
-    'candidates.add(copyRiverStrict(src))',
-    'detailLp.setMargins(dp(12),0,dp(72),dp(12))',
+    'FULL_NEPAL_DETAIL_MERGE',
+    'PRECLIPPED_RENDER_DIRECT',
+    'for(RiverWay r:overviewRivers)',
+    'for(RiverWay r:v835ReadRiverTile(x,y))',
+    'detailLp.setMargins(dp(12),0,dp(78),dp(12))',
     'mapDetailPanel.setElevation(dp(14))',
     'x.setMinWidth(dp(42))',
     'PRECLIPPED_BUILD_ASSET',
     'PRECLIPPED_TILE_ASSET']:
-    hay=m if marker in ['FULL_NEPAL_OVERVIEW','for(RiverWay src:overviewRivers)','candidates.add(copyRiverStrict(src))','PRECLIPPED_BUILD_ASSET','PRECLIPPED_TILE_ASSET'] else a
+    hay=m if marker in ['FULL_NEPAL_OVERVIEW','FULL_NEPAL_DETAIL_MERGE','PRECLIPPED_RENDER_DIRECT','for(RiverWay r:overviewRivers)','for(RiverWay r:v835ReadRiverTile(x,y))','PRECLIPPED_BUILD_ASSET','PRECLIPPED_TILE_ASSET'] else a
     if marker not in hay: raise SystemExit('v0.8.38 marker missing: '+marker)
-for old_marker in ['cellCount=new int[96]','candidates.size()>=1100','candidates.size()>=1200','if(candidates.size()>=320)break;']:
-    if old_marker in m: raise SystemExit('v0.8.38 old national sampling/cap remained: '+old_marker)
 
 m_path.write_text(m,encoding='utf-8')
 a_path.write_text(a,encoding='utf-8')
 g_path.write_text(g,encoding='utf-8')
-print('FloodSafe v0.8.38 FULL Nepal rivers + unobstructed close X PASS')
+print('FloodSafe v0.8.38 COMPLETE Nepal overview + merged detail + clear close X PASS')

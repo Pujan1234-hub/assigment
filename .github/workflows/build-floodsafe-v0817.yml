@@ -61,6 +61,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0815_single_source_truth.py
           python3 floodsafe-android-app/patch_native_v0816_current_only_map.py
           python3 floodsafe-android-app/patch_native_v0817_clean_web_map.py
+          python3 floodsafe-android-app/patch_native_v0817_compile_rain_fix.py
 
       - name: Verify v0.8.17 map and safety gates
         shell: bash
@@ -75,6 +76,8 @@ jobs:
           grep -Fq 'river-stations/?latest=true' "$A"
           grep -Fq 'rain-stations/?latest=true' "$A"
           grep -Fq '_lastRainfall' "$A"
+          grep -Fq 'rainAverage(JSONObject r,int interval)' "$A"
+          grep -Fq 'private void updateMapHintCounts()' "$A"
           grep -Fq '90L*60L*1000L' "$A"
           grep -Fq 'Math.min(420,overviewRivers.size())' "$M"
           grep -Fq 'Math.min(64,candidates.size())' "$M"
@@ -83,7 +86,8 @@ jobs:
           grep -Fq 'main.postDelayed(this,180L)' "$M"
           grep -Fq 'coreOpacity=normal?0.0f' "$M"
           grep -Fq 'fs-river-labels-layer' "$M"
-          grep -Fq 'RainDot { String name,basin' "$M"
+          grep -Fq 'Rain 1h:' "$M"
+          grep -Fq 'Rain 24h:' "$M"
           grep -Fq 'fs-district-labels' "$M"
           if grep -Fq 'routeGaugeForSnapshot(rr,flowStations)' "$M"; then echo 'Heavy station scan returned to animation'; exit 1; fi
           grep -Fq 'versionCode 37' "$G"
@@ -93,23 +97,22 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY'
-          import json, urllib.request, datetime
+          import json, urllib.request
           def get(url):
               req=urllib.request.Request(url,headers={'User-Agent':'FloodSafe-CI/0.8.17','Accept':'application/json'})
               with urllib.request.urlopen(req,timeout=30) as r:return json.load(r)
           for label,url in [
               ('river','https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=2000'),
-              ('rain-latest','https://bipadportal.gov.np/api/v1/rain-stations/?latest=true&limit=2000'),
-              ('rain','https://bipadportal.gov.np/api/v1/rain/?limit=5')]:
-              try:
-                  data=get(url); rows=data.get('results',data if isinstance(data,list) else [])
-                  print(label,'rows',len(rows))
-                  if rows:
-                      row=rows[0]
-                      print(label,'keys',sorted(row.keys())[:80])
-                      print(label,'sample',json.dumps(row,ensure_ascii=False)[:2500])
-              except Exception as e:
-                  print(label,'ERROR',repr(e))
+              ('rain-latest','https://bipadportal.gov.np/api/v1/rain-stations/?latest=true&limit=2000')]:
+              data=get(url); rows=data.get('results',data if isinstance(data,list) else [])
+              print(label,'rows',len(rows))
+              if not rows: raise SystemExit(label+' feed empty')
+              row=rows[0]; print(label,'sample',json.dumps(row,ensure_ascii=False)[:2500])
+              if label=='rain-latest':
+                  av=row.get('averages') or []
+                  ints=sorted(x.get('interval') for x in av if isinstance(x,dict) and 'interval' in x)
+                  print('rain intervals',ints)
+                  if not {1,3,6,12,24}.issubset(set(ints)): raise SystemExit('rain interval data incomplete')
           PY
 
       - name: Bundle verified Android assets

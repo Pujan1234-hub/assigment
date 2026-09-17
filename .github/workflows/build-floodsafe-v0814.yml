@@ -53,6 +53,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0812_trusted_latest_flow.py
           python3 floodsafe-android-app/patch_native_v0813_prep_truth_ui.py
           python3 floodsafe-android-app/patch_native_v0813_nepal_truth_map.py
+          python3 floodsafe-android-app/patch_native_v0814_prep_runtime_counts.py
           python3 floodsafe-android-app/patch_native_v0814_source_exact_smooth.py
 
       - name: Verify v0.8.14 source truth smoothness and safety gates

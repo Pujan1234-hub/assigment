@@ -8,6 +8,7 @@ a=a_path.read_text(encoding='utf-8')
 g=g_path.read_text(encoding='utf-8')
 
 # v0.8.46: source parity must mean BOTH official sources named by the app.
+# Rebuilt after v0.8.45 inline-summary compile fix.
 # BIPAD latest=true remains first-choice for exact status/time. DHM realtime-stream is
 # merged as a second official live source so stations such as Dhobi Khola at Kapan are
 # not shown offline merely because BIPAD's current snapshot omitted them.

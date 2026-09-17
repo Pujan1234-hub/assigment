@@ -8,6 +8,7 @@ on:
       - 'floodsafe-android-app/patch_native_v0848_station_district.py'
       - 'floodsafe-android-app/patch_native_v0848_sathi_advanced.py'
       - 'floodsafe-android-app/patch_native_v0848_risk_colour.py'
+      - 'floodsafe-android-app/patch_native_v0848_compile_fix.py'
   workflow_dispatch:
 
 jobs:
@@ -64,6 +65,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0848_station_district.py
           python3 floodsafe-android-app/patch_native_v0848_sathi_advanced.py
           python3 floodsafe-android-app/patch_native_v0848_risk_colour.py
+          python3 floodsafe-android-app/patch_native_v0848_compile_fix.py
 
       - name: Verify v0.8.48 features and safety
         run: |
@@ -81,6 +83,8 @@ jobs:
           grep -Fq 'v848NearestRain' "$A"
           grep -Fq 'DHM realtime-stream' "$A"
           grep -Fq 'river-stations/?latest=true&limit=2000' "$A"
+          grep -Fq '_floodsafeCatalogOnly' "$A"
+          grep -Fq 'mapDisplayStage' "$A"
           grep -Fq 'V0848_FLOOD_COLOUR_PRIORITY' "$M"
           grep -Fq 'V0847_MOVING_GLOW' "$M"
           grep -Fq 'V0845_SCREEN_SCALE_RIVER_TAP' "$M"

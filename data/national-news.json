@@ -1,49 +1,63 @@
 {
-  "generated_at": "2026-09-17T07:34:33.985316+05:45",
-  "updated_at_npt": "17 Sep 07:34 NPT",
+  "generated_at": "2026-09-17T12:34:23.460813+05:45",
+  "updated_at_npt": "17 Sep 12:34 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "रसुवा बाढीको मुख्य कारण जलवायु परिवर्तन र हिमालको निरन्तर क्षयीकरण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592745/the-main-causes-of-the-rasuwa-floods-are-climate-change-and-continuous-erosion-of-the-mountains",
+      "published_at": "2026-09-17T12:28:55+05:45",
+      "flash": true
+    },
+    {
+      "title": "विश्वको पानी चक्र अनियमित बन्दै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592744/the-worlds-water-cycle-is-becoming-erratic",
+      "published_at": "2026-09-17T12:28:40+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीपीडितका लागि काठमाडौं विश्वविद्यालयद्वारा ८५ लाख रुपैयाँ सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592742/kathmandu-university-provides-rs-85-million-assistance-to-flood-victims",
+      "published_at": "2026-09-17T12:20:11+05:45",
+      "flash": true
+    },
+    {
+      "title": "प्रहरीले बरामद गरेको एक हजार ३१५ किलोग्राम गाँजा नष्ट",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592714/police-destroy-1315-kilograms-of-marijuana-seized",
+      "published_at": "2026-09-17T10:52:49+05:45",
+      "flash": false
+    },
+    {
+      "title": "बागमतीमा बेथिति : एक जनाको दरबन्दी रहेको मन्त्रालयमा २ महिनादेखि ३ सचिव",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592688/situation-in-bagmati-ministry-with-one-vacancy-has-3-secretaries-for-2-months",
+      "published_at": "2026-09-17T08:30:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "नारायणी लिफ्ट–खगेरी सिँचाइ आयोजना : विद्युत् खर्च रु ४२ लाखसम्म",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592691/narayani-lift-khageri-irrigation-project-electricity-cost-up-to-rs-42-million",
+      "published_at": "2026-09-17T07:58:07+05:45",
+      "flash": false
+    },
     {
       "title": "बेनी–जोमसोम सडक : पहिरो प्रभावित क्षेत्रमा स्तरोन्नति तीब्र",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592687/beni-jomsom-road-upgrading-work-in-landslide-affected-areas-in-full-swing",
       "published_at": "2026-09-17T07:20:10+05:45",
-      "flash": true
-    },
-    {
-      "title": "भोटेकोशी बाढी : यातायात महासङ्घअन्तर्गतका १९१ सवारीसाधनमा क्षति, ३४४ व्यक्ति बेपत्ता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592686/bhotekoshi-flood-191-vehicles-under-the-nepal-transport-federation-damaged-344-people-missing",
-      "published_at": "2026-09-17T07:16:20+05:45",
-      "flash": true
-    },
-    {
-      "title": "अन्तर्राष्ट्रिय फौजदारी अदालतमा पूर्वफिलिपिनी राष्ट्रपति दुतेर्ते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592681/former-philippine-president-duterte-indicted-at-international-criminal-court",
-      "published_at": "2026-09-17T06:40:14+05:45",
-      "flash": true
-    },
-    {
-      "title": "जब ब्यानबहादुरको उद्धार भयो ...",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592678/when-byan-bahadur-was-rescued",
-      "published_at": "2026-09-17T05:42:04+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीले खोसेको खुसी: सम्पर्कविहीन परिवारमा आएनन् चाडपर्व",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592676/bhotekoshi-flood-robs-happiness-festivals-not-coming-to-families-without-contact",
-      "published_at": "2026-09-17T05:18:45+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     },
@@ -57,7 +71,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 3,
-      "recent": 5
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,

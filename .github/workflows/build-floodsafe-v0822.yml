@@ -1,4 +1,5 @@
 name: Build FloodSafe v0.8.22 Viewport River Fix
+# field rebuild: remove broken black mask and render exact local river geometry
 on:
   push:
     branches: [ main ]
@@ -27,7 +28,6 @@ jobs:
           import json
           j=json.load(open('data/nepal-waterways-tiles/7-2.json',encoding='utf-8'))
           ways=j.get('waterways') or []
-          # Padded local viewport around the user's Dhobi Khola screenshot.
           west,south,east,north=85.305,27.675,85.355,27.730
           hits=[]
           def intersects(w):
@@ -98,8 +98,8 @@ jobs:
           grep -Fq 'riverIntersectsBox(r,fw,fs,fe,fn)' "$M"
           grep -Fq 'Math.round(cla*200.0)' "$M"
           grep -Fq 'chosen.addAll(candidates);' "$M"
+          grep -Fq 'readRiverTile(x,y,null)' "$M"
           grep -Fq 'lineColor("#18e6ff")' "$M"
-          grep -Fq 'trimRiverToNepal(rr,clipRoot)' "$M"
           grep -Fq 'local?stationGeo(snapshot, "normal"):emptyFeatureCollection()' "$M"
           grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
           grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java

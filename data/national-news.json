@@ -1,56 +1,21 @@
 {
-  "generated_at": "2026-09-18T02:04:19.336972+05:45",
-  "updated_at_npt": "18 Sep 02:04 NPT",
+  "generated_at": "2026-09-18T04:40:28.237569+05:45",
+  "updated_at_npt": "18 Sep 04:40 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढीपछि क्रमशः लयमा फर्कँदै पर्यटन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592904/tourism-gradually-returning-to-normal-after-bhotekoshi-flood",
+      "published_at": "2026-09-18T02:18:09+05:45",
+      "flash": false
+    },
     {
       "title": "दुई किशोरीको उद्धार, दुई पक्राउ",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592903/two-teenage-girls-rescued-two-arrested",
       "published_at": "2026-09-18T01:43:25+05:45",
-      "flash": true
-    },
-    {
-      "title": "सुरक्षाका लागि डुम्रे-बेलभञ्ज्याङ खण्डमा सिसी क्यामेरा जडान",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592894/cctv-cameras-installed-on-dumre-belbhanjyang-section-for-security",
-      "published_at": "2026-09-17T22:09:43+05:45",
-      "flash": false
-    },
-    {
-      "title": "१० बजे १० समाचार : रास्वपाको तीन मोर्चा तीनतिर, प्रधानमन्त्री–गृहमन्त्री सचिवालयको आवरणमा दबाब र धम्की ४ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592886/10-news-at-10",
-      "published_at": "2026-09-17T22:00:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "त्रिवि शिक्षण अस्पतालमा ८ जना घाइतेको उपचार हुँदै ४ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592889/8-injured-are-being-treated-at-tribhuvan-university-teaching-hospital",
-      "published_at": "2026-09-17T21:43:43+05:45",
-      "flash": false
-    },
-    {
-      "title": "अदालतले ‘पिक एन्ड चुज’ गरी फैसला गरेको भन्दै परेको रिटमा दरपिठ सदर ५ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592883/the-supreme-court-upheld-the-writ-petition-filed-alleging-that-the-court-had-made-a-pick-and-choose-decision",
-      "published_at": "2026-09-17T20:57:55+05:45",
-      "flash": false
-    },
-    {
-      "title": "फोहोर जथाभाबी फाल्नेलाई १० लाखसम्म जरिवाना र जेल सजाय हुने नयाँ विधेयक संसद्‌मा ५ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592880/new-bill-in-parliament-to-impose-fines-of-up-to-1-million-and-imprisonment-for-littering",
-      "published_at": "2026-09-17T20:49:12+05:45",
-      "flash": false
-    },
-    {
-      "title": "बागमती प्रदेशमा १३४ दरबन्दी घटाइयो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592878/134-posts-reduced-in-bagmati-province",
-      "published_at": "2026-09-17T20:28:06+05:45",
       "flash": false
     }
   ],
@@ -70,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 7
+      "flash": 0,
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

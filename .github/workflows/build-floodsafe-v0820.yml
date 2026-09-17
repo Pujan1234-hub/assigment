@@ -65,6 +65,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0818_direct_river_clean_flow.py
           python3 floodsafe-android-app/patch_native_v0819_web_live_master.py
           python3 floodsafe-android-app/patch_native_v0820_place_labels_prep.py
+          python3 floodsafe-android-app/patch_native_v0820_nepal_mask_prep.py
           python3 floodsafe-android-app/patch_native_v0820_nepal_only_local_rivers.py
 
       - name: Verify v0.8.20 map and safety gates

@@ -14,31 +14,36 @@ def write(p, text):
     p.write_text(text, encoding='utf-8')
 
 
-# The old river animation re-applied all MapLibre paint/filter properties very frequently.
-# On Android that repeatedly invalidated a very large river network and could make the
-# whole WebView look frozen after resume. Accept both the older 240 ms implementation and
-# the final blue-map 280 ms implementation, then throttle only the generated APK asset.
+# Current v18 already uses a single adaptive setTimeout, pauses during gestures,
+# slows down on low-power devices, and hides expensive glow at national zoom.
+# Keep backwards compatibility with older generated assets if a historical build
+# is rebuilt, but do not rewrite the modern scheduler.
 p, text = read('river-line-style-v1.js')
-old_starts = [
-    "function start(){if(anim)return;anim=setInterval(()=>{if(document.hidden)return;if(apply())animate()},240)}",
-    "function start(){if(anim)return;anim=setInterval(()=>{if(document.hidden)return;if(apply())animate()},280)}",
-]
-new_start = "function mapBusy(){const map=window.FloodSafeMap?.map;try{return document.hidden||window.__fsSathiTyping===true||!!map?.isMoving?.()||!!map?.isZooming?.()||!!map?.isRotating?.()}catch{return document.hidden||window.__fsSathiTyping===true}}\nfunction start(){if(anim)return;anim=setInterval(()=>{if(mapBusy())return;animate()},850)}"
-if new_start not in text:
-    matched = False
-    for old_start in old_starts:
-        if old_start in text:
-            text = text.replace(old_start, new_start, 1)
-            matched = True
-            break
-    if not matched:
-        raise SystemExit('river animation marker missing')
-# Full-network blur is expensive at national zoom. Render it only once the user zooms in.
-old_glow = "id:'hydro-complete-status-glow',type:'line',source,filter:KNOWN,paint:"
-new_glow = "id:'hydro-complete-status-glow',type:'line',source,filter:KNOWN,minzoom:7,paint:"
-text = text.replace(old_glow, new_glow, 1)
-if 'setInterval(()=>{if(mapBusy())return;animate()},850)' not in text:
-    raise SystemExit('river low-end animation throttle failed')
+if '__fsRiverLineStyleV18' in text:
+    required = ['function cadence(map)', 'setTimeout(animateOnce', "map.on('movestart',stopAnimation)", 'GLOW_MIN_ZOOM=9.5']
+    for marker in required:
+        if marker not in text:
+            raise SystemExit('v18 adaptive river performance marker missing: ' + marker)
+else:
+    old_starts = [
+        "function start(){if(anim)return;anim=setInterval(()=>{if(document.hidden)return;if(apply())animate()},240)}",
+        "function start(){if(anim)return;anim=setInterval(()=>{if(document.hidden)return;if(apply())animate()},280)}",
+    ]
+    new_start = "function mapBusy(){const map=window.FloodSafeMap?.map;try{return document.hidden||window.__fsSathiTyping===true||!!map?.isMoving?.()||!!map?.isZooming?.()||!!map?.isRotating?.()}catch{return document.hidden||window.__fsSathiTyping===true}}\nfunction start(){if(anim)return;anim=setInterval(()=>{if(mapBusy())return;animate()},850)}"
+    if new_start not in text:
+        matched = False
+        for old_start in old_starts:
+            if old_start in text:
+                text = text.replace(old_start, new_start, 1)
+                matched = True
+                break
+        if not matched:
+            raise SystemExit('river animation marker missing')
+    old_glow = "id:'hydro-complete-status-glow',type:'line',source,filter:KNOWN,paint:"
+    new_glow = "id:'hydro-complete-status-glow',type:'line',source,filter:KNOWN,minzoom:7,paint:"
+    text = text.replace(old_glow, new_glow, 1)
+    if 'setInterval(()=>{if(mapBusy())return;animate()},850)' not in text:
+        raise SystemExit('river low-end animation throttle failed')
 write(p, text)
 
 # The permanent station layer had a second unconditional full GeoJSON rebuild every 10 s.
@@ -84,4 +89,4 @@ if "__fsHydroVisibility(false)" not in text or "__fsHydroVisibility(true)" not i
     raise SystemExit('hydro gesture visibility patch failed')
 write(p, text)
 
-print('Low-end Android map performance patch PASS: blue-river throttle + gesture mode + mobile labels')
+print('Low-end Android map performance patch PASS: adaptive rivers + gesture mode + mobile labels')

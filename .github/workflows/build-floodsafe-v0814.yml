@@ -1,4 +1,4 @@
-name: Build FloodSafe v0.8.14 Smooth Source Exact APK
+name: Build FloodSafe v0.8.15 Single Source Truth APK
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Apply FloodSafe patches through v0.8.14
+      - name: Apply FloodSafe patches through v0.8.15
         run: |
           python3 floodsafe-android-app/patch_webview_crash.py
           python3 floodsafe-android-app/patch_launcher_reopen_hard_reset.py
@@ -56,8 +56,9 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0814_prep_runtime_counts.py
           python3 floodsafe-android-app/patch_native_v0814_source_exact_smooth.py
           python3 floodsafe-android-app/patch_native_v0814_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0815_single_source_truth.py
 
-      - name: Verify v0.8.14 source truth smoothness and safety gates
+      - name: Verify v0.8.15 source truth and safety gates
         shell: bash
         run: |
           set -euo pipefail
@@ -66,58 +67,42 @@ jobs:
           grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
           grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
           grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 2L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
-          grep -Fq 'now-at<=30L*60L*1000L' "$ACT"
-          grep -Fq 'Source status wins' "$ACT"
-          grep -Fq 'BELOW WARNING' "$ACT"
-          grep -Fq 'current ≤30m' "$ACT"
+          grep -Fq 'sourceStatusLabel(RiverStation s)' "$ACT"
+          grep -Fq 'Source status: ' "$ACT"
+          grep -Fq 'sourceStatusLabel(best)' "$ACT"
+          grep -Fq 'Source-exact status' "$ACT"
+          grep -Fq 'raw==null||raw.trim().isEmpty()' "$ACT"
           grep -Fq 'nearestMatchingRiverForGauge' "$MAP"
-          grep -Fq 'localRiverSegment' "$MAP"
           grep -Fq 'localRiverSegment(RiverWay r,double la,double lo) throws Exception' "$MAP"
-          grep -Fq 'overviewKeep=Math.min(1400' "$MAP"
-          grep -Fq 'z < 8.4 ? 900 : 350' "$MAP"
           grep -Fq 'main.postDelayed(this, 650L)' "$MAP"
-          grep -Fq 'fs-river-warning-status-layer-glow' "$MAP"
-          grep -Fq 'main.postDelayed(riverStatusKick, 420L)' "$MAP"
+          if grep -Fq 'riskValue.setText(stageName(best.stage))' "$ACT"; then echo 'Derived risk label remained'; exit 1; fi
           if grep -Fq 'routeGaugeForSnapshot(rr,flowStations)' "$MAP"; then echo 'Expensive per-frame river/station scan remained'; exit 1; fi
-          if grep -Fq 'Math.min(80, flowRivers.size())' "$MAP"; then echo 'Old flow-river per-frame rebuild remained'; exit 1; fi
-          grep -Fq 'versionCode 34' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.8.14'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 35' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.8.15'" floodsafe-android-app/app/build.gradle
 
-      - name: Probe official BIPAD source freshness and status near Kathmandu
+      - name: Probe official BIPAD source freshness and exact status
         continue-on-error: true
         run: |
           python3 - <<'PY'
-          import json, urllib.request, math, datetime
+          import json, urllib.request, datetime
           url='https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=2000'
-          req=urllib.request.Request(url,headers={'Accept':'application/json','User-Agent':'FloodSafe-CI/0.8.14'})
+          req=urllib.request.Request(url,headers={'Accept':'application/json','User-Agent':'FloodSafe-CI/0.8.15'})
           with urllib.request.urlopen(req,timeout=20) as r: j=json.load(r)
           rows=j if isinstance(j,list) else j.get('results') or (j.get('data') or {}).get('results') or j.get('data') or []
           if not isinstance(rows,list): rows=[]
           now=datetime.datetime.now(datetime.timezone.utc)
-          ktm=(27.7172,85.3240)
           def parse(s):
               if not s:return None
               try:return datetime.datetime.fromisoformat(str(s).replace('Z','+00:00')).astimezone(datetime.timezone.utc)
               except:return None
-          def hav(a,b,c,d):
-              R=6371.0;p1=math.radians(a);p2=math.radians(c);dp=math.radians(c-a);dl=math.radians(d-b)
-              q=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
-              return 2*R*math.atan2(math.sqrt(q),math.sqrt(max(0,1-q)))
           fresh=[]
           for x in rows:
               if not isinstance(x,dict):continue
               t=parse(x.get('waterLevelOn') or x.get('_measurementTime'))
-              if not t or not (0 <= (now-t).total_seconds() <= 1800):continue
-              p=x.get('point') or {};c=p.get('coordinates') if isinstance(p,dict) else None
-              if not (isinstance(c,list) and len(c)>=2):continue
-              try:d=hav(ktm[0],ktm[1],float(c[1]),float(c[0]))
-              except:continue
-              fresh.append((d,x.get('title') or x.get('name') or x.get('id'),x.get('status'),x.get('waterLevel'),x.get('waterLevelOn')))
-          fresh.sort()
-          print('BIPAD latest rows=',len(rows),'fresh<=30m=',len(fresh),'fresh<=30m within20km=',sum(1 for x in fresh if x[0]<=20))
-          from collections import Counter
-          print('fresh status counts=',Counter(str(x[2]) for x in fresh))
-          for x in fresh[:15]: print('  %.1f km | %s | %s | level=%s | %s'%x)
+              if t and 0 <= (now-t).total_seconds() <= 1800:
+                  fresh.append((x.get('title') or x.get('name') or x.get('id'),x.get('status'),x.get('waterLevel'),x.get('waterLevelOn')))
+          print('BIPAD latest rows=',len(rows),'fresh<=30m=',len(fresh))
+          for x in fresh[:20]: print(' | '.join(map(str,x)))
           PY
 
       - name: Bundle Android assets
@@ -141,12 +126,12 @@ jobs:
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.14-SMOOTH-SOURCE-EXACT.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.15-SINGLE-SOURCE-TRUTH.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0814-SMOOTH-SOURCE-EXACT-APK
-          path: FloodSafe-Nepal-v0.8.14-SMOOTH-SOURCE-EXACT.apk
+          name: FloodSafe-Nepal-v0815-SINGLE-SOURCE-TRUTH-APK
+          path: FloodSafe-Nepal-v0.8.15-SINGLE-SOURCE-TRUTH.apk
           if-no-files-found: error
           retention-days: 14

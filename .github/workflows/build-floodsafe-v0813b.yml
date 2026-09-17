@@ -1,0 +1,143 @@
+name: Build FloodSafe v0.8.13 Truth Map Fix APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'floodsafe-android-app/**'
+      - '.github/workflows/build-floodsafe-v0813b.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply FloodSafe patches through corrected v0.8.13
+        run: |
+          python3 floodsafe-android-app/patch_webview_crash.py
+          python3 floodsafe-android-app/patch_launcher_reopen_hard_reset.py
+          python3 floodsafe-android-app/patch_auto_alerts.py
+          python3 floodsafe-android-app/patch_river_waterlevel.py
+          python3 floodsafe-android-app/patch_two_hour_weather.py
+          python3 floodsafe-android-app/patch_cold_start_blank.py
+          python3 floodsafe-android-app/patch_cross_device_navigation.py
+          python3 floodsafe-android-app/patch_native_compat_fallback.py
+          python3 floodsafe-android-app/patch_map_smooth_v075.py
+          python3 floodsafe-android-app/patch_full_native_v080.py
+          python3 floodsafe-android-app/patch_native_v081_polish.py
+          python3 floodsafe-android-app/patch_native_v081_escape_fix.py
+          python3 floodsafe-android-app/patch_native_maplibre_v082.py
+          python3 floodsafe-android-app/patch_native_map_detail_v083.py
+          python3 floodsafe-android-app/patch_native_v084_sathi_map.py
+          python3 floodsafe-android-app/patch_native_v085_flow_sathi.py
+          python3 floodsafe-android-app/patch_native_v086_full_waterways.py
+          python3 floodsafe-android-app/patch_native_v087_runtime_rivers.py
+          python3 floodsafe-android-app/patch_native_v088_restore_web_rivers.py
+          python3 floodsafe-android-app/patch_native_v089_realtime_gauges.py
+          python3 floodsafe-android-app/patch_native_v0810_live_source_colours.py
+          python3 floodsafe-android-app/patch_native_v0811_map_anr_fix.py
+          python3 floodsafe-android-app/patch_native_v0812_trusted_latest_flow.py
+          python3 floodsafe-android-app/patch_native_v0813_prep_truth_ui.py
+          python3 floodsafe-android-app/patch_native_v0813_nepal_truth_map.py
+
+      - name: Verify corrected v0.8.13 truth and safety gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          MAP=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          ACT=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
+          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 2L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'river-stations/?latest=true&limit=2000' "$ACT"
+          grep -Fq 'sameNepalCalendarDay' "$ACT"
+          grep -Fq 'NO_CURRENT_OFFICIAL_READING' "$ACT"
+          grep -Fq 'mapRiverCurrent' "$ACT"
+          grep -Fq 'Grey rivers = geometry only' "$ACT"
+          grep -Fq 'case"normal":return"🔵";' "$ACT"
+          grep -Fq 'lineColor("#78909c"), lineWidth(1.45f)' "$MAP"
+          grep -Fq 'lineWidth(8.2f)' "$MAP"
+          grep -Fq 'Math.min(80, flowRivers.size())' "$MAP"
+          grep -Fq 'routeGaugeForSnapshot(rr,flowStations)' "$MAP"
+          grep -Fq 'cameraTargetInsideNepal' "$MAP"
+          grep -Fq 'final double e=0.010' "$MAP"
+          if grep -Fq 'lineColor("#22e7ff"), lineWidth(2.70f)' "$MAP"; then echo 'False all-river live cyan remained'; exit 1; fi
+          if grep -Fq 'Math.min(180, rivers.size())' "$MAP"; then echo 'All-river particles remained'; exit 1; fi
+          grep -Fq 'versionCode 33' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.8.13'" floodsafe-android-app/app/build.gradle
+
+      - name: Probe current official stations near Kathmandu
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request, math
+          url='https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=2000'
+          req=urllib.request.Request(url,headers={'Accept':'application/json','User-Agent':'FloodSafe-CI/0.8.13'})
+          with urllib.request.urlopen(req,timeout=20) as r: j=json.load(r)
+          rows=j if isinstance(j,list) else j.get('results') or (j.get('data') or {}).get('results') or j.get('data') or []
+          if not isinstance(rows,list): rows=[]
+          ktm=(27.7172,85.3240)
+          def hav(a,b,c,d):
+              R=6371.0;p1=math.radians(a);p2=math.radians(c);dp=math.radians(c-a);dl=math.radians(d-b)
+              q=math.sin(dp/2)**2+math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
+              return 2*R*math.atan2(math.sqrt(q),math.sqrt(max(0,1-q)))
+          near=[]
+          for x in rows:
+              if not isinstance(x,dict): continue
+              p=x.get('point') or {}; c=p.get('coordinates') if isinstance(p,dict) else None
+              if not (isinstance(c,list) and len(c)>=2): continue
+              lo,la=c[0],c[1]
+              try: d=hav(ktm[0],ktm[1],float(la),float(lo))
+              except: continue
+              near.append((d,x.get('title') or x.get('name') or x.get('id'),x.get('waterLevel'),x.get('waterLevelOn'),x.get('status')))
+          near.sort()
+          print('BIPAD current rows=',len(rows))
+          print('KTM within20km=',sum(1 for x in near if x[0]<=20),'within40km=',sum(1 for x in near if x[0]<=40),'within60km=',sum(1 for x in near if x[0]<=60))
+          print('KTM nearest current official gauges:')
+          for x in near[:12]: print('  %.1f km | %s | level=%s | time=%s | status=%s'%x)
+          PY
+
+      - name: Bundle Android assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Optimize retained web assets
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+
+      - name: Build and unit test APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-snapshot.json'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+
+      - name: Rename APK
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.13-NEPAL-TRUTH-MAP-FIX.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0813-TRUTH-FIX-APK
+          path: FloodSafe-Nepal-v0.8.13-NEPAL-TRUTH-MAP-FIX.apk
+          if-no-files-found: error
+          retention-days: 14

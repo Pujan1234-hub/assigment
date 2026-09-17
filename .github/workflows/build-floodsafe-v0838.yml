@@ -58,13 +58,15 @@ jobs:
           W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
           F='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java'
           grep -Fq 'FULL_NEPAL_OVERVIEW' "$M"
+          grep -Fq 'FULL_NEPAL_DETAIL_MERGE' "$M"
+          grep -Fq 'PRECLIPPED_RENDER_DIRECT' "$M"
           grep -Fq 'for(RiverWay r:overviewRivers)' "$M"
-          ! grep -Fq 'if(candidates.size()>=320)break;' "$M"
+          grep -Fq 'for(RiverWay r:v835ReadRiverTile(x,y))' "$M"
           grep -Fq 'PRECLIPPED_BUILD_ASSET' "$M"
           grep -Fq 'PRECLIPPED_TILE_ASSET' "$M"
           grep -Fq 'lineColor("#22D7FF")' "$M"
           grep -Fq 'lineColor("#087CFF")' "$M"
-          grep -Fq 'detailLp.setMargins(dp(12),0,dp(72),dp(12))' "$A"
+          grep -Fq 'detailLp.setMargins(dp(12),0,dp(78),dp(12))' "$A"
           grep -Fq 'mapDetailPanel.setElevation(dp(14))' "$A"
           grep -Fq 'x.setMinWidth(dp(42))' "$A"
           grep -Fq 'bestD<=2d&&best.fresh&&(best.stage.equals("warning")||best.stage.equals("danger"))' "$A"

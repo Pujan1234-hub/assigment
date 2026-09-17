@@ -1,0 +1,176 @@
+name: Build FloodSafe v0.8.24 Strict Nepal Source Truth
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'floodsafe-android-app/**'
+      - 'data/nepal-waterways-snapshot.json'
+      - 'data/nepal-waterways-tiles/**'
+      - 'floodsafe-nepal/v24/nepal-districts.geojson'
+      - '.github/workflows/build-floodsafe-v0824.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Prove 77 district truth and Kathmandu river geometry
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('floodsafe-nepal/v24/nepal-districts.geojson',encoding='utf-8'))
+          fs=d.get('features') or []
+          print('district features',len(fs))
+          if len(fs)!=77: raise SystemExit(f'expected 77 districts, got {len(fs)}')
+          missing=[i for i,f in enumerate(fs) if not str((f.get('properties') or {}).get('nameEn') or '').strip()]
+          if missing: raise SystemExit(f'district nameEn missing: {missing[:10]}')
+
+          def ring_has(r,x,y):
+              inside=False;j=len(r)-1
+              for i,a in enumerate(r):
+                  b=r[j];xi,yi=a[:2];xj,yj=b[:2]
+                  if ((yi>y)!=(yj>y)) and x < (xj-xi)*(y-yi)/((yj-yi) or 1e-12)+xi: inside=not inside
+                  j=i
+              return inside
+          def geom_has(g,x,y):
+              c=g.get('coordinates') or [];t=g.get('type')
+              if t=='Polygon': return bool(c and ring_has(c[0],x,y))
+              if t=='MultiPolygon': return any(p and ring_has(p[0],x,y) for p in c)
+              return False
+          def nepal(x,y): return any(geom_has(f.get('geometry') or {},x,y) for f in fs)
+          if not nepal(85.3240,27.7172): raise SystemExit('Kathmandu test point not in district union')
+          for x,y,label in [(86.0,30.9,'Tibet north'),(84.0,25.9,'India south'),(89.0,27.5,'India east')]:
+              if nepal(x,y): raise SystemExit(f'outside point incorrectly inside Nepal: {label}')
+
+          j=json.load(open('data/nepal-waterways-tiles/7-2.json',encoding='utf-8'))
+          ways=j.get('waterways') or []
+          names=[]
+          for w in ways:
+              n=' '.join(str(w.get(k) or '') for k in ('name','name_ne','name_en')).lower()
+              if 'dhob' in n or 'rudra' in n: names.append(n)
+          print('Dhobi/Rudramati source names',names[:20])
+          if not names: raise SystemExit('Dhobi/Rudramati exact OSM geometry missing')
+          PY
+
+      - name: Apply FloodSafe patches through v0.8.24
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_webview_crash.py
+          python3 floodsafe-android-app/patch_launcher_reopen_hard_reset.py
+          python3 floodsafe-android-app/patch_auto_alerts.py
+          python3 floodsafe-android-app/patch_river_waterlevel.py
+          python3 floodsafe-android-app/patch_two_hour_weather.py
+          python3 floodsafe-android-app/patch_cold_start_blank.py
+          python3 floodsafe-android-app/patch_cross_device_navigation.py
+          python3 floodsafe-android-app/patch_native_compat_fallback.py
+          python3 floodsafe-android-app/patch_map_smooth_v075.py
+          python3 floodsafe-android-app/patch_full_native_v080.py
+          python3 floodsafe-android-app/patch_native_v081_polish.py
+          python3 floodsafe-android-app/patch_native_v081_escape_fix.py
+          python3 floodsafe-android-app/patch_native_maplibre_v082.py
+          python3 floodsafe-android-app/patch_native_map_detail_v083.py
+          python3 floodsafe-android-app/patch_native_v084_sathi_map.py
+          python3 floodsafe-android-app/patch_native_v085_flow_sathi.py
+          python3 floodsafe-android-app/patch_native_v086_full_waterways.py
+          python3 floodsafe-android-app/patch_native_v087_runtime_rivers.py
+          python3 floodsafe-android-app/patch_native_v088_restore_web_rivers.py
+          python3 floodsafe-android-app/patch_native_v089_realtime_gauges.py
+          python3 floodsafe-android-app/patch_native_v0810_live_source_colours.py
+          python3 floodsafe-android-app/patch_native_v0810_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0811_map_anr_fix.py
+          python3 floodsafe-android-app/patch_native_v0812_trusted_latest_flow.py
+          python3 floodsafe-android-app/patch_native_v0813_prep_truth_ui.py
+          python3 floodsafe-android-app/patch_native_v0813_nepal_truth_map.py
+          python3 floodsafe-android-app/patch_native_v0814_prep_runtime_counts.py
+          python3 floodsafe-android-app/patch_native_v0814_source_exact_smooth.py
+          python3 floodsafe-android-app/patch_native_v0814_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0815_single_source_truth.py
+          python3 floodsafe-android-app/patch_native_v0816_current_only_map.py
+          python3 floodsafe-android-app/patch_native_v0817_clean_web_map.py
+          python3 floodsafe-android-app/patch_native_v0817_compile_rain_fix.py
+          python3 floodsafe-android-app/patch_native_v0818_direct_river_clean_flow.py
+          python3 floodsafe-android-app/patch_native_v0819_web_live_master.py
+          python3 floodsafe-android-app/patch_native_v0820_place_labels_prep.py
+          python3 floodsafe-android-app/patch_native_v0820_nepal_mask_prep.py
+          python3 floodsafe-android-app/patch_native_v0820_nepal_only_local_rivers.py
+          python3 floodsafe-android-app/patch_native_v0821_actual_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0822_viewport_rivers.py
+          python3 floodsafe-android-app/patch_native_v0823_visible_bounds_rivers.py
+          python3 floodsafe-android-app/patch_native_v0824_strict_nepal_source_truth.py
+
+      - name: Verify strict Nepal map contract
+        run: |
+          set -euo pipefail
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'splitWaysToNepalStrict(candidates,nepal)' "$M"
+          grep -Fq 'inside=insideDistricts(p[0],p[1],nepal)' "$M"
+          grep -Fq 'new SymbolLayer("fs-district-labels"' "$M"
+          grep -Fq 'textField("{nameEn}")' "$M"
+          grep -Fq 'style.removeLayer("places")' "$M"
+          grep -Fq 'riverLabelsGeoJson=emptyFeatureCollection()' "$M"
+          grep -Fq 'setGeo("fs-river-labels",emptyFeatureCollection())' "$M"
+          grep -Fq 'sameRiverGaugeFor(r,la,lo,true)' "$M"
+          grep -Fq 'Current BIPAD/DHM official reading' "$M"
+          grep -Fq 'fs-river-normal-status-layer-glow' "$M"
+          grep -Fq 'fs-river-warning-status-layer-glow' "$M"
+          grep -Fq 'fs-river-danger-status-layer-glow' "$M"
+          grep -Fq 'setGeo("fs-rain-stale",e)' "$M"
+          grep -Fq 'rain-stations/?latest=true&limit=2000' "$A"
+          grep -Fq 'rainAverage(r,1)' "$A"
+          grep -Fq 'rainAverage(r,24)' "$A"
+          grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
+          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 2L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'versionCode 44' "$G"
+          grep -Fq "versionName '0.8.24'" "$G"
+          if grep -Fq 'new SymbolLayer("fs-river-labels-layer"' "$M"; then echo 'RIVER TEXT LABEL LAYER REMAINED'; exit 1; fi
+          if grep -Fq 'fullyInside || nepal==null' "$M"; then echo 'NEPAL CLIP BYPASS REMAINED'; exit 1; fi
+          if grep -Fq 'boolean rainShown=' "$M"; then echo 'RAIN CLICK TARGET REMAINED'; exit 1; fi
+
+      - name: Probe official river and rain latest feeds
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request
+          for label,u in [
+              ('river','https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=2000'),
+              ('rain','https://bipadportal.gov.np/api/v1/rain-stations/?latest=true&limit=2000')]:
+              q=urllib.request.Request(u,headers={'User-Agent':'FloodSafe-CI/0.8.24','Accept':'application/json'})
+              with urllib.request.urlopen(q,timeout=30) as r:j=json.load(r)
+              rows=j.get('results',j if isinstance(j,list) else [])
+              print(label,'latest official rows',len(rows))
+              if not rows: raise SystemExit(label+' latest official feed empty')
+          PY
+
+      - name: Bundle assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+      - name: Optimize retained web assets
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+      - name: Build and unit test APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+      - name: Verify APK contents
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/7-2.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+      - name: Rename APK
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.24-STRICT-NEPAL-REALTIME.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0824-STRICT-NEPAL-REALTIME-APK
+          path: FloodSafe-Nepal-v0.8.24-STRICT-NEPAL-REALTIME.apk
+          retention-days: 14

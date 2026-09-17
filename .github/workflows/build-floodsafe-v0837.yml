@@ -113,3 +113,5 @@ jobs:
           name: FloodSafe-Nepal-v0837-PRECLIPPED-VISIBLE-BLUE-RIVERS-APK
           path: FloodSafe-Nepal-v0.8.37-PRECLIPPED-VISIBLE-BLUE-RIVERS.apk
           retention-days: 14
+
+# Rebuild after real-device stale-feed and blank-river report

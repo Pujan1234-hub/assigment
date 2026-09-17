@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'floodsafe-android-app/patch_native_v0828_finish_blue_nepal_map.py'
+      - 'floodsafe-android-app/patch_native_v0828_compile_fix.py'
       - 'floodsafe-android-app/patch_low_end_map.py'
       - 'floodsafe-android-app/patch_low_end_sathi.py'
       - '.github/workflows/build-floodsafe-v0828.yml'
@@ -83,6 +84,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0826_video_map_ui.py
           python3 floodsafe-android-app/patch_native_v0827_compact_realtime_map.py
           python3 floodsafe-android-app/patch_native_v0828_finish_blue_nepal_map.py
+          python3 floodsafe-android-app/patch_native_v0828_compile_fix.py
 
       - name: Verify final map contract and unchanged alert safety
         run: |

@@ -1,0 +1,17 @@
+name: Diagnose FloodSafe v0.8.49 Station Parity
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/diagnose-floodsafe-v0849.yml'
+      - 'floodsafe-android-app/diagnose_station_parity_v0849.py'
+  workflow_dispatch:
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare BIPAD catalog/latest and DHM realtime
+        run: python3 floodsafe-android-app/diagnose_station_parity_v0849.py

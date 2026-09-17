@@ -1,0 +1,104 @@
+name: Audit FloodSafe Official River Sources
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/audit-floodsafe-official-sources.yml'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare BIPAD catalog, BIPAD latest and DHM live stream
+        run: |
+          python3 - <<'PY'
+          import json, re, html, urllib.request
+          from urllib.parse import urljoin
+
+          BASE='https://bipadportal.gov.np/api/v1/'
+          targets=['Balkhu','Balambu','Dhobi','Chabahil','Kapan','Manohara','Balkumari','Nagmati','Sundarijal','Gaurighat','Bishnumati','Gongabu','Salinadi','Sankhu']
+          headers={'User-Agent':'FloodSafeNepal-source-audit/0.8.49','Accept':'application/json,text/html,*/*','Cache-Control':'no-cache'}
+          def get(url):
+              req=urllib.request.Request(url,headers=headers)
+              with urllib.request.urlopen(req,timeout=35) as r:
+                  return r.read().decode('utf-8','replace')
+          def pages(url):
+              out=[]; seen=set(); first=None
+              while url and url not in seen:
+                  seen.add(url)
+                  j=json.loads(get(url))
+                  if first is None: first=j
+                  rows=j.get('results') or j.get('data') or ([] if not isinstance(j,list) else j)
+                  if isinstance(rows,list): out.extend(rows)
+                  nxt=j.get('next') if isinstance(j,dict) else None
+                  if nxt and nxt.startswith('/'): nxt=urljoin(BASE,nxt)
+                  url=nxt
+              return first,out
+          def flatstr(o):
+              try:return json.dumps(o,ensure_ascii=False).lower()
+              except:return str(o).lower()
+          def pick(o,*keys):
+              if not isinstance(o,dict):return None
+              f=o.get('fields') if isinstance(o.get('fields'),dict) else {}
+              for k in keys:
+                  if k in o and o[k] not in (None,''):return o[k]
+                  if k in f and f[k] not in (None,''):return f[k]
+              return None
+          def keyrow(r):
+              return {
+                'stationIndex':pick(r,'stationIndex','station_index','stationSeriesId','station_series_id','stationId','station_id'),
+                'name':pick(r,'river_name','riverName','station_name','stationName','title','name'),
+                'district':pick(r,'districtName','district_name','district'),
+                'waterLevel':pick(r,'_lastWaterLevel','waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level'),
+                'warning':pick(r,'_lastWarningLevel','warningLevel','warning_level','warningThreshold','warning_threshold'),
+                'danger':pick(r,'_lastDangerLevel','dangerLevel','danger_level','dangerThreshold','danger_threshold'),
+                'time':pick(r,'waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','measurement_time','observationTime','observation_time','observedAt','observed_at','datetime','timestamp','_measurementTime'),
+                'elevation':pick(r,'elevation','stationElevation','station_elevation','altitude'),
+                'status':pick(r,'status','status_name','alertStatus','alert_status','riskLevel','risk_level')
+              }
+
+          for label,path in [('CATALOG','river-stations/?limit=2000'),('LATEST','river-stations/?latest=true&limit=2000')]:
+              first,rows=pages(BASE+path)
+              print('\n===',label,'===')
+              if isinstance(first,dict): print('top_count=',first.get('count'),'first_page=',len(first.get('results') or first.get('data') or []),'paged_total=',len(rows))
+              else: print('paged_total=',len(rows))
+              for r in rows:
+                  s=flatstr(r)
+                  if any(t.lower() in s for t in targets):
+                      print(label+'_TARGET',json.dumps(keyrow(r),ensure_ascii=False,sort_keys=True))
+              if label=='CATALOG': catalog=rows
+              else: latest=rows
+
+          def norm(v):return re.sub(r'[^a-z0-9]+','',str(v or '').lower())
+          latest_keys=set()
+          for r in latest:
+              ix=pick(r,'stationIndex','station_index','stationSeriesId','station_series_id','stationId','station_id')
+              nm=pick(r,'river_name','riverName','station_name','stationName','title','name')
+              latest_keys.add(('i:'+norm(ix)) if ix else ('n:'+norm(nm)))
+          catalog_keys=set()
+          for r in catalog:
+              ix=pick(r,'stationIndex','station_index','stationSeriesId','station_series_id','stationId','station_id')
+              nm=pick(r,'river_name','riverName','station_name','stationName','title','name')
+              catalog_keys.add(('i:'+norm(ix)) if ix else ('n:'+norm(nm)))
+          print('\nBIPAD catalog unique=',len(catalog_keys),'latest unique=',len(latest_keys),'catalog_not_latest=',len(catalog_keys-latest_keys),'latest_not_catalog=',len(latest_keys-catalog_keys))
+
+          dhm=get('https://dhm.gov.np/hydrology/realtime-stream?_floodsafe_audit=1')
+          trs=re.findall(r'(?is)<tr[^>]*>(.*?)</tr>',dhm)
+          dhmrows=[]
+          for tr in trs:
+              cells=[]
+              for c in re.findall(r'(?is)<t[dh][^>]*>(.*?)</t[dh]>',tr):
+                  txt=re.sub(r'(?is)<[^>]+>',' ',c)
+                  txt=html.unescape(txt).replace('\xa0',' ')
+                  cells.append(re.sub(r'\s+',' ',txt).strip())
+              if len(cells)>=6 and cells[0].isdigit(): dhmrows.append(cells)
+          print('\n=== DHM LIVE ===')
+          print('parsed_live_rows=',len(dhmrows))
+          for c in dhmrows:
+              s=' | '.join(c)
+              if any(t.lower() in s.lower() for t in targets): print('DHM_TARGET',s)
+          print('AUDIT_PASS')
+          PY

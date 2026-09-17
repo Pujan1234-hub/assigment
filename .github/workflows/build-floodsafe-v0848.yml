@@ -1,4 +1,4 @@
-name: Build FloodSafe v0.8.48 District Realtime SATHI
+name: Build FloodSafe v0.8.49 Source Parity Online Dots
 
 on:
   push:
@@ -9,6 +9,8 @@ on:
       - 'floodsafe-android-app/patch_native_v0848_sathi_advanced.py'
       - 'floodsafe-android-app/patch_native_v0848_risk_colour.py'
       - 'floodsafe-android-app/patch_native_v0848_compile_fix.py'
+      - 'floodsafe-android-app/patch_native_v0849_source_parity_online_dots.py'
+      - 'floodsafe-android-app/diagnose_station_parity_v0849.py'
   workflow_dispatch:
 
 jobs:
@@ -24,7 +26,10 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Apply patches through v0.8.48
+      - name: Verify official source parity now
+        run: python3 floodsafe-android-app/diagnose_station_parity_v0849.py
+
+      - name: Apply patches through v0.8.49
         run: |
           set -euo pipefail
           for p in \
@@ -66,8 +71,9 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0848_sathi_advanced.py
           python3 floodsafe-android-app/patch_native_v0848_risk_colour.py
           python3 floodsafe-android-app/patch_native_v0848_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0849_source_parity_online_dots.py
 
-      - name: Verify v0.8.48 features and safety
+      - name: Verify v0.8.49 features and safety
         run: |
           set -euo pipefail
           A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
@@ -75,24 +81,24 @@ jobs:
           G='floodsafe-android-app/app/build.gradle'
           W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
           F='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java'
-          grep -Fq 'V0848_ALL_OFFICIAL_STATIONS' "$A"
+          grep -Fq 'V0849_SOURCE_COUNTS' "$A"
+          grep -Fq 'V0849_LATEST_WITH_CATALOG_META' "$A"
+          grep -Fq 'V0849_META_ENRICH' "$A"
+          grep -Fq 'V0849_AVAILABILITY_DOT' "$A"
+          grep -Fq 'V0849_PARITY_UI' "$A"
           grep -Fq 'private View districtCard()' "$A"
-          grep -Fq 'v848DistrictName' "$A"
           grep -Fq 'answerSathiAsync' "$A"
-          grep -Fq 'v848Weather' "$A"
-          grep -Fq 'v848NearestRain' "$A"
-          grep -Fq 'DHM realtime-stream' "$A"
           grep -Fq 'river-stations/?latest=true&limit=2000' "$A"
-          grep -Fq '_floodsafeCatalogOnly' "$A"
-          grep -Fq 'mapDisplayStage' "$A"
+          grep -Fq 'V0849_ONLINE_GREEN' "$M"
+          grep -Fq 'V0849_OFFLINE_BLACK' "$M"
+          grep -Fq 'circleColor("#0b7fd0")' "$M"
           grep -Fq 'V0848_FLOOD_COLOUR_PRIORITY' "$M"
           grep -Fq 'V0847_MOVING_GLOW' "$M"
-          grep -Fq 'V0845_SCREEN_SCALE_RIVER_TAP' "$M"
           grep -Fq 'bestD<=2d&&best.fresh&&(best.stage.equals("warning")||best.stage.equals("danger"))' "$A"
           grep -Fq 'RADIUS_KM = 2d' "$W"
           grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' "$F"
-          grep -Fq 'versionCode 68' "$G"
-          grep -Fq "versionName '0.8.48'" "$G"
+          grep -Fq 'versionCode 69' "$G"
+          grep -Fq "versionName '0.8.49'" "$G"
 
       - name: Bundle assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
@@ -122,10 +128,10 @@ jobs:
           test -s "$APK"
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-major-v0842.geojson'
           unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
-          cp "$APK" FloodSafe-Nepal-v0.8.48-DISTRICT-REALTIME-SATHI.apk
+          cp "$APK" FloodSafe-Nepal-v0.8.49-SOURCE-PARITY-ONLINE-DOTS.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0848-DISTRICT-REALTIME-SATHI-APK
-          path: FloodSafe-Nepal-v0.8.48-DISTRICT-REALTIME-SATHI.apk
+          name: FloodSafe-Nepal-v0849-SOURCE-PARITY-ONLINE-DOTS-APK
+          path: FloodSafe-Nepal-v0.8.49-SOURCE-PARITY-ONLINE-DOTS.apk
           retention-days: 14

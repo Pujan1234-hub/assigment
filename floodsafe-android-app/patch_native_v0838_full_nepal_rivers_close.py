@@ -56,9 +56,9 @@ renderer=r'''    private void refreshVisibleRiverTiles(){
                     if(seen.add(riverKey(r)))candidates.add(r);
                 }
 
-                // FULL_NEPAL_DETAIL_MERGE: at closer zoom, add all visible preclipped tile
-                // geometry instead of replacing the overview. The overview therefore prevents
-                // holes while detailed OSM streams/rivers appear as the user zooms in.
+                // FULL_NEPAL_DETAIL_MERGE + PRECLIPPED_TILE_ASSET: at closer zoom, add all
+                // visible build-time Nepal-clipped tile geometry instead of replacing overview.
+                // The overview therefore prevents holes while detailed OSM streams/rivers appear.
                 if(zoom>=7.8){
                     for(int x=minX;x<=maxX;x++)for(int y=minY;y<=maxY;y++){
                         for(RiverWay r:v835ReadRiverTile(x,y)){

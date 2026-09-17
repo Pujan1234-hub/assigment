@@ -1,0 +1,149 @@
+name: Build FloodSafe v0.8.25 Actual River Current Flow
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'floodsafe-android-app/**'
+      - 'data/nepal-waterways-snapshot.json'
+      - 'data/nepal-waterways-tiles/**'
+      - 'floodsafe-nepal/v24/nepal-districts.geojson'
+      - '.github/workflows/build-floodsafe-v0825.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Prove Nepal districts and Kathmandu Dhobi source
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('floodsafe-nepal/v24/nepal-districts.geojson',encoding='utf-8'))
+          fs=d.get('features') or []
+          if len(fs)!=77: raise SystemExit(f'expected 77 districts, got {len(fs)}')
+          j=json.load(open('data/nepal-waterways-tiles/7-2.json',encoding='utf-8'))
+          ways=j.get('waterways') or []
+          matches=[]
+          for w in ways:
+              n=' '.join(str(w.get(k) or '') for k in ('name','name_ne','name_en')).lower()
+              if 'dhob' in n or 'rudra' in n: matches.append(n)
+          print('Dhobi/Rudramati OSM routes:',matches[:20])
+          if not matches: raise SystemExit('Dhobi/Rudramati source geometry missing')
+          PY
+
+      - name: Apply FloodSafe patches through v0.8.25
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_webview_crash.py
+          python3 floodsafe-android-app/patch_launcher_reopen_hard_reset.py
+          python3 floodsafe-android-app/patch_auto_alerts.py
+          python3 floodsafe-android-app/patch_river_waterlevel.py
+          python3 floodsafe-android-app/patch_two_hour_weather.py
+          python3 floodsafe-android-app/patch_cold_start_blank.py
+          python3 floodsafe-android-app/patch_cross_device_navigation.py
+          python3 floodsafe-android-app/patch_native_compat_fallback.py
+          python3 floodsafe-android-app/patch_map_smooth_v075.py
+          python3 floodsafe-android-app/patch_full_native_v080.py
+          python3 floodsafe-android-app/patch_native_v081_polish.py
+          python3 floodsafe-android-app/patch_native_v081_escape_fix.py
+          python3 floodsafe-android-app/patch_native_maplibre_v082.py
+          python3 floodsafe-android-app/patch_native_map_detail_v083.py
+          python3 floodsafe-android-app/patch_native_v084_sathi_map.py
+          python3 floodsafe-android-app/patch_native_v085_flow_sathi.py
+          python3 floodsafe-android-app/patch_native_v086_full_waterways.py
+          python3 floodsafe-android-app/patch_native_v087_runtime_rivers.py
+          python3 floodsafe-android-app/patch_native_v088_restore_web_rivers.py
+          python3 floodsafe-android-app/patch_native_v089_realtime_gauges.py
+          python3 floodsafe-android-app/patch_native_v0810_live_source_colours.py
+          python3 floodsafe-android-app/patch_native_v0810_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0811_map_anr_fix.py
+          python3 floodsafe-android-app/patch_native_v0812_trusted_latest_flow.py
+          python3 floodsafe-android-app/patch_native_v0813_prep_truth_ui.py
+          python3 floodsafe-android-app/patch_native_v0813_nepal_truth_map.py
+          python3 floodsafe-android-app/patch_native_v0814_prep_runtime_counts.py
+          python3 floodsafe-android-app/patch_native_v0814_source_exact_smooth.py
+          python3 floodsafe-android-app/patch_native_v0814_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0815_single_source_truth.py
+          python3 floodsafe-android-app/patch_native_v0816_current_only_map.py
+          python3 floodsafe-android-app/patch_native_v0817_clean_web_map.py
+          python3 floodsafe-android-app/patch_native_v0817_compile_rain_fix.py
+          python3 floodsafe-android-app/patch_native_v0818_direct_river_clean_flow.py
+          python3 floodsafe-android-app/patch_native_v0819_web_live_master.py
+          python3 floodsafe-android-app/patch_native_v0820_place_labels_prep.py
+          python3 floodsafe-android-app/patch_native_v0820_nepal_mask_prep.py
+          python3 floodsafe-android-app/patch_native_v0820_nepal_only_local_rivers.py
+          python3 floodsafe-android-app/patch_native_v0821_actual_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0822_viewport_rivers.py
+          python3 floodsafe-android-app/patch_native_v0823_visible_bounds_rivers.py
+          python3 floodsafe-android-app/patch_native_v0824_strict_nepal_source_truth.py
+          python3 floodsafe-android-app/patch_native_v0825_segment_current_flow.py
+          python3 floodsafe-android-app/patch_native_v0825_helper_restore.py
+
+      - name: Verify actual-river current-flow contract
+        run: |
+          set -euo pipefail
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'viewportInsideNepalStrict(fw,fs,fe,fn,nepal)' "$M"
+          grep -Fq 'clipWaysToNepalDense(candidates,nepal)' "$M"
+          grep -Fq 'currentFlowRivers' "$M"
+          grep -Fq 'flowSnapshot=new ArrayList<>(currentFlowRivers)' "$M"
+          grep -Fq 'routeD<=0.75' "$M"
+          grep -Fq 'riverLabelsGeoJson=emptyFeatureCollection()' "$M"
+          grep -Fq 'new SymbolLayer("fs-district-labels"' "$M"
+          grep -Fq 'now-at<=30L*60L*1000L' "$A"
+          grep -Fq 'rain-stations/?latest=true&limit=2000' "$A"
+          grep -Fq 'rainAverage(r,1)' "$A"
+          grep -Fq 'rainAverage(r,24)' "$A"
+          grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
+          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 2L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'versionCode 45' "$G"
+          grep -Fq "versionName '0.8.25'" "$G"
+          if grep -Fq 'List<RiverWay> visibleSnapshot=new ArrayList<>(rivers);' "$M"; then echo 'FAKE ALL-RIVER FLOW REMAINED'; exit 1; fi
+          if grep -Fq 'new SymbolLayer("fs-river-labels-layer"' "$M"; then echo 'RIVER MAP TEXT REMAINED'; exit 1; fi
+
+      - name: Probe official latest feeds
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request
+          for label,u in [('river','https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=2000'),('rain','https://bipadportal.gov.np/api/v1/rain-stations/?latest=true&limit=2000')]:
+              q=urllib.request.Request(u,headers={'User-Agent':'FloodSafe-CI/0.8.25','Accept':'application/json'})
+              with urllib.request.urlopen(q,timeout=30) as r:j=json.load(r)
+              rows=j.get('results',j if isinstance(j,list) else [])
+              print(label,'latest rows',len(rows))
+              if not rows: raise SystemExit(label+' latest feed empty')
+          PY
+
+      - name: Bundle assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+      - name: Optimize retained web assets
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+      - name: Build and unit test APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+      - name: Verify APK contents
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/7-2.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+      - name: Rename APK
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.25-ACTUAL-RIVER-CURRENT-FLOW.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0825-ACTUAL-RIVER-CURRENT-FLOW-APK
+          path: FloodSafe-Nepal-v0.8.25-ACTUAL-RIVER-CURRENT-FLOW.apk
+          retention-days: 14

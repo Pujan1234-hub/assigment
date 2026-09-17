@@ -140,3 +140,5 @@ jobs:
           path: FloodSafe-Nepal-v0.8.18-DIRECT-RIVER-CLEAN-FLOW.apk
           if-no-files-found: error
           retention-days: 14
+
+# retrigger-only: exact v0.8.18 direct-river clean-flow validation

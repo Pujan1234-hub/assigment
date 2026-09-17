@@ -51,8 +51,9 @@ jobs:
           python3 floodsafe-android-app/patch_native_v089_realtime_gauges.py
           python3 floodsafe-android-app/patch_native_v0810_live_source_colours.py
           python3 floodsafe-android-app/patch_native_v0811_nepal_clean_progressive_map.py
+          python3 floodsafe-android-app/patch_native_v0812_anr_fix.py
 
-      - name: Verify locked safety and v0.8.11 native requirements
+      - name: Verify locked safety and v0.8.12 native requirements
         shell: bash
         run: |
           set -euo pipefail
@@ -103,11 +104,14 @@ jobs:
           grep -Fq 'fs-river-warning-status-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'fs-river-danger-status-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'refreshRiverStatusSources' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'riverStatusGeneration' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'routeGaugeForSnapshot' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'freshStations.isEmpty()' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq '"#f4feff", 2.0f, 0.82f' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           if grep -Fq 'fs-nepal-mask-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java; then echo 'Invalid diagonal Nepal mask remained'; exit 1; fi
           if grep -Fq 'android.webkit.WebView' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java; then echo 'Native map must not use WebView'; exit 1; fi
-          grep -Fq 'versionCode 31' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.8.11'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 32' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.8.12'" floodsafe-android-app/app/build.gradle
 
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
@@ -132,12 +136,12 @@ jobs:
           unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.11-NEPAL-CLEAN-MAP.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.12-ANR-FIX.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-APK
-          path: FloodSafe-Nepal-v0.8.11-NEPAL-CLEAN-MAP.apk
+          path: FloodSafe-Nepal-v0.8.12-ANR-FIX.apk
           if-no-files-found: error
           retention-days: 14

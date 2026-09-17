@@ -11,6 +11,7 @@ on:
       - 'floodsafe-android-app/patch_native_v0848_compile_fix.py'
       - 'floodsafe-android-app/patch_native_v0849_source_parity_online_dots.py'
       - 'floodsafe-android-app/patch_native_v0850_official_parity_sathi_language.py'
+      - 'floodsafe-android-app/run_patch_native_v0850.py'
       - 'floodsafe-android-app/diagnose_station_parity_v0849.py'
   workflow_dispatch:
 
@@ -73,7 +74,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0848_risk_colour.py
           python3 floodsafe-android-app/patch_native_v0848_compile_fix.py
           python3 floodsafe-android-app/patch_native_v0849_source_parity_online_dots.py
-          python3 floodsafe-android-app/patch_native_v0850_official_parity_sathi_language.py
+          python3 floodsafe-android-app/run_patch_native_v0850.py
 
       - name: Verify v0.8.50 features and safety
         run: |

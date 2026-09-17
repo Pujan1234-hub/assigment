@@ -13,7 +13,6 @@ g=g_path.read_text(encoding='utf-8')
 # working phone screenshot, keep the map visually blue, keep geometry/stations Nepal-only,
 # and make the visible counts refresh directly from the current BIPAD source.
 
-# Realtime compact overlay fields + foreground refresh loop.
 field='    private TextView mapLiveText;'
 if field not in a: raise SystemExit('v0.8.26 mapLiveText field missing')
 if 'mapRainLatest' not in a:
@@ -28,14 +27,12 @@ a=a.replace('FrameLayout.LayoutParams liveLp=new FrameLayout.LayoutParams(-1,-2,
 if 'mapHint=mapLiveText;\n' not in a: raise SystemExit('mapHint live overlay anchor missing')
 a=a.replace('mapHint=mapLiveText;\n','mapHint=mapLiveText;\n        refreshCompactRainCounts();\n',1)
 
-# Refresh map source while the app is open. The app never invents an update; it simply
-# re-reads official source data and redraws what the source currently reports.
-if 'refreshAll();\n        requestLocation();' not in a: raise SystemExit('refreshAll onCreate anchor missing')
-a=a.replace('refreshAll();\n        requestLocation();',
-            'refreshAll();\n        main.removeCallbacks(mapRealtimeTick);main.postDelayed(mapRealtimeTick,60000L);\n        requestLocation();',1)
+# v0.8.26 can compact onCreate onto one line, so hook the first refreshAll() itself.
+refresh_anchor='refreshAll();'
+if refresh_anchor not in a: raise SystemExit('refreshAll call missing')
+a=a.replace(refresh_anchor,
+            'refreshAll();main.removeCallbacks(mapRealtimeTick);main.postDelayed(mapRealtimeTick,60000L);',1)
 
-# Compact one-line overlay: river current/latest count from the native official station list,
-# rain latest/total fetched directly from BIPAD. No large legend box.
 us=a.find('    private void updateMapLiveOverlay(){')
 ue=a.find('    private void showMapDetail(',us)
 if us<0 or ue<0: raise SystemExit('updateMapLiveOverlay anchors missing')
@@ -86,7 +83,6 @@ a=a[:us]+compact+a[ue:]
 ds=a.find('    private void showMapDetail(String title,String detail){')
 de=a.find('    private View riskCard()',ds)
 if ds<0 or de<0: raise SystemExit('showMapDetail/riskCard anchors missing')
-# Preserve methods after showMapDetail by stopping at showStation when present.
 show_station_pos=a.find('    private void showStation(RiverStation s){',ds)
 if show_station_pos>0 and show_station_pos<de: de=show_station_pos
 new_detail=r'''    private void showMapDetail(String title,String detail){
@@ -112,7 +108,6 @@ new_detail=r'''    private void showMapDetail(String title,String detail){
 '''
 a=a[:ds]+new_detail+a[de:]
 
-# Exact station card content from the current source. Fresh/stale state is explicit.
 ss=a.find('    private void showStation(RiverStation s){')
 se=a.find('    private void refreshHuman()',ss)
 if ss<0 or se<0: raise SystemExit('showStation anchors missing')
@@ -133,22 +128,21 @@ station=r'''    private void showStation(RiverStation s){
 '''
 a=a[:ss]+station+a[se:]
 
-# Keep blue river geometry visible like the approved phone reference, while status glow/colour
-# remains driven only by fresh matching official gauges.
+# Blue geographic river network; live status colour/glow remains fresh same-river gauge only.
 m=m.replace('lineColor("#7897a1"), lineWidth(1.25f), lineOpacity(0.46f)',
             'lineColor("#47d9ff"), lineWidth(1.55f), lineOpacity(0.82f)',1)
 m=m.replace('lineColor("#274c56"), lineWidth(2.4f), lineOpacity(0.18f)',
             'lineColor("#0a6f92"), lineWidth(3.0f), lineOpacity(0.28f)',1)
 
-# Do not allow the native camera target to wander outside the Nepal bounding box.
+# Tight Nepal camera target. Try known generated variants and require success below.
 m=m.replace('.include(new LatLng(25.4, 79.2))\n                        .include(new LatLng(31.15, 89.15)).build();',
             '.include(new LatLng(26.2, 80.0))\n                        .include(new LatLng(30.5, 88.35)).build();',1)
+m=m.replace('.include(new LatLng(25.8, 79.6))\n                        .include(new LatLng(30.8, 88.7)).build();',
+            '.include(new LatLng(26.2, 80.0))\n                        .include(new LatLng(30.5, 88.35)).build();',1)
 
-# v0.8.27 build identity.
 g=g.replace('versionCode 46','versionCode 47',1).replace("versionName '0.8.26'","versionName '0.8.27'",1)
 if 'versionCode 47' not in g or "versionName '0.8.27'" not in g: raise SystemExit('v0.8.27 version bump failed')
 
-# Hard truth gates.
 for marker in ['viewportInsideNepalStrict(fw,fs,fe,fn,nepal)','clipWaysToNepalDense(candidates,nepal)','currentFlowRivers','routeD<=0.75','RiverTapInfo']:
     if marker not in m: raise SystemExit('map truth marker missing: '+marker)
 for marker in ['latest official "+latest+" / "+total','refreshCompactRainCounts','source मा matching current gauge नभए','main.postDelayed(mapRealtimeTick,60000L)']:

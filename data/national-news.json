@@ -1,63 +1,112 @@
 {
-  "generated_at": "2026-09-17T17:59:34.603688+05:45",
-  "updated_at_npt": "17 Sep 17:59 NPT",
+  "generated_at": "2026-09-17T22:52:10.127895+05:45",
+  "updated_at_npt": "17 Sep 22:52 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "पञ्जाबमा किसानको ‘रेल रोको’ आन्दोलन, ६ जिल्लाका रेलवे ट्र्याकमा धर्ना",
+      "title": "क्यानडा–इयू सहकार्य सुदृढ गर्न प्रधानमन्त्री कार्नीको प्रस्ताव",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592842/farmers-rail-blockade-movement-in-punjab-sit-in-on-railway-tracks-in-6-districts",
-      "published_at": "2026-09-17T17:41:52+05:45",
+      "url": "https://www.ratopati.com/story/592895/prime-minister-carneys-proposal-to-strengthen-canada-eu-cooperation",
+      "published_at": "2026-09-17T22:20:27+05:45",
       "flash": true
     },
     {
-      "title": "बाढीमा बेपत्ता नागरिकका परिवारलाई कानुनी अधिकारबाट वञ्चित नगर्न सांसदको माग",
+      "title": "सुरक्षाका लागि डुम्रे-बेलभञ्ज्याङ खण्डमा सिसी क्यामेरा जडान",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592894/cctv-cameras-installed-on-dumre-belbhanjyang-section-for-security",
+      "published_at": "2026-09-17T22:09:43+05:45",
+      "flash": true
+    },
+    {
+      "title": "१० बजे १० समाचार : रास्वपाको तीन मोर्चा तीनतिर, प्रधानमन्त्री–गृहमन्त्री सचिवालयको आवरणमा दबाब र धम्की",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592886/10-news-at-10",
+      "published_at": "2026-09-17T22:00:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "सीप तथा रोजगार मेला आयोजना गर्दै श्रम मन्त्रालय",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592891/ministry-of-labor-organizing-skills-and-employment",
+      "published_at": "2026-09-17T21:54:08+05:45",
+      "flash": true
+    },
+    {
+      "title": "त्रिवि शिक्षण अस्पतालमा ८ जना घाइतेको उपचार हुँदै १ घण्टा अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592889/8-injured-are-being-treated-at-tribhuvan-university-teaching-hospital",
+      "published_at": "2026-09-17T21:43:43+05:45",
+      "flash": false
+    },
+    {
+      "title": "अदालतले ‘पिक एन्ड चुज’ गरी फैसला गरेको भन्दै परेको रिटमा दरपिठ सदर १ घण्टा अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592883/the-supreme-court-upheld-the-writ-petition-filed-alleging-that-the-court-had-made-a-pick-and-choose-decision",
+      "published_at": "2026-09-17T20:57:55+05:45",
+      "flash": false
+    },
+    {
+      "title": "फोहोर जथाभाबी फाल्नेलाई १० लाखसम्म जरिवाना र जेल सजाय हुने नयाँ विधेयक संसद्‌मा २ घण्टा अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592880/new-bill-in-parliament-to-impose-fines-of-up-to-1-million-and-imprisonment-for-littering",
+      "published_at": "2026-09-17T20:49:12+05:45",
+      "flash": false
+    },
+    {
+      "title": "बागमती प्रदेशमा १३४ दरबन्दी घटाइयो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592878/134-posts-reduced-in-bagmati-province",
+      "published_at": "2026-09-17T20:28:06+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी : ३६ देशका ६०६ विदेशी पर्यटक अझै बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592875/bhotekoshi-flood-606-foreign-tourists-from-36-countries-still-missing",
+      "published_at": "2026-09-17T20:19:19+05:45",
+      "flash": false
+    },
+    {
+      "title": "प्रधानमन्त्री र गृहमन्त्रीको सचिवालयकै आवरणमा लगातार दबाब र धम्की",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592850/constant-pressure-and-threats-within-the-secretariats-of-the-prime-minister-and-home-minister",
+      "published_at": "2026-09-17T18:21:27+05:45",
+      "flash": false
+    },
+    {
+      "title": "प्रधानमन्त्री दैवी प्रकोप उद्धार कोषमा मौज्दात रकम साढे १४ अर्ब पुग्यो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592846/the-balance-in-the-prime-ministers-disaster-relief-fund-has-reached-145-billion",
+      "published_at": "2026-09-17T18:04:40+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढीमा बेपत्ता नागरिकका परिवारलाई कानुनी अधिकारबाट वञ्चित नगर्न सांसदको माग ५ घण्टा अगाडि",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592839/mp-demands-that-families-of-citizens-missing-in-floods-not-be-deprived-of-legal-rights",
       "published_at": "2026-09-17T17:32:18+05:45",
-      "flash": true
+      "flash": false
     },
     {
-      "title": "संसद् चलिरहँदा सांसददेखि मन्त्रीसम्म माेबाइलमै व्यस्त, तस्बिरहरू",
+      "title": "२२.५० मेगावाटको जाल्दीगाड जलविद्युतमा ४ अर्ब ६० करोड लगानी जुट्यो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592832/ministers-and-mps-busy-on-mobile-phones-while-parliament-is-in-session-photos-show",
-      "published_at": "2026-09-17T17:13:54+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/592826/investment-of-rs-46-billion-raised-in-2250-mw-jaldigad-hydropower-project",
+      "published_at": "2026-09-17T17:03:10+05:45",
+      "flash": false
     },
     {
-      "title": "कांग्रेस केन्द्रीय कार्यसमिति बैठक : सबै सदस्यलाई महाधिवेशनमा सहभागी गराउने निर्णय १ घण्टा अगाडि",
+      "title": "कांग्रेस केन्द्रीय कार्यसमिति बैठक : सबै सदस्यलाई महाधिवेशनमा सहभागी गराउने निर्णय ५ घण्टा अगाडि",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592823/congress-central-working-committee-meeting-decision-to-have-all-members-participate-in-the-general-convention",
       "published_at": "2026-09-17T16:53:08+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीमा ६७७ मजदुर सम्पर्कविहीन, ५१५ ट्रक तथा कन्टेनर बेपत्ता : ट्रक महासङ्घ १ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592813/677-workers-unaccounted-for-515-trucks-and-containers-missing-in-bhotekoshi-floods-truck-federation",
-      "published_at": "2026-09-17T16:16:32+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी प्रभावित क्षेत्रमा नेपाल भेटेरिनरी एसोसिएसनको सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592807/nepal-veterinary-associations-assistance-to-flood-affected-areas",
-      "published_at": "2026-09-17T15:55:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "मुद्दाको चापपछि काभ्रे अदालतमा चार इजलासबाट सुनुवाइ हुँदै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592779/hearings-are-being-held-in-four-benches-at-kavre-court-due-to-the-pressure-of-cases",
-      "published_at": "2026-09-17T14:22:48+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     },
@@ -71,7 +120,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 4,
-      "recent": 8
+      "recent": 14
     },
     "Kathmandu Post": {
       "ok": true,
@@ -81,7 +130,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     }

@@ -1,0 +1,42 @@
+name: Publish FloodSafe v0.8.26 APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/publish-floodsafe-v0826.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download verified v0.8.26 APK artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          gh run download 35224013653 \
+            --repo Pujan1234-hub/assigment \
+            --name FloodSafe-Nepal-v0826-VIDEO-MATCH-NATIVE-MAP-APK \
+            --dir out
+          test -s out/FloodSafe-Nepal-v0.8.26-VIDEO-MATCH-NATIVE-MAP.apk
+          sha256sum out/FloodSafe-Nepal-v0.8.26-VIDEO-MATCH-NATIVE-MAP.apk
+      - name: Publish direct-install release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release delete v0.8.26 --repo Pujan1234-hub/assigment --yes --cleanup-tag || true
+          gh release create v0.8.26 \
+            out/FloodSafe-Nepal-v0.8.26-VIDEO-MATCH-NATIVE-MAP.apk \
+            --repo Pujan1234-hub/assigment \
+            --target 77e4db8e8c1484e632c42db707a1fc2452321281 \
+            --title 'FloodSafe Nepal v0.8.26 — Video Match Native Map' \
+            --notes 'Native Android build matching the supplied river-map video UI: 2x2 controls, live BIPAD overlay, right-side zoom controls, and in-map details without a dimmed modal. Preserves v0.8.25 Nepal-only source-truth/current-flow logic.'

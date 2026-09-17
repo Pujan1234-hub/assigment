@@ -15,9 +15,6 @@ g=g_path.read_text(encoding='utf-8')
 # - keep the v0.8.30 blue core + glow styling, but only after exact Nepal clipping;
 # - official BIPAD/DHM reading/status/2 km alert truth is untouched.
 
-# -----------------------------------------------------------------------------
-# Exact GeoJSON point-in-polygon independent of older soft/bbox helpers.
-# -----------------------------------------------------------------------------
 anchor='    private static RiverWay copyRiverStrict(RiverWay src){'
 if anchor not in m:
     raise SystemExit('v0.8.31 copyRiverStrict anchor missing')
@@ -30,7 +27,8 @@ helpers=r'''    private static boolean v0831PointInRing(double lon,double lat,JS
             double xi=pi.optDouble(0,Double.NaN),yi=pi.optDouble(1,Double.NaN);
             double xj=pj.optDouble(0,Double.NaN),yj=pj.optDouble(1,Double.NaN);
             if(!Double.isFinite(xi)||!Double.isFinite(yi)||!Double.isFinite(xj)||!Double.isFinite(yj))continue;
-            boolean cross=((yi>lat)!=(yj>lat)) && (lon < (xj-xi)*(lat-yi)/((yj-yi)==0?1e-15:(yj-yi))+xi);
+            double den=(yj-yi)==0?1e-15:(yj-yi);
+            boolean cross=((yi>lat)!=(yj>lat)) && (lon < (xj-xi)*(lat-yi)/den+xi);
             if(cross)inside=!inside;
         }
         return inside;
@@ -48,8 +46,7 @@ helpers=r'''    private static boolean v0831PointInRing(double lon,double lat,JS
         JSONArray fs=root.optJSONArray("features");if(fs==null)return false;
         for(int i=0;i<fs.length();i++){
             JSONObject f=fs.optJSONObject(i),geom=f==null?null:f.optJSONObject("geometry");if(geom==null)continue;
-            String type=geom.optString("","");
-            type=geom.optString("type","");JSONArray c=geom.optJSONArray("coordinates");if(c==null)continue;
+            String type=geom.optString("type","");JSONArray c=geom.optJSONArray("coordinates");if(c==null)continue;
             if("Polygon".equals(type)){
                 if(v0831InsidePolygon(lon,lat,c))return true;
             }else if("MultiPolygon".equals(type)){
@@ -89,8 +86,6 @@ helpers=r'''    private static boolean v0831PointInRing(double lon,double lat,JS
 if 'private static boolean v0831InsideNepalExact(' not in m:
     m=m.replace(anchor,helpers+anchor,1)
 
-# Always exact-clip. Remove the old optimization that could publish complete source ways
-# when the viewport was considered interior.
 old='List<RiverWay> chosen=viewportInsideNepalStrict(fw,fs,fe,fn,nepal)?copyWaysExact(candidates):clipWaysToNepalDense(candidates,nepal);'
 new='List<RiverWay> chosen=v0831ClipToNepalExact(candidates,nepal);'
 if old in m:
@@ -98,7 +93,8 @@ if old in m:
 elif new not in m:
     raise SystemExit('v0.8.31 chosen clip anchor missing')
 
-# Never initialize the visible MapLibre river source from the old rectangular Nepal-ish snapshot.
+# Critical startup fix: the visible source starts EMPTY. The old snapshot was bbox-filtered and
+# could include India/China before the strict viewport refresh ran.
 source_old='style.addSource(new GeoJsonSource("fs-rivers", riversGeoJson));'
 source_new='style.addSource(new GeoJsonSource("fs-rivers", emptyFeatureCollection()));'
 if source_old in m:
@@ -106,41 +102,32 @@ if source_old in m:
 elif source_new not in m:
     raise SystemExit('v0.8.31 fs-rivers source init anchor missing')
 
-# After bundled geometry finishes loading, install layers then immediately request the strict clipped draw.
-post_old='main.post(this::installGeoLayers);'
-post_new='main.post(()->{installGeoLayers();rivers.clear();if(styleReady){setGeo("fs-rivers",emptyFeatureCollection());lastRiverTileKey="";refreshVisibleRiverTiles();}});'
-if post_old in m:
-    m=m.replace(post_old,post_new,1)
-elif post_new not in m:
-    raise SystemExit('v0.8.31 load post anchor missing')
-
-# Also request a strict render after style startup/reset; if geometry is not loaded yet,
-# the load callback above performs it again.
+# Re-run strict renderer several times during startup. If bundled geometry is still loading on
+# the first callback, later callbacks render it; camera-idle keeps subsequent pans/zooms strict.
 style_anchor='startParticles();'
-style_extra='startParticles();main.postDelayed(this::refreshVisibleRiverTiles,450L);'
-if style_anchor in m and style_extra not in m:
+style_extra='startParticles();main.postDelayed(this::refreshVisibleRiverTiles,350L);main.postDelayed(this::refreshVisibleRiverTiles,1200L);main.postDelayed(this::refreshVisibleRiverTiles,3000L);'
+if style_extra not in m:
+    if style_anchor not in m: raise SystemExit('v0.8.31 startParticles anchor missing')
     m=m.replace(style_anchor,style_extra,1)
 
-# Camera: keep full Nepal visible but reduce the large India/China surround seen in the field screenshot.
+# Camera: show Nepal larger, with less surrounding India/China background.
 m=re.sub(r'\.target\(NEPAL_CENTER\)\.zoom\([0-9.]+\)', '.target(NEPAL_CENTER).zoom(6.0)', m, count=1)
 m=m.replace('map.setMinZoomPreference(5.35);','map.setMinZoomPreference(5.65);',1)
 m=m.replace('Math.max(5.35, Math.min(19.0, current + delta))','Math.max(5.65, Math.min(19.0, current + delta))',1)
 
-# Keep v0.8.30 visible blue styling but slightly reduce halo so clipped rivers read cleanly.
+# Keep the visible blue style, but avoid an oversized halo after clipping.
 m=m.replace('lineWidth((float)(7.4+2.4*wave))','lineWidth((float)(6.4+1.8*wave))',1)
 m=m.replace('lineWidth((float)(3.0+0.35*wave))','lineWidth((float)(2.8+0.30*wave))',1)
 
-# Version bump.
 g=g.replace('versionCode 50','versionCode 51',1).replace("versionName '0.8.30'","versionName '0.8.31'",1)
 if 'versionCode 51' not in g or "versionName '0.8.31'" not in g:
     raise SystemExit('v0.8.31 version bump failed')
 
-# Hard gates. No fallback may publish un-clipped candidate geometry.
 for marker in [
     'v0831InsideNepalExact',
     'v0831ClipToNepalExact(candidates,nepal)',
     'style.addSource(new GeoJsonSource("fs-rivers", emptyFeatureCollection()))',
-    'lastRiverTileKey="";refreshVisibleRiverTiles()',
+    'main.postDelayed(this::refreshVisibleRiverTiles,3000L)',
     'map.addOnCameraIdleListener(this::refreshVisibleRiverTiles)',
     'lineColor("#1FC7FF")',
     'setGeo("fs-flow-particles",emptyFeatureCollection())',

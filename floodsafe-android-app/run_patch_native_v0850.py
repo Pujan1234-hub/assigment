@@ -9,7 +9,7 @@ old = '''old='                String g = s.fresh ? normalizeStage(s.stage) : "st
 new='                String g = s.online ? "normal" : "stale"; // V0850_MAP_AVAILABILITY_GROUP'
 if old in m:m=m.replace(old,new,1)
 elif 'V0850_MAP_AVAILABILITY_GROUP' not in m:raise SystemExit('v0850 stationGeo group anchor')'''
-new = r'''if 'V0850_MAP_AVAILABILITY_GROUP' not in m:
+new = """if 'V0850_MAP_AVAILABILITY_GROUP' not in m:
     sg=m.find('    private static String stationGeo(')
     eg=m.find('    private static JSONObject pointFeature(',sg)
     if sg<0 or eg<0: raise SystemExit('v0850 stationGeo method anchors')
@@ -17,16 +17,16 @@ new = r'''if 'V0850_MAP_AVAILABILITY_GROUP' not in m:
         try {
             JSONArray f = new JSONArray();
             for (StationDot s : list) {
-                String g = s.online ? "normal" : "stale"; // V0850_MAP_AVAILABILITY_GROUP
+                String g = s.online ? \"normal\" : \"stale\"; // V0850_MAP_AVAILABILITY_GROUP
                 if (!group.equals(g)) continue;
                 f.put(pointFeature(s.lon, s.lat, s.name));
             }
-            return new JSONObject().put("type", "FeatureCollection").put("features", f).toString();
+            return new JSONObject().put(\"type\", \"FeatureCollection\").put(\"features\", f).toString();
         } catch (Exception e) { return emptyFeatureCollection(); }
     }
 
 '''
-    m=m[:sg]+station_geo+m[eg:]'''
+    m=m[:sg]+station_geo+m[eg:]"""
 
 if old not in s:
     raise SystemExit('v0850 runner could not find strict stationGeo block')

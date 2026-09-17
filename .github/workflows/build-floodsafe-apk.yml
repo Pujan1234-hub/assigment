@@ -50,8 +50,9 @@ jobs:
           python3 floodsafe-android-app/patch_native_v088_restore_web_rivers.py
           python3 floodsafe-android-app/patch_native_v089_realtime_gauges.py
           python3 floodsafe-android-app/patch_native_v0810_live_source_colours.py
+          python3 floodsafe-android-app/patch_native_v0811_nepal_clean_progressive_map.py
 
-      - name: Verify locked safety and v0.8.10 native requirements
+      - name: Verify locked safety and v0.8.11 native requirements
         shell: bash
         run: |
           set -euo pipefail
@@ -69,10 +70,16 @@ jobs:
           grep -Fq 'data/nepal-waterways-snapshot.json' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'all.size() > 1400' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'trimRiverToNepalBBox(rw)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'lineColor("#003a4b"), lineWidth(6.2f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'lineColor("#7f939c"), lineWidth(2.45f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'lineColor("#bdfbff"), lineWidth(1.05f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq 'Math.min(320, rivers.size())' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'nativeZoomBand' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'nativeCleanForZoom' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'nativeClipRiverToNepal' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'applyNativeZoomStyle' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'new LatLng(26.25, 80.02)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'new LatLng(30.50, 88.25)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'lineColor("#003a4b"), lineWidth(1.6f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'lineColor("#168BFF"), lineWidth(0.95f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'lineColor("#bdfbff"), lineWidth(0.42f)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq 'Math.min(72, rivers.size())' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'refreshVisibleRiverTiles' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'readRiverTile' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'fs-river-flow-trace' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
@@ -96,11 +103,11 @@ jobs:
           grep -Fq 'fs-river-warning-status-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'fs-river-danger-status-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           grep -Fq 'refreshRiverStatusSources' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          grep -Fq '"#f4feff", 4.0f, 1.0f' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq '"#f4feff", 2.0f, 0.82f' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
           if grep -Fq 'fs-nepal-mask-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java; then echo 'Invalid diagonal Nepal mask remained'; exit 1; fi
           if grep -Fq 'android.webkit.WebView' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java; then echo 'Native map must not use WebView'; exit 1; fi
-          grep -Fq 'versionCode 30' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.8.10'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 31' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.8.11'" floodsafe-android-app/app/build.gradle
 
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
@@ -125,12 +132,12 @@ jobs:
           unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
 
       - name: Rename APK
-        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.10-LIVE-BIPAD-COLOURS.apk
+        run: cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.8.11-NEPAL-CLEAN-MAP.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-APK
-          path: FloodSafe-Nepal-v0.8.10-LIVE-BIPAD-COLOURS.apk
+          path: FloodSafe-Nepal-v0.8.11-NEPAL-CLEAN-MAP.apk
           if-no-files-found: error
           retention-days: 14

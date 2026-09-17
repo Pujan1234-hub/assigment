@@ -5,6 +5,8 @@ on:
     branches: [ main ]
     paths:
       - 'floodsafe-android-app/patch_native_v0828_finish_blue_nepal_map.py'
+      - 'floodsafe-android-app/patch_low_end_map.py'
+      - 'floodsafe-android-app/patch_low_end_sathi.py'
       - '.github/workflows/build-floodsafe-v0828.yml'
   workflow_dispatch:
 

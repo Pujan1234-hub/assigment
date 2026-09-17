@@ -55,6 +55,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0813_nepal_truth_map.py
           python3 floodsafe-android-app/patch_native_v0814_prep_runtime_counts.py
           python3 floodsafe-android-app/patch_native_v0814_source_exact_smooth.py
+          python3 floodsafe-android-app/patch_native_v0814_compile_fix.py
 
       - name: Verify v0.8.14 source truth smoothness and safety gates
         shell: bash
@@ -71,6 +72,7 @@ jobs:
           grep -Fq 'current ≤30m' "$ACT"
           grep -Fq 'nearestMatchingRiverForGauge' "$MAP"
           grep -Fq 'localRiverSegment' "$MAP"
+          grep -Fq 'localRiverSegment(RiverWay r,double la,double lo) throws Exception' "$MAP"
           grep -Fq 'overviewKeep=Math.min(1400' "$MAP"
           grep -Fq 'z < 8.4 ? 900 : 350' "$MAP"
           grep -Fq 'main.postDelayed(this, 650L)' "$MAP"

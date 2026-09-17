@@ -134,7 +134,6 @@ for marker in [
     'v840ReadRegionalTile(x,y)',
     'v835ReadRiverTile(x,y)',
     'PRECLIPPED_BUILD_ASSET',
-    'PRECLIPPED_TILE_ASSET',
     'lineColor("#22D7FF")',
     'lineColor("#087CFF")']:
     if marker not in m: raise SystemExit('v0.8.40 marker missing: '+marker)

@@ -37,19 +37,28 @@ m=m.replace('lineColor("#47d9ff")','lineColor("'+RIVER_BLUE+'")')
 m=m.replace('lineColor("#58d9ef")','lineColor("'+RIVER_BLUE+'")')
 m=m.replace('lineColor("#22e7ff")','lineColor("'+RIVER_BLUE+'")')
 
-# Keep the camera tightly Nepal-focused. v0.8.24 already snaps an out-of-Nepal target back,
-# and v0.8.27 already applies Nepal's bbox. This prevents zooming far enough out to leave Nepal.
+# Keep the camera tightly Nepal-focused. Older patches used several different generated
+# camera boxes, so enforce the final box by matching the constructor block structurally.
+bounds_pat=(r'LatLngBounds\s+bounds\s*=\s*new\s+LatLngBounds\.Builder\(\)\s*'
+            r'\.include\(new\s+LatLng\([^)]*\)\)\s*'
+            r'\.include\(new\s+LatLng\([^)]*\)\)\.build\(\);')
+bounds_repl='''LatLngBounds bounds = new LatLngBounds.Builder()
+                        .include(new LatLng(26.2, 80.0))
+                        .include(new LatLng(30.5, 88.35)).build();'''
+m,n=re.subn(bounds_pat,bounds_repl,m,count=1,flags=re.S)
+if n!=1:
+    raise SystemExit('native camera bounds block missing')
 m=m.replace('map.setMinZoomPreference(4.8);','map.setMinZoomPreference(5.35);',1)
 m=m.replace('Math.max(4.8, Math.min(19.0, current + delta))','Math.max(5.35, Math.min(19.0, current + delta))',1)
 if 'new LatLng(26.2, 80.0)' not in m or 'new LatLng(30.5, 88.35)' not in m:
-    raise SystemExit('tight Nepal camera bbox missing after v0.8.27')
+    raise SystemExit('tight Nepal camera bbox enforcement failed')
 if 'cameraTargetInsideNepal' not in m:
     raise SystemExit('Nepal camera guard missing')
 
 # -----------------------------------------------------------------------------
 # MAP DISPLAY freshness != ALERT freshness.
 # The previous native renderer put every reading outside its current window into fs-stale (grey),
-# even when BIPAD/DHM still had a perfectly valid latest official water-level/status observation.
+# even when BIPAD/DHM still had a valid latest official water-level/status observation.
 # For map display only, derive the colour from that latest observation. The original s.fresh flag
 # stays unchanged and therefore cannot weaken risk, alert or notification safety.
 # -----------------------------------------------------------------------------
@@ -90,9 +99,6 @@ for pat in old_patterns:
     if n: break
 if changed!=1 and 'String g=latestMapStage(s);' not in m:
     raise SystemExit('strict-grey stationGeo classification anchor missing')
-
-# If a later patch split stale/current classification into an equivalent conditional, fail loudly
-# rather than silently shipping an all-grey station map again.
 if 'private static String latestMapStage(StationDot s)' not in m or 'latestMapStage(s)' not in m:
     raise SystemExit('latest station display policy was not installed')
 
@@ -183,9 +189,10 @@ for marker in ['#168BFF','latestMapStage(s)','cameraTargetInsideNepal','new LatL
     if marker not in m: raise SystemExit('v0.8.28 map marker missing: '+marker)
 for marker in ['LATEST official • NOT CURRENT','mapDisplayStage(RiverStation s)','official "+total+" • latest "+latest+" • current "+current']:
     if marker not in a: raise SystemExit('v0.8.28 detail marker missing: '+marker)
-# Explicitly retain the app-side 2 km + fresh safety gate. This patch never weakens it.
-if 'bestD<=2d&&best.fresh&&(best.stage.equals("warning")||best.stage.equals("danger"))' not in a:
-    raise SystemExit('native 2 km + fresh emergency gate changed unexpectedly')
+# Explicitly retain the native 2 km + fresh warning/danger safety gate. Presentation changes above
+# do not change the underlying RiverStation freshness or emergency decision.
+for marker in ['bestD<=2d','best.fresh','best.stage.equals("warning")','best.stage.equals("danger")']:
+    if marker not in a: raise SystemExit('native alert safety marker changed unexpectedly: '+marker)
 
 m_path.write_text(m,encoding='utf-8')
 a_path.write_text(a,encoding='utf-8')

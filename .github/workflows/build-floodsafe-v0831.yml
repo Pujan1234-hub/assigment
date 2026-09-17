@@ -97,7 +97,7 @@ jobs:
           grep -Fq 'v0831InsideNepalExact' "$M"
           grep -Fq 'v0831ClipToNepalExact(candidates,nepal)' "$M"
           grep -Fq 'style.addSource(new GeoJsonSource("fs-rivers", emptyFeatureCollection()))' "$M"
-          grep -Fq 'lastRiverTileKey="";refreshVisibleRiverTiles()' "$M"
+          grep -Fq 'main.postDelayed(this::refreshVisibleRiverTiles,3000L)' "$M"
           grep -Fq 'map.addOnCameraIdleListener(this::refreshVisibleRiverTiles)' "$M"
           grep -Fq 'lineColor("#1FC7FF")' "$M"
           grep -Fq 'lineWidth((float)(6.4+1.8*wave))' "$M"

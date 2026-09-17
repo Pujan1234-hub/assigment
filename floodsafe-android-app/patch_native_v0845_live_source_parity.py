@@ -64,7 +64,8 @@ a=replace_between(a,'    private List<RiverStation> loadTrustedRiverStations(lon
 
 # Summary must describe what is actually displayed now: only current source rows.
 old='feedFresh.setText(t("Fresh: 🔴 "+d+"  🟠 "+w+"  🟡 "+a+"  🔵 "+n+" • stale/unknown "+stale,"Fresh: 🔴 "+d+"  🟠 "+w+"  🟡 "+a+"  🔵 "+n+" • stale/unknown "+stale));'
-new='feedFresh.setText(t("BIPAD/DHM अहिले उपलब्ध: "+copy.size()+" • 🔴 "+d+"  🟠 "+w+"  🟡 "+a+"  🔵 "+n+" • source status अज्ञात "+stale,"BIPAD/DHM available now: "+copy.size()+" • 🔴 "+d+"  🟠 "+w+"  🟡 "+a+"  🔵 "+n+" • source status unknown "+stale)); // V0845_SOURCE_PARITY_SUMMARY'
+# Use a block-comment marker, not //, because refreshRiverUi is intentionally compact on one Java line.
+new='feedFresh.setText(t("BIPAD/DHM अहिले उपलब्ध: "+copy.size()+" • 🔴 "+d+"  🟠 "+w+"  🟡 "+a+"  🔵 "+n+" • source status अज्ञात "+stale,"BIPAD/DHM available now: "+copy.size()+" • 🔴 "+d+"  🟠 "+w+"  🟡 "+a+"  🔵 "+n+" • source status unknown "+stale)); /* V0845_SOURCE_PARITY_SUMMARY */'
 if old in a:
     a=a.replace(old,new,1)
 elif 'V0845_SOURCE_PARITY_SUMMARY' not in a:
@@ -89,7 +90,7 @@ if click_start<0 or click_end<0:
     raise SystemExit('v0.8.45 onMapClick anchors missing')
 click_block=m[click_start:click_end]
 pat=r'RiverWay rw=nearestRiver\(p\.getLatitude\(\),p\.getLongitude\(\),[^;]+;'
-repl='double riverTapKm=v845RiverTapRadiusKm(p.getLatitude(),zoom); RiverWay rw=nearestRiver(p.getLatitude(),p.getLongitude(),riverTapKm); // V0845_SCREEN_SCALE_RIVER_TAP'
+repl='double riverTapKm=v845RiverTapRadiusKm(p.getLatitude(),zoom); RiverWay rw=nearestRiver(p.getLatitude(),p.getLongitude(),riverTapKm); /* V0845_SCREEN_SCALE_RIVER_TAP */'
 click_block,n=re.subn(pat,repl,click_block,count=1)
 if n!=1:
     raise SystemExit('v0.8.45 river click threshold anchor missing')

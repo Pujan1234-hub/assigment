@@ -14,16 +14,25 @@ def write(p, text):
     p.write_text(text, encoding='utf-8')
 
 
-# The old river animation re-applied all MapLibre paint/filter properties every 240 ms.
+# The old river animation re-applied all MapLibre paint/filter properties very frequently.
 # On Android that repeatedly invalidated a very large river network and could make the
-# whole WebView look frozen after resume. Apply styles only on data/style events and
-# animate at a modest rate while the map is idle.
+# whole WebView look frozen after resume. Accept both the older 240 ms implementation and
+# the final blue-map 280 ms implementation, then throttle only the generated APK asset.
 p, text = read('river-line-style-v1.js')
-old_start = "function start(){if(anim)return;anim=setInterval(()=>{if(document.hidden)return;if(apply())animate()},240)}"
+old_starts = [
+    "function start(){if(anim)return;anim=setInterval(()=>{if(document.hidden)return;if(apply())animate()},240)}",
+    "function start(){if(anim)return;anim=setInterval(()=>{if(document.hidden)return;if(apply())animate()},280)}",
+]
 new_start = "function mapBusy(){const map=window.FloodSafeMap?.map;try{return document.hidden||window.__fsSathiTyping===true||!!map?.isMoving?.()||!!map?.isZooming?.()||!!map?.isRotating?.()}catch{return document.hidden||window.__fsSathiTyping===true}}\nfunction start(){if(anim)return;anim=setInterval(()=>{if(mapBusy())return;animate()},850)}"
-if old_start not in text and new_start not in text:
-    raise SystemExit('river animation marker missing')
-text = text.replace(old_start, new_start, 1)
+if new_start not in text:
+    matched = False
+    for old_start in old_starts:
+        if old_start in text:
+            text = text.replace(old_start, new_start, 1)
+            matched = True
+            break
+    if not matched:
+        raise SystemExit('river animation marker missing')
 # Full-network blur is expensive at national zoom. Render it only once the user zooms in.
 old_glow = "id:'hydro-complete-status-glow',type:'line',source,filter:KNOWN,paint:"
 new_glow = "id:'hydro-complete-status-glow',type:'line',source,filter:KNOWN,minzoom:7,paint:"
@@ -75,4 +84,4 @@ if "__fsHydroVisibility(false)" not in text or "__fsHydroVisibility(true)" not i
     raise SystemExit('hydro gesture visibility patch failed')
 write(p, text)
 
-print('Low-end Android map performance patch PASS: gesture mode + mobile labels')
+print('Low-end Android map performance patch PASS: blue-river throttle + gesture mode + mobile labels')

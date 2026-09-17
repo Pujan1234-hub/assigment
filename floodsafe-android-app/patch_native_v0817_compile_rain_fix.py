@@ -51,11 +51,27 @@ read_new=r'''    private RainDot readRain(Object o){if(o==null)return null;try{C
 m,n=re.subn(read_pat,read_new,m,count=1,flags=re.S)
 if n!=1: raise SystemExit('readRain replacement failed')
 
-show_pat=r'''    private void showRain\(RainDot r\)\{.*?\}\n'''
-show_new=r'''    private void showRain(RainDot r){StringBuilder x=new StringBuilder();x.append("BIPAD/DHM official rain station");if(r.basin!=null&&!r.basin.isEmpty())x.append("\nBasin: ").append(r.basin);if(Double.isFinite(r.rainfall))x.append(String.format(Locale.US,"\nRain 1h: %.1f mm",r.rainfall));if(Double.isFinite(r.rain3))x.append(String.format(Locale.US,"\nRain 3h: %.1f mm",r.rain3));if(Double.isFinite(r.rain6))x.append(String.format(Locale.US,"\nRain 6h: %.1f mm",r.rain6));if(Double.isFinite(r.rain12))x.append(String.format(Locale.US,"\nRain 12h: %.1f mm",r.rain12));if(Double.isFinite(r.rain24))x.append(String.format(Locale.US,"\nRain 24h: %.1f mm",r.rain24));x.append("\nReading: ").append(r.fresh?"LATEST":"STALE / OLD");x.append("\nOfficial time: ").append(formatOfficialTime(r.at));if(r.rawStatus!=null&&!r.rawStatus.isEmpty())x.append("\nSource status: ").append(r.rawStatus);new AlertDialog.Builder(getContext()).setTitle("🌧️ "+r.name).setMessage(x.toString()).setPositiveButton("ठीक छ",null).show();}
+# IMPORTANT: direct slicing, not re.sub, so Java \\n escapes remain literal in generated source.
+show_start=m.find('    private void showRain(RainDot r){')
+show_end=m.find('    private void startParticles() {',show_start)
+if show_start<0 or show_end<0: raise SystemExit('showRain anchors missing')
+show_new=r'''    private void showRain(RainDot r){
+        StringBuilder x=new StringBuilder();
+        x.append("BIPAD/DHM official rain station");
+        if(r.basin!=null&&!r.basin.isEmpty())x.append("\nBasin: ").append(r.basin);
+        if(Double.isFinite(r.rainfall))x.append(String.format(Locale.US,"\nRain 1h: %.1f mm",r.rainfall));
+        if(Double.isFinite(r.rain3))x.append(String.format(Locale.US,"\nRain 3h: %.1f mm",r.rain3));
+        if(Double.isFinite(r.rain6))x.append(String.format(Locale.US,"\nRain 6h: %.1f mm",r.rain6));
+        if(Double.isFinite(r.rain12))x.append(String.format(Locale.US,"\nRain 12h: %.1f mm",r.rain12));
+        if(Double.isFinite(r.rain24))x.append(String.format(Locale.US,"\nRain 24h: %.1f mm",r.rain24));
+        x.append("\nReading: ").append(r.fresh?"LATEST":"STALE / OLD");
+        x.append("\nOfficial time: ").append(formatOfficialTime(r.at));
+        if(r.rawStatus!=null&&!r.rawStatus.isEmpty())x.append("\nSource status: ").append(r.rawStatus);
+        new AlertDialog.Builder(getContext()).setTitle("Rain • "+r.name).setMessage(x.toString()).setPositiveButton("ठीक छ",null).show();
+    }
+
 '''
-m,n=re.subn(show_pat,show_new,m,count=1,flags=re.S)
-if n!=1: raise SystemExit('showRain replacement failed')
+m=m[:show_start]+show_new+m[show_end:]
 
 m=m.replace('private static final class RainDot { String name,basin,band,rawStatus; double lat,lon,rainfall; long at; boolean fresh; }',
             'private static final class RainDot { String name,basin,band,rawStatus; double lat,lon,rainfall,rain3,rain6,rain12,rain24; long at; boolean fresh; }',1)
@@ -66,6 +82,6 @@ m_path.write_text(m,encoding='utf-8')
 
 for marker in ['private void updateMapHintCounts()','rainAverage(JSONObject r,int interval)','rain3,rain6,rain12,rain24']:
     if marker not in a: raise SystemExit('activity compile/rain marker missing: '+marker)
-for marker in ['Rain 1h:','Rain 24h:','rainfall,rain3,rain6,rain12,rain24']:
+for marker in ['\\nRain 1h:','\\nRain 24h:','rainfall,rain3,rain6,rain12,rain24','setTitle("Rain • "+r.name)']:
     if marker not in m: raise SystemExit('map rain detail marker missing: '+marker)
 print('FloodSafe v0.8.17 compile + official rain interval detail fix PASS')

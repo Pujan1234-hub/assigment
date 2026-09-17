@@ -1,5 +1,5 @@
 (()=>{'use strict';
-if(window.__fsFinalMapLockV4)return;window.__fsFinalMapLockV4=true;
+if(window.__fsFinalMapLockV5)return;window.__fsFinalMapLockV5=true;
 const BOUNDS=[[80.0,26.2],[88.35,30.5]],RIVER_BLUE='#168BFF';
 let boundsApplied=false,styleQueued=false,allQueued=false,boundMap=null;
 const txt=(el,s)=>{if(el&&el.textContent!==s)el.textContent=s};
@@ -8,12 +8,12 @@ function normalizeLegacyOverlay(){const {total,latest,noLatest}=counts();if(!tot
 function installDetailStyle(){if(document.getElementById('fsFinalMapDetailStyle'))return;const s=document.createElement('style');s.id='fsFinalMapDetailStyle';s.textContent='.maplibregl-popup-content{border-radius:18px!important;padding:14px 15px!important;box-shadow:0 18px 48px rgba(15,23,42,.28)!important;border:1px solid rgba(15,23,42,.12)!important;max-height:min(62vh,520px);overflow:auto}.maplibregl-popup-close-button{width:34px;height:34px;font-size:22px;border-radius:10px}.maplibregl-popup-tip{filter:drop-shadow(0 2px 2px rgba(15,23,42,.10))}#fsMapSidePanel{box-shadow:0 20px 54px rgba(15,23,42,.34)!important;border-color:rgba(37,99,235,.18)!important}';document.head.appendChild(s)}
 function enforceBlue(map){if(!map?.getStyle)return false;let touched=false;for(const layer of map.getStyle()?.layers||[]){if(layer?.type!=='line')continue;const id=String(layer.id||''),source=String(layer.source||'');const isRiver=source==='hydro-complete'||(/^hydro-complete-/.test(id)&&!/district/i.test(id));if(!isRiver)continue;try{if(/flood-glow|flood-pulse/i.test(id)){if(map.getLayoutProperty(id,'visibility')!=='none')map.setLayoutProperty(id,'visibility','none');continue}const current=map.getPaintProperty(id,'line-color');if(current!==RIVER_BLUE)map.setPaintProperty(id,'line-color',RIVER_BLUE);touched=true}catch{}}return touched}
 function enforceBounds(map){if(!map)return false;try{if(!boundsApplied){boundsApplied=true;map.setMaxBounds(BOUNDS);if(typeof map.setMinZoom==='function'&&map.getMinZoom()<5.0)map.setMinZoom(5.0);map.fitBounds(BOUNDS,{padding:window.innerWidth<620?14:28,pitch:0,bearing:0,duration:0})}return true}catch{return false}}
-function bindMapEvents(map){if(boundMap===map)return;boundMap=map;try{map.on('styledata',queueMap)}catch{}}
+function bindMapEvents(map){if(boundMap===map)return;boundMap=map;try{map.on('style.load',queueMap)}catch{}}
 function applyMap(){styleQueued=false;const map=window.FloodSafeMap?.map;if(!map)return false;bindMapEvents(map);enforceBounds(map);enforceBlue(map);return true}
 function queueMap(){if(styleQueued)return;styleQueued=true;requestAnimationFrame(applyMap)}
 function applyAll(){allQueued=false;normalizeLegacyOverlay();queueMap()}
-function queueAll(){if(allQueued)return;allQueued=true;setTimeout(applyAll,90)}
-function kick(){const st=window.__fsRiverRealtimeState||{};window.dispatchEvent(new CustomEvent('fstrustedriverupdate',{detail:st}));window.FloodSafeMap?.refreshGauges?.();setTimeout(queueAll,100)}
+function queueAll(){if(allQueued)return;allQueued=true;setTimeout(applyAll,100)}
+function kick(){const st=window.__fsRiverRealtimeState||{};window.dispatchEvent(new CustomEvent('fstrustedriverupdate',{detail:st}));window.FloodSafeMap?.refreshGauges?.();setTimeout(queueAll,120)}
 function boot(){installDetailStyle();kick();queueAll();for(const ev of['fsmapready','fs281mapready','fsriverupdate','fstrustedriverupdate','fsriverlinestatus','fslanguage'])window.addEventListener(ev,queueAll);window.addEventListener('focus',queueAll);document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueAll()})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,450),{once:true});else setTimeout(boot,450);window.addEventListener('load',()=>setTimeout(kick,1000));window.FloodSafeFinalMapLock={BOUNDS,RIVER_BLUE,apply:queueAll};
 })();

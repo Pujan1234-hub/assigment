@@ -1,11 +1,32 @@
 {
-  "generated_at": "2026-09-18T04:40:28.237569+05:45",
-  "updated_at_npt": "18 Sep 04:40 NPT",
+  "generated_at": "2026-09-18T06:51:15.407251+05:45",
+  "updated_at_npt": "18 Sep 06:51 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "भोटेकोशी बाढीपछि क्रमशः लयमा फर्कँदै पर्यटन",
+      "title": "देशभर मनसुनीको साथै पश्चिमी वायुको आंशिक प्रभाव, आज यी ३ प्रदेशमा भारी वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592917/partial-effect-of-monsoon-and-westerly-winds-across-the-country-heavy-rain-likely-in-these-3-provinces-today",
+      "published_at": "2026-09-18T06:14:12+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढी प्रभावित ‘होल्डिङ सेन्टर’ छाडेर क्रमशः कोठातिर",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592916/leaving-the-bhotekoshi-flood-affected-holding-center-and-gradually-heading-towards-the-room",
+      "published_at": "2026-09-18T05:47:38+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढीः बेपत्ता आफन्त फर्किने आस मरेपछि परिवारले गरे अन्त्येष्टि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592906/bhotekoshi-flood-family-holds-funeral-after-hope-of-missing-relatives-return-dies",
+      "published_at": "2026-09-18T04:46:32+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढीपछि क्रमशः लयमा फर्कँदै पर्यटन ४ घण्टा अगाडि",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592904/tourism-gradually-returning-to-normal-after-bhotekoshi-flood",
       "published_at": "2026-09-18T02:18:09+05:45",
@@ -22,7 +43,7 @@
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     },
@@ -35,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 3
+      "flash": 1,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,
@@ -46,7 +67,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

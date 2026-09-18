@@ -69,12 +69,13 @@ if old in main:main=main.replace(old,new,1)
 elif 'V0851_BACKGROUND_LOCATION_POINT' not in main:raise SystemExit('v0851 enableBackgroundRainAlerts permission anchor missing')
 
 # Run one immediate weather/rain worker too, beside the already-existing immediate river worker.
+# A prior patch can already create a rainNow local, so use a version-specific name.
 old='''        OneTimeWorkRequest riverNow = new OneTimeWorkRequest.Builder(RiverAlertWorker.class)
                 .setConstraints(constraints).build();
         WorkManager manager = WorkManager.getInstance(this);'''
 new='''        OneTimeWorkRequest riverNow = new OneTimeWorkRequest.Builder(RiverAlertWorker.class)
                 .setConstraints(constraints).build();
-        OneTimeWorkRequest rainNow = new OneTimeWorkRequest.Builder(RainAlertWorker.class)
+        OneTimeWorkRequest v851RainNow = new OneTimeWorkRequest.Builder(RainAlertWorker.class)
                 .setConstraints(constraints).build(); // V0851_IMMEDIATE_RAIN_CHECK
         WorkManager manager = WorkManager.getInstance(this);'''
 if old in main:main=main.replace(old,new,1)
@@ -86,7 +87,7 @@ old='''        manager.enqueueUniqueWork("floodsafe-local-river-alert-now",
 new='''        manager.enqueueUniqueWork("floodsafe-local-river-alert-now",
                 ExistingWorkPolicy.REPLACE, riverNow);
         manager.enqueueUniqueWork("floodsafe-local-rain-alert-now",
-                ExistingWorkPolicy.REPLACE, rainNow); // V0851_IMMEDIATE_RAIN_ENQUEUE
+                ExistingWorkPolicy.REPLACE, v851RainNow); // V0851_IMMEDIATE_RAIN_ENQUEUE
         FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");'''
 if old in main:main=main.replace(old,new,1)
 elif 'V0851_IMMEDIATE_RAIN_ENQUEUE' not in main:raise SystemExit('v0851 immediate rain enqueue anchor missing')

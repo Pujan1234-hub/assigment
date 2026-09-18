@@ -32,7 +32,6 @@ loader=r'''    private List<RiverStation> loadTrustedRiverStations(long now)thro
             if(!nm.isEmpty())metaByName.put(v846Key(nm),c);
         }
 
-        // Newest live row per station across BIPAD latest + DHM realtime-stream.
         java.util.LinkedHashMap<String,JSONObject> liveByKey=new java.util.LinkedHashMap<>();
         for(int i=0;i<bipadLatest.length();i++){
             JSONObject live=bipadLatest.optJSONObject(i);if(live==null)continue;
@@ -80,8 +79,6 @@ loader=r'''    private List<RiverStation> loadTrustedRiverStations(long now)thro
             RiverStation s=parseStation(e.getValue(),now);if(s!=null){out.add(s);onlineKeys.add(e.getKey());}
         }
 
-        // Keep catalog-only stations only as offline/history metadata. They never replace
-        // a newer live BIPAD/DHM row and never trigger a safety alert.
         for(int i=0;i<catalog.length();i++){
             JSONObject c=catalog.optJSONObject(i);if(c==null)continue;
             String ix=v846StationIndex(c),nm=v846StationName(c);
@@ -91,7 +88,6 @@ loader=r'''    private List<RiverStation> loadTrustedRiverStations(long now)thro
             RiverStation s=parseStation(off,now);if(s!=null)out.add(s);
         }
 
-        // Last resort only when BOTH direct official sources yielded nothing.
         if(liveByKey.isEmpty()){
             try{
                 JSONArray rr=rows(getJson(RIVER_ENDPOINT+"?_nativefull="+now+"&_nocache="+System.nanoTime()));
@@ -110,11 +106,9 @@ loader=r'''    private List<RiverStation> loadTrustedRiverStations(long now)thro
 '''
 a=between(a,'    private List<RiverStation> loadTrustedRiverStations(long now)throws Exception{','    private static JSONObject v850MergeStationMeta(',loader,'v0862 loader')
 
-# Ensure foreground polling stays in-place and does not recreate/reload the Activity.
 if 'main.postDelayed(this,10_000L);' not in a: raise SystemExit('v0862 10-second foreground poll missing')
 if 'recreate();});' in a: raise SystemExit('v0862 crash/reload language recreate unexpectedly present')
 
-# Build identity only.
 if 'versionCode 81' in g:g=g.replace('versionCode 81','versionCode 82',1)
 elif 'versionCode 82' not in g:raise SystemExit('v0862 versionCode anchor missing')
 if "versionName '0.8.61'" in g:g=g.replace("versionName '0.8.61'","versionName '0.8.62'",1)
@@ -128,3 +122,5 @@ for x in ['versionCode 82',"versionName '0.8.62'"]:
     if x not in g:raise SystemExit('v0862 version guard failed: '+x)
 if 'bestD<=2d&&best.fresh&&(best.stage.equals("warning")||best.stage.equals("danger"))' not in a:raise SystemExit('v0862 2km safety changed')
 print('FloodSafe v0.8.62 PASS: direct BIPAD + DHM polling, newest official value wins, 10s in-place refresh; UI/safety untouched')
+
+# retry trigger after v0.8.61 wrapper repair

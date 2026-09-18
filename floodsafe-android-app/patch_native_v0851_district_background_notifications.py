@@ -23,7 +23,7 @@ if old in a:a=a.replace(old,new,1)
 elif 'This is the official monitoring-station count' not in a:raise SystemExit('v0851 district subtitle anchor missing')
 
 old='nationalFresh.setText(t(selectedDistrict+": जम्मा "+total+" • 🟢 उपलब्ध "+on+" • पछिल्लो ३० मिनेट "+fr,selectedDistrict+": total "+total+" • 🟢 available "+on+" • within 30 min "+fr));'
-new='int off=Math.max(0,total-on);nationalFresh.setText(t(selectedDistrict+": आधिकारिक नदी मापन केन्द्र "+total+" • 🟢 अनलाइन "+on+" • ⚫ अफलाइन "+off+" • पछिल्लो ३० मिनेट "+fr,selectedDistrict+": official river monitoring stations "+total+" • 🟢 online "+on+" • ⚫ offline "+off+" • readings within 30 min "+fr)); // V0851_DISTRICT_SUMMARY'
+new='int off=Math.max(0,total-on);nationalFresh.setText(t(selectedDistrict+": आधिकारिक नदी मापन केन्द्र "+total+" • 🟢 अनलाइन "+on+" • ⚫ अफलाइन "+off+" • पछिल्लो ३० मिनेट "+fr,selectedDistrict+": official river monitoring stations "+total+" • 🟢 online "+on+" • ⚫ offline "+off+" • readings within 30 min "+fr)); /* V0851_DISTRICT_SUMMARY */'
 if old in a:a=a.replace(old,new,1)
 elif 'V0851_DISTRICT_SUMMARY' not in a:raise SystemExit('v0851 district summary anchor missing')
 

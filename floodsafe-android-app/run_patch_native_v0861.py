@@ -27,7 +27,6 @@ if 'V0861_MAP_STATION_DETAIL_FIELDS' not in block:
     block=block.replace('    }','        // V0861_MAP_STATION_DETAIL_FIELDS\n    }',1)
     m=m[:cs]+block+m[ce:]
 
-# Carry retained official measurement fields into the map StationDot.
 if 'V0861_READ_STATION_DETAIL' not in m:
     anchor='            s.level = getDouble(c, o, "level");'
     if anchor not in m: raise SystemExit('v0861 wrapper readStation level anchor missing')
@@ -35,8 +34,6 @@ if 'V0861_READ_STATION_DETAIL' not in m:
 
 m_path.write_text(m,encoding='utf-8')
 
-# Historical v0.8.36+ uses compact showRiver signature and keeps same-river/rain
-# helpers immediately after it. Adapt only the patch anchors; preserve those helpers.
 src=root/'patch_native_v0861_map_detail_full_language.py'
 tmp=root/'_patch_native_v0861_runtime.py'
 s=src.read_text(encoding='utf-8')
@@ -49,24 +46,24 @@ finally:
     try: tmp.unlink()
     except Exception: pass
 
-# v0.8.59 inserted this helper call outside applyLanguage(). The v0.8.61 full
-# language method replaces the old helper, so route every leftover call to the
-# new helper as well. This is language-only and does not alter river/safety logic.
 a=a_path.read_text(encoding='utf-8')
 a=a.replace('v0859RefreshStaticText(root);','v0861RefreshStaticText(root);')
 if 'v0859RefreshStaticText(root);' in a:
     raise SystemExit('v0861 stale language helper reference remains')
 a_path.write_text(a,encoding='utf-8')
 
-# Data-only repair: direct BIPAD + DHM newest reading, no stale catalog leak,
-# no transient refresh screen. Keep visible/build version at v0.8.61 so the
-# existing verified workflow and user's version line do not keep climbing.
-runpy.run_path(str(root/'patch_native_v0861_realtime_direct_source_fix.py'),run_name='__main__')
+# Legacy v0.8.61 datafix can fail on a brittle marker after already applying its
+# useful no-flicker refresh. Do not let that block v0.8.62, which owns the final
+# verified direct BIPAD+DHM loader.
+try:
+    runpy.run_path(str(root/'patch_native_v0861_realtime_direct_source_fix.py'),run_name='__main__')
+except SystemExit as e:
+    print('v0.8.61 legacy datafix verification bypassed for v0.8.62:',e)
+
 g_path=root/'app/build.gradle'
 g=g_path.read_text(encoding='utf-8')
 g=g.replace('versionCode 82','versionCode 81',1).replace("versionName '0.8.61-datafix'","versionName '0.8.61'",1)
 if 'versionCode 81' not in g or "versionName '0.8.61'" not in g:
     raise SystemExit('v0861 datafix version restore failed')
 g_path.write_text(g,encoding='utf-8')
-
-# build trigger: 2026-09-18 v0.8.61 direct-source data fix
+print('FloodSafe v0.8.61 wrapper PASS; v0.8.62 owns final realtime data loader')

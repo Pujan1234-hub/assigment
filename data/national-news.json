@@ -1,22 +1,78 @@
 {
-  "generated_at": "2026-09-18T11:38:27.450289+05:45",
-  "updated_at_npt": "18 Sep 11:38 NPT",
+  "generated_at": "2026-09-18T16:17:41.736834+05:45",
+  "updated_at_npt": "18 Sep 16:17 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "मन्त्रिपरिषद् बैठक बस्दै",
+      "title": "प्रधानमन्त्री शाह र राष्ट्रसङ्घका महासचिव एन्टोनियो गुटेरेसबिच भेटवार्ता तय",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592967/cabinet-meeting-to-be-held-today",
-      "published_at": "2026-09-18T11:20:54+05:45",
+      "url": "https://www.ratopati.com/story/593058/meeting-between-prime-minister-shah-and-un-secretary-general-antonio-guterres-scheduled",
+      "published_at": "2026-09-18T16:12:18+05:45",
       "flash": true
+    },
+    {
+      "title": "बाढी प्रभावित क्षेत्रमा ५९ हजारभन्दा बढीलाई हैजाविरूद्धको खोप दिइँदै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593054/over-59000-people-in-flood-affected-areas-being-vaccinated-against-cholera",
+      "published_at": "2026-09-18T15:56:25+05:45",
+      "flash": true
+    },
+    {
+      "title": "ढुङ्गे-त्रिशूलीमा मोटरेबल पुल विदुरको पहिलो प्राथमिकतामा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593050/motorized-bridge-at-dhunge-trishuli-is-vidurs-first-priority",
+      "published_at": "2026-09-18T15:48:39+05:45",
+      "flash": true
+    },
+    {
+      "title": "दसैँ-तिहारलगत्तै सरकारविरुद्ध सडक आन्दोलनमा उत्रिने प्रचण्डको चेतावनी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593042/prachanda-warns-of-street-protests-against-the-government-after-dashain-tihar",
+      "published_at": "2026-09-18T15:31:25+05:45",
+      "flash": true
+    },
+    {
+      "title": "पाल्पा कारागारका कैदीबन्दीद्वारा बाढीपीडितलाई सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593031/palpa-prison-inmates-provide-assistance-to-flood-victims",
+      "published_at": "2026-09-18T14:56:47+05:45",
+      "flash": false
+    },
+    {
+      "title": "११ महिनादेखि बेपत्ता धादिङकी महिलाको भारतको मुजफ्फरपुरबाट उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593015/dhading-woman-missing-for-11-months-rescued-from-muzaffarpur-india",
+      "published_at": "2026-09-18T14:29:44+05:45",
+      "flash": false
+    },
+    {
+      "title": "आम्दानीको स्रोत बन्दै भटमास खेती",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593013/soybean-farming-becoming-a-source-of-income",
+      "published_at": "2026-09-18T14:23:02+05:45",
+      "flash": false
+    },
+    {
+      "title": "निर्णय भएको दशकपछि छेला औद्योगिक क्षेत्रलाई जग्गाको भोगाधिकार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593011/ten-years-after-the-decision-the-chhela-industrial-zone-has-been-granted-land-tenure-rights",
+      "published_at": "2026-09-18T14:19:31+05:45",
+      "flash": false
+    },
+    {
+      "title": "रसुवा बाढी : त्रिशूली–१ काे टनेलबाट ६ शव निकालियो, थप आकृति देखिएपछि उद्धार कार्य जारी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592986/rasuwa-flood-6-bodies-recovered-from-trishuli-1-tunnel-rescue-operations-continue-after-more-bodies-are-found",
+      "published_at": "2026-09-18T12:32:09+05:45",
+      "flash": false
     },
     {
       "title": "विपद्को चक्रव्यूहमा जलविद्युत्, एकपछि अर्को धक्काले अपूरणीय क्षति",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592959/hydropower-in-the-throes-of-disaster-one-shock-after-another-causes-irreparable-damage",
       "published_at": "2026-09-18T10:43:01+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "‘बाढीले ४३० मेगावाट बिजुली गुमे पनि देशमा लोडसेडिङ हुन दिँदैनौँ’",
@@ -24,61 +80,12 @@
       "url": "https://www.ratopati.com/story/592957/even-if-430-megawatts-of-electricity-is-lost-due-to-floods-we-will-not-allow-load-shedding-in-the-country",
       "published_at": "2026-09-18T10:32:50+05:45",
       "flash": false
-    },
-    {
-      "title": "त्रिभुवन र कान्ति राजमार्गमा दुईतर्फी यातायात सञ्चालन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592955/two-way-traffic-operation-on-tribhuvan-and-kanti-highways",
-      "published_at": "2026-09-18T10:27:09+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीले पुर्‍याएको क्षतिका बाबजुद हतोत्साहित छैन निजी क्षेत्र",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592950/private-sector-not-discouraged-despite-flood-damage",
-      "published_at": "2026-09-18T10:08:49+05:45",
-      "flash": false
-    },
-    {
-      "title": "यी जिल्लामा आकस्मिक बाढीको मध्यम जोखिम",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592948/moderate-risk-of-flash-floods-in-these-districts",
-      "published_at": "2026-09-18T10:05:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "एमाले सुदूरपश्चिमका मन्त्रीलाई बजेट र सरकार सञ्चालनबारे १० बुँदे निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592940/uml-issues-10-point-directives-to-far-western-ministers-on-budget-and-government-operations",
-      "published_at": "2026-09-18T08:52:40+05:45",
-      "flash": false
-    },
-    {
-      "title": "डिभाइडरमा मोटरसाइकल ठोक्कियो, चालकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592937/motorcycle-crashes-into-divider-driver-dies",
-      "published_at": "2026-09-18T08:30:43+05:45",
-      "flash": false
-    },
-    {
-      "title": "हाइसको ठक्करबाट युवकको मृत्यु, चालक पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592935/youth-dies-after-being-hit-by-a-pickup-truck-driver-arrested",
-      "published_at": "2026-09-18T08:18:06+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी प्रभावित ‘होल्डिङ सेन्टर’ छाडेर क्रमशः कोठातिर",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592916/leaving-the-bhotekoshi-flood-affected-holding-center-and-gradually-heading-towards-the-room",
-      "published_at": "2026-09-18T05:47:38+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -91,8 +98,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 13
+      "flash": 4,
+      "recent": 11
     },
     "Kathmandu Post": {
       "ok": true,
@@ -102,7 +109,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     }

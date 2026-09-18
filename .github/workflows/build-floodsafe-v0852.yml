@@ -81,9 +81,13 @@ jobs:
           W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
           F='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java'
           grep -Fq 'V0852_MY_LOCATION_FOCUS' "$A"
+          grep -Fq 'V0852_LOCATION_BUTTON' "$A"
           grep -Fq 'V0852_DUAL_PROVIDER_LOCATION' "$A"
-          grep -Fq 'V0852_MAP_FOCUS_METHOD' "$A"
-          grep -Fq 'V0852_VISIBLE_GPS_DOT' "$A"
+          grep -Fq 'V0852_FOCUS_AFTER_FIX' "$A"
+          grep -Fq 'V0852_PERMISSION_RESULT' "$A"
+          grep -Fq 'V0852_MAPLIBRE_USER_LOCATION' "$M"
+          grep -Fq 'V0852_MAP_FOCUS_METHOD' "$M"
+          grep -Fq 'V0852_VISIBLE_GPS_DOT' "$M"
           grep -Fq 'V0851_BACKGROUND_LOCATION_ENABLE' "$MAIN"
           grep -Fq 'V0850_MAP_AVAILABILITY_GROUP' "$M"
           grep -Fq 'V0848_FLOOD_COLOUR_PRIORITY' "$M"

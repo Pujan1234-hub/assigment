@@ -72,7 +72,7 @@ if 'V0852_MAPLIBRE_USER_LOCATION' not in m:
 
 # Make the current-location point unmistakable and keep it above station layers.
 old_halo='circleColor("#ffffff"), circleRadius(9.0f), circleOpacity(0.72f))'
-new_halo='circleColor("#ffffff"), circleRadius(13.0f), circleOpacity(0.82f)) // V0852_VISIBLE_GPS_DOT'
+new_halo='circleColor("#ffffff"), circleRadius(13.0f), circleOpacity(0.82f)) /* V0852_VISIBLE_GPS_DOT */'
 if old_halo in m:
     m=m.replace(old_halo,new_halo,1)
 elif 'V0852_VISIBLE_GPS_DOT' not in m:

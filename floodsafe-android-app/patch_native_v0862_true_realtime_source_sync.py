@@ -123,4 +123,4 @@ for x in ['versionCode 82',"versionName '0.8.62'"]:
 if 'bestD<=2d&&best.fresh&&(best.stage.equals("warning")||best.stage.equals("danger"))' not in a:raise SystemExit('v0862 2km safety changed')
 print('FloodSafe v0.8.62 PASS: direct BIPAD + DHM polling, newest official value wins, 10s in-place refresh; UI/safety untouched')
 
-# retry trigger after v0.8.61 wrapper repair
+# retrigger after v0.8.61 wrapper compatibility repair

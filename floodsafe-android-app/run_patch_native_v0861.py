@@ -34,7 +34,16 @@ if 'V0861_READ_STATION_DETAIL' not in m:
 
 m_path.write_text(m,encoding='utf-8')
 
-# Execute the main v0.8.61 patch. The compatibility markers above make its
-# StationDot section idempotent across the historical patch chain.
+# Historical v0.8.36+ uses compact showRiver signature and keeps same-river/rain
+# helpers immediately after it. Adapt only the patch anchors; preserve those helpers.
 src=root/'patch_native_v0861_map_detail_full_language.py'
-runpy.run_path(str(src),run_name='__main__')
+tmp=root/'_patch_native_v0861_runtime.py'
+s=src.read_text(encoding='utf-8')
+s=s.replace("'    private void showRiver(RiverWay r, double la, double lo) {'","'    private void showRiver(RiverWay r,double la,double lo) {'",1)
+s=s.replace("'    private void startParticles() {'","'    private StationDot sameRiverGaugeFor('",1)
+tmp.write_text(s,encoding='utf-8')
+try:
+    runpy.run_path(str(tmp),run_name='__main__')
+finally:
+    try: tmp.unlink()
+    except Exception: pass

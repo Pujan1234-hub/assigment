@@ -1,4 +1,4 @@
-# Rebuild after v0.8.51 district-summary Java generation fix
+# Rebuild after v0.8.51 immediate-rain worker compile fix
 name: Build FloodSafe v0.8.51 District + Background Alerts
 
 on:

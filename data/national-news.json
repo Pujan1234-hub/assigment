@@ -1,14 +1,35 @@
 {
-  "generated_at": "2026-09-18T20:22:35.660372+05:45",
-  "updated_at_npt": "18 Sep 20:22 NPT",
+  "generated_at": "2026-09-18T23:37:43.120250+05:45",
+  "updated_at_npt": "18 Sep 23:37 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "४० वर्षीया मनिला राई नौ दिनदेखि बेपत्ता",
+      "title": "संस्कृति, प्रकृति र आत्मगौरवको सङ्गम बन्दै आठपहरिया घरबास",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593098/manila-rai-40-has-been-missing-for-nine-days",
-      "published_at": "2026-09-18T18:45:06+05:45",
+      "url": "https://www.ratopati.com/story/593143/aathpahariya-gharbaas-is-becoming-a-confluence-of-culture-nature-and-self-esteem",
+      "published_at": "2026-09-18T23:04:08+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढी : नुवाकोटका दुई हजार परिवारको आवासमा क्षति",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593142/bhotekoshi-flood-houses-of-2000-families-in-nuwakot-damaged",
+      "published_at": "2026-09-18T22:44:11+05:45",
+      "flash": true
+    },
+    {
+      "title": "उच्च र जिल्ला अदालतमा १३२ न्यायाधीश थप्न सुझाव",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593136/suggestion-to-add-132-judges-to-high-and-district-courts",
+      "published_at": "2026-09-18T22:00:55+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढीको कटानले मुग्लिनदेखि गल्छीसम्मको सडकमा क्षति",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593128/flood-erosion-damages-road-from-muglin-to-galchhi",
+      "published_at": "2026-09-18T21:42:47+05:45",
       "flash": false
     },
     {
@@ -24,47 +45,12 @@
       "url": "https://www.ratopati.com/story/593080/four-decisions-of-the-council-of-ministers-meeting-made-public",
       "published_at": "2026-09-18T17:38:01+05:45",
       "flash": false
-    },
-    {
-      "title": "मौसम विज्ञान विभाग अब ऊर्जा मन्त्रालय मातहत",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593076/meteorology-department-now-under-the-ministry-of-energy",
-      "published_at": "2026-09-18T17:27:36+05:45",
-      "flash": false
-    },
-    {
-      "title": "विद्युत् प्राधिकरणको कार्यकारी निर्देशकमा दीर्घायु श्रेष्ठ नियुक्त",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593074/dirghayu-shrestha-appointed-as-executive-director-of-electricity-authority",
-      "published_at": "2026-09-18T17:23:24+05:45",
-      "flash": false
-    },
-    {
-      "title": "४. विज्ञदेखि पूर्वप्रधानसेनापतिसम्म : यस्तो छ १३ देशका लागि सिफारिस गरिएका राजदूतहरूको नालीबेली",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593062/from-experts-to-former-army-chiefs-heres-a-rundown-of-ambassadors-recommended-for-13-countries",
-      "published_at": "2026-09-18T16:28:07+05:45",
-      "flash": false
-    },
-    {
-      "title": "पाल्पा कारागारका कैदीबन्दीद्वारा बाढीपीडितलाई सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593031/palpa-prison-inmates-provide-assistance-to-flood-victims",
-      "published_at": "2026-09-18T14:56:47+05:45",
-      "flash": false
-    },
-    {
-      "title": "११ महिनादेखि बेपत्ता धादिङकी महिलाको भारतको मुजफ्फरपुरबाट उद्धार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593015/dhading-woman-missing-for-11-months-rescued-from-muzaffarpur-india",
-      "published_at": "2026-09-18T14:29:44+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     },
@@ -77,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 9
+      "flash": 2,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,
@@ -88,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     }

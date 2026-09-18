@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-18T13:41:29.256298Z",
+  "generated_at": "2026-09-18T17:15:45.037780Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,25 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 2
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "पाकिस्तानमा मस्जिदमा बम विस्फोट हुँदा १५ जनाको मृत्यु, ५६ घाइते",
-      "url": "https://radionepalonline.com/2026/09/18/735988.html",
-      "published_at": "2026-09-18T13:37:53Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "पोखरा–दुबई उडान दिगो बनाउन प्रदेश सरकार र निजी क्षेत्र एकजुट",
-      "url": "https://radionepalonline.com/2026/09/18/735983.html",
-      "published_at": "2026-09-18T13:24:35Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

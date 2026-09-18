@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-18T20:25:21.213374Z",
-  "commit": "cfe6bf118bbe",
+  "generatedAt": "2026-09-18T20:27:30.943444Z",
+  "commit": "accd8a35d551",
   "projects": {
     "teamtracker": {
       "updatedAt": "2026-08-25T15:52:57+01:00",
@@ -15,7 +15,7 @@
       "source": "GitHub source"
     },
     "floodsafe": {
-      "updatedAt": "2026-09-18T21:25:08+01:00",
+      "updatedAt": "2026-09-18T21:26:43+01:00",
       "source": "GitHub source",
       "version": "0.7.0"
     },

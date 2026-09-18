@@ -57,3 +57,5 @@ a=a.replace('v0859RefreshStaticText(root);','v0861RefreshStaticText(root);')
 if 'v0859RefreshStaticText(root);' in a:
     raise SystemExit('v0861 stale language helper reference remains')
 a_path.write_text(a,encoding='utf-8')
+
+# build trigger: 2026-09-18 v0.8.61 final verification

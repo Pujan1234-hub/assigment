@@ -1,0 +1,70 @@
+name: Diagnose FloodSafe v0.8.55 Startup Crash
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/diagnose-floodsafe-v0855-crash.yml'
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download exact v0.8.55 APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0855-CLEAN-20MIN-APK
+          path: apk
+          github-token: ${{ github.token }}
+          repository: Pujan1234-hub/assigment
+          run-id: 35379830014
+
+      - name: Show artifact
+        run: |
+          find apk -maxdepth 2 -type f -ls
+          test -s apk/FloodSafe-Nepal-v0.8.55-CLEAN-20MIN.apk
+
+      - name: Boot emulator, install and launch exact APK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            set -e
+            adb install -r apk/FloodSafe-Nepal-v0.8.55-CLEAN-20MIN.apk
+            adb logcat -c
+            adb shell am force-stop io.github.pujan1234hub.floodsafe.app
+            adb shell am start -W -n io.github.pujan1234hub.floodsafe.app/.PJBuiltsSplashActivity || true
+            sleep 12
+            echo '===== PROCESS ====='
+            adb shell pidof io.github.pujan1234hub.floodsafe.app || true
+            echo '===== CRASH LOG ====='
+            adb logcat -d -v threadtime AndroidRuntime:E ActivityTaskManager:E ActivityManager:E '*:S' | tee crash-log.txt
+            echo '===== FULL APP LOG TAIL ====='
+            adb logcat -d -v threadtime | grep -E 'floodsafe|pujan1234hub|AndroidRuntime|FATAL EXCEPTION|Process:' | tail -n 300 | tee app-log.txt || true
+            if grep -q 'FATAL EXCEPTION\|Process: io.github.pujan1234hub.floodsafe.app' crash-log.txt; then
+              echo 'STARTUP_CRASH_DETECTED=1' >> $GITHUB_ENV
+            else
+              echo 'STARTUP_CRASH_DETECTED=0' >> $GITHUB_ENV
+            fi
+
+      - name: Upload crash logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: floodsafe-v0855-crash-logs
+          path: |
+            crash-log.txt
+            app-log.txt
+          retention-days: 7
+
+      - name: Report
+        if: always()
+        run: |
+          echo "STARTUP_CRASH_DETECTED=${STARTUP_CRASH_DETECTED:-unknown}"

@@ -58,7 +58,7 @@ elif 'V0852_MAP_FOCUS_METHOD' not in a:
     raise SystemExit('v0852 map focus method anchor missing')
 
 old='''if(isNepal(uLat,uLon)){float x=(float)((uLon-80)/(88.35-80))*w,y=(float)((30.5-uLat)/(30.5-26.2))*h;p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(Math.max(2f,dp(2)/scale));p.setColor(Color.rgb(11,127,208));c.drawCircle(x,y,dp(9)/scale,p);p.setStyle(Paint.Style.FILL);}'''
-new='''if(isNepal(uLat,uLon)){float x=(float)((uLon-80)/(88.35-80))*w,y=(float)((30.5-uLat)/(30.5-26.2))*h;float r=dp(7)/scale;p.setStyle(Paint.Style.FILL);p.setColor(Color.WHITE);c.drawCircle(x,y,r+dp(3)/scale,p);p.setColor(Color.rgb(20,133,235));c.drawCircle(x,y,r,p);p.setColor(Color.WHITE);c.drawCircle(x,y,dp(2.2f)/scale,p);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(Math.max(1.5f,dp(2)/scale));p.setColor(Color.rgb(8,91,179));c.drawCircle(x,y,r+dp(3)/scale,p);p.setStyle(Paint.Style.FILL);} // V0852_VISIBLE_GPS_DOT'''
+new='''if(isNepal(uLat,uLon)){float x=(float)((uLon-80)/(88.35-80))*w,y=(float)((30.5-uLat)/(30.5-26.2))*h;float r=dp(7)/scale;p.setStyle(Paint.Style.FILL);p.setColor(Color.WHITE);c.drawCircle(x,y,r+dp(3)/scale,p);p.setColor(Color.rgb(20,133,235));c.drawCircle(x,y,r,p);p.setColor(Color.WHITE);c.drawCircle(x,y,dp(2.2f)/scale,p);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(Math.max(1.5f,dp(2)/scale));p.setColor(Color.rgb(8,91,179));c.drawCircle(x,y,r+dp(3)/scale,p);p.setStyle(Paint.Style.FILL);} /* V0852_VISIBLE_GPS_DOT */'''
 if old in a:
     a=a.replace(old,new,1)
 elif 'V0852_VISIBLE_GPS_DOT' not in a:

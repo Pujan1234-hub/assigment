@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/build-floodsafe-v0861.yml'
       - 'floodsafe-android-app/patch_native_v0861_map_detail_full_language.py'
+      - 'floodsafe-android-app/run_patch_native_v0861.py'
   workflow_dispatch:
 
 jobs:
@@ -75,7 +76,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0858_station_history_realtime.py
           python3 floodsafe-android-app/patch_native_v0859_header_language_no_crash.py
           python3 floodsafe-android-app/patch_native_v0860_restore_source_parity_header_location.py
-          python3 floodsafe-android-app/patch_native_v0861_map_detail_full_language.py
+          python3 floodsafe-android-app/run_patch_native_v0861.py
 
       - name: Verify v0.8.61 requested fixes only
         run: |

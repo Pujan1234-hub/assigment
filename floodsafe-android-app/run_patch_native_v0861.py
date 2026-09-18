@@ -58,4 +58,15 @@ if 'v0859RefreshStaticText(root);' in a:
     raise SystemExit('v0861 stale language helper reference remains')
 a_path.write_text(a,encoding='utf-8')
 
-# build trigger: 2026-09-18 v0.8.61 final verification
+# Data-only repair: direct BIPAD + DHM newest reading, no stale catalog leak,
+# no transient refresh screen. Keep visible/build version at v0.8.61 so the
+# existing verified workflow and user's version line do not keep climbing.
+runpy.run_path(str(root/'patch_native_v0861_realtime_direct_source_fix.py'),run_name='__main__')
+g_path=root/'app/build.gradle'
+g=g_path.read_text(encoding='utf-8')
+g=g.replace('versionCode 82','versionCode 81',1).replace("versionName '0.8.61-datafix'","versionName '0.8.61'",1)
+if 'versionCode 81' not in g or "versionName '0.8.61'" not in g:
+    raise SystemExit('v0861 datafix version restore failed')
+g_path.write_text(g,encoding='utf-8')
+
+# build trigger: 2026-09-18 v0.8.61 direct-source data fix

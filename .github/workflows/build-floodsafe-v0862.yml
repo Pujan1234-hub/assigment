@@ -1,12 +1,12 @@
 name: Build FloodSafe v0.8.62 True Realtime Source Sync APK
-# rerun after v0.8.61 wrapper compatibility repair
+# final robust loader: no legacy loader replacement dependency
 
 on:
   push:
     branches: [ main ]
     paths:
       - '.github/workflows/build-floodsafe-v0862.yml'
-      - 'floodsafe-android-app/patch_native_v0862_true_realtime_source_sync.py'
+      - 'floodsafe-android-app/patch_native_v0862_realtime_final.py'
   workflow_dispatch:
 
 jobs:
@@ -77,7 +77,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0859_header_language_no_crash.py
           python3 floodsafe-android-app/patch_native_v0860_restore_source_parity_header_location.py
           python3 floodsafe-android-app/run_patch_native_v0861.py
-          python3 floodsafe-android-app/patch_native_v0862_true_realtime_source_sync.py
+          python3 floodsafe-android-app/patch_native_v0862_realtime_final.py
 
       - name: Verify v0.8.62 realtime-only fix
         run: |
@@ -87,10 +87,12 @@ jobs:
           W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
           F='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java'
           G='floodsafe-android-app/app/build.gradle'
-          grep -Fq 'V0862_TRUE_REALTIME_BIPAD_DHM' "$A"
-          grep -Fq 'V0862_NEWEST_OFFICIAL_WINS' "$A"
+          grep -Fq 'V0862_FINAL_TRUE_REALTIME_BIPAD_DHM' "$A"
+          grep -Fq 'V0862_FINAL_NEWEST_OFFICIAL_WINS' "$A"
+          grep -Fq 'V0862_FINAL_CATALOG_METADATA_ONLY' "$A"
+          grep -Fq 'V0862_FINAL_NO_FLICKER_REFRESH' "$A"
           grep -Fq 'DHM realtime-stream' "$A"
-          grep -Fq 'BIPAD latest' "$A"
+          grep -Fq 'BIPAD latest direct' "$A"
           grep -Fq 'main.postDelayed(this,10_000L);' "$A"
           grep -Fq 'V0861_FULL_LANGUAGE_APPLY' "$A"
           grep -Fq 'V0861_RIVER_DETAIL_PARITY' "$M"

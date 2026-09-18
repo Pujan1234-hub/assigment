@@ -3,6 +3,7 @@ import re, runpy
 
 root=Path(__file__).resolve().parent
 m_path=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+a_path=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
 m=m_path.read_text(encoding='utf-8')
 
 # Normalize whatever StationDot field layout the earlier map patches produced.
@@ -47,3 +48,12 @@ try:
 finally:
     try: tmp.unlink()
     except Exception: pass
+
+# v0.8.59 inserted this helper call outside applyLanguage(). The v0.8.61 full
+# language method replaces the old helper, so route every leftover call to the
+# new helper as well. This is language-only and does not alter river/safety logic.
+a=a_path.read_text(encoding='utf-8')
+a=a.replace('v0859RefreshStaticText(root);','v0861RefreshStaticText(root);')
+if 'v0859RefreshStaticText(root);' in a:
+    raise SystemExit('v0861 stale language helper reference remains')
+a_path.write_text(a,encoding='utf-8')

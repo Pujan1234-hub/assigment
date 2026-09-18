@@ -1,5 +1,5 @@
 name: Build FloodSafe v0.8.62 True Realtime Source Sync APK
-# final robust loader: no legacy loader replacement dependency
+# final robust loader + compile helper restoration
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/build-floodsafe-v0862.yml'
       - 'floodsafe-android-app/patch_native_v0862_realtime_final.py'
+      - 'floodsafe-android-app/patch_native_v0862_compile_helpers.py'
   workflow_dispatch:
 
 jobs:
@@ -78,6 +79,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0860_restore_source_parity_header_location.py
           python3 floodsafe-android-app/run_patch_native_v0861.py
           python3 floodsafe-android-app/patch_native_v0862_realtime_final.py
+          python3 floodsafe-android-app/patch_native_v0862_compile_helpers.py
 
       - name: Verify v0.8.62 realtime-only fix
         run: |
@@ -91,6 +93,8 @@ jobs:
           grep -Fq 'V0862_FINAL_NEWEST_OFFICIAL_WINS' "$A"
           grep -Fq 'V0862_FINAL_CATALOG_METADATA_ONLY' "$A"
           grep -Fq 'V0862_FINAL_NO_FLICKER_REFRESH' "$A"
+          grep -Fq 'V0862_HELPER_TRUSTED_PAGES' "$A"
+          grep -Fq 'V0862_HELPER_DHM_ROWS' "$A"
           grep -Fq 'DHM realtime-stream' "$A"
           grep -Fq 'BIPAD latest direct' "$A"
           grep -Fq 'main.postDelayed(this,10_000L);' "$A"

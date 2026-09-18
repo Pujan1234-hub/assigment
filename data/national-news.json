@@ -1,42 +1,77 @@
 {
-  "generated_at": "2026-09-18T06:51:15.407251+05:45",
-  "updated_at_npt": "18 Sep 06:51 NPT",
+  "generated_at": "2026-09-18T11:38:27.450289+05:45",
+  "updated_at_npt": "18 Sep 11:38 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "देशभर मनसुनीको साथै पश्चिमी वायुको आंशिक प्रभाव, आज यी ३ प्रदेशमा भारी वर्षाको सम्भावना",
+      "title": "मन्त्रिपरिषद् बैठक बस्दै",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592917/partial-effect-of-monsoon-and-westerly-winds-across-the-country-heavy-rain-likely-in-these-3-provinces-today",
-      "published_at": "2026-09-18T06:14:12+05:45",
+      "url": "https://www.ratopati.com/story/592967/cabinet-meeting-to-be-held-today",
+      "published_at": "2026-09-18T11:20:54+05:45",
       "flash": true
+    },
+    {
+      "title": "विपद्को चक्रव्यूहमा जलविद्युत्, एकपछि अर्को धक्काले अपूरणीय क्षति",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592959/hydropower-in-the-throes-of-disaster-one-shock-after-another-causes-irreparable-damage",
+      "published_at": "2026-09-18T10:43:01+05:45",
+      "flash": true
+    },
+    {
+      "title": "‘बाढीले ४३० मेगावाट बिजुली गुमे पनि देशमा लोडसेडिङ हुन दिँदैनौँ’",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592957/even-if-430-megawatts-of-electricity-is-lost-due-to-floods-we-will-not-allow-load-shedding-in-the-country",
+      "published_at": "2026-09-18T10:32:50+05:45",
+      "flash": false
+    },
+    {
+      "title": "त्रिभुवन र कान्ति राजमार्गमा दुईतर्फी यातायात सञ्चालन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592955/two-way-traffic-operation-on-tribhuvan-and-kanti-highways",
+      "published_at": "2026-09-18T10:27:09+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढीले पुर्‍याएको क्षतिका बाबजुद हतोत्साहित छैन निजी क्षेत्र",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592950/private-sector-not-discouraged-despite-flood-damage",
+      "published_at": "2026-09-18T10:08:49+05:45",
+      "flash": false
+    },
+    {
+      "title": "यी जिल्लामा आकस्मिक बाढीको मध्यम जोखिम",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592948/moderate-risk-of-flash-floods-in-these-districts",
+      "published_at": "2026-09-18T10:05:11+05:45",
+      "flash": false
+    },
+    {
+      "title": "एमाले सुदूरपश्चिमका मन्त्रीलाई बजेट र सरकार सञ्चालनबारे १० बुँदे निर्देशन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592940/uml-issues-10-point-directives-to-far-western-ministers-on-budget-and-government-operations",
+      "published_at": "2026-09-18T08:52:40+05:45",
+      "flash": false
+    },
+    {
+      "title": "डिभाइडरमा मोटरसाइकल ठोक्कियो, चालकको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592937/motorcycle-crashes-into-divider-driver-dies",
+      "published_at": "2026-09-18T08:30:43+05:45",
+      "flash": false
+    },
+    {
+      "title": "हाइसको ठक्करबाट युवकको मृत्यु, चालक पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/592935/youth-dies-after-being-hit-by-a-pickup-truck-driver-arrested",
+      "published_at": "2026-09-18T08:18:06+05:45",
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढी प्रभावित ‘होल्डिङ सेन्टर’ छाडेर क्रमशः कोठातिर",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/592916/leaving-the-bhotekoshi-flood-affected-holding-center-and-gradually-heading-towards-the-room",
       "published_at": "2026-09-18T05:47:38+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीः बेपत्ता आफन्त फर्किने आस मरेपछि परिवारले गरे अन्त्येष्टि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592906/bhotekoshi-flood-family-holds-funeral-after-hope-of-missing-relatives-return-dies",
-      "published_at": "2026-09-18T04:46:32+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीपछि क्रमशः लयमा फर्कँदै पर्यटन ४ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592904/tourism-gradually-returning-to-normal-after-bhotekoshi-flood",
-      "published_at": "2026-09-18T02:18:09+05:45",
-      "flash": false
-    },
-    {
-      "title": "दुई किशोरीको उद्धार, दुई पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/592903/two-teenage-girls-rescued-two-arrested",
-      "published_at": "2026-09-18T01:43:25+05:45",
       "flash": false
     }
   ],
@@ -56,8 +91,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 5
+      "flash": 2,
+      "recent": 13
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +102,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     }

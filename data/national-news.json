@@ -1,9 +1,16 @@
 {
-  "generated_at": "2026-09-19T02:03:18.667877+05:45",
-  "updated_at_npt": "19 Sep 02:03 NPT",
+  "generated_at": "2026-09-19T04:25:30.238051+05:45",
+  "updated_at_npt": "19 Sep 04:25 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "संविधान दिवसमा नाकाबन्दीको कठिन घडीले संविधानको रक्षा र एकताको प्रेरणा दिएको ओलीको स्मरण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593149/uml-oli-recalls-how-the-difficult-time-of-the-blockade-inspired-unity-and-protection-of-the-constitution-on-constitution-day",
+      "published_at": "2026-09-19T02:24:50+05:45",
+      "flash": false
+    },
     {
       "title": "संस्कृति, प्रकृति र आत्मगौरवको सङ्गम बन्दै आठपहरिया घरबास",
       "source": "Ratopati",
@@ -16,13 +23,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593142/bhotekoshi-flood-houses-of-2000-families-in-nuwakot-damaged",
       "published_at": "2026-09-18T22:44:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीको कटानले मुग्लिनदेखि गल्छीसम्मको सडकमा क्षति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593128/flood-erosion-damages-road-from-muglin-to-galchhi",
-      "published_at": "2026-09-18T21:42:47+05:45",
       "flash": false
     }
   ],

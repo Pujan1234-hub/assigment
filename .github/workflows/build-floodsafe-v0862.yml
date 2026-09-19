@@ -1,5 +1,6 @@
 name: Build FloodSafe v0.8.62 True Realtime Source Sync APK
 # final robust loader + compile helper restoration + district live-list safety filter
+# trigger: realtime final rebuild 2026-09-19
 
 on:
   push:

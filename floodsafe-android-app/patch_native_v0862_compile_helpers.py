@@ -122,3 +122,5 @@ for marker in ['V0862_FINAL_TRUE_REALTIME_BIPAD_DHM','V0862_FINAL_NO_FLICKER_REF
     if marker not in a:raise SystemExit('v0862 compile helper guard failed: '+marker)
 if 'bestD<=2d&&best.fresh&&(best.stage.equals("warning")||best.stage.equals("danger"))' not in a:raise SystemExit('v0862 compile helper 2km guard changed')
 print('FloodSafe v0.8.62 compile helpers PASS: source helpers restored only; UI/map/safety unchanged')
+
+# rerun marker: v0.8.61 wrapper now bypasses its obsolete realtime-data guard; v0.8.62 owns the final loader.

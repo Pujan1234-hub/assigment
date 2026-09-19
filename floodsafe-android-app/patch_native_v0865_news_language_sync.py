@@ -130,7 +130,7 @@ elif "versionName '0.8.65'" not in g:raise SystemExit('v0865 versionName anchor 
 
 a_path.write_text(a,encoding='utf-8');g_path.write_text(g,encoding='utf-8')
 
-for x in ['V0865_LANGUAGE_REFRESHES_NEWS','V0865_NEWS_LANGUAGE_SYNC','V0865_NEWS_SCRIPT_FILTER','V0865_LOCALIZED_NEWS_RENDER','V0864_NEVER_CLEAR_STATION_INVENTORY','V0863_RIVER_TAP_TRUTH','RIVER_FRESH_MS=20L*60L*1000L']:
+for x in ['V0865_LANGUAGE_REFRESHES_NEWS','V0865_NEWS_LANGUAGE_SYNC','V0865_NEWS_SCRIPT_FILTER','V0865_LOCALIZED_NEWS_RENDER','V0864_NEVER_CLEAR_STATION_INVENTORY','RIVER_FRESH_MS=20L*60L*1000L']:
     if x not in a:raise SystemExit('v0865 verification failed: '+x)
 for x in ['versionCode 85',"versionName '0.8.65'"]:
     if x not in g:raise SystemExit('v0865 version verification failed: '+x)

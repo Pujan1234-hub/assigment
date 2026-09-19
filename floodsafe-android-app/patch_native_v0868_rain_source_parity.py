@@ -13,13 +13,7 @@ m=m_path.read_text(encoding='utf-8')
 g=g_path.read_text(encoding='utf-8')
 
 # v0.8.68 is intentionally narrow:
-# - rainfall follows the latest official BIPAD/DHM source exactly, with no local minute cutoff
-# - keep the official rainfall measurement time/interval values unchanged
-# - refresh rainfall every 10 seconds while the app is open
-# - show official rainfall station dots at every Nepal map zoom, not only local zoom
-# - fix the river map header count regression (0/0) by publishing the already-loaded source counts
-# - do NOT change river source logic, station coordinates, news, weather, thresholds or 2 km alert radius
-
+# rainfall + river map counters mirror the latest official source; other app features remain untouched.
 def method_span(text,name):
     q=re.search(r'(?m)^\s*(?:private|public|protected)\s+[^\n{]+\b'+re.escape(name)+r'\s*\([^\n]*\)\s*\{',text)
     if not q:return None
@@ -39,7 +33,7 @@ def method_span(text,name):
         i+=1
     return None
 
-# Latest official rainfall source row = current display truth. No 5/20/30/40 minute app cutoff.
+# Latest official rainfall source row = current display truth. No local 5/20/30/40-minute gate.
 sp=method_span(a,'parseRainStation')
 if not sp:raise SystemExit('v0868 parseRainStation missing')
 block=a[sp[0]:sp[1]]
@@ -61,14 +55,10 @@ if 'V0868_RAIN_10S_POLL' not in a:
     a=a.replace(field_anchor,field_anchor+poll,1)
 
 if 'V0868_START_RAIN_POLL' not in a:
-    on=method_span(a,'onCreate')
-    if not on:raise SystemExit('v0868 onCreate missing')
-    b=a[on[0]:on[1]]
-    if 'refreshAll();' not in b:raise SystemExit('v0868 refreshAll onCreate anchor missing')
-    b=b.replace('refreshAll();','refreshAll();main.postDelayed(v0868RainPoll,1200L); // V0868_START_RAIN_POLL',1)
-    a=a[:on[0]]+b+a[on[1]:]
+    if 'refreshAll();' not in a:raise SystemExit('v0868 refreshAll startup anchor missing')
+    a=a.replace('refreshAll();','refreshAll();main.postDelayed(v0868RainPoll,1200L); // V0868_START_RAIN_POLL',1)
 
-# Publish the real river counts to the map header; v0.8.67 accidentally left these at 0/0.
+# Publish real river counts to map header; v0.8.67 accidentally left 0/0 there.
 sp=method_span(a,'refreshRiverUi')
 if not sp:raise SystemExit('v0868 refreshRiverUi missing')
 block=a[sp[0]:sp[1]]
@@ -89,7 +79,7 @@ hint=r'''    private void updateMapHintCounts(){
 '''
 a=a[:sp[0]]+hint+a[sp[1]:]
 
-# Do not hide current rainfall stations behind a zoom cutoff.
+# Rain dots stay visible as official source data at all Nepal map zoom levels.
 sp=method_span(m,'refreshRainSources')
 if not sp:raise SystemExit('v0868 refreshRainSources missing')
 rain_sources=r'''    private void refreshRainSources() {
@@ -104,7 +94,7 @@ rain_sources=r'''    private void refreshRainSources() {
 '''
 m=m[:sp[0]]+rain_sources+m[sp[1]:]
 
-# Exact data markers first: river gauge, rainfall gauge, then river geometry.
+# Exact markers first: river gauge, rainfall gauge, then river geometry.
 sp=method_span(m,'onMapClick')
 if not sp:raise SystemExit('v0868 onMapClick missing')
 click=r'''    private boolean onMapClick(LatLng p) {
@@ -130,7 +120,7 @@ click=r'''    private boolean onMapClick(LatLng p) {
 '''
 m=m[:sp[0]]+click+m[sp[1]:]
 
-# Keep rain popup source semantics explicit without changing official values/time.
+# Keep rainfall popup source semantics explicit without changing values/time.
 sp=method_span(m,'showRain')
 if not sp:raise SystemExit('v0868 showRain missing')
 block=m[sp[0]:sp[1]]
@@ -139,7 +129,6 @@ if 'V0868_RAIN_DETAIL_SOURCE_PARITY' not in block:
         block=block.replace('r.fresh?"LATEST":"STALE / OLD"','r.fresh?"LATEST OFFICIAL SOURCE":"SOURCE TIME UNAVAILABLE"',1)
     elif 'r.fresh ? "LATEST" : "STALE / OLD"' in block:
         block=block.replace('r.fresh ? "LATEST" : "STALE / OLD"','r.fresh ? "LATEST OFFICIAL SOURCE" : "SOURCE TIME UNAVAILABLE"',1)
-    # Marker is kept even if a later language patch changed the exact visible phrase.
     block=block[:-1]+'        // V0868_RAIN_DETAIL_SOURCE_PARITY\n    }'
     m=m[:sp[0]]+block+m[sp[1]:]
 

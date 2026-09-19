@@ -1,0 +1,139 @@
+name: Build FloodSafe v0.8.64 Restore Station Inventory APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0864.yml'
+      - 'floodsafe-android-app/patch_native_v0864_restore_station_inventory.py'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply FloodSafe patches through v0.8.64
+        run: |
+          set -euo pipefail
+          for p in \
+            patch_webview_crash.py patch_launcher_reopen_hard_reset.py patch_auto_alerts.py patch_river_waterlevel.py \
+            patch_two_hour_weather.py patch_cold_start_blank.py patch_cross_device_navigation.py patch_native_compat_fallback.py \
+            patch_map_smooth_v075.py patch_full_native_v080.py patch_native_v081_polish.py patch_native_v081_escape_fix.py \
+            patch_native_maplibre_v082.py patch_native_map_detail_v083.py patch_native_v084_sathi_map.py patch_native_v085_flow_sathi.py \
+            patch_native_v086_full_waterways.py patch_native_v087_runtime_rivers.py patch_native_v088_restore_web_rivers.py \
+            patch_native_v089_realtime_gauges.py patch_native_v0810_live_source_colours.py patch_native_v0810_compile_fix.py \
+            patch_native_v0811_map_anr_fix.py patch_native_v0812_trusted_latest_flow.py patch_native_v0813_prep_truth_ui.py \
+            patch_native_v0813_nepal_truth_map.py patch_native_v0814_prep_runtime_counts.py patch_native_v0814_source_exact_smooth.py \
+            patch_native_v0814_compile_fix.py patch_native_v0815_single_source_truth.py patch_native_v0816_current_only_map.py \
+            patch_native_v0817_clean_web_map.py patch_native_v0817_compile_rain_fix.py patch_native_v0818_direct_river_clean_flow.py \
+            patch_native_v0819_web_live_master.py patch_native_v0820_place_labels_prep.py patch_native_v0820_nepal_mask_prep.py \
+            patch_native_v0820_nepal_only_local_rivers.py patch_native_v0821_actual_river_geometry.py patch_native_v0822_viewport_rivers.py \
+            patch_native_v0823_visible_bounds_rivers.py patch_native_v0824_strict_nepal_source_truth.py patch_native_v0825_segment_current_flow.py \
+            patch_native_v0825_helper_restore.py patch_native_v0826_video_map_ui.py patch_native_v0827_compact_realtime_map.py \
+            patch_native_v0828_finish_blue_nepal_map.py patch_native_v0828_compile_fix.py patch_native_v0829_flow_glow_dense_network.py \
+            patch_native_v0830_visible_blue_glow_everywhere.py patch_native_v0831_hard_nepal_clip.py patch_native_v0832_restore_strict_blue_flow.py \
+            patch_native_v0833_thin_flow_risk_colours.py patch_native_v0834_force_visible_nepal_flow.py; do
+              python3 "floodsafe-android-app/$p"
+          done
+          sed -i "/'readRiverTile(x,y,null)',/d" floodsafe-android-app/patch_native_v0835_fast_overview_rain_taps.py
+          python3 floodsafe-android-app/patch_native_v0835_fast_overview_rain_taps.py
+          python3 floodsafe-android-app/patch_native_v0835_compile_helpers.py
+          python3 floodsafe-android-app/patch_native_v0836_video_blue_rivers_combined_detail.py
+          python3 floodsafe-android-app/patch_native_v0837_preclipped_visible_rivers.py
+          python3 floodsafe-android-app/patch_native_v0838_full_nepal_rivers_close.py
+          python3 floodsafe-android-app/patch_native_v0839_complete_edge_rivers.py
+          python3 floodsafe-android-app/patch_native_v0840_regional_edge_tiles.py
+          python3 floodsafe-android-app/patch_native_v0841_full_national_network.py
+          python3 floodsafe-android-app/patch_native_v0842_progressive_zoom_rivers.py
+          python3 floodsafe-android-app/patch_native_v0843_touchable_rivers.py
+          python3 floodsafe-android-app/patch_native_v0844_final_all_river_taps_online.py
+          python3 floodsafe-android-app/patch_native_v0845_live_source_parity.py
+          python3 floodsafe-android-app/patch_native_v0846_bipad_dhm_union_realtime.py
+          python3 floodsafe-android-app/patch_native_v0847_moving_river_glow.py
+          python3 floodsafe-android-app/patch_native_v0848_station_district.py
+          python3 floodsafe-android-app/patch_native_v0848_sathi_advanced.py
+          python3 floodsafe-android-app/patch_native_v0848_risk_colour.py
+          python3 floodsafe-android-app/patch_native_v0848_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0849_source_parity_online_dots.py
+          python3 floodsafe-android-app/run_patch_native_v0850.py
+          python3 floodsafe-android-app/patch_native_v0851_district_background_notifications.py
+          python3 floodsafe-android-app/patch_native_v0852_my_location_map.py
+          python3 floodsafe-android-app/patch_native_v0853_five_minute_river_freshness.py
+          python3 floodsafe-android-app/patch_native_v0854_language_five_minute_ui.py
+          python3 floodsafe-android-app/patch_native_v0856_crashfix_clean_20min.py
+          python3 floodsafe-android-app/patch_native_v0857_nearby_status_language.py
+          python3 floodsafe-android-app/patch_native_v0858_station_history_realtime.py
+          python3 floodsafe-android-app/patch_native_v0859_header_language_no_crash.py
+          python3 floodsafe-android-app/patch_native_v0860_restore_source_parity_header_location.py
+          python3 floodsafe-android-app/run_patch_native_v0861.py
+          python3 floodsafe-android-app/patch_native_v0862_realtime_final.py
+          python3 floodsafe-android-app/patch_native_v0862_compile_helpers.py
+          python3 floodsafe-android-app/patch_native_v0863_river_tap_truth.py
+          python3 floodsafe-android-app/patch_native_v0864_restore_station_inventory.py
+
+      - name: Verify v0.8.64 station inventory and safety guards
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
+          F='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0864_NEVER_CLEAR_STATION_INVENTORY' "$A"
+          grep -Fq 'V0864_PROXY_OVERLAYS_CATALOG' "$A"
+          grep -Fq 'V0863_RIVER_TAP_TRUTH' "$M"
+          grep -Fq 'V0863_SAME_RIVER_GAUGE' "$M"
+          grep -Fq 'RIVER_FRESH_MS=20L*60L*1000L' "$A"
+          grep -Fq 'MAX_AGE_MS = 20L * 60L * 1000L' "$W"
+          grep -Fq 'MAX_RIVER_AGE_MS = 20L * 60L * 1000L' "$F"
+          grep -Fq 'RADIUS_KM = 2d' "$W"
+          grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' "$F"
+          grep -Fq 'versionCode 84' "$G"
+          grep -Fq "versionName '0.8.64'" "$G"
+          ! grep -Fq 'recreate();});' "$A"
+
+      - name: Bundle assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Build named progressive Nepal river assets
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+
+      - name: Optimize retained web assets
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+
+      - name: Unit test and build full APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify APK contents
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-major-v0842.geojson'
+          cp "$APK" FloodSafe-Nepal-v0.8.64-STATION-INVENTORY-FIX.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0864-STATION-INVENTORY-FIX-APK
+          path: FloodSafe-Nepal-v0.8.64-STATION-INVENTORY-FIX.apk
+          retention-days: 14

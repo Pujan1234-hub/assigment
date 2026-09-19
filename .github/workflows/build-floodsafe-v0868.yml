@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/build-floodsafe-v0868.yml'
       - 'floodsafe-android-app/patch_native_v0868_rain_source_parity.py'
+      - 'floodsafe-android-app/patch_native_v0868_compile_fix.py'
   workflow_dispatch:
 
 jobs:
@@ -84,6 +85,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0866_station_river_geometry_truth.py
           python3 floodsafe-android-app/patch_native_v0867_realtime_source_parity.py
           python3 floodsafe-android-app/patch_native_v0868_rain_source_parity.py
+          python3 floodsafe-android-app/patch_native_v0868_compile_fix.py
 
       - name: Verify v0.8.68 rainfall source parity
         run: |
@@ -104,6 +106,7 @@ jobs:
           grep -Fq 'V0868_RAIN_VISIBLE_ALL_ZOOMS' "$M"
           grep -Fq 'V0868_RAIN_TAP_FIRST' "$M"
           grep -Fq 'V0868_RAIN_DETAIL_SOURCE_PARITY' "$M"
+          grep -Fq 'V0868_RAIN_GEO_COMPILE_FIX' "$M"
           grep -Fq 'V0867_RIVER_SOURCE_PARITY' "$M"
           grep -Fq 'RADIUS_KM = 2d' "$W"
           grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' "$F"

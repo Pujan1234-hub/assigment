@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-20T00:38:33.248043+05:45",
-  "updated_at_npt": "20 Sep 00:38 NPT",
+  "generated_at": "2026-09-20T03:02:24.045523+05:45",
+  "updated_at_npt": "20 Sep 03:02 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -9,21 +9,21 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593308/electricity-exports-worth-five-billion-in-bhadra",
       "published_at": "2026-09-20T00:35:12+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "छुट्टाछुटै दुर्घटनामा दुई जनाको मृत्यु, एक घाइते",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593307/two-people-killed-one-injured-in-separate-accidents",
       "published_at": "2026-09-20T00:30:11+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "ध्यानका लागि आकर्षक गन्तव्य बन्दै शिवपुरीको ध्रुवस्थली",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593306/shivapuris-dhruvasthali-is-becoming-an-attractive-destination-for-meditation",
       "published_at": "2026-09-20T00:27:42+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "बाढी प्रभावित क्षेत्रमा एकीकृत आवास निर्माण गर्नुपर्नेमा जोड",
@@ -31,33 +31,12 @@
       "url": "https://www.ratopati.com/story/593302/emphasis-on-building-integrated-housing-in-flood-affected-areas",
       "published_at": "2026-09-19T23:28:31+05:45",
       "flash": false
-    },
-    {
-      "title": "काठमाडौँमा शनिबारदेखि थप ६ रुटमा २८ वटा विद्युतीय बस सेवा बिस्तार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593290/28-electric-bus-services-to-be-expanded-to-6-more-routes-in-kathmandu-from-saturday",
-      "published_at": "2026-09-19T20:53:02+05:45",
-      "flash": false
-    },
-    {
-      "title": "देवानगञ्जमा गोली लागेका घाइतेको खुल्यो परिचय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593282/identity-of-injured-in-dewanganj-shooting-revealed",
-      "published_at": "2026-09-19T19:10:25+05:45",
-      "flash": false
-    },
-    {
-      "title": "१. सुनसरीको देवानगञ्जमा गोली चल्यो, एकजना घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593280/one-injured-in-shooting-in-dewanganj-sunsari",
-      "published_at": "2026-09-19T18:44:03+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 6,
+      "candidates": 5,
       "flash": 0,
       "recent": 0
     },
@@ -70,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 8
+      "flash": 0,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

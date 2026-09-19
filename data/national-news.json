@@ -1,15 +1,57 @@
 {
-  "generated_at": "2026-09-19T15:12:39.678900+05:45",
-  "updated_at_npt": "19 Sep 15:12 NPT",
+  "generated_at": "2026-09-19T19:05:03.872588+05:45",
+  "updated_at_npt": "19 Sep 19:05 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बाढी पीडितको सहयोगका लागि संविधान दिवसमा साइकल र्‍याली",
+      "title": "सुनसरीको देवानगञ्जमा गोली चल्यो, एकजना घाइते",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593229/bicycle-rally-on-constitution-day-to-support-flood-victims",
-      "published_at": "2026-09-19T14:54:51+05:45",
+      "url": "https://www.ratopati.com/story/593280/one-injured-in-shooting-in-dewanganj-sunsari",
+      "published_at": "2026-09-19T18:44:03+05:45",
       "flash": true
+    },
+    {
+      "title": "नेपाल संसदीय प्रणालीबाट दायाँबायाँ लाग्न हुँदैन : वरिष्ठ अधिवक्ता केसी ४९ मिनेट अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593274/nepals-parliamentary-system-should-not-be-deviated-from-senior-advocate-kc",
+      "published_at": "2026-09-19T18:15:51+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीले सबै बगायो, तर बगेन बैंकको ऋण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593239/the-flood-washed-away-everything-but-not-the-bank-loan",
+      "published_at": "2026-09-19T18:00:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "शीतल निवासमा प्रधानमन्त्री शाहप्रति विदेशी प्रतिनिधिको चासो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593264/constitution-day-at-sheetal-niwas-foreign-representatives-show-interest-in-prime-minister-shah",
+      "published_at": "2026-09-19T17:44:35+05:45",
+      "flash": false
+    },
+    {
+      "title": "नेपाल भौगोलिक र राजनीतिक रूपले अति संवेदनशील : पूर्वराष्ट्रपति भण्डारी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593261/pal-is-very-sensitive-geographically-and-politically-former-president-bhandari",
+      "published_at": "2026-09-19T17:13:37+05:45",
+      "flash": false
+    },
+    {
+      "title": "तस्बिरमा हेर्नुहोस् संविधान दिवसमा राष्ट्रपति कार्यालयमा आयोजित कार्यक्रम १ घण्टा अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593260/see-the-program-organized-at-the-presidents-office-on-constitution-day-in-photos",
+      "published_at": "2026-09-19T17:05:38+05:45",
+      "flash": false
+    },
+    {
+      "title": "आलोचना सुन्ने र राज्यलाई जबाफदेही बनाउने संस्कारले मात्र लोकतन्त्र बलियो हुन्छ : राष्ट्रपति",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593259/democracy-is-only-strengthened-through-a-culture-of-listening-to-criticism-and-holding-the-state-accountable-president",
+      "published_at": "2026-09-19T17:02:34+05:45",
+      "flash": false
     },
     {
       "title": "सत्ता समीकरण फेरिँदा कर्णालीका संसदीय समिति लथालिङ्ग",
@@ -31,40 +73,12 @@
       "url": "https://www.ratopati.com/story/593213/how-did-the-secretary-who-instructed-others-to-stop-inviting-new-tenders-reveal-his-ministry",
       "published_at": "2026-09-19T13:28:18+05:45",
       "flash": false
-    },
-    {
-      "title": "चीनको औपचारिक भ्रमण पुरा गरी प्रधान सेनापति सिग्देल स्वदेश फिर्ता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593204/chief-of-army-staff-sigdel-returns-home-after-completing-official-visit-to-china",
-      "published_at": "2026-09-19T12:43:13+05:45",
-      "flash": false
-    },
-    {
-      "title": "दलहरूसँगको संवाद प्रधानमन्त्रीका लागि ‘एकादेशको कथा’ बन्यो : शंकर पोखरेल",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593200/dialogue-with-parties-became-the-story-of-one-country-for-the-prime-minister-shankar-pokharel",
-      "published_at": "2026-09-19T12:36:28+05:45",
-      "flash": false
-    },
-    {
-      "title": "भ्रष्टाचार र दण्डहीनताको जरो उखेल्ने हातहरू अब झन् बलिया छन् : प्रधानमन्त्री शाह २ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593199/the-hands-that-uproot-corruption-and-impunity-are-now-stronger-prime-minister-shah",
-      "published_at": "2026-09-19T12:34:17+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रतिस्पर्धात्मक लोकतन्त्र, मानव अधिकार र कानुनी राज्य राष्ट्रिय जीवनको आधार हुन् : प्रधानमन्त्री शाह",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593194/competitive-democracy-human-rights-and-the-rule-of-law-are-the-foundation-of-national-life-prime-minister-shah",
-      "published_at": "2026-09-19T12:12:55+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     },
@@ -77,8 +91,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 8
+      "flash": 3,
+      "recent": 11
     },
     "Kathmandu Post": {
       "ok": true,
@@ -88,7 +102,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     }

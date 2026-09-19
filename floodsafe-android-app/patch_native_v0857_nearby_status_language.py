@@ -11,6 +11,7 @@ g=g_path.read_text(encoding='utf-8')
 # - show a persistent language switch without Activity.recreate()
 # - do not show arbitrary "nearby" stations when GPS is missing/outside Nepal
 # - station dots/cards represent the 20-minute safety status, not merely source availability
+# - district live list shows only fresh official water-level stations (no stale/rainfall/velocity rows)
 # Alert radius, thresholds, official sources, map geometry, weather and background logic stay unchanged.
 
 # 1) Persistent floating language switch above SATHI.
@@ -21,6 +22,7 @@ if 'V0857_FLOATING_LANGUAGE' not in a:
     a=a.replace(anchor,add,1)
 
 # 2) Replace refreshRiverUi so nearby list is GPS-truthful and safety colours use 20-minute freshness.
+# District list is LIVE status, therefore stale/history rows and rainfall/velocity series are intentionally excluded.
 rs=a.find('    private void refreshRiverUi(){')
 re=a.find('    private static String v849AvailabilityDot',rs)
 if rs<0 or re<0: raise SystemExit('v0857 refreshRiverUi anchors missing')
@@ -50,8 +52,33 @@ refresh=r'''    private void refreshRiverUi(){
             if(near.isEmpty())nearList.addView(empty(t("नजिकको आधिकारिक नदी मापन केन्द्र भेटिएन।","No nearby official river station was found.")));
         }
 
-        if(nationalList!=null){nationalList.removeAllViews();if(selectedDistrict.isEmpty()){nationalFresh.setText(t("जिल्ला छानेर त्यहाँका आधिकारिक मापन केन्द्र हेर्नुहोस्।","Choose a district to view its official river stations."));nationalList.addView(empty(t("माथिबाट जिल्ला छान्नुहोस्।","Choose a district above.")));}else{int total=0,on=0,fr=0;for(RiverStation s:copy)if(selectedDistrict.equalsIgnoreCase(s.district)){total++;if(s.online)on++;if(s.fresh)fr++;nationalList.addView(stationRow(s));}nationalFresh.setText(t(selectedDistrict+": जम्मा "+total+" • पछिल्लो २० मिनेट "+fr,selectedDistrict+": total "+total+" • within 20 min "+fr));if(total==0)nationalList.addView(empty(t("आधिकारिक नदी मापन केन्द्र भेटिएन।","No official river station was found.")));}}
-    } // V0857_NEARBY_GPS_TRUTH
+        if(nationalList!=null){
+            nationalList.removeAllViews();
+            if(selectedDistrict.isEmpty()){
+                nationalFresh.setText(t("जिल्ला छानेर पछिल्लो २० मिनेटका आधिकारिक पानी-सतह मापन हेर्नुहोस्।","Choose a district to view official water-level readings from the last 20 minutes."));
+                nationalList.addView(empty(t("माथिबाट जिल्ला छान्नुहोस्।","Choose a district above.")));
+            }else{
+                int freshWater=0;
+                for(RiverStation s:copy){
+                    if(selectedDistrict.equalsIgnoreCase(s.district)&&s.fresh&&v0857WaterLevelStation(s)){
+                        freshWater++;
+                        nationalList.addView(stationRow(s));
+                    }
+                }
+                nationalFresh.setText(t(selectedDistrict+": पछिल्लो २० मिनेटका आधिकारिक पानी-सतह केन्द्र "+freshWater,
+                        selectedDistrict+": official water-level stations in last 20 min "+freshWater));
+                if(freshWater==0)nationalList.addView(empty(t("पछिल्लो २० मिनेटमा आधिकारिक पानी-सतह मापन उपलब्ध छैन। पुरानो, rainfall र velocity data live सूचीमा देखाइँदैन।","No official water-level reading is available in the last 20 minutes. Stale, rainfall and velocity data are not shown in the live list.")));
+            }
+        }
+    } // V0857_NEARBY_GPS_TRUTH V0857_DISTRICT_FRESH_WATERLEVEL_ONLY
+
+    private static boolean v0857WaterLevelStation(RiverStation s){
+        if(s==null||s.name==null)return false;
+        String x=s.name.toLowerCase(Locale.ROOT).replace('-', ' ').replace('_',' ');
+        if(x.contains("rainfall")||x.contains("rain gauge")||x.contains("raingauge")||x.contains("precipitation")||x.contains("precip")||x.contains("velocity")||x.contains("flow velocity"))return false;
+        if(x.contains("वर्षा")||x.contains("वेग"))return false;
+        return true;
+    } // V0857_DISTRICT_WATERLEVEL_FILTER
 
 '''
 a=a[:rs]+refresh+a[re:]
@@ -92,9 +119,9 @@ elif "versionName '0.8.57'" not in g:raise SystemExit('v0857 versionName anchor 
 a_path.write_text(a,encoding='utf-8');g_path.write_text(g,encoding='utf-8')
 
 # Narrow verification: do not allow accidental regression of prior safety/runtime rules.
-for needle in ['V0857_FLOATING_LANGUAGE','V0857_NEARBY_GPS_TRUTH','V0857_STATUS_DOT','V0857_STATUS_ROW','V0857_STATION_LINE','RIVER_FRESH_MS=20L*60L*1000L','V0856_SAFE_LANGUAGE_RESTART']:
+for needle in ['V0857_FLOATING_LANGUAGE','V0857_NEARBY_GPS_TRUTH','V0857_STATUS_DOT','V0857_STATUS_ROW','V0857_STATION_LINE','V0857_DISTRICT_FRESH_WATERLEVEL_ONLY','V0857_DISTRICT_WATERLEVEL_FILTER','RIVER_FRESH_MS=20L*60L*1000L','V0856_SAFE_LANGUAGE_RESTART']:
     if needle not in a:raise SystemExit('v0857 verification failed: '+needle)
 if 'recreate();}); // V0854_LANGUAGE_REBUILD' in a:raise SystemExit('unsafe recreate returned')
 for needle in ['versionCode 77',"versionName '0.8.57'"]:
     if needle not in g:raise SystemExit('v0857 version verification failed: '+needle)
-print('FloodSafe v0.8.57 PASS: GPS-truthful nearby list + 20-minute safety colours + persistent language switch')
+print('FloodSafe v0.8.57 PASS: GPS-truthful nearby + district live fresh water-level only + 20-minute safety colours + persistent language switch')

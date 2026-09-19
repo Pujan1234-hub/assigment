@@ -1,29 +1,36 @@
 {
-  "generated_at": "2026-09-19T04:25:30.238051+05:45",
-  "updated_at_npt": "19 Sep 04:25 NPT",
+  "generated_at": "2026-09-19T06:24:29.451412+05:45",
+  "updated_at_npt": "19 Sep 06:24 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "संविधान दिवसमा नाकाबन्दीको कठिन घडीले संविधानको रक्षा र एकताको प्रेरणा दिएको ओलीको स्मरण",
+      "title": "देशभर मनसुनी र पश्चिमी वायुको आंशिक प्रभाव, आज यी तीन प्रदेशमा भारी वर्षाको सम्भावना",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593149/uml-oli-recalls-how-the-difficult-time-of-the-blockade-inspired-unity-and-protection-of-the-constitution-on-constitution-day",
-      "published_at": "2026-09-19T02:24:50+05:45",
-      "flash": false
+      "url": "https://www.ratopati.com/story/593159/partial-effect-of-monsoon-and-westerly-winds-across-the-country-heavy-rain-likely-in-these-three-provinces-today",
+      "published_at": "2026-09-19T06:20:52+05:45",
+      "flash": true
     },
     {
-      "title": "संस्कृति, प्रकृति र आत्मगौरवको सङ्गम बन्दै आठपहरिया घरबास",
+      "title": "पूर्वप्रधानमन्त्री दाहालद्वारा संविधान दिवसको शुभकामना",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593143/aathpahariya-gharbaas-is-becoming-a-confluence-of-culture-nature-and-self-esteem",
-      "published_at": "2026-09-18T23:04:08+05:45",
-      "flash": false
+      "url": "https://www.ratopati.com/story/593156/former-prime-minister-dahal-extends-best-wishes-on-constitution-day",
+      "published_at": "2026-09-19T05:53:50+05:45",
+      "flash": true
     },
     {
-      "title": "भोटेकोशी बाढी : नुवाकोटका दुई हजार परिवारको आवासमा क्षति",
+      "title": "नेपालगन्जको सांस्कृतिक पहिचान बन्दै रामलीला",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593142/bhotekoshi-flood-houses-of-2000-families-in-nuwakot-damaged",
-      "published_at": "2026-09-18T22:44:11+05:45",
-      "flash": false
+      "url": "https://www.ratopati.com/story/593155/ramlila-is-becoming-the-cultural-identity-of-nepalgunj",
+      "published_at": "2026-09-19T05:50:35+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीले भत्काएको बिरेठाँटी सडक मर्मत गरेर यातायात सञ्चालनमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593154/birethanti-road-damaged-by-flood-repaired-and-traffic-resumed",
+      "published_at": "2026-09-19T05:45:40+05:45",
+      "flash": true
     }
   ],
   "sources": {
@@ -42,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 3
+      "flash": 4,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

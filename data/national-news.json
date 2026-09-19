@@ -1,21 +1,42 @@
 {
-  "generated_at": "2026-09-19T22:21:00.463123+05:45",
-  "updated_at_npt": "19 Sep 22:21 NPT",
+  "generated_at": "2026-09-20T00:38:33.248043+05:45",
+  "updated_at_npt": "20 Sep 00:38 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भदौमा पाँच अर्बको विद्युत् निर्यात",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593308/electricity-exports-worth-five-billion-in-bhadra",
+      "published_at": "2026-09-20T00:35:12+05:45",
+      "flash": true
+    },
+    {
+      "title": "छुट्टाछुटै दुर्घटनामा दुई जनाको मृत्यु, एक घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593307/two-people-killed-one-injured-in-separate-accidents",
+      "published_at": "2026-09-20T00:30:11+05:45",
+      "flash": true
+    },
+    {
+      "title": "ध्यानका लागि आकर्षक गन्तव्य बन्दै शिवपुरीको ध्रुवस्थली",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593306/shivapuris-dhruvasthali-is-becoming-an-attractive-destination-for-meditation",
+      "published_at": "2026-09-20T00:27:42+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढी प्रभावित क्षेत्रमा एकीकृत आवास निर्माण गर्नुपर्नेमा जोड",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593302/emphasis-on-building-integrated-housing-in-flood-affected-areas",
+      "published_at": "2026-09-19T23:28:31+05:45",
+      "flash": false
+    },
     {
       "title": "काठमाडौँमा शनिबारदेखि थप ६ रुटमा २८ वटा विद्युतीय बस सेवा बिस्तार",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593290/28-electric-bus-services-to-be-expanded-to-6-more-routes-in-kathmandu-from-saturday",
       "published_at": "2026-09-19T20:53:02+05:45",
-      "flash": false
-    },
-    {
-      "title": "'प्रधानमन्त्री बालेनको विकल्प खोज्ने बेला भएको छैन' २ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593286/it-is-not-time-to-look-for-an-alternative-to-prime-minister-balen",
-      "published_at": "2026-09-19T19:56:00+05:45",
       "flash": false
     },
     {
@@ -30,34 +51,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593280/one-injured-in-shooting-in-dewanganj-sunsari",
       "published_at": "2026-09-19T18:44:03+05:45",
-      "flash": false
-    },
-    {
-      "title": "नेपाल संसदीय प्रणालीबाट दायाँबायाँ लाग्न हुँदैन : वरिष्ठ अधिवक्ता केसी ४ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593274/nepals-parliamentary-system-should-not-be-deviated-from-senior-advocate-kc",
-      "published_at": "2026-09-19T18:15:51+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीले सबै बगायो, तर बगेन बैंकको ऋण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593239/the-flood-washed-away-everything-but-not-the-bank-loan",
-      "published_at": "2026-09-19T18:00:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "शीतल निवासमा प्रधानमन्त्री शाहप्रति विदेशी प्रतिनिधिको चासो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593264/constitution-day-at-sheetal-niwas-foreign-representatives-show-interest-in-prime-minister-shah",
-      "published_at": "2026-09-19T17:44:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "नेपाल भौगोलिक र राजनीतिक रूपले अति संवेदनशील : पूर्वराष्ट्रपति भण्डारी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593261/pal-is-very-sensitive-geographically-and-politically-former-president-bhandari",
-      "published_at": "2026-09-19T17:13:37+05:45",
       "flash": false
     }
   ],
@@ -77,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 9
+      "flash": 3,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -88,7 +81,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     }

@@ -1,56 +1,70 @@
 {
-  "generated_at": "2026-09-19T10:50:56.200997+05:45",
-  "updated_at_npt": "19 Sep 10:50 NPT",
+  "generated_at": "2026-09-19T15:12:39.678900+05:45",
+  "updated_at_npt": "19 Sep 15:12 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "भोटेकोशी बाढीमा बेपत्ता पत्रकार थामीको कुशको शव बनाइ अन्त्येष्टि (तस्बिरहरू)",
+      "title": "बाढी पीडितको सहयोगका लागि संविधान दिवसमा साइकल र्‍याली",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593183/funeral-of-journalist-thami-who-disappeared-in-the-bhotekoshi-flood-held-in-a-mausoleum-photos",
-      "published_at": "2026-09-19T10:18:03+05:45",
+      "url": "https://www.ratopati.com/story/593229/bicycle-rally-on-constitution-day-to-support-flood-victims",
+      "published_at": "2026-09-19T14:54:51+05:45",
       "flash": true
     },
     {
-      "title": "सिराहामा ट्रकले किचेर एक पैदलयात्रीको मृत्यु",
+      "title": "सत्ता समीकरण फेरिँदा कर्णालीका संसदीय समिति लथालिङ्ग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593181/pedestrian-dies-after-being-crushed-by-truck-in-siraha",
-      "published_at": "2026-09-19T09:54:43+05:45",
-      "flash": true
-    },
-    {
-      "title": "गोरखाका पालिकाले बाढी प्रभावितलाई दिए ३ करोड",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593165/gorkha-municipality-gives-rs-30-million-to-flood-victims",
-      "published_at": "2026-09-19T07:42:25+05:45",
+      "url": "https://www.ratopati.com/story/593219/karnalis-parliamentary-committees-in-disarray-as-power-equation-changes",
+      "published_at": "2026-09-19T14:04:36+05:45",
       "flash": false
     },
     {
-      "title": "बाढी प्रभावित बालबालिकाको संरक्षणमा एमआइटी फाउन्डेसनले सघाउने ३ घण्टा अगाडि",
+      "title": "सिरहामा करेन्ट लागेर युवकको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593161/mit-foundation-to-help-protect-flood-affected-children",
-      "published_at": "2026-09-19T06:52:48+05:45",
+      "url": "https://www.ratopati.com/story/593218/youth-dies-of-electrocution-in-siraha",
+      "published_at": "2026-09-19T13:52:18+05:45",
       "flash": false
     },
     {
-      "title": "नेपालगन्जको सांस्कृतिक पहिचान बन्दै रामलीला",
+      "title": "अरूलाई नयाँ टेन्डर आह्वान रोक्न निर्देशन दिएकै सचिवले आफ्नो मन्त्रालयको कसरी खुलाए ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593155/ramlila-is-becoming-the-cultural-identity-of-nepalgunj",
-      "published_at": "2026-09-19T05:50:35+05:45",
+      "url": "https://www.ratopati.com/story/593213/how-did-the-secretary-who-instructed-others-to-stop-inviting-new-tenders-reveal-his-ministry",
+      "published_at": "2026-09-19T13:28:18+05:45",
       "flash": false
     },
     {
-      "title": "बाढीले भत्काएको बिरेठाँटी सडक मर्मत गरेर यातायात सञ्चालनमा",
+      "title": "चीनको औपचारिक भ्रमण पुरा गरी प्रधान सेनापति सिग्देल स्वदेश फिर्ता",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593154/birethanti-road-damaged-by-flood-repaired-and-traffic-resumed",
-      "published_at": "2026-09-19T05:45:40+05:45",
+      "url": "https://www.ratopati.com/story/593204/chief-of-army-staff-sigdel-returns-home-after-completing-official-visit-to-china",
+      "published_at": "2026-09-19T12:43:13+05:45",
+      "flash": false
+    },
+    {
+      "title": "दलहरूसँगको संवाद प्रधानमन्त्रीका लागि ‘एकादेशको कथा’ बन्यो : शंकर पोखरेल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593200/dialogue-with-parties-became-the-story-of-one-country-for-the-prime-minister-shankar-pokharel",
+      "published_at": "2026-09-19T12:36:28+05:45",
+      "flash": false
+    },
+    {
+      "title": "भ्रष्टाचार र दण्डहीनताको जरो उखेल्ने हातहरू अब झन् बलिया छन् : प्रधानमन्त्री शाह २ घण्टा अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593199/the-hands-that-uproot-corruption-and-impunity-are-now-stronger-prime-minister-shah",
+      "published_at": "2026-09-19T12:34:17+05:45",
+      "flash": false
+    },
+    {
+      "title": "प्रतिस्पर्धात्मक लोकतन्त्र, मानव अधिकार र कानुनी राज्य राष्ट्रिय जीवनको आधार हुन् : प्रधानमन्त्री शाह",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593194/competitive-democracy-human-rights-and-the-rule-of-law-are-the-foundation-of-national-life-prime-minister-shah",
+      "published_at": "2026-09-19T12:12:55+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     },
@@ -63,7 +77,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
+      "flash": 1,
       "recent": 8
     },
     "Kathmandu Post": {
@@ -74,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

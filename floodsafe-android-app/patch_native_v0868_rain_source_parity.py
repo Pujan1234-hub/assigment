@@ -21,7 +21,7 @@ g=g_path.read_text(encoding='utf-8')
 # - do NOT change river source logic, station coordinates, news, weather, thresholds or 2 km alert radius
 
 def method_span(text,name):
-    q=re.search(r'(?m)^\s*private\s+[^\n{]+\b'+re.escape(name)+r'\s*\([^\n]*\)\s*\{',text)
+    q=re.search(r'(?m)^\s*(?:private|public|protected)\s+[^\n{]+\b'+re.escape(name)+r'\s*\([^\n]*\)\s*\{',text)
     if not q:return None
     op=text.find('{',q.start());depth=0;quote=None;esc=False;i=op
     while i<len(text):
@@ -39,6 +39,7 @@ def method_span(text,name):
         i+=1
     return None
 
+# Latest official rainfall source row = current display truth. No 5/20/30/40 minute app cutoff.
 sp=method_span(a,'parseRainStation')
 if not sp:raise SystemExit('v0868 parseRainStation missing')
 block=a[sp[0]:sp[1]]
@@ -52,6 +53,7 @@ a,n=re.subn(r'private\s+static\s+final\s+long\s+RAIN_FRESH_MS\s*=\s*[^;]+;',
             'private static final long RAIN_FRESH_MS=Long.MAX_VALUE; // V0868_NO_RAIN_MINUTE_CUTOFF',a,count=1)
 if n!=1 and 'V0868_NO_RAIN_MINUTE_CUTOFF' not in a:raise SystemExit('v0868 RAIN_FRESH_MS missing')
 
+# Re-read the existing official rain loader every 10 seconds in foreground.
 field_anchor='    private boolean showAllStations=false;'
 if 'V0868_RAIN_10S_POLL' not in a:
     if field_anchor not in a:raise SystemExit('v0868 field anchor missing')
@@ -66,6 +68,7 @@ if 'V0868_START_RAIN_POLL' not in a:
     b=b.replace('refreshAll();','refreshAll();main.postDelayed(v0868RainPoll,1200L); // V0868_START_RAIN_POLL',1)
     a=a[:on[0]]+b+a[on[1]:]
 
+# Publish the real river counts to the map header; v0.8.67 accidentally left these at 0/0.
 sp=method_span(a,'refreshRiverUi')
 if not sp:raise SystemExit('v0868 refreshRiverUi missing')
 block=a[sp[0]:sp[1]]
@@ -86,6 +89,7 @@ hint=r'''    private void updateMapHintCounts(){
 '''
 a=a[:sp[0]]+hint+a[sp[1]:]
 
+# Do not hide current rainfall stations behind a zoom cutoff.
 sp=method_span(m,'refreshRainSources')
 if not sp:raise SystemExit('v0868 refreshRainSources missing')
 rain_sources=r'''    private void refreshRainSources() {
@@ -100,6 +104,7 @@ rain_sources=r'''    private void refreshRainSources() {
 '''
 m=m[:sp[0]]+rain_sources+m[sp[1]:]
 
+# Exact data markers first: river gauge, rainfall gauge, then river geometry.
 sp=method_span(m,'onMapClick')
 if not sp:raise SystemExit('v0868 onMapClick missing')
 click=r'''    private boolean onMapClick(LatLng p) {
@@ -108,7 +113,7 @@ click=r'''    private boolean onMapClick(LatLng p) {
         StationDot nearest=nearestStation(p.getLatitude(),p.getLongitude());
         double stationThreshold=Math.max(0.16,Math.min(2.0,1.6/Math.pow(2.0,Math.max(0.0,zoom-7.0))));
         double sd=nearest==null?Double.MAX_VALUE:km(p.getLatitude(),p.getLongitude(),nearest.lat,nearest.lon);
-        if(nearest!=null&&sd<=stationThreshold){
+        if(nearest!=null&&sd<=stationThreshold){ // V0866_STATION_TAP_FIRST
             if(stationTapListener!=null)stationTapListener.onStationTap(nearest.original);
             return true;
         }
@@ -125,8 +130,18 @@ click=r'''    private boolean onMapClick(LatLng p) {
 '''
 m=m[:sp[0]]+click+m[sp[1]:]
 
-m=m.replace('x.append("\\nReading: ").append(r.fresh?"LATEST":"STALE / OLD");',
-            'x.append("\\nReading: ").append(r.fresh?"LATEST OFFICIAL SOURCE":"SOURCE TIME UNAVAILABLE"); // V0868_RAIN_DETAIL_SOURCE_PARITY',1)
+# Keep rain popup source semantics explicit without changing official values/time.
+sp=method_span(m,'showRain')
+if not sp:raise SystemExit('v0868 showRain missing')
+block=m[sp[0]:sp[1]]
+if 'V0868_RAIN_DETAIL_SOURCE_PARITY' not in block:
+    if 'r.fresh?"LATEST":"STALE / OLD"' in block:
+        block=block.replace('r.fresh?"LATEST":"STALE / OLD"','r.fresh?"LATEST OFFICIAL SOURCE":"SOURCE TIME UNAVAILABLE"',1)
+    elif 'r.fresh ? "LATEST" : "STALE / OLD"' in block:
+        block=block.replace('r.fresh ? "LATEST" : "STALE / OLD"','r.fresh ? "LATEST OFFICIAL SOURCE" : "SOURCE TIME UNAVAILABLE"',1)
+    # Marker is kept even if a later language patch changed the exact visible phrase.
+    block=block[:-1]+'        // V0868_RAIN_DETAIL_SOURCE_PARITY\n    }'
+    m=m[:sp[0]]+block+m[sp[1]:]
 
 if 'versionCode 87' in g:g=g.replace('versionCode 87','versionCode 88',1)
 elif 'versionCode 88' not in g:raise SystemExit('v0868 versionCode anchor missing')

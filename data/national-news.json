@@ -1,9 +1,23 @@
 {
-  "generated_at": "2026-09-20T03:02:24.045523+05:45",
-  "updated_at_npt": "20 Sep 03:02 NPT",
+  "generated_at": "2026-09-20T04:59:52.773099+05:45",
+  "updated_at_npt": "20 Sep 04:59 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "जलविद्युत् आयोजनाको सहयोगमा दुखुखोला सडक पुल संरक्षण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593312/dukhukhola-road-bridge-conservation-with-the-support-of-hydropower-project",
+      "published_at": "2026-09-20T04:54:31+05:45",
+      "flash": true
+    },
+    {
+      "title": "छारेभिरमा पहिरो खसेपछि कर्णाली कोरिडोर ठप्प",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593310/karnali-corridor-closed-after-landslide-in-charebhir",
+      "published_at": "2026-09-20T04:50:42+05:45",
+      "flash": true
+    },
     {
       "title": "भदौमा पाँच अर्बको विद्युत् निर्यात",
       "source": "Ratopati",
@@ -24,13 +38,6 @@
       "url": "https://www.ratopati.com/story/593306/shivapuris-dhruvasthali-is-becoming-an-attractive-destination-for-meditation",
       "published_at": "2026-09-20T00:27:42+05:45",
       "flash": false
-    },
-    {
-      "title": "बाढी प्रभावित क्षेत्रमा एकीकृत आवास निर्माण गर्नुपर्नेमा जोड",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593302/emphasis-on-building-integrated-housing-in-flood-affected-areas",
-      "published_at": "2026-09-19T23:28:31+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -49,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 4
+      "flash": 2,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

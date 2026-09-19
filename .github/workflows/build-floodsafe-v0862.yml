@@ -1,11 +1,12 @@
 name: Build FloodSafe v0.8.62 True Realtime Source Sync APK
-# final robust loader + compile helper restoration
+# final robust loader + compile helper restoration + district live-list safety filter
 
 on:
   push:
     branches: [ main ]
     paths:
       - '.github/workflows/build-floodsafe-v0862.yml'
+      - 'floodsafe-android-app/patch_native_v0857_nearby_status_language.py'
       - 'floodsafe-android-app/patch_native_v0862_realtime_final.py'
       - 'floodsafe-android-app/patch_native_v0862_compile_helpers.py'
   workflow_dispatch:
@@ -81,7 +82,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0862_realtime_final.py
           python3 floodsafe-android-app/patch_native_v0862_compile_helpers.py
 
-      - name: Verify v0.8.62 realtime-only fix
+      - name: Verify v0.8.62 realtime and district live-list fix
         run: |
           set -euo pipefail
           A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
@@ -102,6 +103,9 @@ jobs:
           grep -Fq 'V0861_RIVER_DETAIL_PARITY' "$M"
           grep -Fq 'V0860_MAP_SOURCE_GREEN_BLACK' "$M"
           grep -Fq 'V0852_MAPLIBRE_USER_LOCATION' "$M"
+          grep -Fq 'V0857_DISTRICT_FRESH_WATERLEVEL_ONLY' "$A"
+          grep -Fq 'V0857_DISTRICT_WATERLEVEL_FILTER' "$A"
+          grep -Fq 's.fresh&&v0857WaterLevelStation(s)' "$A"
           grep -Fq 'RIVER_FRESH_MS=20L*60L*1000L' "$A"
           grep -Fq 'MAX_AGE_MS = 20L * 60L * 1000L' "$W"
           grep -Fq 'MAX_RIVER_AGE_MS = 20L * 60L * 1000L' "$F"
@@ -139,10 +143,10 @@ jobs:
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-major-v0842.geojson'
-          cp "$APK" FloodSafe-Nepal-v0.8.62-TRUE-REALTIME-SOURCE-SYNC.apk
+          cp "$APK" FloodSafe-Nepal-v0.8.62-DISTRICT-LIVE-FIX.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0862-TRUE-REALTIME-SOURCE-SYNC-APK
-          path: FloodSafe-Nepal-v0.8.62-TRUE-REALTIME-SOURCE-SYNC.apk
+          name: FloodSafe-Nepal-v0862-DISTRICT-LIVE-FIX-APK
+          path: FloodSafe-Nepal-v0.8.62-DISTRICT-LIVE-FIX.apk
           retention-days: 14

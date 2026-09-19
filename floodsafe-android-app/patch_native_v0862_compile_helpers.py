@@ -1,4 +1,5 @@
 from pathlib import Path
+import runpy
 
 root=Path(__file__).resolve().parent
 a_path=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
@@ -122,5 +123,12 @@ for marker in ['V0862_FINAL_TRUE_REALTIME_BIPAD_DHM','V0862_FINAL_NO_FLICKER_REF
     if marker not in a:raise SystemExit('v0862 compile helper guard failed: '+marker)
 if 'bestD<=2d&&best.fresh&&(best.stage.equals("warning")||best.stage.equals("danger"))' not in a:raise SystemExit('v0862 compile helper 2km guard changed')
 print('FloodSafe v0.8.62 compile helpers PASS: source helpers restored only; UI/map/safety unchanged')
+
+# Final live display is strictly the latest official 20-minute window.
+runpy.run_path(str(root/'patch_native_v0862_fresh20_live_only.py'),run_name='__main__')
+a2=a_path.read_text(encoding='utf-8')
+for marker in ['V0862_FRESH20_LIVE_ONLY','V0862_FRESH20_CLEAR_STALE','V0862_FRESH20_STATION_LINE','V0862_FRESH20_STATION_DETAIL']:
+    if marker not in a2:raise SystemExit('v0862 fresh20 final guard failed: '+marker)
+print('FloodSafe v0.8.62 final fresh20 guard PASS')
 
 # rerun marker: v0.8.61 wrapper now bypasses its obsolete realtime-data guard; v0.8.62 owns the final loader.

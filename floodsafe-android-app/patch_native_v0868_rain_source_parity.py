@@ -5,6 +5,8 @@ root=Path(__file__).resolve().parent
 src=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app'
 a_path=src/'NativeFullActivity.java'
 m_path=src/'FloodSafeNativeMapView.java'
+w_path=src/'RiverAlertWorker.java'
+f_path=src/'FloodSafeMessagingService.java'
 g_path=root/'app/build.gradle'
 a=a_path.read_text(encoding='utf-8')
 m=m_path.read_text(encoding='utf-8')
@@ -37,9 +39,6 @@ def method_span(text,name):
         i+=1
     return None
 
-# -----------------------------------------------------------------------------
-# 1) Rain source parity: current/latest source rows are not rejected by an app age window.
-# -----------------------------------------------------------------------------
 sp=method_span(a,'parseRainStation')
 if not sp:raise SystemExit('v0868 parseRainStation missing')
 block=a[sp[0]:sp[1]]
@@ -49,13 +48,10 @@ if 'V0868_RAIN_SOURCE_CURRENT_NOT_AGE_GATED' not in block:
     if n!=1:raise SystemExit('v0868 rain freshness expression missing')
     a=a[:sp[0]]+block+a[sp[1]:]
 
-# Prevent any compatibility constant from silently restoring a 30-minute display gate.
 a,n=re.subn(r'private\s+static\s+final\s+long\s+RAIN_FRESH_MS\s*=\s*[^;]+;',
             'private static final long RAIN_FRESH_MS=Long.MAX_VALUE; // V0868_NO_RAIN_MINUTE_CUTOFF',a,count=1)
 if n!=1 and 'V0868_NO_RAIN_MINUTE_CUTOFF' not in a:raise SystemExit('v0868 RAIN_FRESH_MS missing')
 
-# Dedicated open-app 10-second rain refresh. This touches only the existing official
-# rain loader; no synthetic data and no new source are introduced.
 field_anchor='    private boolean showAllStations=false;'
 if 'V0868_RAIN_10S_POLL' not in a:
     if field_anchor not in a:raise SystemExit('v0868 field anchor missing')
@@ -70,10 +66,6 @@ if 'V0868_START_RAIN_POLL' not in a:
     b=b.replace('refreshAll();','refreshAll();main.postDelayed(v0868RainPoll,1200L); // V0868_START_RAIN_POLL',1)
     a=a[:on[0]]+b+a[on[1]:]
 
-# -----------------------------------------------------------------------------
-# 2) Fix the screenshot regression: map header must use the same river source counts
-# already shown elsewhere instead of remaining at its default 0/0.
-# -----------------------------------------------------------------------------
 sp=method_span(a,'refreshRiverUi')
 if not sp:raise SystemExit('v0868 refreshRiverUi missing')
 block=a[sp[0]:sp[1]]
@@ -94,10 +86,6 @@ hint=r'''    private void updateMapHintCounts(){
 '''
 a=a[:sp[0]]+hint+a[sp[1]:]
 
-# -----------------------------------------------------------------------------
-# 3) Rain dots are official data too: do not hide normal/current rainfall markers
-# behind an arbitrary zoom gate. Keep all existing source colours and values.
-# -----------------------------------------------------------------------------
 sp=method_span(m,'refreshRainSources')
 if not sp:raise SystemExit('v0868 refreshRainSources missing')
 rain_sources=r'''    private void refreshRainSources() {
@@ -112,8 +100,6 @@ rain_sources=r'''    private void refreshRainSources() {
 '''
 m=m[:sp[0]]+rain_sources+m[sp[1]:]
 
-# Marker taps get the same priority rule as river station dots: exact data marker first,
-# then river geometry. This prevents a visible rainfall dot opening the river below it.
 sp=method_span(m,'onMapClick')
 if not sp:raise SystemExit('v0868 onMapClick missing')
 click=r'''    private boolean onMapClick(LatLng p) {
@@ -139,11 +125,9 @@ click=r'''    private boolean onMapClick(LatLng p) {
 '''
 m=m[:sp[0]]+click+m[sp[1]:]
 
-# Keep the rainfall popup truthful about source semantics.
 m=m.replace('x.append("\\nReading: ").append(r.fresh?"LATEST":"STALE / OLD");',
             'x.append("\\nReading: ").append(r.fresh?"LATEST OFFICIAL SOURCE":"SOURCE TIME UNAVAILABLE"); // V0868_RAIN_DETAIL_SOURCE_PARITY',1)
 
-# Version bump only after all targeted fixes.
 if 'versionCode 87' in g:g=g.replace('versionCode 87','versionCode 88',1)
 elif 'versionCode 88' not in g:raise SystemExit('v0868 versionCode anchor missing')
 if "versionName '0.8.67'" in g:g=g.replace("versionName '0.8.67'","versionName '0.8.68'",1)
@@ -157,7 +141,6 @@ for x in ['V0868_RAIN_VISIBLE_ALL_ZOOMS','V0868_RAIN_TAP_FIRST','V0868_RAIN_DETA
     if x not in m:raise SystemExit('v0868 map verification failed: '+x)
 for x in ['versionCode 88',"versionName '0.8.68'"]:
     if x not in g:raise SystemExit('v0868 version verification failed: '+x)
-# Existing safety contract must remain untouched.
 if 'RADIUS_KM = 2d' not in w_path.read_text(encoding='utf-8'):raise SystemExit('v0868 2 km worker radius changed')
 if 'DEFAULT_RIVER_RADIUS_KM = 2d' not in f_path.read_text(encoding='utf-8'):raise SystemExit('v0868 2 km FCM radius changed')
 print('FloodSafe v0.8.68 PASS: official rainfall source parity + 10s rain refresh + all-zoom rain dots + correct river/rain header counts; other features untouched')

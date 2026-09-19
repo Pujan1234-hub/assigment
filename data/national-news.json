@@ -1,22 +1,43 @@
 {
-  "generated_at": "2026-09-19T19:05:03.872588+05:45",
-  "updated_at_npt": "19 Sep 19:05 NPT",
+  "generated_at": "2026-09-19T22:21:00.463123+05:45",
+  "updated_at_npt": "19 Sep 22:21 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "सुनसरीको देवानगञ्जमा गोली चल्यो, एकजना घाइते",
+      "title": "काठमाडौँमा शनिबारदेखि थप ६ रुटमा २८ वटा विद्युतीय बस सेवा बिस्तार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593290/28-electric-bus-services-to-be-expanded-to-6-more-routes-in-kathmandu-from-saturday",
+      "published_at": "2026-09-19T20:53:02+05:45",
+      "flash": false
+    },
+    {
+      "title": "'प्रधानमन्त्री बालेनको विकल्प खोज्ने बेला भएको छैन' २ घण्टा अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593286/it-is-not-time-to-look-for-an-alternative-to-prime-minister-balen",
+      "published_at": "2026-09-19T19:56:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "देवानगञ्जमा गोली लागेका घाइतेको खुल्यो परिचय",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593282/identity-of-injured-in-dewanganj-shooting-revealed",
+      "published_at": "2026-09-19T19:10:25+05:45",
+      "flash": false
+    },
+    {
+      "title": "१. सुनसरीको देवानगञ्जमा गोली चल्यो, एकजना घाइते",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593280/one-injured-in-shooting-in-dewanganj-sunsari",
       "published_at": "2026-09-19T18:44:03+05:45",
-      "flash": true
+      "flash": false
     },
     {
-      "title": "नेपाल संसदीय प्रणालीबाट दायाँबायाँ लाग्न हुँदैन : वरिष्ठ अधिवक्ता केसी ४९ मिनेट अगाडि",
+      "title": "नेपाल संसदीय प्रणालीबाट दायाँबायाँ लाग्न हुँदैन : वरिष्ठ अधिवक्ता केसी ४ घण्टा अगाडि",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593274/nepals-parliamentary-system-should-not-be-deviated-from-senior-advocate-kc",
       "published_at": "2026-09-19T18:15:51+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "बाढीले सबै बगायो, तर बगेन बैंकको ऋण",
@@ -38,47 +59,12 @@
       "url": "https://www.ratopati.com/story/593261/pal-is-very-sensitive-geographically-and-politically-former-president-bhandari",
       "published_at": "2026-09-19T17:13:37+05:45",
       "flash": false
-    },
-    {
-      "title": "तस्बिरमा हेर्नुहोस् संविधान दिवसमा राष्ट्रपति कार्यालयमा आयोजित कार्यक्रम १ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593260/see-the-program-organized-at-the-presidents-office-on-constitution-day-in-photos",
-      "published_at": "2026-09-19T17:05:38+05:45",
-      "flash": false
-    },
-    {
-      "title": "आलोचना सुन्ने र राज्यलाई जबाफदेही बनाउने संस्कारले मात्र लोकतन्त्र बलियो हुन्छ : राष्ट्रपति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593259/democracy-is-only-strengthened-through-a-culture-of-listening-to-criticism-and-holding-the-state-accountable-president",
-      "published_at": "2026-09-19T17:02:34+05:45",
-      "flash": false
-    },
-    {
-      "title": "सत्ता समीकरण फेरिँदा कर्णालीका संसदीय समिति लथालिङ्ग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593219/karnalis-parliamentary-committees-in-disarray-as-power-equation-changes",
-      "published_at": "2026-09-19T14:04:36+05:45",
-      "flash": false
-    },
-    {
-      "title": "सिरहामा करेन्ट लागेर युवकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593218/youth-dies-of-electrocution-in-siraha",
-      "published_at": "2026-09-19T13:52:18+05:45",
-      "flash": false
-    },
-    {
-      "title": "अरूलाई नयाँ टेन्डर आह्वान रोक्न निर्देशन दिएकै सचिवले आफ्नो मन्त्रालयको कसरी खुलाए ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593213/how-did-the-secretary-who-instructed-others-to-stop-inviting-new-tenders-reveal-his-ministry",
-      "published_at": "2026-09-19T13:28:18+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 6,
       "flash": 0,
       "recent": 0
     },
@@ -91,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 11
+      "flash": 0,
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,

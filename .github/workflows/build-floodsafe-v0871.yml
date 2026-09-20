@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/build-floodsafe-v0871.yml'
       - 'floodsafe-android-app/patch_native_v0871_source_exact_1s_live_detail.py'
+      - 'floodsafe-android-app/patch_native_v0871_compile_repair.py'
       - 'floodsafe-android-app/run_patch_native_v0871.py'
   workflow_dispatch:
 

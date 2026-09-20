@@ -2,13 +2,37 @@ from pathlib import Path
 import json
 from shapely.geometry import shape,mapping,GeometryCollection,LineString,MultiLineString
 from shapely.ops import unary_union
+try:
+    from shapely import make_valid
+except Exception:
+    make_valid=None
 
 root=Path(__file__).resolve().parent
 build=root/'app'/'build'
 districts=list(build.rglob('floodsafe-nepal/v24/nepal-districts.geojson'))
 if not districts: raise SystemExit('v0874 district GeoJSON missing from generated assets')
 d=json.loads(districts[0].read_text(encoding='utf-8'))
-nepal=unary_union([shape(f['geometry']) for f in d.get('features',[]) if f.get('geometry')]).buffer(0)
+
+# Some source district rings contain small self-intersections. Repair each district first;
+# never union invalid polygons directly because GEOS can raise a topology side conflict.
+parts=[]
+for f in d.get('features',[]):
+    if not f.get('geometry'):continue
+    try:
+        g=shape(f['geometry'])
+        if not g.is_valid:
+            g=make_valid(g) if make_valid else g.buffer(0)
+        if not g.is_valid:
+            g=g.buffer(0)
+        if not g.is_empty:parts.append(g)
+    except Exception:
+        continue
+if len(parts)<70: raise SystemExit(f'v0874 too few valid Nepal district polygons after repair: {len(parts)}')
+nepal=unary_union(parts)
+if not nepal.is_valid:
+    nepal=make_valid(nepal) if make_valid else nepal.buffer(0)
+if not nepal.is_valid:
+    nepal=nepal.buffer(0)
 if nepal.is_empty: raise SystemExit('v0874 Nepal union empty')
 
 names=['nepal-waterways-major-v0842.geojson','nepal-waterways-medium-v0842.geojson','nepal-waterways-national-v0841.geojson']
@@ -33,7 +57,12 @@ for name in names:
     for f in obj.get('features',[]):
         if not f.get('geometry'):continue
         g=shape(f['geometry']);before+=1
-        q=line_only(g.intersection(nepal))
+        try:q=line_only(g.intersection(nepal))
+        except Exception:
+            # Line data is expected to be valid, but repair defensively rather than losing
+            # the Nepal-only build because of one malformed generated geometry.
+            rg=make_valid(g) if make_valid else g.buffer(0)
+            q=line_only(rg.intersection(nepal))
         if q is None:continue
         nf=dict(f);nf['geometry']=mapping(q);out.append(nf);after+=1
     obj['features']=out
@@ -49,4 +78,4 @@ for name in names:
     print('V0874_STRICT_NEPAL_DISPLAY',name,'features',before,'->',after,'bytes',p.stat().st_size)
     checked+=1
 if checked!=3:raise SystemExit('v0874 did not audit all display tiers')
-print('V0874_STRICT_NEPAL_DISPLAY PASS')
+print('V0874_STRICT_NEPAL_DISPLAY PASS districts_repaired=',len(parts))

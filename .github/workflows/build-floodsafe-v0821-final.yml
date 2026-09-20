@@ -1,0 +1,116 @@
+name: Build FloodSafe v0.8.21 Final Release
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'floodsafe-android-app/**'
+      - '.github/workflows/build-floodsafe-v0821-final.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: floodsafe-v0821-final
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      FLOODSAFE_KEYSTORE_PATH: /tmp/floodsafe-upload.jks
+      FLOODSAFE_KEYSTORE_PASSWORD: ${{ secrets.FLOODSAFE_KEYSTORE_PASSWORD }}
+      FLOODSAFE_KEY_ALIAS: ${{ secrets.FLOODSAFE_KEY_ALIAS }}
+      FLOODSAFE_KEY_PASSWORD: ${{ secrets.FLOODSAFE_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/bin:$PATH"
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;35.0.0"
+      - name: Apply native patches
+        shell: bash
+        run: |
+          set -euo pipefail
+          patches=(
+            patch_webview_crash.py patch_launcher_reopen_hard_reset.py patch_auto_alerts.py patch_river_waterlevel.py patch_two_hour_weather.py patch_cold_start_blank.py patch_cross_device_navigation.py patch_native_compat_fallback.py patch_map_smooth_v075.py patch_full_native_v080.py patch_native_v081_polish.py patch_native_v081_escape_fix.py patch_native_maplibre_v082.py patch_native_map_detail_v083.py patch_native_v084_sathi_map.py patch_native_v085_flow_sathi.py patch_native_v086_full_waterways.py patch_native_v087_runtime_rivers.py patch_native_v088_restore_web_rivers.py patch_native_v089_realtime_gauges.py patch_native_v0810_live_source_colours.py patch_native_v0810_compile_fix.py patch_native_v0811_map_anr_fix.py patch_native_v0812_trusted_latest_flow.py patch_native_v0813_prep_truth_ui.py patch_native_v0813_nepal_truth_map.py patch_native_v0814_prep_runtime_counts.py patch_native_v0814_source_exact_smooth.py patch_native_v0814_compile_fix.py patch_native_v0815_single_source_truth.py patch_native_v0816_current_only_map.py patch_native_v0817_clean_web_map.py patch_native_v0817_compile_rain_fix.py patch_native_v0818_direct_river_clean_flow.py patch_native_v0819_web_live_master.py patch_native_v0820_place_labels_prep.py patch_native_v0820_nepal_mask_prep.py patch_native_v0820_nepal_only_local_rivers.py patch_native_v0821_complete_official_details.py
+          )
+          for p in "${patches[@]}"; do python3 "floodsafe-android-app/$p"; done
+      - name: Verify source + official endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          A=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          M=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          B=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java
+          G=floodsafe-android-app/app/build.gradle
+          grep -Fq 'river-stations/?latest=true&limit=2000' "$A"
+          grep -Fq 'rain-stations/?limit=2000' "$A"
+          grep -Fq 'rain-stations/?latest=true&limit=2000' "$A"
+          grep -Fq 'Nearest official rainfall/AWS' "$M"
+          grep -Fq 'CURRENT same-river official gauge' "$M"
+          grep -Fq 'Discharge / streamflow' "$M"
+          grep -Fq 'fs-nepal-outside-mask-layer' "$M"
+          grep -Fq 'ALERT_FRESH_MS=10L*60L*1000L' "$B"
+          grep -Fq 'RADIUS_KM=2d' "$B"
+          grep -Fq 'handler.postDelayed(this,1_000L)' "$B"
+          grep -Fq 'versionCode 41' "$G"
+          grep -Fq "versionName '0.8.21'" "$G"
+          python3 - <<'PY'
+          import json,urllib.request
+          for label,url in [('river','https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=2000'),('rain','https://bipadportal.gov.np/api/v1/rain-stations/?latest=true&limit=2000')]:
+            q=urllib.request.Request(url,headers={'User-Agent':'FloodSafe-CI/0.8.21','Accept':'application/json'})
+            with urllib.request.urlopen(q,timeout=30) as r: j=json.load(r)
+            rows=j.get('results',j if isinstance(j,list) else [])
+            print(label,len(rows))
+            if not rows: raise SystemExit(label+' feed empty')
+          PY
+      - name: Bundle assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+      - name: Optional existing release key
+        env:
+          FLOODSAFE_KEYSTORE_BASE64: ${{ secrets.FLOODSAFE_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "$FLOODSAFE_KEYSTORE_BASE64" ] && [ -n "$FLOODSAFE_KEYSTORE_PASSWORD" ] && [ -n "$FLOODSAFE_KEY_ALIAS" ] && [ -n "$FLOODSAFE_KEY_PASSWORD" ]; then
+            printf '%s' "$FLOODSAFE_KEYSTORE_BASE64" | base64 --decode > "$FLOODSAFE_KEYSTORE_PATH"
+            chmod 600 "$FLOODSAFE_KEYSTORE_PATH"
+            keytool -list -keystore "$FLOODSAFE_KEYSTORE_PATH" -storepass "$FLOODSAFE_KEYSTORE_PASSWORD" -alias "$FLOODSAFE_KEY_ALIAS" >/dev/null
+          fi
+      - name: Unit test + release build
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleRelease :app:bundleRelease -x bundleFloodSafe --no-daemon --stacktrace
+      - name: Verify + stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-output
+          APK="$(find floodsafe-android-app/app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -1)"
+          AAB="$(find floodsafe-android-app/app/build/outputs/bundle/release -maxdepth 1 -type f -name '*.aab' | head -1)"
+          test -s "$APK"; test -s "$AAB"
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-snapshot.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          cp "$APK" release-output/FloodSafe-Nepal-v0.8.21-release.apk
+          cp "$AAB" release-output/FloodSafe-Nepal-v0.8.21-release.aab
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" release-output/apksigner.jar
+          sha256sum "$APK" "$AAB" > release-output/build-sha256.txt
+          printf 'versionName=0.8.21\nversionCode=41\ncommit=%s\n' "$GITHUB_SHA" > release-output/build-info.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.8.21-Final-Release
+          path: release-output/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Cleanup signing key
+        if: always()
+        run: rm -f "$FLOODSAFE_KEYSTORE_PATH"

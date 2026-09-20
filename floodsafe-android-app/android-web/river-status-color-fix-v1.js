@@ -26,6 +26,15 @@ let paintTimer=0;
 let fastTimer=0;
 let tickBusy=false;
 
+function loadAllStationsModule(){
+  if(window.__fsAndroidAllStationsRealtimeV1||document.querySelector('script[data-fs-all-stations]'))return;
+  const s=document.createElement('script');
+  s.src='./all-stations-realtime-v1.js?v=1';
+  s.defer=true;
+  s.dataset.fsAllStations='1';
+  document.head.appendChild(s);
+}
+
 function installPanelStyle(){
   if(document.getElementById('fsAndroidRiverStatusColorV3'))return;
   const s=document.createElement('style');
@@ -88,8 +97,7 @@ function requestLatest(){
   if(tickBusy||navigator.onLine===false)return;
   tickBusy=true;
   try{
-    // These calls only update in-memory data/GeoJSON when official values change.
-    // There is deliberately no WebView/page reload, scroll, camera reset or hash change.
+    // Background data refresh only: never reload the page, move the camera or change scroll.
     window.FloodSafeRiverRealtime?.refresh?.();
     window.FloodSafeRainRealtime?.poll?.();
     window.FloodSafeHydroExtraRealtime?.refresh?.();
@@ -114,6 +122,7 @@ function startFastSync(){
   };
 }
 
+loadAllStationsModule();
 installPanelStyle();
 scanPanel();
 new MutationObserver(()=>scanPanel()).observe(document.documentElement,{subtree:true,childList:true,characterData:true});

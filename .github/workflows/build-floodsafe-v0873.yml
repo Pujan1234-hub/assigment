@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     paths:
       - '.github/workflows/build-floodsafe-v0873.yml'
-      - 'floodsafe-android-app/patch_native_v0873_official_hydro_rain_lake.py'
+      - 'floodsafe-android-app/patch_native_v0873_source_parity_v2.py'
       - 'floodsafe-android-app/run_patch_native_v0873.py'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java'
@@ -40,25 +40,31 @@ jobs:
           W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
           G='floodsafe-android-app/app/build.gradle'
 
+          # Accepted native v0.8.70/v0.8.71 baseline remains present.
+          grep -Fq 'V0870_BIPAD_POINT_COORDS' "$A"
+          grep -Fq 'V0871_ONE_SECOND_SOURCE_RECHECK' "$A"
+          grep -Fq 'V0871_SOURCE_EXACT_DETAIL' "$A"
+          grep -Fq 'V0871_OPEN_POPUP_LIVE_UPDATE' "$A"
+          grep -Fq 'RIVER_FRESH_MS=Long.MAX_VALUE' "$A"
+
+          # Requested v0.8.73 additions only.
           grep -Fq 'V0873_SHOW_OFFICIAL_RAIN_STATIONS' "$A"
           grep -Fq 'V0873_ONE_SECOND_RAIN_RECHECK' "$A"
           grep -Fq 'V0873_EXTRA_OFFICIAL_HYDROLOGY_FEEDS' "$A"
           grep -Fq 'V0873_DETAIL_STATION_TYPE' "$A"
           grep -Fq 'V0873_STATUS_COLOURED_STATION_DOT' "$A"
-          grep -Fq 'V0872_EXACT_LEVEL_DETAIL' "$A"
-          grep -Fq 'V0871_ONE_SECOND_SOURCE_RECHECK' "$A"
-          grep -Fq 'V0870_BIPAD_POINT_COORDS' "$A"
 
           grep -Fq 'V0873_ALL_RAIN_STATIONS_VISIBLE' "$M"
           grep -Fq 'V0873_RAIN_STATION_TAP' "$M"
           grep -Fq 'V0873_STATION_GREEN_USER_BLUE_STATUS_COLOURS' "$M"
+          grep -Fq 'V0848_FLOOD_COLOUR_PRIORITY' "$M"
           grep -Fq '"#16A34A"' "$M"
           grep -Fq '"#FFD447"' "$M"
           grep -Fq '"#FF9418"' "$M"
           grep -Fq '"#F04444"' "$M"
           grep -Fq '"#0B7FD0"' "$M"
-          grep -Fq 'V0872_RIVER_STATUS_COLOUR_LAYERS' "$M"
 
+          # Native foreground service owns one background source monitor.
           grep -Fq 'V0872_BACKGROUND_SOURCE_MONITOR_FIELD' "$S"
           grep -Fq 'V0872_START_1S_BACKGROUND_SOURCE' "$S"
           grep -Fq 'V0872_STOP_BACKGROUND_SOURCE' "$S"
@@ -70,10 +76,10 @@ jobs:
           grep -Fq 'station-location/?limit=2000' "$L"
           grep -Fq 'RADIUS_KM=2d' "$L"
 
+          # Do not regress other locked behavior or turn this into WebView UI.
           grep -Fq 'new Intent(this, NativeFullActivity.class)' "$P"
           grep -Fq 'RADIUS_KM = 2d' "$W"
           grep -Fq 'V0869_TWO_HOUR_DIGEST' "$R"
-          grep -Fq 'RIVER_FRESH_MS=Long.MAX_VALUE' "$A"
           grep -Fq 'versionCode 93' "$G"
           grep -Fq "versionName '0.8.73'" "$G"
           ! grep -Fq 'android.webkit.WebView' "$A"

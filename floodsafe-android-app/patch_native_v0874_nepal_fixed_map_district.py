@@ -75,15 +75,19 @@ m=m[:sp[0]]+r'''    private boolean onMapClick(LatLng p) {
     } // V0874_RIVER_AND_GAUGE_TAPS_ONLY
 '''+m[sp[1]:]
 
-# 2) District IDs from BIPAD are metadata IDs, not display names. Always normalize every
-# parsed station by coordinate through the exact bundled 77-district polygons.
+# 2) District IDs from BIPAD are metadata IDs, not display names. Normalize every parsed
+# station through the bundled 77-district polygons. Do NOT assume historical local variable
+# names (a/o): later source-parity patches rewrite parseStation(). Instead read the actual
+# latitude/longitude expressions from the RiverStation constructor that follows district.
 sp=method_span(a,'parseStation')
 if not sp:raise SystemExit('v0874 parseStation missing')
 block=a[sp[0]:sp[1]]
 if 'V0874_NORMALIZE_DISTRICT_NAME' not in block:
-    pos=block.rfind('return new RiverStation')
-    if pos<0:raise SystemExit('v0874 parseStation return missing')
-    block=block[:pos]+'district=v848DistrictName(a,o,district); // V0874_NORMALIZE_DISTRICT_NAME\n        '+block[pos:]
+    ret=re.search(r'return\s+new\s+RiverStation\(\s*[^,]+\s*,\s*district\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,',block,re.S)
+    if not ret:raise SystemExit('v0874 parseStation constructor coordinates missing')
+    lat_expr=ret.group(1).strip();lon_expr=ret.group(2).strip()
+    pos=ret.start()
+    block=block[:pos]+'district=v848DistrictName('+lat_expr+','+lon_expr+',district); // V0874_NORMALIZE_DISTRICT_NAME\n        '+block[pos:]
     a=a[:sp[0]]+block+a[sp[1]:]
 
 sp=method_span(a,'showDistrictPicker')

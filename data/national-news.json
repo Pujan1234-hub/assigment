@@ -1,56 +1,63 @@
 {
-  "generated_at": "2026-09-20T07:01:59.359332+05:45",
-  "updated_at_npt": "20 Sep 07:01 NPT",
+  "generated_at": "2026-09-20T12:10:55.169590+05:45",
+  "updated_at_npt": "20 Sep 12:10 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "सशस्त्र प्रहरीका सई हत्या प्रकरण : गोली प्रहार गरी मुख्य अभियुक्त पक्राउ",
+      "title": "रसुवा बाढीले निम्त्याएको विपद्‍बाट सिक्किमदेखि कश्मीरसम्मले के सिक्ने ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593321/armed-police-chiefs-murder-case-main-accused-arrested-after-shooting",
-      "published_at": "2026-09-20T06:35:03+05:45",
+      "url": "https://www.ratopati.com/story/593370/what-can-we-learn-from-the-disaster-caused-by-the-rasuwa-floods-from-sikkim-to-kashmir",
+      "published_at": "2026-09-20T11:39:22+05:45",
       "flash": true
     },
     {
-      "title": "देशभर मनसुनी र पश्चिमी वायुको आंशिक प्रभाव, आज यी ३ प्रदेशमा भारी वर्षाको सम्भावना",
+      "title": "विपद् र महामारीमा पनि सिकाइ नरोक्ने सरकारको योजना",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593319/partial-effect-of-monsoon-and-westerly-winds-across-the-country-heavy-rain-likely-in-these-3-provinces-today",
-      "published_at": "2026-09-20T06:09:01+05:45",
+      "url": "https://www.ratopati.com/story/593354/government-plans-to-continue-learning-even-during-disasters-and-pandemics",
+      "published_at": "2026-09-20T11:15:00+05:45",
       "flash": true
     },
     {
-      "title": "रसुवा बाढीपछि मुस्ताङमा पर्यटक आगमन घट्यो",
+      "title": "मधेस प्रदेश मन्त्रिपरिषद् बैठकले गर्‍यो तीन निर्णय",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593317/tourist-arrivals-in-mustang-decrease-after-rasuwa-floods",
-      "published_at": "2026-09-20T05:35:13+05:45",
+      "url": "https://www.ratopati.com/story/593363/madhesh-province-council-of-ministers-meeting-makes-three-decisions",
+      "published_at": "2026-09-20T11:13:54+05:45",
+      "flash": true
+    },
+    {
+      "title": "धनकुटामा सुमो दुर्घटना, एक जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593356/sumo-accident-in-dhankuta-one-dead",
+      "published_at": "2026-09-20T10:54:49+05:45",
       "flash": false
     },
     {
-      "title": "बाढी प्रभावितलाई हैजाविरुद्धको खोप उपलब्ध",
+      "title": "राष्ट्रसंघमा प्रस्तुत गर्न प्रधानमन्त्रीलाई गण्डकी प्रदेशले पठायो १५ बुँदे जलवायु एजेन्डा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593313/cholera-vaccine-available-for-flood-victims",
-      "published_at": "2026-09-20T05:15:38+05:45",
+      "url": "https://www.ratopati.com/story/593347/gandaki-province-sends-15-point-climate-agenda-to-prime-minister-to-present-at-un",
+      "published_at": "2026-09-20T10:09:45+05:45",
       "flash": false
     },
     {
-      "title": "जलविद्युत् आयोजनाको सहयोगमा दुखुखोला सडक पुल संरक्षण",
+      "title": "मोटरसाइकलको ठक्करबाट पैदलयात्रीको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593312/dukhukhola-road-bridge-conservation-with-the-support-of-hydropower-project",
-      "published_at": "2026-09-20T04:54:31+05:45",
+      "url": "https://www.ratopati.com/story/593339/pedestrian-dies-after-being-hit-by-motorcycle",
+      "published_at": "2026-09-20T08:56:42+05:45",
       "flash": false
     },
     {
-      "title": "छारेभिरमा पहिरो खसेपछि कर्णाली कोरिडोर ठप्प",
+      "title": "कैलालीमा पौडी खेल्ने क्रममा डुबेर १२ वर्षीय बालकको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593310/karnali-corridor-closed-after-landslide-in-charebhir",
-      "published_at": "2026-09-20T04:50:42+05:45",
+      "url": "https://www.ratopati.com/story/593331/12-year-old-boy-dies-after-drowning-while-swimming-in-kailali",
+      "published_at": "2026-09-20T08:15:16+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     },
@@ -63,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 6
+      "flash": 3,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -74,7 +81,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 6,
+      "candidates": 5,
       "flash": 0,
       "recent": 0
     }

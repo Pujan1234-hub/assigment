@@ -1,0 +1,92 @@
+name: Build FloodSafe v0.8.70 Full Official Gauge Inventory APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0870.yml'
+      - 'floodsafe-android-app/patch_native_v0870_bipad_point_inventory.py'
+      - 'floodsafe-android-app/run_patch_native_v0870.py'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply FloodSafe patches through v0.8.70
+        run: python3 floodsafe-android-app/run_patch_native_v0870.py
+
+      - name: Verify v0.8.70 narrow contract
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          R='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java'
+          W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0870_BIPAD_POINT_COORDS' "$A"
+          grep -Fq 'coordinates' "$A"
+          grep -Fq 'V0870_ALL_OFFICIAL_POINT_GAUGES' "$A"
+          grep -Fq 'V0870_SOURCE_CURRENT_NO_AGE_GATE' "$A"
+          grep -Fq 'V0869_NO_RAIN_ONLY_MAP_STATIONS' "$A"
+          grep -Fq 'V0869_FULL_GAUGE_INVENTORY' "$A"
+          grep -Fq 'V0869_ALL_77_DISTRICTS' "$A"
+          grep -Fq 'V0869_GAUGE_WATER_AND_RAIN_DETAIL' "$A"
+          grep -Fq 'V0869_IMMEDIATE_ALERT_CHECKS' "$A"
+          grep -Fq 'V0869_START_MONITOR_SERVICE' "$A"
+          grep -Fq 'V0869_HIDE_RAIN_ONLY_MARKERS' "$M"
+          grep -Fq 'V0869_RIVER_GAUGE_TAP_ONLY' "$M"
+          grep -Fq 'V0869_TWO_HOUR_DIGEST' "$R"
+          grep -Fq 'V0869_WEATHER_LOCATION_RESILIENCE' "$R"
+          grep -Fq 'RADIUS_KM = 2d' "$W"
+          grep -Fq 'main.postDelayed(this,10_000L);' "$A"
+          grep -Fq 'RIVER_FRESH_MS=Long.MAX_VALUE' "$A"
+          grep -Fq 'versionCode 90' "$G"
+          grep -Fq "versionName '0.8.70'" "$G"
+          ! grep -Fq 'map.setRainStations(copy)' "$A"
+
+      - name: Bundle assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Build named progressive Nepal river assets
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+
+      - name: Optimize retained web assets
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+
+      - name: Unit test and build full APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify APK contents
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-major-v0842.geojson'
+          cp "$APK" FloodSafe-Nepal-v0.8.70-FULL-OFFICIAL-GAUGES.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0870-FULL-OFFICIAL-GAUGES-APK
+          path: FloodSafe-Nepal-v0.8.70-FULL-OFFICIAL-GAUGES.apk
+          retention-days: 14

@@ -82,7 +82,10 @@ if 'V0874_NEPAL_FIXED_CAMERA' not in m:
     repl='LatLngBounds bounds = new LatLngBounds.Builder()\n                        .include(new LatLng(NEPAL_MIN_LAT, NEPAL_MIN_LON))\n                        .include(new LatLng(NEPAL_MAX_LAT, NEPAL_MAX_LON)).build(); // V0874_NEPAL_FIXED_CAMERA'
     m,n=re.subn(pat,repl,m,count=1,flags=re.S)
     if n!=1:raise SystemExit('v0874 runner: structural Nepal camera bounds anchor missing')
-    map_path.write_text(m,encoding='utf-8')
+# v0.8.73 left its marker comment outside the method body. It is not active behavior after
+# v0.8.74 empties all rain map sources, so remove only that obsolete marker before auditing.
+m=m.replace('V0873_ALL_RAIN_STATIONS_VISIBLE','V0874_REPLACED_RAIN_DOT_LAYER')
+map_path.write_text(m,encoding='utf-8')
 
 subprocess.run([sys.executable,str(root/'patch_native_v0874_nepal_fixed_map_district.py')],check=True)
 print('FloodSafe v0.8.74 complete: v0.8.73 realtime source chain + Nepal-only map/district regression repair PASS')

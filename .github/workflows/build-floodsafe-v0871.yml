@@ -1,0 +1,92 @@
+name: Build FloodSafe v0.8.71 Source Exact 1s Live Detail APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0871.yml'
+      - 'floodsafe-android-app/patch_native_v0871_source_exact_1s_live_detail.py'
+      - 'floodsafe-android-app/run_patch_native_v0871.py'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply FloodSafe patches through v0.8.71
+        run: python3 floodsafe-android-app/run_patch_native_v0871.py
+
+      - name: Verify v0.8.71 source parity contract
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          R='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java'
+          W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0871_SOURCE_VALUES_EXACT' "$A"
+          grep -Fq 'main.postDelayed(this,1_000L);' "$A"
+          grep -Fq 'V0871_SOURCE_ROW_CACHE' "$A"
+          grep -Fq 'V0871_SOURCE_EXACT_DETAIL' "$A"
+          grep -Fq 'V0871_OPEN_POPUP_LIVE_UPDATE' "$A"
+          grep -Fq 'V0871_LIVE_SOURCE_DETAIL_DIALOG' "$A"
+          grep -Fq 'V0871_FULL_DETAIL_FINGERPRINT' "$A"
+          grep -Fq 'V0871_RIVER_TAP_FULL_SOURCE_DETAIL' "$M"
+          grep -Fq 'V0871_RIVER_LINE_SOURCE_PARITY' "$M"
+          grep -Fq 'V0870_BIPAD_POINT_COORDS' "$A"
+          grep -Fq 'V0869_NO_RAIN_ONLY_MAP_STATIONS' "$A"
+          grep -Fq 'V0869_ALL_77_DISTRICTS' "$A"
+          grep -Fq 'V0869_IMMEDIATE_ALERT_CHECKS' "$A"
+          grep -Fq 'V0869_TWO_HOUR_DIGEST' "$R"
+          grep -Fq 'RADIUS_KM = 2d' "$W"
+          grep -Fq 'RIVER_FRESH_MS=Long.MAX_VALUE' "$A"
+          grep -Fq 'versionCode 91' "$G"
+          grep -Fq "versionName '0.8.71'" "$G"
+          ! grep -Fq 'main.postDelayed(this,10_000L);' "$A"
+          ! grep -Fq 'if(datum){level-=elevation' "$A"
+
+      - name: Bundle assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Build named progressive Nepal river assets
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+
+      - name: Optimize retained web assets
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+
+      - name: Unit test and build full APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify APK contents
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-major-v0842.geojson'
+          cp "$APK" FloodSafe-Nepal-v0.8.71-SOURCE-EXACT-1S-LIVE-DETAIL.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0871-SOURCE-EXACT-1S-LIVE-DETAIL-APK
+          path: FloodSafe-Nepal-v0.8.71-SOURCE-EXACT-1S-LIVE-DETAIL.apk
+          retention-days: 14

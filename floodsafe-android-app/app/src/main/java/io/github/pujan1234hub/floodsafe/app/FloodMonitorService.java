@@ -34,7 +34,7 @@ public final class FloodMonitorService extends Service implements LocationListen
     private LocationManager locationManager;
     private SharedPreferences prefs;
     private boolean updatesStarted;
-    private FloodLiveGaugeMonitor liveHydrologyMonitor; // V0872_BACKGROUND_HYDRO_MONITOR
+    private FloodLiveGaugeMonitor liveHydrologyMonitor; // V0872_BACKGROUND_HYDRO_MONITOR V0872_BACKGROUND_SOURCE_MONITOR_FIELD
 
     static boolean hasForegroundLocation(Context context) {
         return context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -58,9 +58,7 @@ public final class FloodMonitorService extends Service implements LocationListen
         try {
             if (Build.VERSION.SDK_INT >= 26) app.startForegroundService(intent);
             else app.startService(intent);
-        } catch (RuntimeException ignored) {
-            // FCM/WorkManager remain available if the OS temporarily blocks an FGS start.
-        }
+        } catch (RuntimeException ignored) { }
     }
 
     static void start(Context context) { startIfEnabled(context); }
@@ -90,7 +88,7 @@ public final class FloodMonitorService extends Service implements LocationListen
             return START_NOT_STICKY;
         }
         startLocationUpdates();
-        if (liveHydrologyMonitor != null) liveHydrologyMonitor.start(); // V0872_START_ONE_SECOND_HYDRO
+        if (liveHydrologyMonitor != null) liveHydrologyMonitor.start(); // V0872_START_ONE_SECOND_HYDRO V0872_START_1S_BACKGROUND_SOURCE
         return START_STICKY;
     }
 
@@ -224,7 +222,7 @@ public final class FloodMonitorService extends Service implements LocationListen
     @Override public void onDestroy() {
         if (liveHydrologyMonitor != null) {
             try { liveHydrologyMonitor.stop(); } catch (RuntimeException ignored) { }
-            liveHydrologyMonitor = null;
+            liveHydrologyMonitor = null; // V0872_STOP_BACKGROUND_SOURCE
         }
         if (locationManager != null) {
             try { locationManager.removeUpdates(this); }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-20T14:44:42.012241Z",
+  "generated_at": "2026-09-20T17:43:22.119545Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "कोशी प्रदेशमा २० लाख ६३ हजार बढी नागरिक जीवन बीमाको दायरामा",
-      "url": "https://radionepalonline.com/2026/09/20/736518.html",
-      "published_at": "2026-09-20T14:17:03Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

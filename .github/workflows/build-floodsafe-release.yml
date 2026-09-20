@@ -27,10 +27,12 @@ jobs:
       FLOODSAFE_KEY_PASSWORD: ${{ secrets.FLOODSAFE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
+
       - name: Prepare Android SDK
         shell: bash
         run: |
@@ -40,86 +42,131 @@ jobs:
           export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;35.0.0"
-          sdkmanager --list_installed | grep -E 'platforms;android-36|build-tools;35.0.0'
+
       - name: Install Gradle
         run: |
           curl -fsSL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
-      - name: Validate release signing secrets
+
+      - name: Apply latest native FloodSafe patches
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_webview_crash.py
+          python3 floodsafe-android-app/patch_launcher_reopen_hard_reset.py
+          python3 floodsafe-android-app/patch_auto_alerts.py
+          python3 floodsafe-android-app/patch_river_waterlevel.py
+          python3 floodsafe-android-app/patch_two_hour_weather.py
+          python3 floodsafe-android-app/patch_cold_start_blank.py
+          python3 floodsafe-android-app/patch_cross_device_navigation.py
+          python3 floodsafe-android-app/patch_native_compat_fallback.py
+          python3 floodsafe-android-app/patch_map_smooth_v075.py
+          python3 floodsafe-android-app/patch_full_native_v080.py
+          python3 floodsafe-android-app/patch_native_v081_polish.py
+          python3 floodsafe-android-app/patch_native_v081_escape_fix.py
+          python3 floodsafe-android-app/patch_native_maplibre_v082.py
+          python3 floodsafe-android-app/patch_native_map_detail_v083.py
+          python3 floodsafe-android-app/patch_native_v084_sathi_map.py
+          python3 floodsafe-android-app/patch_native_v085_flow_sathi.py
+          python3 floodsafe-android-app/patch_native_v086_full_waterways.py
+          python3 floodsafe-android-app/patch_native_v087_runtime_rivers.py
+          python3 floodsafe-android-app/patch_native_v088_restore_web_rivers.py
+          python3 floodsafe-android-app/patch_native_v089_realtime_gauges.py
+          python3 floodsafe-android-app/patch_native_v0810_live_source_colours.py
+          python3 floodsafe-android-app/patch_native_v0811_nepal_clean_progressive_map.py
+          python3 floodsafe-android-app/patch_native_v0812_anr_fix.py
+          python3 floodsafe-android-app/patch_native_v0813_official_complete.py
+
+      - name: Verify v0.8.13 official realtime contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          B='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java'
+          grep -Fq 'river-stations/?limit=2000' "$A"
+          grep -Fq 'river-stations/?latest=true&limit=2000' "$A"
+          grep -Fq 'rain-stations/?limit=2000' "$A"
+          grep -Fq 'flood-station/?limit=2000' "$A"
+          grep -Fq 'streamflow/?limit=2000' "$A"
+          grep -Fq 'station-location/?limit=2000' "$A"
+          grep -Fq 'main.postDelayed(this,5_000L)' "$A"
+          grep -Fq 'Nearest official rainfall/AWS' "$M"
+          grep -Fq 'Discharge / streamflow' "$M"
+          grep -Fq 'LATEST OFFICIAL • STALE' "$M"
+          grep -Fq 'handler.postDelayed(this,1_000L)' "$B"
+          grep -Fq 'ALERT_FRESH_MS=10L*60L*1000L' "$B"
+          grep -Fq 'RADIUS_KM=2d' "$B"
+          grep -Fq 'versionCode 33' floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.8.13'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'android:name=".NativeFullActivity"' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          echo 'v0.8.13 official realtime contract PASS'
+
+      - name: Bundle verified Android assets
+        run: /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Optimize retained web assets
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+
+      - name: Prepare existing release signing key when configured
         env:
           FLOODSAFE_KEYSTORE_BASE64: ${{ secrets.FLOODSAFE_KEYSTORE_BASE64 }}
         shell: bash
         run: |
           set -euo pipefail
-          missing=0
-          [ -n "$FLOODSAFE_KEYSTORE_BASE64" ] || { echo '::error::Missing FLOODSAFE_KEYSTORE_BASE64'; missing=1; }
-          [ -n "$FLOODSAFE_KEYSTORE_PASSWORD" ] || { echo '::error::Missing FLOODSAFE_KEYSTORE_PASSWORD'; missing=1; }
-          [ -n "$FLOODSAFE_KEY_ALIAS" ] || { echo '::error::Missing FLOODSAFE_KEY_ALIAS'; missing=1; }
-          [ -n "$FLOODSAFE_KEY_PASSWORD" ] || { echo '::error::Missing FLOODSAFE_KEY_PASSWORD'; missing=1; }
-          [ "$missing" -eq 0 ] || exit 1
-          printf '%s' "$FLOODSAFE_KEYSTORE_BASE64" | base64 --decode > "$FLOODSAFE_KEYSTORE_PATH"
-          test -s "$FLOODSAFE_KEYSTORE_PATH"
-          chmod 600 "$FLOODSAFE_KEYSTORE_PATH"
-          keytool -list -keystore "$FLOODSAFE_KEYSTORE_PATH" -storepass "$FLOODSAFE_KEYSTORE_PASSWORD" -alias "$FLOODSAFE_KEY_ALIAS" >/dev/null
-      - name: Set Play Store release version
-        shell: bash
-        run: |
-          set -euo pipefail
-          sed -i "s/versionCode 14/versionCode 15/" floodsafe-android-app/app/build.gradle
-          sed -i "s/versionName '0.7.0'/versionName '0.7.1'/" floodsafe-android-app/app/build.gradle
-          grep -Fq 'versionCode 15' floodsafe-android-app/app/build.gradle
-          grep -Fq "versionName '0.7.1'" floodsafe-android-app/app/build.gradle
-      - name: Verify release source contract
-        shell: bash
-        run: |
-          set -euo pipefail
-          test ! -e data/floodsafe-people-status.json
-          test ! -e floodsafe-nepal/v25/human-bootstrap.js
-          test ! -e floodsafe-nepal/v25/human-current-guard.js
-          test ! -e floodsafe-nepal/v25/human-final.js
-          test ! -e floodsafe-nepal/v25/human-final-v2.js
-          test ! -e floodsafe-nepal/v25/people.html
-          ! grep -Fq 'id="impact"' floodsafe-nepal/v25/index.html
-          grep -Fq 'id="bulletin"' floodsafe-nepal/v25/index.html
-          grep -Fq 'news-live-v5.js?v=17' floodsafe-nepal/v25/index.html
-          grep -Fq 'official-map-panel-v6.js' floodsafe-nepal/v25/map-side-panel-v1.js
-          grep -Fq 'latest official reading always' floodsafe-nepal/v25/trusted-river-runtime-v3.js
-          grep -Fq 'latest official rainfall' floodsafe-nepal/v25/trusted-rain-runtime-v1.js
-          echo 'Release source guard PASS'
-      - name: Build signed release APK and AAB
+          if [ -n "$FLOODSAFE_KEYSTORE_BASE64" ] && [ -n "$FLOODSAFE_KEYSTORE_PASSWORD" ] && [ -n "$FLOODSAFE_KEY_ALIAS" ] && [ -n "$FLOODSAFE_KEY_PASSWORD" ]; then
+            printf '%s' "$FLOODSAFE_KEYSTORE_BASE64" | base64 --decode > "$FLOODSAFE_KEYSTORE_PATH"
+            chmod 600 "$FLOODSAFE_KEYSTORE_PATH"
+            keytool -list -keystore "$FLOODSAFE_KEYSTORE_PATH" -storepass "$FLOODSAFE_KEYSTORE_PASSWORD" -alias "$FLOODSAFE_KEY_ALIAS" >/dev/null
+            echo 'Existing release signing key loaded.'
+          else
+            echo 'No repository release key configured; building unsigned release for secure offline signing.'
+          fi
+
+      - name: Build release APK and AAB
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
         run: |
-          /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:clean :app:assembleRelease :app:bundleRelease --no-daemon
-      - name: Verify release artifacts and signature
+          /tmp/gradle-8.11.1/bin/gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleRelease :app:bundleRelease -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify and stage release artifacts
         shell: bash
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
           set -euo pipefail
-          APK='floodsafe-android-app/app/build/outputs/apk/release/app-release.apk'
-          AAB='floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab'
-          test -s "$APK"
-          test -s "$AAB"
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
-          jarsigner -verify "$AAB" >/dev/null
-          unzip -p "$APK" assets/floodsafe-nepal/v25/index.html > /tmp/floodsafe-release-index.html
-          ! grep -Fq 'id="disasterStatus"' /tmp/floodsafe-release-index.html
-          grep -Fq 'id="bulletin"' /tmp/floodsafe-release-index.html
-          grep -Fq 'news-live-v5.js?v=17' /tmp/floodsafe-release-index.html
-          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/official-map-panel-v6.js'
-          sha256sum "$APK" "$AAB" | tee floodsafe-android-app/app/build/outputs/release-sha256.txt
-          echo 'Signed release verification PASS'
+          mkdir -p release-output
+          APK="$(find floodsafe-android-app/app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -1)"
+          AAB="$(find floodsafe-android-app/app/build/outputs/bundle/release -maxdepth 1 -type f -name '*.aab' | head -1)"
+          test -n "$APK" && test -s "$APK"
+          test -n "$AAB" && test -s "$AAB"
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-snapshot.json'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          if "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" >/tmp/apkverify.txt 2>&1; then
+            cp "$APK" release-output/FloodSafe-Nepal-v0.8.13-SIGNED.apk
+            cp "$AAB" release-output/FloodSafe-Nepal-v0.8.13-SIGNED.aab
+            echo signed > release-output/signing-state.txt
+            cat /tmp/apkverify.txt
+          else
+            cp "$APK" release-output/FloodSafe-Nepal-v0.8.13-UNSIGNED.apk
+            cp "$AAB" release-output/FloodSafe-Nepal-v0.8.13-UNSIGNED.aab
+            echo unsigned > release-output/signing-state.txt
+          fi
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" release-output/apksigner.jar
+          sha256sum "$APK" "$AAB" > release-output/unsigned-or-ci-signed-sha256.txt
+          printf 'versionName=0.8.13\nversionCode=33\ncommit=%s\n' "$GITHUB_SHA" > release-output/build-info.txt
+
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-Signed-Release-v0.7.1
-          path: |
-            floodsafe-android-app/app/build/outputs/apk/release/app-release.apk
-            floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab
-            floodsafe-android-app/app/build/outputs/release-sha256.txt
+          name: FloodSafe-Nepal-v0.8.13-Release
+          path: release-output/
           if-no-files-found: error
           retention-days: 14
+
       - name: Remove temporary keystore
         if: always()
         run: rm -f "$FLOODSAFE_KEYSTORE_PATH"

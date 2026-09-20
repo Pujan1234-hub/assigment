@@ -67,3 +67,5 @@ if 'V0869_TWO_HOUR_DIGEST' not in rw:
 
 subprocess.run([sys.executable,str(root/'patch_native_v0869_gauge_notifications_truth.py')],check=True)
 print('FloodSafe v0.8.69 complete patch chain PASS')
+
+# Build trigger only: no runtime behavior change.

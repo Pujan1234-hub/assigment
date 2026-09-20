@@ -59,17 +59,30 @@ if 'V0869_TWO_HOUR_DIGEST' not in rw:
                  'private static final long WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L;',rw,count=1)
     if n!=1: raise SystemExit('v0869 runner could not normalize weather digest anchor')
 
-# Normalize whatever earlier formatting/version of the follow-device freshness block exists.
-# This only touches RainAlertWorker; RiverAlertWorker keeps the strict 2 km safety policy.
+# Make weather/rain notifications resilient to Android background GPS age without weakening
+# the separate RiverAlertWorker 2 km safety rule. Find the follow-device block structurally,
+# not by whitespace/exact historical text.
 if 'V0869_WEATHER_LOCATION_RESILIENCE' not in rw:
-    pat=re.compile(r'(?ms)^\s*if\s*\(\s*prefs\.getBoolean\(\s*"follow_device"\s*,\s*false\s*\)\s*\)\s*\{.*?^\s*\}')
-    canonical='''        if (prefs.getBoolean("follow_device", false)) {
-            long locationTime = prefs.getLong("location_time", 0L);
-            if (!MonitoringLocationPolicy.freshDeviceLocation(
-                    locationTime, System.currentTimeMillis(), lat, lon)) return Result.success();
-        }'''
-    rw,n=pat.subn(canonical,rw,count=1)
-    if n!=1: raise SystemExit('v0869 runner could not normalize RainAlertWorker location anchor')
+    pos=rw.find('"follow_device"')
+    if pos < 0: raise SystemExit('v0869 RainAlertWorker follow_device setting missing')
+    start=rw.rfind('if', 0, pos)
+    brace=rw.find('{', pos)
+    if start < 0 or brace < 0: raise SystemExit('v0869 RainAlertWorker follow_device block malformed')
+    depth=0; end=-1
+    for i in range(brace, len(rw)):
+        ch=rw[i]
+        if ch=='{': depth+=1
+        elif ch=='}':
+            depth-=1
+            if depth==0:
+                end=i+1; break
+    if end < 0: raise SystemExit('v0869 RainAlertWorker follow_device block end missing')
+    replacement='''if (prefs.getBoolean("follow_device", false)) {
+            long locationTime=prefs.getLong("location_time",0L), nowMs=System.currentTimeMillis();
+            long age=nowMs-locationTime;
+            if(locationTime<=0L||age<-(5L*60L*1000L)||age>6L*60L*60L*1000L)return Result.success();
+        } // V0869_WEATHER_LOCATION_RESILIENCE'''
+    rw=rw[:start]+replacement+rw[end:]
 
 rain_worker.write_text(rw,encoding='utf-8')
 

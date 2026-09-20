@@ -1,9 +1,16 @@
 {
-  "generated_at": "2026-09-21T02:28:56.374909+05:45",
-  "updated_at_npt": "21 Sep 02:28 NPT",
+  "generated_at": "2026-09-21T04:28:49.985220+05:45",
+  "updated_at_npt": "21 Sep 04:28 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "आशा र भरोसाको केन्द्र बन्दै सुशील कोइराला प्रखर क्यान्सर अस्पताल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593531/sushil-koirala-prakhar-cancer-hospital-is-becoming-a-center-of-hope-and-trust",
+      "published_at": "2026-09-21T04:16:32+05:45",
+      "flash": true
+    },
     {
       "title": "भोटेकोशी बाढी: तमु धीं नेपालद्वारा ७० लाख ४७ हजार सङ्कलन",
       "source": "Ratopati",
@@ -24,13 +31,6 @@
       "url": "https://www.ratopati.com/story/593523/12-oclock-12-news-a-controversy-within-the-parties-that-said-they-would-protest-against-the-government-why-were-two-anfa-officials-arrested",
       "published_at": "2026-09-21T00:00:00+05:45",
       "flash": false
-    },
-    {
-      "title": "सुनसरीमा रुखले च्यापिएर महिलाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593497/woman-dies-after-being-crushed-by-tree-in-sunsari",
-      "published_at": "2026-09-20T20:37:56+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -49,7 +49,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
+      "flash": 1,
       "recent": 4
     },
     "Kathmandu Post": {

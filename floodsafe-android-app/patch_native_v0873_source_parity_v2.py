@@ -51,7 +51,9 @@ a=a[:sp[0]]+r'''    private void refreshRainUi(){
 poll='main.postDelayed(this,1_000L); // V0871_ONE_SECOND_SOURCE_RECHECK'
 if 'V0873_ONE_SECOND_RAIN_RECHECK' not in a:
     if poll not in a:raise SystemExit('v0873v2 one-second river scheduler missing')
-    a=a.replace(poll,'refreshRain(); // V0873_ONE_SECOND_RAIN_RECHECK\n        '+poll,1)
+    # v0.8.71 livePoll already calls refreshRainStations() on this 1-second loop.
+    # Keep that source loader as the single rain refresh path; do not call a non-existent refreshRain().
+    a=a.replace(poll,'// V0873_ONE_SECOND_RAIN_RECHECK\n        '+poll,1)
 
 # -----------------------------------------------------------------------------
 # Add official BIPAD hydrology feeds. No made-up lake endpoint: lake/reservoir/dam-type
@@ -127,6 +129,26 @@ m=m[:sp[0]]+r'''    private void refreshRainSources() {
         setGeo("fs-rain-danger",rainGeo(snapshot,"danger"));
         v849AvailabilityDotColours(); // V0873_APPLY_RAIN_STATUS_COLOURS
     } // V0873_ALL_RAIN_STATIONS_VISIBLE
+
+    private static String rainGeo(List<RainDot> list,String group){
+        try{
+            JSONArray features=new JSONArray();
+            for(RainDot r:list){
+                if(r==null)continue;
+                Class<?> c=r.getClass();
+                double la=getDouble(c,r,"lat"),lo=getDouble(c,r,"lon");
+                if(!Double.isFinite(la)||!Double.isFinite(lo))continue;
+                String stage=getString(c,r,"stage","");
+                if(stage==null||stage.trim().isEmpty())stage=getString(c,r,"status","normal");
+                boolean fresh=getBoolean(c,r,"fresh",true);
+                String g=fresh?normalizeStage(stage):"stale";
+                if(!group.equals(g))continue;
+                String name=getString(c,r,"name","Official rainfall station");
+                features.put(pointFeature(lo,la,name));
+            }
+            return new JSONObject().put("type","FeatureCollection").put("features",features).toString();
+        }catch(Exception e){return emptyFeatureCollection();}
+    } // V0873_RAIN_GEO_COMPILE_HELPER
 '''+m[sp[1]:]
 
 sp=method_span(m,'onMapClick')
@@ -183,7 +205,7 @@ a_path.write_text(a,encoding='utf-8');m_path.write_text(m,encoding='utf-8');g_pa
 
 for x in ['V0873_SHOW_OFFICIAL_RAIN_STATIONS','V0873_ONE_SECOND_RAIN_RECHECK','V0873_EXTRA_OFFICIAL_HYDROLOGY_FEEDS','V0873_DETAIL_STATION_TYPE','V0873_STATUS_COLOURED_STATION_DOT','V0871_SOURCE_EXACT_DETAIL','V0871_OPEN_POPUP_LIVE_UPDATE','V0870_BIPAD_POINT_COORDS']:
     if x not in a:raise SystemExit('v0873v2 activity contract missing: '+x)
-for x in ['V0873_ALL_RAIN_STATIONS_VISIBLE','V0873_RAIN_STATION_TAP','V0873_STATION_GREEN_USER_BLUE_STATUS_COLOURS','V0848_FLOOD_COLOUR_PRIORITY']:
+for x in ['V0873_ALL_RAIN_STATIONS_VISIBLE','V0873_RAIN_STATION_TAP','V0873_STATION_GREEN_USER_BLUE_STATUS_COLOURS','V0873_RAIN_GEO_COMPILE_HELPER','V0848_FLOOD_COLOUR_PRIORITY']:
     if x not in m:raise SystemExit('v0873v2 map contract missing: '+x)
 if 'RIVER_FRESH_MS=Long.MAX_VALUE' not in a:raise SystemExit('v0873v2 source-current policy changed')
 if 'versionCode 93' not in g or "versionName '0.8.73'" not in g:raise SystemExit('v0873v2 version failed')

@@ -1,5 +1,5 @@
 from pathlib import Path
-import subprocess, sys
+import subprocess, sys, re
 
 root=Path(__file__).resolve().parent
 
@@ -50,8 +50,20 @@ rest=[
 'patch_native_v0862_realtime_final.py','patch_native_v0862_compile_helpers.py',
 'patch_native_v0863_river_tap_truth.py','patch_native_v0864_restore_station_inventory.py',
 'patch_native_v0865_news_language_sync.py','patch_native_v0866_station_river_geometry_truth.py',
-'patch_native_v0867_realtime_source_parity.py','patch_native_v0869_gauge_notifications_truth.py']
+'patch_native_v0867_realtime_source_parity.py']
 for p in rest:
     subprocess.run([sys.executable,str(root/p)],check=True)
 
+# v0.8.69 patch historically expected the pre-two-hour constant. Earlier chain already
+# correctly sets 2h, so normalize this one temporary CI anchor only; v0.8.69 immediately
+# writes the same 2h value back with its verification marker. Runtime behavior never ships 3h.
+rain_worker=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java'
+rw=rain_worker.read_text(encoding='utf-8')
+if 'V0869_TWO_HOUR_DIGEST' not in rw:
+    rw,n=re.subn(r'private\s+static\s+final\s+long\s+WEATHER_DIGEST_INTERVAL_MS\s*=\s*[^;]+;',
+                 'private static final long WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L;',rw,count=1)
+    if n!=1: raise SystemExit('v0869 runner could not normalize weather digest anchor')
+    rain_worker.write_text(rw,encoding='utf-8')
+
+subprocess.run([sys.executable,str(root/'patch_native_v0869_gauge_notifications_truth.py')],check=True)
 print('FloodSafe v0.8.69 complete patch chain PASS')

@@ -19,9 +19,8 @@ elif 'V0873_ONE_SECOND_RAIN_RECHECK' not in a:
 if 'refreshRainStations();' not in a:
     raise SystemExit('v0873 compile fix: real rain refresh method call missing')
 
-# v0.8.69 hid rain-only dots and a later chain no longer carries the old rainGeo
-# helper. v0.8.73 intentionally restores official rain dots, so restore only that
-# tiny GeoJSON adapter using the already-existing RainDot fields and pointFeature().
+# v0.8.72 may already carry a compatible rainGeo helper. Reuse it when present;
+# only restore the tiny adapter if the fully-native baseline no longer has one.
 if 'private static String rainGeo(' not in m:
     anchor='    private void refreshRainSources() {'
     if anchor not in m:
@@ -47,9 +46,9 @@ if 'refreshRain(); // V0873_ONE_SECOND_RAIN_RECHECK' in a:
     raise SystemExit('v0873 compile fix: nonexistent refreshRain call remains')
 for x in ['V0873_ONE_SECOND_RAIN_RECHECK','refreshRainStations();']:
     if x not in a:raise SystemExit('v0873 compile fix activity verification failed: '+x)
-for x in ['V0873_RAIN_GEO_COMPILE_FIX','private static String rainGeo(','pointFeature(r.lon,r.lat']:
-    if x not in m:raise SystemExit('v0873 compile fix map verification failed: '+x)
+if 'private static String rainGeo(' not in m:
+    raise SystemExit('v0873 compile fix map verification failed: rainGeo helper missing')
 
 a_path.write_text(a,encoding='utf-8')
 m_path.write_text(m,encoding='utf-8')
-print('FloodSafe v0.8.73 compile repair PASS: real 1s rain refresh retained + rain GeoJSON helper restored')
+print('FloodSafe v0.8.73 compile repair PASS: real 1s rain refresh retained + compatible native rain GeoJSON helper present')

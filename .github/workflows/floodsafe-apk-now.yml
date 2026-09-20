@@ -1,0 +1,61 @@
+name: Build FloodSafe APK now
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/floodsafe-apk-now.yml'
+permissions:
+  contents: read
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Apply Android patches
+        run: |
+          python3 floodsafe-android-app/patch_webview_crash.py
+          python3 floodsafe-android-app/patch_auto_alerts.py
+          python3 floodsafe-android-app/patch_river_waterlevel.py
+      - name: Bundle FloodSafe web assets
+        run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
+      - name: Apply packaged app optimizations
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+          python3 floodsafe-android-app/patch_pjbuilts_intro.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/index.html')
+          text=p.read_text(encoding='utf-8')
+          text=text.replace('<script src="./android-fast-start-v1.js?v=1" defer></script>','')
+          aware='<script src="./sathi-app-aware-v1.js?v=1" defer></script>'
+          marker='<script src="./sathi-flood-ai/place-weather-v1.js?v=1" defer></script>'
+          if aware not in text:
+            if marker not in text: raise SystemExit('SATHI place-weather marker missing')
+            text=text.replace(marker,aware+marker,1)
+          auto='<script src="./auto-alert-ui-v1.js?v=1" defer></script>'
+          if auto not in text: text=text.replace('</body>',auto+'</body>',1)
+          p.write_text(text,encoding='utf-8')
+          PY
+      - name: Build installable APK
+        run: gradle -p floodsafe-android-app :app:assembleDebug -x bundleFloodSafe --no-daemon
+      - name: Verify APK exists
+        run: |
+          test -s floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          unzip -l floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk | grep -Eq 'classes[0-9]*\.dex'
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-0.7.0-APK-NOW
+          path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14

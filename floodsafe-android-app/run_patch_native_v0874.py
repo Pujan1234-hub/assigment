@@ -1,5 +1,5 @@
 from pathlib import Path
-import subprocess,sys
+import subprocess,sys,re
 root=Path(__file__).resolve().parent
 
 # Historical v0.8.53/v0.8.56 patches contain exact string matchers for an older bundled
@@ -71,5 +71,18 @@ print('FloodSafe v0.8.56 native/language compatibility PASS (newer web runtime p
 ''',encoding='utf-8')
 
 subprocess.run([sys.executable,str(root/'run_patch_native_v0873.py')],check=True)
+
+# Current v0.8.73 native map has had its historical camera-bounds formatting rewritten by
+# intermediate patches. Apply the Nepal camera contract directly by structure instead of
+# depending on one old whitespace/value string.
+map_path=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+m=map_path.read_text(encoding='utf-8')
+if 'V0874_NEPAL_FIXED_CAMERA' not in m:
+    pat=r'LatLngBounds bounds\s*=\s*new LatLngBounds\.Builder\(\)\s*\.include\(new LatLng\([^;\n]+?\)\)\s*\.include\(new LatLng\([^;\n]+?\)\)\.build\(\);'
+    repl='LatLngBounds bounds = new LatLngBounds.Builder()\n                        .include(new LatLng(NEPAL_MIN_LAT, NEPAL_MIN_LON))\n                        .include(new LatLng(NEPAL_MAX_LAT, NEPAL_MAX_LON)).build(); // V0874_NEPAL_FIXED_CAMERA'
+    m,n=re.subn(pat,repl,m,count=1,flags=re.S)
+    if n!=1:raise SystemExit('v0874 runner: structural Nepal camera bounds anchor missing')
+    map_path.write_text(m,encoding='utf-8')
+
 subprocess.run([sys.executable,str(root/'patch_native_v0874_nepal_fixed_map_district.py')],check=True)
 print('FloodSafe v0.8.74 complete: v0.8.73 realtime source chain + Nepal-only map/district regression repair PASS')

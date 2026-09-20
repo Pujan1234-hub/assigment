@@ -63,9 +63,24 @@ if 'V0869_TWO_HOUR_DIGEST' not in rw:
     rw,n=re.subn(r'private\s+static\s+final\s+long\s+WEATHER_DIGEST_INTERVAL_MS\s*=\s*[^;]+;',
                  'private static final long WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L;',rw,count=1)
     if n!=1: raise SystemExit('v0869 runner could not normalize weather digest anchor')
-    rain_worker.write_text(rw,encoding='utf-8')
+
+# Earlier location patches can leave the same follow-device safety check with different
+# formatting/age semantics. Normalize only this RainAlertWorker doWork block to the exact
+# canonical anchor expected by the narrow v0.8.69 patch; the v0.8.69 patch then replaces it
+# with its intended 6-hour weather-location resilience. RiverAlertWorker is never touched.
+if 'V0869_WEATHER_LOCATION_RESILIENCE' not in rw:
+    pat=re.compile(r'        if \(prefs\.getBoolean\("follow_device", false\)\) \{.*?        \}\n\n        try \{',re.S)
+    canonical='''        if (prefs.getBoolean("follow_device", false)) {
+            long locationTime = prefs.getLong("location_time", 0L);
+            if (!MonitoringLocationPolicy.freshDeviceLocation(
+                    locationTime, System.currentTimeMillis(), lat, lon)) return Result.success();
+        }
+
+        try {'''
+    rw,n=pat.subn(canonical,rw,count=1)
+    if n!=1: raise SystemExit('v0869 runner could not normalize RainAlertWorker location anchor')
+
+rain_worker.write_text(rw,encoding='utf-8')
 
 subprocess.run([sys.executable,str(root/'patch_native_v0869_gauge_notifications_truth.py')],check=True)
 print('FloodSafe v0.8.69 complete patch chain PASS')
-
-# Build trigger only: no runtime behavior change.

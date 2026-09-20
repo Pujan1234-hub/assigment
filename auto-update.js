@@ -120,7 +120,7 @@
   }
 
   addPolish();
-  load('./portfolio-netsathi.js?v=20260920-netsathi-v1','pjbuilts-netsathi-v1');
+  load('./portfolio-netsathi.js?v=20260920-netsathi-v2','pjio-netsathi-v2');
   refreshProjectStatus();
   window.addEventListener('focus',check);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden) check();});

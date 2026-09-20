@@ -32,6 +32,9 @@
     .float-expiry,.ai-chip{background:rgba(10,16,26,.92)!important;color:#8f9caf!important;border-color:rgba(255,255,255,.10)!important}
     .float-expiry b,.ai-chip b{color:#f7f9fc!important}
 
+    /* NetSathi screenshots must stay visible in light-theme and cached browsers. */
+    #netsathi img,#netsathi-showcase img{opacity:1!important;visibility:visible!important;display:block!important}
+
     /* PJBuilds is the visible portfolio/product brand. */
     .pjbuilds-signoff{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid rgba(49,87,213,.18);border-radius:999px;background:linear-gradient(135deg,rgba(49,87,213,.08),rgba(123,85,214,.08));color:#26334b;font-weight:900;letter-spacing:.02em;box-shadow:0 10px 28px rgba(38,51,75,.06)}
     .pjbuilds-signoff:before{content:'PJB';display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#39c8dc,#7581f2);color:#071019;font-size:.62rem;font-weight:1000}
@@ -53,6 +56,8 @@
       .pjbuilds-signoff{margin-top:4px}
     }
   `;
+
+  const NETSATHI_ASSET_ROOT='https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/assets/portfolio/';
 
   function ensureStyle(){
     let style=document.getElementById('portfolio-content-fix-v1');
@@ -114,7 +119,7 @@
     if(codeLabel) codeLabel.textContent='PJBuilds';
 
     const meta=document.querySelector('meta[name="description"]');
-    if(meta) meta.setAttribute('content','PJBuilds — Pujan Chapagain software developer portfolio featuring Team Tracker, FixCheck, DateMate, FloodSafe Nepal, LifeOS AI and Sathi AI inside FloodSafe Nepal.');
+    if(meta) meta.setAttribute('content','PJBuilds — Pujan Chapagain software developer portfolio featuring Team Tracker, FixCheck, DateMate, FloodSafe Nepal, LifeOS AI, Sathi AI and NetSathi.');
 
     const foot=document.querySelector('footer .foot');
     if(foot){
@@ -134,12 +139,31 @@
     if(stats[0]){
       const strong=stats[0].querySelector('strong');
       const span=stats[0].querySelector('span');
-      if(strong) strong.textContent='5 + 1';
-      if(span) span.textContent='products + AI feature';
+      if(strong) strong.textContent='7';
+      if(span) span.textContent='featured products';
     }
 
     const workCopy=document.querySelector('#work .section-title p');
-    if(workCopy) workCopy.textContent='Five standalone products plus Sathi AI integrated inside FloodSafe Nepal — each presented around the experience it is designed to create. The motion supports the story without sacrificing readability.';
+    if(workCopy) workCopy.textContent='Seven products, each presented around the experience it is designed to create. The motion supports the story without sacrificing readability.';
+  }
+
+  function patchNetSathiImages(){
+    document.querySelectorAll('#netsathi img,#netsathi-showcase img').forEach(img=>{
+      const src=img.getAttribute('src')||'';
+      const match=src.match(/(netsathi-[^/?]+\.svg)/i);
+      if(!match) return;
+      const expected=NETSATHI_ASSET_ROOT+match[1]+'?v=20260920-photo-fix-1';
+      if(img.src!==expected){
+        img.src=expected;
+        img.loading='eager';
+        img.decoding='async';
+      }
+      img.onerror=()=>{
+        img.style.minHeight='260px';
+        img.style.objectFit='contain';
+        img.alt='NetSathi project screenshot';
+      };
+    });
   }
 
   function apply(){
@@ -147,10 +171,15 @@
     patchSathi();
     patchBrand();
     patchPortfolioCopy();
+    patchNetSathiImages();
   }
 
   apply();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply,{once:true});
   setTimeout(apply,250);
   setTimeout(apply,1200);
+  setTimeout(apply,3000);
+
+  const observer=new MutationObserver(()=>patchNetSathiImages());
+  observer.observe(document.documentElement,{childList:true,subtree:true});
 })();

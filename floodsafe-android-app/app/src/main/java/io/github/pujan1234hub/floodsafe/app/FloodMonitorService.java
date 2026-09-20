@@ -20,13 +20,9 @@ import android.os.Bundle;
 import android.os.IBinder;
 
 /**
- * User-enabled foreground location monitor for FloodSafe alerts.
- *
- * The WebView deliberately stops its browser geolocation watch while hidden. This
- * native service is therefore the authoritative current-device location source
- * while warning alerts are enabled. It never polls river data continuously:
- * Firebase remains the prompt server-push path and WorkManager is the 15-minute
- * network fallback. The service only keeps the local device location fresh.
+ * User-enabled foreground location + official hydrology monitor for FloodSafe alerts.
+ * The service keeps device location fresh and runs the native one-second BIPAD/DHM
+ * river/rain/hydrology rechecker while monitoring is enabled.
  */
 public final class FloodMonitorService extends Service implements LocationListener {
     private static final String CHANNEL_ID = "floodsafe_background_monitor_v1";
@@ -38,6 +34,7 @@ public final class FloodMonitorService extends Service implements LocationListen
     private LocationManager locationManager;
     private SharedPreferences prefs;
     private boolean updatesStarted;
+    private FloodLiveGaugeMonitor liveHydrologyMonitor; // V0872_BACKGROUND_HYDRO_MONITOR
 
     static boolean hasForegroundLocation(Context context) {
         return context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -66,6 +63,8 @@ public final class FloodMonitorService extends Service implements LocationListen
         }
     }
 
+    static void start(Context context) { startIfEnabled(context); }
+
     static void stop(Context context) {
         try { context.getApplicationContext().stopService(
                 new Intent(context.getApplicationContext(), FloodMonitorService.class)); }
@@ -76,13 +75,9 @@ public final class FloodMonitorService extends Service implements LocationListen
         super.onCreate();
         prefs = getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE);
         locationManager = getSystemService(LocationManager.class);
+        liveHydrologyMonitor = new FloodLiveGaugeMonitor(this);
         ensureChannel();
-        // Android 14+ can reject a location foreground-service promotion when the
-        // app is backgrounded or only while-in-use location is granted. Never let
-        // that OS policy exception terminate the whole FloodSafe process.
-        if (!promoteToForeground()) {
-            stopSelf();
-        }
+        if (!promoteToForeground()) stopSelf();
     }
 
     @Override public int onStartCommand(Intent intent, int flags, int startId) {
@@ -95,6 +90,7 @@ public final class FloodMonitorService extends Service implements LocationListen
             return START_NOT_STICKY;
         }
         startLocationUpdates();
+        if (liveHydrologyMonitor != null) liveHydrologyMonitor.start(); // V0872_START_ONE_SECOND_HYDRO
         return START_STICKY;
     }
 
@@ -106,17 +102,15 @@ public final class FloodMonitorService extends Service implements LocationListen
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID, "FloodSafe background safety monitoring",
                     NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription("Keeps current location available for nearby FloodSafe alerts when the app is closed");
+            channel.setDescription("Keeps location and official BIPAD/DHM hydrology monitoring active for FloodSafe alerts");
             channel.setSound(null, null);
             channel.enableVibration(false);
             manager.createNotificationChannel(channel);
-        } catch (RuntimeException ignored) {
-            // A broken vendor notification service must not crash FloodSafe.
-        }
+        } catch (RuntimeException ignored) { }
     }
 
     private Notification monitorNotification() {
-        Intent launch = new Intent(this, VoiceMainActivity.class)
+        Intent launch = new Intent(this, NativeFullActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(this, 7301, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -126,7 +120,7 @@ public final class FloodMonitorService extends Service implements LocationListen
         return builder
                 .setSmallIcon(R.drawable.ic_floodsafe)
                 .setContentTitle("FloodSafe Nepal सुरक्षा निगरानी चालु छ")
-                .setContentText("App बन्द हुँदा पनि हालको स्थान नजिकका official alerts का लागि निगरानी हुन्छ।")
+                .setContentText("App बन्द हुँदा पनि official river/rain/hydrology source recheck र नजिकको alert निगरानी हुन्छ।")
                 .setContentIntent(open)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
@@ -144,8 +138,6 @@ public final class FloodMonitorService extends Service implements LocationListen
             }
             return true;
         } catch (RuntimeException denied) {
-            // Covers ForegroundServiceStartNotAllowedException, SecurityException,
-            // vendor notification failures and missing while-in-use/background grants.
             return false;
         }
     }
@@ -209,9 +201,6 @@ public final class FloodMonitorService extends Service implements LocationListen
         double lon = location.getLongitude();
         if (!Double.isFinite(lat) || !Double.isFinite(lon)
                 || lat < -90d || lat > 90d || lon < -180d || lon > 180d) return;
-
-        // Keep one fresh current-device point for rain/weather everywhere. River
-        // workers and push independently require that same point to be inside Nepal.
         prefs.edit()
                 .putLong("device_lat", Double.doubleToRawLongBits(lat))
                 .putLong("device_lon", Double.doubleToRawLongBits(lon))
@@ -233,6 +222,10 @@ public final class FloodMonitorService extends Service implements LocationListen
     @Override public void onStatusChanged(String provider, int status, Bundle extras) { }
 
     @Override public void onDestroy() {
+        if (liveHydrologyMonitor != null) {
+            try { liveHydrologyMonitor.stop(); } catch (RuntimeException ignored) { }
+            liveHydrologyMonitor = null;
+        }
         if (locationManager != null) {
             try { locationManager.removeUpdates(this); }
             catch (SecurityException | IllegalArgumentException ignored) { }

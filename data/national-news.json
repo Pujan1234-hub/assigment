@@ -1,29 +1,36 @@
 {
-  "generated_at": "2026-09-20T20:39:27.427139+05:45",
-  "updated_at_npt": "20 Sep 20:39 NPT",
+  "generated_at": "2026-09-20T23:45:13.699126+05:45",
+  "updated_at_npt": "20 Sep 23:45 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "इरानको विषयमा छिट्टै ‘केही ठुलो’ हुँदैछ, ट्रम्पले दिए यस्तो चेतावनी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593520/trump-warns-something-big-is-coming-soon-regarding-iran",
+      "published_at": "2026-09-20T23:10:57+05:45",
+      "flash": true
+    },
+    {
+      "title": "खजुरा क्यान्सर अस्पतालमा बन्द उपकरण सञ्चालनमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593516/closed-equipment-in-operation-at-khajura-cancer-hospital",
+      "published_at": "2026-09-20T22:23:46+05:45",
+      "flash": false
+    },
+    {
+      "title": "१० बजे १० समाचार : रास्वपा सचिवालय बैठकका सात निर्णय, एमाले सचिवालय बैठकमा के भयो ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593510/10-news-at-10-seven-decisions-of-the-rsp-secretariat-meeting-what-happened-in-the-uml-secretariat-meeting",
+      "published_at": "2026-09-20T22:00:00+05:45",
+      "flash": false
+    },
     {
       "title": "सुनसरीमा रुखले च्यापिएर महिलाको मृत्यु",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593497/woman-dies-after-being-crushed-by-tree-in-sunsari",
       "published_at": "2026-09-20T20:37:56+05:45",
-      "flash": true
-    },
-    {
-      "title": "मनास्लुमा हिमपहिरो जाँदा नेपाली गाइडसहित दुई जनाकाे मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593495/indian-german-climbers-along-with-nepali-guide-die-in-avalanche-on-manaslu",
-      "published_at": "2026-09-20T20:16:39+05:45",
-      "flash": true
-    },
-    {
-      "title": "एमाले कार्यदलको प्रतिवेदनबारे आवश्यक निर्णय केन्द्रीय कमिटीले गर्ने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593482/the-central-committee-will-make-the-necessary-decisions-regarding-the-uml-task-forces-report",
-      "published_at": "2026-09-20T20:00:00+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "बाढीले क्षतिग्रस्त पिमलटारको झोलुङ्गे पुल सञ्चालनमा",
@@ -45,27 +52,6 @@
       "url": "https://www.ratopati.com/story/593474/rumors-of-heavy-rain-outside-the-department-says-this",
       "published_at": "2026-09-20T18:35:29+05:45",
       "flash": false
-    },
-    {
-      "title": "पाल्पामा फोर्स गाडी दुर्घटना हुँदा ६ जना घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593459/6-injured-in-force-vehicle-accident-in-palpa",
-      "published_at": "2026-09-20T17:16:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीः जुम्लामा डिएनए परीक्षणका लागि नमुना सङ्कलन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593452/bhotekoshi-flood-samples-collected-for-dna-testing-in-jumla",
-      "published_at": "2026-09-20T16:42:22+05:45",
-      "flash": false
-    },
-    {
-      "title": "चिमखोला–घ्याँसीखर्क सडक अवरुद्ध हुँदा जनजीवन प्रभावित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593450/himalayan-futsal-gold-cup-to-begin-on-thursday-title-winner-to-receive-rs-300000",
-      "published_at": "2026-09-20T16:40:43+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -84,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 9
+      "flash": 1,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -95,7 +81,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

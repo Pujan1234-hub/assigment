@@ -20,4 +20,5 @@ s=s.replace("if \"versionName '0.8.71'\" in g:g=g.replace(\"versionName '0.8.71'
 p.write_text(s,encoding='utf-8')
 
 subprocess.run([sys.executable,str(p)],check=True)
-print('FloodSafe v0.8.73 complete: v0.8.72 native baseline + river/rain/hydrology-lake realtime parity patch PASS')
+subprocess.run([sys.executable,str(root/'patch_native_v0873_compile_fix.py')],check=True)
+print('FloodSafe v0.8.73 complete: v0.8.72 native baseline + river/rain/hydrology-lake realtime parity + compile repair PASS')

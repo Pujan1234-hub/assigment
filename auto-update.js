@@ -110,7 +110,17 @@
     history.replaceState(null,'',location.pathname+location.hash);
   }
 
+  function load(src,id){
+    if(document.getElementById(id)) return;
+    const el=document.createElement('script');
+    el.id=id;
+    el.src=src;
+    el.defer=true;
+    document.head.appendChild(el);
+  }
+
   addPolish();
+  load('./portfolio-netsathi.js?v=20260920-netsathi-v1','pjbuilts-netsathi-v1');
   refreshProjectStatus();
   window.addEventListener('focus',check);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden) check();});

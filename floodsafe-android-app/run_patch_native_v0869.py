@@ -25,8 +25,6 @@ patches=[
 for p in patches:
     subprocess.run([sys.executable,str(root/p)],check=True)
 
-# Historical v0.8.35 script has one obsolete verification item; remove only that line in
-# this ephemeral CI workspace, exactly as the proven v0.8.68 build does.
 p=root/'patch_native_v0835_fast_overview_rain_taps.py'
 s=p.read_text(encoding='utf-8')
 s='\n'.join(line for line in s.splitlines() if "'readRiverTile(x,y,null)'," not in line)+'\n'
@@ -54,9 +52,6 @@ rest=[
 for p in rest:
     subprocess.run([sys.executable,str(root/p)],check=True)
 
-# v0.8.69 patch historically expected the pre-two-hour constant. Earlier chain already
-# correctly sets 2h, so normalize this one temporary CI anchor only; v0.8.69 immediately
-# writes the same 2h value back with its verification marker. Runtime behavior never ships 3h.
 rain_worker=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java'
 rw=rain_worker.read_text(encoding='utf-8')
 if 'V0869_TWO_HOUR_DIGEST' not in rw:
@@ -64,19 +59,15 @@ if 'V0869_TWO_HOUR_DIGEST' not in rw:
                  'private static final long WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L;',rw,count=1)
     if n!=1: raise SystemExit('v0869 runner could not normalize weather digest anchor')
 
-# Earlier location patches can leave the same follow-device safety check with different
-# formatting/age semantics. Normalize only this RainAlertWorker doWork block to the exact
-# canonical anchor expected by the narrow v0.8.69 patch; the v0.8.69 patch then replaces it
-# with its intended 6-hour weather-location resilience. RiverAlertWorker is never touched.
+# Normalize whatever earlier formatting/version of the follow-device freshness block exists.
+# This only touches RainAlertWorker; RiverAlertWorker keeps the strict 2 km safety policy.
 if 'V0869_WEATHER_LOCATION_RESILIENCE' not in rw:
-    pat=re.compile(r'        if \(prefs\.getBoolean\("follow_device", false\)\) \{.*?        \}\n\n        try \{',re.S)
+    pat=re.compile(r'(?ms)^\s*if\s*\(\s*prefs\.getBoolean\(\s*"follow_device"\s*,\s*false\s*\)\s*\)\s*\{.*?^\s*\}')
     canonical='''        if (prefs.getBoolean("follow_device", false)) {
             long locationTime = prefs.getLong("location_time", 0L);
             if (!MonitoringLocationPolicy.freshDeviceLocation(
                     locationTime, System.currentTimeMillis(), lat, lon)) return Result.success();
-        }
-
-        try {'''
+        }'''
     rw,n=pat.subn(canonical,rw,count=1)
     if n!=1: raise SystemExit('v0869 runner could not normalize RainAlertWorker location anchor')
 

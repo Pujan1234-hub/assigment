@@ -46,9 +46,23 @@ else:
         raise SystemExit('river low-end animation throttle failed')
 write(p, text)
 
+# Preserve the source's last official observation for station detail, even when it is
+# too old to be treated as the current safety state. Current status remains strict:
+# stale readings are still unknown/grey and never become a live warning/danger.
+p, text = read('trusted-river-runtime-v3.js')
+old_known = "_lastKnownObservation:rawHas&&isCurrentTime(t)?{time:t,level:level(o),warning:warning(o),danger:danger(o),discharge:discharge(o),status:rawStage(o)}:null"
+new_known = "_lastKnownObservation:rawHas?{time:t,level:level(o),warning:warning(o),danger:danger(o),discharge:discharge(o),status:rawStage(o)}:null"
+if old_known in text:
+    text = text.replace(old_known, new_known, 1)
+elif new_known not in text:
+    raise SystemExit('last official river observation marker missing')
+if new_known not in text:
+    raise SystemExit('last official river observation retention failed')
+write(p, text)
+
 # The permanent station layer had a second unconditional full GeoJSON rebuild every 10 s.
-# Real data events still refresh immediately; the watchdog now runs less often and never
-# competes with map gestures or SATHI keyboard input.
+# Real data-change events still refresh immediately; unchanged one-second heartbeats do not
+# redraw the map, and the watchdog never competes with gestures or SATHI keyboard input.
 p, text = read('permanent-281-map-v1.js')
 old_interval = 'setInterval(sync,10000);'
 new_interval = "setInterval(()=>{const m=window.FloodSafeMap?.map;if(document.hidden||window.__fsSathiTyping===true||m?.isMoving?.()||m?.isZooming?.()||m?.isRotating?.())return;sync()},45000);"
@@ -57,6 +71,60 @@ if old_interval not in text and new_interval not in text:
 text = text.replace(old_interval, new_interval, 1)
 if new_interval not in text:
     raise SystemExit('281 station watchdog throttle failed')
+
+old_events = "for(const ev of['fstrustedriverupdate','fsriverupdate','fsriverheartbeat','fslanguage'])"
+new_events = "for(const ev of['fstrustedriverupdate','fsriverupdate','fslanguage'])"
+if old_events in text:
+    text = text.replace(old_events, new_events, 1)
+elif new_events not in text:
+    raise SystemExit('281 station event listener marker missing')
+
+# Let a station popup show the source's last official values/timestamp when there is no
+# current reading. has_latest remains false, status remains unknown, and the marker stays
+# grey, so an old DANGER value can never masquerade as a current danger state.
+old_stamp = "const stamp=o=>val(flat(o),['_measurementTime','waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime']);"
+new_stamp = "const lastKnown=o=>flat(o)?._lastKnownObservation&&typeof flat(o)._lastKnownObservation==='object'?flat(o)._lastKnownObservation:null;\nconst stamp=o=>val(flat(o),['_measurementTime','waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime'])||lastKnown(o)?.time||null;"
+if old_stamp in text:
+    text = text.replace(old_stamp, new_stamp, 1)
+elif 'const lastKnown=o=>' not in text:
+    raise SystemExit('281 station time helper marker missing')
+
+replacements = [
+    ("const level=o=>num(val(flat(o),['waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level','_lastWaterLevel']));",
+     "const level=o=>num(val(flat(o),['waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level','_lastWaterLevel']))??num(lastKnown(o)?.level);"),
+    ("const warning=o=>num(val(flat(o),['warningLevel','warning_level','warningThreshold','warning_threshold','_lastWarningLevel']));",
+     "const warning=o=>num(val(flat(o),['warningLevel','warning_level','warningThreshold','warning_threshold','_lastWarningLevel']))??num(lastKnown(o)?.warning);"),
+    ("const danger=o=>num(val(flat(o),['dangerLevel','danger_level','dangerThreshold','danger_threshold','_lastDangerLevel']));",
+     "const danger=o=>num(val(flat(o),['dangerLevel','danger_level','dangerThreshold','danger_threshold','_lastDangerLevel']))??num(lastKnown(o)?.danger);"),
+    ("const discharge=o=>num(val(flat(o),['discharge','currentDischarge','current_discharge','flow','flowRate','flow_rate','_lastDischarge']));",
+     "const discharge=o=>num(val(flat(o),['discharge','currentDischarge','current_discharge','flow','flowRate','flow_rate','_lastDischarge']))??num(lastKnown(o)?.discharge);"),
+    ("function hasObs(o){return !!stamp(o)&&level(o)!==null}",
+     "function hasObs(o){const x=flat(o);if(x?._hasLatestOfficialObservation===false)return false;const t=val(x,['_measurementTime','waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','observationTime']),l=num(val(x,['waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level','_lastWaterLevel']));return !!t&&l!==null}"),
+    ("function statusLabel(p){if(Number(p.has_latest)!==1)return tr('पढाइ उपलब्ध छैन','NO LATEST READING');",
+     "function statusLabel(p){if(Number(p.has_latest)!==1)return p.time?tr('पछिल्लो official पढाइ — अहिलेको अवस्था होइन','LAST OFFICIAL READING — NOT CURRENT'):tr('पढाइ उपलब्ध छैन','NO LATEST READING');"),
+    ("const has=Number(p.has_latest)===1,when=has?fmtTime(p.time):'—',ago=has&&p.time?age(p.time):'',fresh=p.freshness||'none';",
+     "const has=Number(p.has_latest)===1,when=p.time?fmtTime(p.time):'—',ago=p.time?age(p.time):'',fresh=p.freshness||'none';"),
+    ("<b>${tr('पानीको सतह','Water level')}:</b> ${has&&p.level!==''?esc(p.level)+' m':'—'}",
+     "<b>${has?tr('पानीको सतह','Water level'):tr('पछिल्लो official पानीको सतह','Last official water level')}:</b> ${p.level!==''?esc(p.level)+' m':'—'}"),
+    ("${!has?`<div style=\"margin-top:7px;font-weight:700\">${tr('यो official station हो, तर अहिले latest reading उपलब्ध छैन।','This is an official station, but no latest reading is currently available.')}</div>`:''}",
+     "${!has?`<div style=\"margin-top:7px;padding:7px;border-radius:8px;background:#f1f5f9;font-weight:800\">${p.time?tr('माथिको मान पछिल्लो official observation हो; अहिलेको live अवस्था होइन।','The values above are the last official observation, not the current live condition.'):tr('यो official station हो, तर latest observation उपलब्ध छैन।','This is an official station, but no latest observation is available.')}</div>`:''}")
+]
+for old, new in replacements:
+    if old in text:
+        text = text.replace(old, new, 1)
+    elif new not in text:
+        raise SystemExit('281 last-observation popup marker missing: ' + old[:70])
+
+required_281 = [
+    new_interval,
+    new_events,
+    'const lastKnown=o=>',
+    'LAST OFFICIAL READING — NOT CURRENT',
+    'Last official water level',
+]
+for marker in required_281:
+    if marker not in text:
+        raise SystemExit('281 last-observation/detail patch failed: ' + marker)
 write(p, text)
 
 # 77 DOM district labels are useful on desktop but expensive while a phone GPU is also
@@ -89,4 +157,4 @@ if "__fsHydroVisibility(false)" not in text or "__fsHydroVisibility(true)" not i
     raise SystemExit('hydro gesture visibility patch failed')
 write(p, text)
 
-print('Low-end Android map performance patch PASS: adaptive rivers + gesture mode + mobile labels')
+print('Low-end Android map performance patch PASS: adaptive rivers + change-only station redraw + last official detail + gesture mode + mobile labels')

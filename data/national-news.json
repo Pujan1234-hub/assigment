@@ -1,49 +1,56 @@
 {
-  "generated_at": "2026-09-20T04:59:52.773099+05:45",
-  "updated_at_npt": "20 Sep 04:59 NPT",
+  "generated_at": "2026-09-20T07:01:59.359332+05:45",
+  "updated_at_npt": "20 Sep 07:01 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "सशस्त्र प्रहरीका सई हत्या प्रकरण : गोली प्रहार गरी मुख्य अभियुक्त पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593321/armed-police-chiefs-murder-case-main-accused-arrested-after-shooting",
+      "published_at": "2026-09-20T06:35:03+05:45",
+      "flash": true
+    },
+    {
+      "title": "देशभर मनसुनी र पश्चिमी वायुको आंशिक प्रभाव, आज यी ३ प्रदेशमा भारी वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593319/partial-effect-of-monsoon-and-westerly-winds-across-the-country-heavy-rain-likely-in-these-3-provinces-today",
+      "published_at": "2026-09-20T06:09:01+05:45",
+      "flash": true
+    },
+    {
+      "title": "रसुवा बाढीपछि मुस्ताङमा पर्यटक आगमन घट्यो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593317/tourist-arrivals-in-mustang-decrease-after-rasuwa-floods",
+      "published_at": "2026-09-20T05:35:13+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढी प्रभावितलाई हैजाविरुद्धको खोप उपलब्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593313/cholera-vaccine-available-for-flood-victims",
+      "published_at": "2026-09-20T05:15:38+05:45",
+      "flash": false
+    },
     {
       "title": "जलविद्युत् आयोजनाको सहयोगमा दुखुखोला सडक पुल संरक्षण",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593312/dukhukhola-road-bridge-conservation-with-the-support-of-hydropower-project",
       "published_at": "2026-09-20T04:54:31+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "छारेभिरमा पहिरो खसेपछि कर्णाली कोरिडोर ठप्प",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593310/karnali-corridor-closed-after-landslide-in-charebhir",
       "published_at": "2026-09-20T04:50:42+05:45",
-      "flash": true
-    },
-    {
-      "title": "भदौमा पाँच अर्बको विद्युत् निर्यात",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593308/electricity-exports-worth-five-billion-in-bhadra",
-      "published_at": "2026-09-20T00:35:12+05:45",
-      "flash": false
-    },
-    {
-      "title": "छुट्टाछुटै दुर्घटनामा दुई जनाको मृत्यु, एक घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593307/two-people-killed-one-injured-in-separate-accidents",
-      "published_at": "2026-09-20T00:30:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "ध्यानका लागि आकर्षक गन्तव्य बन्दै शिवपुरीको ध्रुवस्थली",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593306/shivapuris-dhruvasthali-is-becoming-an-attractive-destination-for-meditation",
-      "published_at": "2026-09-20T00:27:42+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 5,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     },
@@ -57,7 +64,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 2,
-      "recent": 5
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 8,
+      "candidates": 6,
       "flash": 0,
       "recent": 0
     }

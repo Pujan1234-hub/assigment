@@ -59,9 +59,6 @@ if 'V0869_TWO_HOUR_DIGEST' not in rw:
                  'private static final long WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L;',rw,count=1)
     if n!=1: raise SystemExit('v0869 runner could not normalize weather digest anchor')
 
-# Make weather/rain notifications resilient to Android background GPS age without weakening
-# the separate RiverAlertWorker 2 km safety rule. Find the follow-device block structurally,
-# not by whitespace/exact historical text.
 if 'V0869_WEATHER_LOCATION_RESILIENCE' not in rw:
     pos=rw.find('"follow_device"')
     if pos < 0: raise SystemExit('v0869 RainAlertWorker follow_device setting missing')
@@ -87,4 +84,12 @@ if 'V0869_WEATHER_LOCATION_RESILIENCE' not in rw:
 rain_worker.write_text(rw,encoding='utf-8')
 
 subprocess.run([sys.executable,str(root/'patch_native_v0869_gauge_notifications_truth.py')],check=True)
-print('FloodSafe v0.8.69 complete patch chain PASS')
+
+# v0.8.69 inserts the monitor-start marker into a legacy one-line onLocationChanged method.
+# Convert only that marker to a block comment so it cannot comment out the rest of the method.
+activity=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+a=activity.read_text(encoding='utf-8')
+a2=a.replace('// V0869_LOCATION_STARTS_MONITOR','/* V0869_LOCATION_STARTS_MONITOR */',1)
+if a2==a: raise SystemExit('v0869 location callback compile marker missing')
+activity.write_text(a2,encoding='utf-8')
+print('FloodSafe v0.8.69 complete patch chain + location callback compile repair PASS')

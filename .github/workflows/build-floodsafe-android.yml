@@ -93,6 +93,7 @@ jobs:
           RIVER_STYLE='floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/river-line-style-v1.js'
           LIVE_FIX='floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/river-status-color-fix-v1.js'
           ALL_STATIONS='floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/all-stations-realtime-v1.js'
+          PERM='floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/permanent-281-map-v1.js'
           grep -Fq 'map-loader-v3.js?v=31' "$INDEX"
           grep -Fq 'permanent-281-map-v1.js?v=6' "$INDEX"
           grep -Fq 'sathi-flood-ai/floating-ui-v2.js?v=2' "$INDEX"
@@ -107,14 +108,15 @@ jobs:
           else
             grep -Fq 'setInterval(()=>{if(mapBusy())return;animate()},850)' "$RIVER_STYLE"
           fi
-          grep -Fq 'setInterval(()=>{const m=window.FloodSafeMap?.map;' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/permanent-281-map-v1.js
+          grep -Fq 'setInterval(()=>{const m=window.FloodSafeMap?.map;' "$PERM"
           test -s "$ALL_STATIONS"
           grep -Fq 'const ONE_SECOND=1000' "$LIVE_FIX"
           grep -Fq 'all-stations-realtime-v1.js?v=1' "$LIVE_FIX"
           grep -Fq 'r1:rainValue(o,1)' "$ALL_STATIONS"
           grep -Fq 'r24:rainValue(o,24)' "$ALL_STATIONS"
-          grep -Fq "status:'unknown'" floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/permanent-281-map-v1.js
-          grep -Fq 'LAST OFFICIAL READING — NOT CURRENT' floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/permanent-281-map-v1.js
+          grep -Fq '_hasLatestOfficialObservation===false' "$PERM"
+          grep -Fq "return'unknown'" "$PERM"
+          grep -Fq 'LAST OFFICIAL READING — NOT CURRENT' "$PERM"
           if grep -Fq 'android-fast-start-v1.js' "$INDEX"; then echo 'serial startup loader must not be active'; exit 1; fi
           if grep -Fq 'id="alertBtn"' "$INDEX"; then echo 'alert button found'; exit 1; fi
 
@@ -131,6 +133,7 @@ jobs:
           unzip -p "$APK" assets/floodsafe-nepal/v25/river-line-style-v1.js > /tmp/river-line-style-v1.js
           unzip -p "$APK" assets/floodsafe-nepal/v25/river-status-color-fix-v1.js > /tmp/river-status-color-fix-v1.js
           unzip -p "$APK" assets/floodsafe-nepal/v25/all-stations-realtime-v1.js > /tmp/all-stations-realtime-v1.js
+          unzip -p "$APK" assets/floodsafe-nepal/v25/permanent-281-map-v1.js > /tmp/permanent-281-map-v1.js
           grep -Fq 'id="humanStatus"' /tmp/index.html
           grep -Fq 'map-loader-v3.js?v=31' /tmp/index.html
           grep -Fq 'permanent-281-map-v1.js?v=6' /tmp/index.html
@@ -147,8 +150,9 @@ jobs:
           else
             grep -Fq 'setInterval(()=>{if(mapBusy())return;animate()},850)' /tmp/river-line-style-v1.js
           fi
-          unzip -p "$APK" assets/floodsafe-nepal/v25/permanent-281-map-v1.js | grep -Fq 'setInterval(()=>{const m=window.FloodSafeMap?.map;'
-          unzip -p "$APK" assets/floodsafe-nepal/v25/permanent-281-map-v1.js | grep -Fq 'LAST OFFICIAL READING — NOT CURRENT'
+          grep -Fq 'setInterval(()=>{const m=window.FloodSafeMap?.map;' /tmp/permanent-281-map-v1.js
+          grep -Fq '_hasLatestOfficialObservation===false' /tmp/permanent-281-map-v1.js
+          grep -Fq 'LAST OFFICIAL READING — NOT CURRENT' /tmp/permanent-281-map-v1.js
           grep -Fq 'const ONE_SECOND=1000' /tmp/river-status-color-fix-v1.js
           grep -Fq 'all-stations-realtime-v1.js?v=1' /tmp/river-status-color-fix-v1.js
           grep -Fq 'r1:rainValue(o,1)' /tmp/all-stations-realtime-v1.js

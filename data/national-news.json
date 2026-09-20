@@ -1,28 +1,28 @@
 {
-  "generated_at": "2026-09-20T23:45:13.699126+05:45",
-  "updated_at_npt": "20 Sep 23:45 NPT",
+  "generated_at": "2026-09-21T02:28:56.374909+05:45",
+  "updated_at_npt": "21 Sep 02:28 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "इरानको विषयमा छिट्टै ‘केही ठुलो’ हुँदैछ, ट्रम्पले दिए यस्तो चेतावनी",
+      "title": "भोटेकोशी बाढी: तमु धीं नेपालद्वारा ७० लाख ४७ हजार सङ्कलन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593520/trump-warns-something-big-is-coming-soon-regarding-iran",
-      "published_at": "2026-09-20T23:10:57+05:45",
-      "flash": true
-    },
-    {
-      "title": "खजुरा क्यान्सर अस्पतालमा बन्द उपकरण सञ्चालनमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593516/closed-equipment-in-operation-at-khajura-cancer-hospital",
-      "published_at": "2026-09-20T22:23:46+05:45",
+      "url": "https://www.ratopati.com/story/593527/bhotekoshi-flood-tamu-dhee-nepal-collects-70-lakh-47-thousand",
+      "published_at": "2026-09-21T00:48:31+05:45",
       "flash": false
     },
     {
-      "title": "१० बजे १० समाचार : रास्वपा सचिवालय बैठकका सात निर्णय, एमाले सचिवालय बैठकमा के भयो ?",
+      "title": "‘ठुलो बाढी आउँदैछ’ भन्ने सूचना पत्याउन नसक्दा धेरै क्षति",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593510/10-news-at-10-seven-decisions-of-the-rsp-secretariat-meeting-what-happened-in-the-uml-secretariat-meeting",
-      "published_at": "2026-09-20T22:00:00+05:45",
+      "url": "https://www.ratopati.com/story/593526/many-damages-caused-by-not-believing-the-information-that-a-big-flood-is-coming",
+      "published_at": "2026-09-21T00:45:52+05:45",
+      "flash": false
+    },
+    {
+      "title": "१२ बजे १२ समाचार: सरकारविरुद्ध आन्दोलन गर्ने भनेका दलहरूभित्रै बबन्डर, किन पक्राउ परे एन्फाका दुई पदाधिकारी ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593523/12-oclock-12-news-a-controversy-within-the-parties-that-said-they-would-protest-against-the-government-why-were-two-anfa-officials-arrested",
+      "published_at": "2026-09-21T00:00:00+05:45",
       "flash": false
     },
     {
@@ -30,27 +30,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593497/woman-dies-after-being-crushed-by-tree-in-sunsari",
       "published_at": "2026-09-20T20:37:56+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीले क्षतिग्रस्त पिमलटारको झोलुङ्गे पुल सञ्चालनमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593484/pimaltars-suspension-bridge-damaged-by-flood-is-operational",
-      "published_at": "2026-09-20T19:31:26+05:45",
-      "flash": false
-    },
-    {
-      "title": "पाल्पा गाडी दुर्घटना अपडेट : एक जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593475/palpa-vehicle-accident-update-one-person-dead",
-      "published_at": "2026-09-20T18:37:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "१. बाहिर भीषण वर्षाको हल्ला, विभाग भन्छ यस्तो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593474/rumors-of-heavy-rain-outside-the-department-says-this",
-      "published_at": "2026-09-20T18:35:29+05:45",
       "flash": false
     }
   ],
@@ -70,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 7
+      "flash": 0,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

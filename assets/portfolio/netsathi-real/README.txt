@@ -1,1 +1,1 @@
-NetSathi real screenshots are supplied by the project owner. The gallery loads .webp files from this directory. Uploading screenshots via GitHub Git blob API; pending assets are handled by the existing gallery fallback.
+NetSathi real screenshots directory. Gallery screenshots are uploaded as WebP files by the portfolio maintainer.

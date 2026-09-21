@@ -1,1 +1,1 @@
-NetSathi portfolio screenshots supplied by the project owner on 2026-09-21. These are real prototype screenshots used by the GitHub Pages portfolio showcase.
+NetSathi real screenshots are supplied by the project owner. The gallery loads .webp files from this directory. Uploading screenshots via GitHub Git blob API; pending assets are handled by the existing gallery fallback.

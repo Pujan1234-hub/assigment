@@ -1,6 +1,6 @@
 (()=>{
-  if(window.__pcPortfolioContentFixV3) return;
-  window.__pcPortfolioContentFixV3=true;
+  if(window.__pcPortfolioContentFixV4) return;
+  window.__pcPortfolioContentFixV4=true;
 
   const CSS=`
     .browser{color:#eef4fb!important}.browserbar{color:#8f9bad!important}.metric span{color:#8e9bad!important}.metric strong{color:#f5f8fc!important}.metric strong em{color:var(--accent)!important}
@@ -16,10 +16,7 @@
     @media(max-width:700px){.browser .metric strong{font-size:.96rem!important}.river-card strong{font-size:.82rem!important}#sathi .sathi-chat{left:4%;right:4%;bottom:5%}#sathi .sathi-bubble{font-size:.62rem;padding:9px 10px}#sathi .ai-stage{min-height:470px!important}.pjbuilds-signoff{margin-top:4px}}
   `;
 
-  function ensureStyle(){
-    let style=document.getElementById('portfolio-content-fix-v3');
-    if(!style){style=document.createElement('style');style.id='portfolio-content-fix-v3';style.textContent=CSS;document.head.appendChild(style);}
-  }
+  function ensureStyle(){let style=document.getElementById('portfolio-content-fix-v4');if(!style){style=document.createElement('style');style.id='portfolio-content-fix-v4';style.textContent=CSS;document.head.appendChild(style);}}
 
   function patchSathi(){
     const s=document.getElementById('sathi'); if(!s) return;
@@ -29,32 +26,26 @@
     const features=[['01','Typed flood questions'],['02','River & station context'],['03','Rain timing & weather'],['04','FloodSafe data context']];
     s.querySelectorAll('.feature').forEach((el,i)=>{if(features[i]) el.innerHTML='<b>'+features[i][0]+'</b>'+features[i][1];});
     const links=s.querySelector('.project-links'); if(links) links.innerHTML='<a href="./floodsafe-nepal/">Open FloodSafe Nepal ↗</a><a href="#floodsafe">View FloodSafe project</a>';
-    const a1=s.querySelector('.ai-chip.a1'),a2=s.querySelector('.ai-chip.a2'),a3=s.querySelector('.ai-chip.a3');
-    if(a1) a1.innerHTML='FLOOD AI<b>Nepali flood help</b>'; if(a2) a2.innerHTML='RIVER<b>Station context</b>'; if(a3) a3.innerHTML='WEATHER<b>Rain timing</b>';
-    const stage=s.querySelector('.ai-stage');
-    if(stage && !stage.querySelector('.sathi-chat')){const chat=document.createElement('div');chat.className='sathi-chat';chat.innerHTML='<div class="sathi-bubble user">Which nearby river is rising?</div><div class="sathi-bubble ai"><b>Sathi</b> checks FloodSafe river + weather context for the answer.</div>';stage.appendChild(chat);}
+    const a1=s.querySelector('.ai-chip.a1'),a2=s.querySelector('.ai-chip.a2'),a3=s.querySelector('.ai-chip.a3'); if(a1) a1.innerHTML='FLOOD AI<b>Nepali flood help</b>'; if(a2) a2.innerHTML='RIVER<b>Station context</b>'; if(a3) a3.innerHTML='WEATHER<b>Rain timing</b>';
+    const stage=s.querySelector('.ai-stage'); if(stage && !stage.querySelector('.sathi-chat')){const chat=document.createElement('div');chat.className='sathi-chat';chat.innerHTML='<div class="sathi-bubble user">Which nearby river is rising?</div><div class="sathi-bubble ai"><b>Sathi</b> checks FloodSafe river + weather context for the answer.</div>';stage.appendChild(chat);}
   }
 
   function patchBrand(){
     document.querySelectorAll('a[href*="github.com"],a[href*="github.io"]').forEach(a=>a.remove());
     const codeLabel=document.querySelector('.dev-card .code-label'); if(codeLabel) codeLabel.textContent='PJBuilds';
     const meta=document.querySelector('meta[name="description"]'); if(meta) meta.setAttribute('content','PJBuilds — Pujan Chapagain software developer portfolio featuring Team Tracker, FixCheck, DateMate, FloodSafe Nepal, LifeOS AI, Sathi AI and NetSathi.');
-    const foot=document.querySelector('footer .foot');
-    if(foot){const first=foot.querySelector(':scope > span');if(first) first.textContent='© 2026 Pujan Chapagain · Software Developer Portfolio';if(!foot.querySelector('.pjbuilds-signoff')){const mark=document.createElement('span');mark.className='pjbuilds-signoff';mark.textContent='PJBuilds';foot.appendChild(mark);}}
+    const foot=document.querySelector('footer .foot'); if(foot){const first=foot.querySelector(':scope > span');if(first) first.textContent='© 2026 Pujan Chapagain · Software Developer Portfolio';if(!foot.querySelector('.pjbuilds-signoff')){const mark=document.createElement('span');mark.className='pjbuilds-signoff';mark.textContent='PJBuilds';foot.appendChild(mark);}}
   }
 
   function patchPortfolioCopy(){
-    const stats=document.querySelectorAll('.hero-stats .stat');
-    if(stats[0]){const strong=stats[0].querySelector('strong'),span=stats[0].querySelector('span');if(strong) strong.textContent='7';if(span) span.textContent='featured products';}
+    const stats=document.querySelectorAll('.hero-stats .stat'); if(stats[0]){const strong=stats[0].querySelector('strong'),span=stats[0].querySelector('span');if(strong) strong.textContent='7';if(span) span.textContent='featured products';}
     const workCopy=document.querySelector('#work .section-title p'); if(workCopy) workCopy.textContent='Seven products, each presented around the experience it is designed to create. The motion supports the story without sacrificing readability.';
   }
 
   function patchNetSathiImages(){
+    const fixed=new URL('./assets/portfolio/netsathi-showcase.jpg?v=20260921-jpg-1',document.baseURI).href;
     document.querySelectorAll('#netsathi img,#netsathi-showcase img').forEach(img=>{
-      const raw=img.getAttribute('src')||'';
-      const m=raw.match(/(netsathi-[^/?]+\.svg)/i); if(!m) return;
-      const fixed=new URL('./assets/portfolio/'+m[1]+'?v=20260921-pages-1',document.baseURI).href;
-      if(img.src!==fixed){img.src=fixed;img.loading='eager';img.decoding='async';}
+      if(img.src!==fixed){img.src=fixed;img.loading='eager';img.decoding='async';img.style.objectFit='contain';img.style.background='#07101a';}
     });
   }
 

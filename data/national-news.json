@@ -1,21 +1,28 @@
 {
-  "generated_at": "2026-09-21T04:28:49.985220+05:45",
-  "updated_at_npt": "21 Sep 04:28 NPT",
+  "generated_at": "2026-09-21T06:18:09.269585+05:45",
+  "updated_at_npt": "21 Sep 06:18 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "मनसुन र पश्चिमी वायुको दोहोरो प्रभाव, यी क्षेत्रमा भारी वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593539/dual-effect-of-monsoon-and-westerly-winds-possibility-of-heavy-rain-in-these-areas",
+      "published_at": "2026-09-21T05:39:41+05:45",
+      "flash": true
+    },
+    {
+      "title": "सङ्घीय संसद्का दुवै सदनको बैठक आज बस्दै, यस्ता छन् सम्भावित कार्यसूची",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593535/both-houses-of-the-federal-parliament-are-meeting-today-here-are-the-possible-agendas",
+      "published_at": "2026-09-21T05:18:12+05:45",
+      "flash": true
+    },
     {
       "title": "आशा र भरोसाको केन्द्र बन्दै सुशील कोइराला प्रखर क्यान्सर अस्पताल",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593531/sushil-koirala-prakhar-cancer-hospital-is-becoming-a-center-of-hope-and-trust",
       "published_at": "2026-09-21T04:16:32+05:45",
-      "flash": true
-    },
-    {
-      "title": "भोटेकोशी बाढी: तमु धीं नेपालद्वारा ७० लाख ४७ हजार सङ्कलन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593527/bhotekoshi-flood-tamu-dhee-nepal-collects-70-lakh-47-thousand",
-      "published_at": "2026-09-21T00:48:31+05:45",
       "flash": false
     },
     {
@@ -23,13 +30,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593526/many-damages-caused-by-not-believing-the-information-that-a-big-flood-is-coming",
       "published_at": "2026-09-21T00:45:52+05:45",
-      "flash": false
-    },
-    {
-      "title": "१२ बजे १२ समाचार: सरकारविरुद्ध आन्दोलन गर्ने भनेका दलहरूभित्रै बबन्डर, किन पक्राउ परे एन्फाका दुई पदाधिकारी ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593523/12-oclock-12-news-a-controversy-within-the-parties-that-said-they-would-protest-against-the-government-why-were-two-anfa-officials-arrested",
-      "published_at": "2026-09-21T00:00:00+05:45",
       "flash": false
     }
   ],
@@ -49,7 +49,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
+      "flash": 2,
       "recent": 4
     },
     "Kathmandu Post": {
@@ -60,7 +60,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     }

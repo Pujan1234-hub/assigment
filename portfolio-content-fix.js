@@ -1,185 +1,67 @@
 (()=>{
-  if(window.__pcPortfolioContentFixV1) return;
-  window.__pcPortfolioContentFixV1=true;
+  if(window.__pcPortfolioContentFixV3) return;
+  window.__pcPortfolioContentFixV3=true;
 
   const CSS=`
-    /* Keep the page light, but make intentionally dark product mockups readable. */
-    .browser{color:#eef4fb!important}
-    .browserbar{color:#8f9bad!important}
-    .metric span{color:#8e9bad!important}
-    .metric strong{color:#f5f8fc!important}
-    .metric strong em{color:var(--accent)!important}
-    .browser .task{color:#b7c2cf!important;background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.09)!important}
-    .browser .task b{color:var(--accent)!important}
-
-    .river-card{background:rgba(7,12,19,.91)!important;color:#f4f7fb!important;border-color:rgba(255,255,255,.10)!important}
-    .river-card small{color:#8f9db0!important}
-    .river-card strong{color:#f7f9fc!important}
-    .river-card .reading{color:var(--accent)!important}
-    .river-card .task{color:#b7c2cf!important;background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.08)!important}
-    .river-card .task b{color:var(--accent)!important}
-
-    .scan-result{color:#aeb8c6!important}
-    .scan-result b{color:var(--accent)!important}
-
-    .os-core b{color:#f7f9fc!important}
-    .orbit-card{background:rgba(12,18,29,.92)!important;color:#f5f8fc!important;border-color:rgba(255,255,255,.10)!important}
-    .orbit-card small{color:#8c9aae!important}
-    .orbit-card strong{color:#f7f9fc!important}
-    .orbit-card strong.money{color:#52f2a8!important}
-    .orbit-card strong.due{color:#ffad66!important}
-
-    .float-expiry,.ai-chip{background:rgba(10,16,26,.92)!important;color:#8f9caf!important;border-color:rgba(255,255,255,.10)!important}
-    .float-expiry b,.ai-chip b{color:#f7f9fc!important}
-
-    /* NetSathi screenshots must stay visible in light-theme and cached browsers. */
-    #netsathi img,#netsathi-showcase img{opacity:1!important;visibility:visible!important;display:block!important}
-
-    /* PJBuilds is the visible portfolio/product brand. */
+    .browser{color:#eef4fb!important}.browserbar{color:#8f9bad!important}.metric span{color:#8e9bad!important}.metric strong{color:#f5f8fc!important}.metric strong em{color:var(--accent)!important}
+    .browser .task{color:#b7c2cf!important;background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.09)!important}.browser .task b{color:var(--accent)!important}
+    .river-card{background:rgba(7,12,19,.91)!important;color:#f4f7fb!important;border-color:rgba(255,255,255,.10)!important}.river-card small{color:#8f9db0!important}.river-card strong{color:#f7f9fc!important}.river-card .reading{color:var(--accent)!important}
+    .river-card .task{color:#b7c2cf!important;background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.08)!important}.river-card .task b{color:var(--accent)!important}
+    .scan-result{color:#aeb8c6!important}.scan-result b{color:var(--accent)!important}.os-core b{color:#f7f9fc!important}
+    .orbit-card{background:rgba(12,18,29,.92)!important;color:#f5f8fc!important;border-color:rgba(255,255,255,.10)!important}.orbit-card small{color:#8c9aae!important}.orbit-card strong{color:#f7f9fc!important}.orbit-card strong.money{color:#52f2a8!important}.orbit-card strong.due{color:#ffad66!important}
+    .float-expiry,.ai-chip{background:rgba(10,16,26,.92)!important;color:#8f9caf!important;border-color:rgba(255,255,255,.10)!important}.float-expiry b,.ai-chip b{color:#f7f9fc!important}
     .pjbuilds-signoff{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid rgba(49,87,213,.18);border-radius:999px;background:linear-gradient(135deg,rgba(49,87,213,.08),rgba(123,85,214,.08));color:#26334b;font-weight:900;letter-spacing:.02em;box-shadow:0 10px 28px rgba(38,51,75,.06)}
     .pjbuilds-signoff:before{content:'PJB';display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#39c8dc,#7581f2);color:#071019;font-size:.62rem;font-weight:1000}
-
-    /* Sathi AI is a FloodSafe Nepal feature, not a separate education/voice app. */
-    #sathi .voice{display:none!important}
-    #sathi .sathi-chat{position:absolute;left:7%;right:7%;bottom:7%;z-index:5;display:grid;gap:8px}
-    #sathi .sathi-bubble{padding:11px 13px;border-radius:14px;font-size:.70rem;line-height:1.42;box-shadow:0 12px 28px rgba(30,36,48,.12)}
-    #sathi .sathi-bubble.user{justify-self:end;max-width:78%;background:#20293a;color:#f4f7fb;border:1px solid rgba(255,255,255,.09)}
-    #sathi .sathi-bubble.ai{justify-self:start;max-width:88%;background:rgba(255,253,248,.96);color:#273142;border:1px solid rgba(26,32,44,.12)}
-    #sathi .sathi-bubble.ai b{color:#3157d5}
-
-    @media(max-width:700px){
-      .browser .metric strong{font-size:.96rem!important}
-      .river-card strong{font-size:.82rem!important}
-      #sathi .sathi-chat{left:4%;right:4%;bottom:5%}
-      #sathi .sathi-bubble{font-size:.62rem;padding:9px 10px}
-      #sathi .ai-stage{min-height:470px!important}
-      .pjbuilds-signoff{margin-top:4px}
-    }
+    #sathi .voice{display:none!important}#sathi .sathi-chat{position:absolute;left:7%;right:7%;bottom:7%;z-index:5;display:grid;gap:8px}#sathi .sathi-bubble{padding:11px 13px;border-radius:14px;font-size:.70rem;line-height:1.42;box-shadow:0 12px 28px rgba(30,36,48,.12)}#sathi .sathi-bubble.user{justify-self:end;max-width:78%;background:#20293a;color:#f4f7fb;border:1px solid rgba(255,255,255,.09)}#sathi .sathi-bubble.ai{justify-self:start;max-width:88%;background:rgba(255,253,248,.96);color:#273142;border:1px solid rgba(26,32,44,.12)}#sathi .sathi-bubble.ai b{color:#3157d5}
+    @media(max-width:700px){.browser .metric strong{font-size:.96rem!important}.river-card strong{font-size:.82rem!important}#sathi .sathi-chat{left:4%;right:4%;bottom:5%}#sathi .sathi-bubble{font-size:.62rem;padding:9px 10px}#sathi .ai-stage{min-height:470px!important}.pjbuilds-signoff{margin-top:4px}}
   `;
 
-  const NETSATHI_ASSET_ROOT='https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/assets/portfolio/';
-
   function ensureStyle(){
-    let style=document.getElementById('portfolio-content-fix-v1');
-    if(!style){
-      style=document.createElement('style');
-      style.id='portfolio-content-fix-v1';
-      style.textContent=CSS;
-      document.head.appendChild(style);
-    }
+    let style=document.getElementById('portfolio-content-fix-v3');
+    if(!style){style=document.createElement('style');style.id='portfolio-content-fix-v3';style.textContent=CSS;document.head.appendChild(style);}
   }
 
   function patchSathi(){
-    const s=document.getElementById('sathi');
-    if(!s) return;
-
-    const no=s.querySelector('.project-no');
-    if(no) no.textContent='06 · FloodSafe Nepal · Flood assistant';
-
-    const status=s.querySelector('.status');
-    if(status) status.innerHTML='<i></i> Built into FloodSafe Nepal';
-
-    const desc=s.querySelector('.project-copy > p');
-    if(desc) desc.textContent='Sathi AI is the Nepali flood assistant inside FloodSafe Nepal. It is designed to answer typed questions using FloodSafe river, station, rainfall and weather context — for example which nearby river is rising or when rain is expected to start and stop.';
-
-    const features=[
-      ['01','Typed flood questions'],
-      ['02','River & station context'],
-      ['03','Rain timing & weather'],
-      ['04','FloodSafe data context']
-    ];
-    s.querySelectorAll('.feature').forEach((el,i)=>{
-      if(!features[i]) return;
-      el.innerHTML='<b>'+features[i][0]+'</b>'+features[i][1];
-    });
-
-    const links=s.querySelector('.project-links');
-    if(links) links.innerHTML='<a href="./floodsafe-nepal/">Open FloodSafe Nepal ↗</a><a href="#floodsafe">View FloodSafe project</a>';
-
-    const a1=s.querySelector('.ai-chip.a1');
-    const a2=s.querySelector('.ai-chip.a2');
-    const a3=s.querySelector('.ai-chip.a3');
-    if(a1) a1.innerHTML='FLOOD AI<b>Nepali flood help</b>';
-    if(a2) a2.innerHTML='RIVER<b>Station context</b>';
-    if(a3) a3.innerHTML='WEATHER<b>Rain timing</b>';
-
+    const s=document.getElementById('sathi'); if(!s) return;
+    const no=s.querySelector('.project-no'); if(no) no.textContent='06 · FloodSafe Nepal · Flood assistant';
+    const status=s.querySelector('.status'); if(status) status.innerHTML='<i></i> Built into FloodSafe Nepal';
+    const desc=s.querySelector('.project-copy > p'); if(desc) desc.textContent='Sathi AI is the Nepali flood assistant inside FloodSafe Nepal. It is designed to answer typed questions using FloodSafe river, station, rainfall and weather context — for example which nearby river is rising or when rain is expected to start and stop.';
+    const features=[['01','Typed flood questions'],['02','River & station context'],['03','Rain timing & weather'],['04','FloodSafe data context']];
+    s.querySelectorAll('.feature').forEach((el,i)=>{if(features[i]) el.innerHTML='<b>'+features[i][0]+'</b>'+features[i][1];});
+    const links=s.querySelector('.project-links'); if(links) links.innerHTML='<a href="./floodsafe-nepal/">Open FloodSafe Nepal ↗</a><a href="#floodsafe">View FloodSafe project</a>';
+    const a1=s.querySelector('.ai-chip.a1'),a2=s.querySelector('.ai-chip.a2'),a3=s.querySelector('.ai-chip.a3');
+    if(a1) a1.innerHTML='FLOOD AI<b>Nepali flood help</b>'; if(a2) a2.innerHTML='RIVER<b>Station context</b>'; if(a3) a3.innerHTML='WEATHER<b>Rain timing</b>';
     const stage=s.querySelector('.ai-stage');
-    if(stage && !stage.querySelector('.sathi-chat')){
-      const chat=document.createElement('div');
-      chat.className='sathi-chat';
-      chat.innerHTML='<div class="sathi-bubble user">Which nearby river is rising?</div><div class="sathi-bubble ai"><b>Sathi</b> checks FloodSafe river + weather context for the answer.</div>';
-      stage.appendChild(chat);
-    }
+    if(stage && !stage.querySelector('.sathi-chat')){const chat=document.createElement('div');chat.className='sathi-chat';chat.innerHTML='<div class="sathi-bubble user">Which nearby river is rising?</div><div class="sathi-bubble ai"><b>Sathi</b> checks FloodSafe river + weather context for the answer.</div>';stage.appendChild(chat);}
   }
 
   function patchBrand(){
     document.querySelectorAll('a[href*="github.com"],a[href*="github.io"]').forEach(a=>a.remove());
-
-    const codeLabel=document.querySelector('.dev-card .code-label');
-    if(codeLabel) codeLabel.textContent='PJBuilds';
-
-    const meta=document.querySelector('meta[name="description"]');
-    if(meta) meta.setAttribute('content','PJBuilds — Pujan Chapagain software developer portfolio featuring Team Tracker, FixCheck, DateMate, FloodSafe Nepal, LifeOS AI, Sathi AI and NetSathi.');
-
+    const codeLabel=document.querySelector('.dev-card .code-label'); if(codeLabel) codeLabel.textContent='PJBuilds';
+    const meta=document.querySelector('meta[name="description"]'); if(meta) meta.setAttribute('content','PJBuilds — Pujan Chapagain software developer portfolio featuring Team Tracker, FixCheck, DateMate, FloodSafe Nepal, LifeOS AI, Sathi AI and NetSathi.');
     const foot=document.querySelector('footer .foot');
-    if(foot){
-      const first=foot.querySelector(':scope > span');
-      if(first) first.textContent='© 2026 Pujan Chapagain · Software Developer Portfolio';
-      if(!foot.querySelector('.pjbuilds-signoff')){
-        const mark=document.createElement('span');
-        mark.className='pjbuilds-signoff';
-        mark.textContent='PJBuilds';
-        foot.appendChild(mark);
-      }
-    }
+    if(foot){const first=foot.querySelector(':scope > span');if(first) first.textContent='© 2026 Pujan Chapagain · Software Developer Portfolio';if(!foot.querySelector('.pjbuilds-signoff')){const mark=document.createElement('span');mark.className='pjbuilds-signoff';mark.textContent='PJBuilds';foot.appendChild(mark);}}
   }
 
   function patchPortfolioCopy(){
     const stats=document.querySelectorAll('.hero-stats .stat');
-    if(stats[0]){
-      const strong=stats[0].querySelector('strong');
-      const span=stats[0].querySelector('span');
-      if(strong) strong.textContent='7';
-      if(span) span.textContent='featured products';
-    }
-
-    const workCopy=document.querySelector('#work .section-title p');
-    if(workCopy) workCopy.textContent='Seven products, each presented around the experience it is designed to create. The motion supports the story without sacrificing readability.';
+    if(stats[0]){const strong=stats[0].querySelector('strong'),span=stats[0].querySelector('span');if(strong) strong.textContent='7';if(span) span.textContent='featured products';}
+    const workCopy=document.querySelector('#work .section-title p'); if(workCopy) workCopy.textContent='Seven products, each presented around the experience it is designed to create. The motion supports the story without sacrificing readability.';
   }
 
   function patchNetSathiImages(){
     document.querySelectorAll('#netsathi img,#netsathi-showcase img').forEach(img=>{
-      const src=img.getAttribute('src')||'';
-      const match=src.match(/(netsathi-[^/?]+\.svg)/i);
-      if(!match) return;
-      const expected=NETSATHI_ASSET_ROOT+match[1]+'?v=20260920-photo-fix-1';
-      if(img.src!==expected){
-        img.src=expected;
-        img.loading='eager';
-        img.decoding='async';
-      }
-      img.onerror=()=>{
-        img.style.minHeight='260px';
-        img.style.objectFit='contain';
-        img.alt='NetSathi project screenshot';
-      };
+      const raw=img.getAttribute('src')||'';
+      const m=raw.match(/(netsathi-[^/?]+\.svg)/i); if(!m) return;
+      const fixed=new URL('./assets/portfolio/'+m[1]+'?v=20260921-pages-1',document.baseURI).href;
+      if(img.src!==fixed){img.src=fixed;img.loading='eager';img.decoding='async';}
     });
   }
 
-  function apply(){
-    ensureStyle();
-    patchSathi();
-    patchBrand();
-    patchPortfolioCopy();
-    patchNetSathiImages();
-  }
-
+  function apply(){ensureStyle();patchSathi();patchBrand();patchPortfolioCopy();patchNetSathiImages();}
   apply();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply,{once:true});
-  setTimeout(apply,250);
-  setTimeout(apply,1200);
-  setTimeout(apply,3000);
-
-  const observer=new MutationObserver(()=>patchNetSathiImages());
-  observer.observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener('load',()=>{apply();setTimeout(apply,300);setTimeout(apply,1400);});
+  setTimeout(apply,250);setTimeout(apply,1200);setTimeout(apply,3000);
+  new MutationObserver(()=>patchNetSathiImages()).observe(document.documentElement,{childList:true,subtree:true});
 })();

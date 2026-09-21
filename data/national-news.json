@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-22T02:42:42.514690+05:45",
-  "updated_at_npt": "22 Sep 02:42 NPT",
+  "generated_at": "2026-09-22T05:44:38.783272+05:45",
+  "updated_at_npt": "22 Sep 05:44 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -9,48 +9,13 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593808/health-services-in-the-village-for-the-citizens-of-sekhuwa",
       "published_at": "2026-09-22T01:48:43+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "स्याउ बोकेको ट्रक दुर्घटना",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593805/apple-truck-accident",
       "published_at": "2026-09-22T00:42:26+05:45",
-      "flash": false
-    },
-    {
-      "title": "कालीगण्डकी ‘गर्ज’ जलविद्युत् आयोजनाको अडिट सुरुङ निर्माण सुरु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593801/construction-of-audit-tunnel-for-kaligandaki-garj-hydropower-project-begins",
-      "published_at": "2026-09-21T22:58:59+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीले बगाएका 'लकर'का धनी खोज्दै प्रहरी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593798/police-searching-for-owner-of-locker-washed-away-by-flood",
-      "published_at": "2026-09-21T22:10:29+05:45",
-      "flash": false
-    },
-    {
-      "title": "सप्तकोशीको बाढी र कटानले श्रीलङ्का टप्पुका बासिन्दा त्रासमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593787/residents-of-tappu-sri-lanka-in-fear-due-to-saptakoshi-floods-and-erosion",
-      "published_at": "2026-09-21T20:58:31+05:45",
-      "flash": false
-    },
-    {
-      "title": "करेन्ट लगाएर माछा मार्ने क्रममा वृद्धको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593785/elderly-man-dies-while-fishing-with-electric-current",
-      "published_at": "2026-09-21T20:55:50+05:45",
-      "flash": false
-    },
-    {
-      "title": "सर्लाहीमा स्यालको आक्रमणबाट १० जना घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593782/10-injured-in-fox-attack-in-sarlahi",
-      "published_at": "2026-09-21T20:50:23+05:45",
       "flash": false
     }
   ],
@@ -70,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 7
+      "flash": 0,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,

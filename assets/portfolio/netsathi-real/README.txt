@@ -1,0 +1,1 @@
+NetSathi portfolio screenshots supplied by the project owner on 2026-09-21. These are real prototype screenshots used by the GitHub Pages portfolio showcase.

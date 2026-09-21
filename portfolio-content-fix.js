@@ -1,6 +1,6 @@
 (()=>{
-  if(window.__pcPortfolioContentFixV4) return;
-  window.__pcPortfolioContentFixV4=true;
+  if(window.__pcPortfolioContentFixV5) return;
+  window.__pcPortfolioContentFixV5=true;
 
   const CSS=`
     .browser{color:#eef4fb!important}.browserbar{color:#8f9bad!important}.metric span{color:#8e9bad!important}.metric strong{color:#f5f8fc!important}.metric strong em{color:var(--accent)!important}
@@ -13,10 +13,16 @@
     .pjbuilds-signoff{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid rgba(49,87,213,.18);border-radius:999px;background:linear-gradient(135deg,rgba(49,87,213,.08),rgba(123,85,214,.08));color:#26334b;font-weight:900;letter-spacing:.02em;box-shadow:0 10px 28px rgba(38,51,75,.06)}
     .pjbuilds-signoff:before{content:'PJB';display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#39c8dc,#7581f2);color:#071019;font-size:.62rem;font-weight:1000}
     #sathi .voice{display:none!important}#sathi .sathi-chat{position:absolute;left:7%;right:7%;bottom:7%;z-index:5;display:grid;gap:8px}#sathi .sathi-bubble{padding:11px 13px;border-radius:14px;font-size:.70rem;line-height:1.42;box-shadow:0 12px 28px rgba(30,36,48,.12)}#sathi .sathi-bubble.user{justify-self:end;max-width:78%;background:#20293a;color:#f4f7fb;border:1px solid rgba(255,255,255,.09)}#sathi .sathi-bubble.ai{justify-self:start;max-width:88%;background:rgba(255,253,248,.96);color:#273142;border:1px solid rgba(26,32,44,.12)}#sathi .sathi-bubble.ai b{color:#3157d5}
-    @media(max-width:700px){.browser .metric strong{font-size:.96rem!important}.river-card strong{font-size:.82rem!important}#sathi .sathi-chat{left:4%;right:4%;bottom:5%}#sathi .sathi-bubble{font-size:.62rem;padding:9px 10px}#sathi .ai-stage{min-height:470px!important}.pjbuilds-signoff{margin-top:4px}}
+    #netsathi .ns-visual-wrap{height:auto!important;min-height:500px!important;padding:16px!important}
+    #netsathi .ns-visual-wrap img{width:auto!important;max-width:92%!important;height:auto!important;max-height:460px!important;object-fit:contain!important;background:#07101a!important}
+    #netsathi-showcase .ns-gallery{display:block!important}
+    #netsathi-showcase .ns-gallery figure{display:none!important}
+    #netsathi-showcase .ns-gallery figure:first-child{display:block!important;width:100%!important}
+    #netsathi-showcase .ns-gallery figure:first-child img{display:block!important;width:100%!important;height:auto!important;max-height:none!important;object-fit:contain!important;background:#07101a!important}
+    @media(max-width:700px){.browser .metric strong{font-size:.96rem!important}.river-card strong{font-size:.82rem!important}#sathi .sathi-chat{left:4%;right:4%;bottom:5%}#sathi .sathi-bubble{font-size:.62rem;padding:9px 10px}#sathi .ai-stage{min-height:470px!important}.pjbuilds-signoff{margin-top:4px}#netsathi .ns-visual-wrap{min-height:420px!important}#netsathi .ns-visual-wrap img{max-height:390px!important;max-width:96%!important}}
   `;
 
-  function ensureStyle(){let style=document.getElementById('portfolio-content-fix-v4');if(!style){style=document.createElement('style');style.id='portfolio-content-fix-v4';style.textContent=CSS;document.head.appendChild(style);}}
+  function ensureStyle(){let style=document.getElementById('portfolio-content-fix-v5');if(!style){style=document.createElement('style');style.id='portfolio-content-fix-v5';style.textContent=CSS;document.head.appendChild(style);}}
 
   function patchSathi(){
     const s=document.getElementById('sathi'); if(!s) return;
@@ -43,10 +49,12 @@
   }
 
   function patchNetSathiImages(){
-    const fixed=new URL('./assets/portfolio/netsathi-showcase.jpg?v=20260921-jpg-1',document.baseURI).href;
+    const fixed=new URL('./assets/portfolio/netsathi-showcase.svg?v=20260921-real-screens-2',document.baseURI).href;
     document.querySelectorAll('#netsathi img,#netsathi-showcase img').forEach(img=>{
       if(img.src!==fixed){img.src=fixed;img.loading='eager';img.decoding='async';img.style.objectFit='contain';img.style.background='#07101a';}
     });
+    const cap=document.querySelector('#netsathi-showcase .ns-gallery figure:first-child figcaption');
+    if(cap) cap.innerHTML='<b>Real NetSathi screens</b>Customer request, ticket progress, technician dispatch, ETA/live GPS, notifications, Control Room operations, route tracking and repair confirmation.';
   }
 
   function apply(){ensureStyle();patchSathi();patchBrand();patchPortfolioCopy();patchNetSathiImages();}

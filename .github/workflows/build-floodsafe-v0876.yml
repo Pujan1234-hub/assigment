@@ -62,10 +62,13 @@ jobs:
           grep -Fq 'V0876_STALE_NEVER_DRIVES_RISK' "$M"
           grep -Fq '!x.fresh' "$M"
 
+          # v0.8.73 hydrology/lake parity uses only these real official BIPAD feeds.
+          # Lake/reservoir-like rows are recognized from official row metadata; there is
+          # deliberately no invented/synthetic lake endpoint to verify with a comment marker.
           grep -Fq 'flood-station/?limit=2000' "$A"
           grep -Fq 'streamflow/?limit=2000' "$A"
           grep -Fq 'station-location/?limit=2000' "$A"
-          grep -Fq 'V0873_NO_FAKE_LAKE_SOURCE' "$A"
+          grep -Fq 'V0873_EXTRA_OFFICIAL_HYDROLOGY_FEEDS' "$A"
 
           grep -Fq 'V0875_TOUCH_PRIORITY' "$M"
           grep -Fq 'V0875_LIGHTWEIGHT_FLOW_ANIMATION' "$M"

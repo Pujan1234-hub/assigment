@@ -22,7 +22,9 @@ if 'dispatchTouchEvent(MotionEvent ev)' not in s:
     anchor='    private void v847UpdateMovingGlow('
     i=s.find(anchor)
     if i<0: raise SystemExit('v0875 preflight moving-glow anchor missing')
-    neutral='''    @Override public boolean dispatchTouchEvent(MotionEvent ev){\n        return super.dispatchTouchEvent(ev);\n    } // V0875_TOUCH_ANCHOR_PREFLIGHT\n\n'''
+    # Keep @Override on its own line so the generic method-span parser can locate
+    # the public method declaration on the following line.
+    neutral='''    @Override\n    public boolean dispatchTouchEvent(MotionEvent ev){\n        return super.dispatchTouchEvent(ev);\n    } // V0875_TOUCH_ANCHOR_PREFLIGHT\n\n'''
     s=s[:i]+neutral+s[i:]
 
 if 'dispatchTouchEvent(MotionEvent ev)' not in s:

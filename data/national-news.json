@@ -1,77 +1,70 @@
 {
-  "generated_at": "2026-09-22T19:53:48.368615+05:45",
-  "updated_at_npt": "22 Sep 19:53 NPT",
+  "generated_at": "2026-09-22T23:50:12.236617+05:45",
+  "updated_at_npt": "22 Sep 23:50 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "दुवाकोटमा मोटरसाइकलको ठक्करबाट पैदलयात्रीको मृत्यु",
+      "title": "सल्यानमा स्क्रबटाइफसको प्रकोप नियन्त्रण गर्न मुख्यमन्त्रीको निर्देशन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594006/pedestrian-dies-after-being-hit-by-motorcycle-in-duwakot",
-      "published_at": "2026-09-22T19:52:04+05:45",
+      "url": "https://www.ratopati.com/story/594047/chief-ministers-instructions-to-control-the-outbreak-of-scrub-typhus-in-salyan",
+      "published_at": "2026-09-22T23:30:58+05:45",
       "flash": true
     },
     {
-      "title": "सादा पोसाकका प्रहरी भन्दै रकम असुल्ने दुई जना पक्राउ",
+      "title": "दमकमा बस दुर्घटना हुँदा छ जना घाइते",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594004/two-arrested-for-extorting-money-by-posing-as-plainclothes-police-officers",
-      "published_at": "2026-09-22T19:48:13+05:45",
+      "url": "https://www.ratopati.com/story/594045/six-injured-in-bus-accident-in-damak",
+      "published_at": "2026-09-22T23:01:12+05:45",
       "flash": true
+    },
+    {
+      "title": "‘फुर्केखोला’मा पुल निर्माण गर्न धादिङका उद्योगी–व्यवसायीको माग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594042/dhading-industrialists-and-businessmen-demand-construction-of-bridge-over-furkekhola",
+      "published_at": "2026-09-22T22:31:02+05:45",
+      "flash": false
+    },
+    {
+      "title": "प्रदेश सरकारद्वारा दार्चुलाका विपद् प्रभावितलाई राहत सामग्री प्रदान",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594038/provincial-government-provides-relief-materials-to-disaster-affected-people-in-darchula",
+      "published_at": "2026-09-22T21:55:26+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढी प्रभावितका लागि तनाव व्यवस्थापन शिविर सञ्चालन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594037/stress-management-camp-held-for-flood-victims",
+      "published_at": "2026-09-22T21:52:14+05:45",
+      "flash": false
+    },
+    {
+      "title": "स्वास्थ्यमन्त्रीले गरे भरतपुर आँखा अस्पतालको अनुगमन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594029/minister-tamang-inspects-bharatpur-eye-hospital",
+      "published_at": "2026-09-22T21:05:40+05:45",
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढीमा बेपत्ता सिपाही कुमालको २७ दिनपछि अन्त्येष्टि",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594002/funeral-of-missing-soldier-kumal-in-bhotekoshi-flood-held-27-days-later",
       "published_at": "2026-09-22T19:41:55+05:45",
-      "flash": true
+      "flash": false
     },
     {
-      "title": "२. प्रधानमन्त्री बालेन शाह अमेरिका प्रस्थान, तस्बिरहरू",
+      "title": "१. प्रधानमन्त्री बालेन शाह अमेरिका प्रस्थान, तस्बिरहरू",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593991/prime-minister-balen-shah-departs-for-america-photos",
       "published_at": "2026-09-22T19:05:23+05:45",
-      "flash": true
-    },
-    {
-      "title": "बजेट शून्यताको अवस्था छिटो अन्त्य गर्न कांग्रेस संसदीय दलको आग्रह",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593973/nepali-congress-parliamentary-party-urges-to-end-budget-vacuum-as-soon-as-possible",
-      "published_at": "2026-09-22T17:28:01+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपीडितका लागि पोखराका भारतीय भूतपूर्व सैनिकबाट २४ लाख सहयोग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593933/indian-ex-servicemen-from-pokhara-donate-rs-24-million-for-flood-victims",
-      "published_at": "2026-09-22T15:29:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "सर्लाही र सिन्धुली जोड्ने सडक पहिरोका कारण अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593930/road-connecting-sarlahi-and-sindhuli-blocked-due-to-landslide",
-      "published_at": "2026-09-22T15:24:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "सवारी दुर्घटनाको सङ्ख्या बर्सेनि बढ्दो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593928/the-number-of-traffic-accidents-is-increasing-every-year",
-      "published_at": "2026-09-22T15:22:16+05:45",
-      "flash": false
-    },
-    {
-      "title": "नवलपरासीमा कुटपिटबाट घाइते भएका युवकको उपचार क्रममा मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593921/youth-injured-in-beating-in-nawalparasi-dies-during-treatment",
-      "published_at": "2026-09-22T14:55:07+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     },
@@ -84,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 9
+      "flash": 2,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -95,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     }

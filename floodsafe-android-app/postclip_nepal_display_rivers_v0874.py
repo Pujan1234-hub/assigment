@@ -79,3 +79,4 @@ for name in names:
     checked+=1
 if checked!=3:raise SystemExit('v0874 did not audit all display tiers')
 print('V0874_STRICT_NEPAL_DISPLAY PASS districts_repaired=',len(parts))
+# V0874_CI_RECHECK_MAPLIBRE_COMPILE_FIX

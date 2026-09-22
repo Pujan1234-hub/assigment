@@ -75,6 +75,8 @@ jobs:
           test -s _site/portfolio-i18n.js
           test -s _site/portfolio-content-fix.js
           test -s _site/portfolio-netsathi.js
+          test "$(find _site/assets/portfolio/netsathi-real -maxdepth 1 -type f -name '*.webp' | wc -l)" -eq 18
+          test -s _site/assets/portfolio/netsathi-photo-fix.js
 
           python3 -c "import json; j=json.load(open('_site/data/nepal-waterways-seed.json')); assert j.get('count',0)>=100; assert len(j.get('waterways',[]))==j['count']; print('packaging river routes',j['count'])"
           printf '%s' "$GITHUB_SHA" > _site/build-version.txt
@@ -123,14 +125,14 @@ jobs:
           .gallery figure,.process-card,.about-card,.contact-card{background:linear-gradient(145deg,#fffdf8,#f7f2e9)!important;border-color:rgba(26,32,44,.11)!important;color:#171b23!important}.gallery figcaption,.process-card p,.about-card p,.contact-card p{color:#616c7d!important}.process-card h3,.about-card .big,.contact-card h3{color:#171b23!important}.skills span{background:rgba(255,255,255,.75)!important;color:#505b6c!important;border-color:rgba(26,32,44,.11)!important}.contact-email{color:#202632!important}.foot{border-top-color:rgba(26,32,44,.10)!important;color:#697486!important}
           /* Product mockups stay dark, but every label/value stays readable. */
           .dev-card,.browser,.scan,.fake-map,.river-bg,.river-card,.orbit-card,.float-expiry,.ai-chip{color:#eef4fb!important}.browserbar,.metric span,.river-card small,.orbit-card small,.scan-result{color:#9aa8ba!important}.metric strong,.river-card strong,.orbit-card strong,.os-core b{color:#f7f9fc!important}.metric strong em,.browser .task b,.river-card .reading,.river-card .task b,.scan-result b{color:var(--accent)!important}.browser .task,.river-card .task{color:#bdc7d4!important;background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.09)!important}.float-expiry b,.ai-chip b{color:#f7f9fc!important}
-          @media(max-width:700px){body:before{background:linear-gradient(180deg,#fbf8f2 0%,#f5f0e7 52%,#faf7f1 100%)!important}.project{box-shadow:0 14px 34px rgba(34,40,52,.075)!important}.project-copy{background:rgba(255,253,248,.74)!important}.project-visual{border-left:0!important;border-top:1px solid rgba(26,32,44,.09)!important}.section-title p,.project-copy>p{color:#556071!important}.feature{color:#4f5b6c!important}}
+          @media(max-width:700px){body:before{background:linear-gradient(180deg,#fbf8f2 0%,#f5f0e7 52%,#faf7f1 100%)!important}.project{box-shadow:0 14px 34px rgba(34,40,52,.075)!important}.project-copy{background:rgba(255,253,248,.74)!important}.project-visual{border-left:0!important;border-top:1px solid rgba(26,32,44,.09)!important}.section-title p,.project-copy>p{color:#556071!important}.feature{color:#4f5b6c!important}#work .reveal{opacity:1!important;transform:none!important}}
           </style>'''
           s=s.replace('</head>',critical+'</head>')
           p.write_text(s)
           PY
 
           sed -i 's#</head>#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"></head>#' _site/index.html
-          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=4"></script><script src="./portfolio-motion.js?v=7"></script><script src="./portfolio-i18n.js?v=6"></script><script src="./portfolio-content-fix.js?v=2"></script><script src="./portfolio-netsathi.js?v=20260920-io3"></script><script src="./auto-update.js?v=4"></script></body>#' _site/index.html
+          sed -i 's#</body>#<script src="./portfolio-floodsafe.js?v=4"></script><script src="./portfolio-motion.js?v=7"></script><script src="./portfolio-i18n.js?v=6"></script><script src="./portfolio-content-fix.js?v=20260922-mobile2"></script><script src="./portfolio-netsathi.js?v=20260920-io3"></script><script src="./auto-update.js?v=4"></script></body>#' _site/index.html
 
           python - <<'PY'
           from pathlib import Path
@@ -185,8 +187,8 @@ jobs:
             deployed="$(curl --max-time 10 -fsSL "$BASE/build-version.txt?check=$GITHUB_SHA-$i" || true)"
             if [ "$deployed" = "$GITHUB_SHA" ]; then
               curl --max-time 15 -fsSL "$BASE/floodsafe-nepal/v25/?check=$GITHUB_SHA" -o /tmp/v25.html
-              grep -Fq 'trusted-river-runtime-v3.js?v=36' /tmp/v25.html
-              grep -Fq 'impact-live-v1.js?v=6' /tmp/v25.html
+              grep -Fq 'trusted-river-runtime-v3.js?v=37' /tmp/v25.html
+              grep -Fq 'official-live-fetch-fix-v1.js?v=1' /tmp/v25.html
               ! grep -Fq 'flood-freshness.js' /tmp/v25.html
 
               curl --max-time 15 -fsSL "$BASE/?check=$GITHUB_SHA" -o /tmp/home.html
@@ -197,7 +199,8 @@ jobs:
               grep -Fq 'portfolio-floodsafe.js?v=4' /tmp/home.html
               grep -Fq 'portfolio-motion.js?v=7' /tmp/home.html
               grep -Fq 'portfolio-i18n.js?v=6' /tmp/home.html
-              grep -Fq 'portfolio-content-fix.js?v=2' /tmp/home.html
+              grep -Fq 'portfolio-content-fix.js?v=20260922-mobile2' /tmp/home.html
+              grep -Fq '#work .reveal{opacity:1!important;transform:none!important}' /tmp/home.html
               grep -Fq 'portfolio-netsathi.js?v=20260920-io3' /tmp/home.html
               grep -Fq 'auto-update.js?v=4' /tmp/home.html
 
@@ -208,6 +211,10 @@ jobs:
 
               curl --max-time 15 -fsSL "$BASE/assets/portfolio/netsathi-showcase.svg?check=$GITHUB_SHA" -o /tmp/netsathi-showcase.svg
               test -s /tmp/netsathi-showcase.svg
+              curl --max-time 15 -fsSL "$BASE/assets/portfolio/netsathi-real/control-room-dashboard-map.webp?check=$GITHUB_SHA" -o /tmp/netsathi-photo.webp
+              test -s /tmp/netsathi-photo.webp
+              curl --max-time 15 -fsSL "$BASE/assets/portfolio/netsathi-photo-fix.js?check=$GITHUB_SHA" -o /tmp/netsathi-gallery.js
+              grep -Fq 'technician-ready-closed.webp' /tmp/netsathi-gallery.js
 
               curl --max-time 15 -fsSL "$BASE/portfolio-floodsafe.js?check=$GITHUB_SHA" -o /tmp/portfolio-floodsafe.js
               grep -Fq 'hasDateMateTicket' /tmp/portfolio-floodsafe.js

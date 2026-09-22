@@ -1,5 +1,5 @@
 name: Build FloodSafe v0.8.75 Smooth Realtime River APK
-# Canonical retrigger after touch-anchor parser fix; no runtime behavior change.
+# Canonical retrigger after normalizing the existing touch override; no runtime behavior change.
 
 on:
   push:

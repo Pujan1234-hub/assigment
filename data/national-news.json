@@ -1,56 +1,77 @@
 {
-  "generated_at": "2026-09-22T15:14:39.959054+05:45",
-  "updated_at_npt": "22 Sep 15:14 NPT",
+  "generated_at": "2026-09-22T19:53:48.368615+05:45",
+  "updated_at_npt": "22 Sep 19:53 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "दुवाकोटमा मोटरसाइकलको ठक्करबाट पैदलयात्रीको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594006/pedestrian-dies-after-being-hit-by-motorcycle-in-duwakot",
+      "published_at": "2026-09-22T19:52:04+05:45",
+      "flash": true
+    },
+    {
+      "title": "सादा पोसाकका प्रहरी भन्दै रकम असुल्ने दुई जना पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594004/two-arrested-for-extorting-money-by-posing-as-plainclothes-police-officers",
+      "published_at": "2026-09-22T19:48:13+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढीमा बेपत्ता सिपाही कुमालको २७ दिनपछि अन्त्येष्टि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594002/funeral-of-missing-soldier-kumal-in-bhotekoshi-flood-held-27-days-later",
+      "published_at": "2026-09-22T19:41:55+05:45",
+      "flash": true
+    },
+    {
+      "title": "२. प्रधानमन्त्री बालेन शाह अमेरिका प्रस्थान, तस्बिरहरू",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593991/prime-minister-balen-shah-departs-for-america-photos",
+      "published_at": "2026-09-22T19:05:23+05:45",
+      "flash": true
+    },
+    {
+      "title": "बजेट शून्यताको अवस्था छिटो अन्त्य गर्न कांग्रेस संसदीय दलको आग्रह",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593973/nepali-congress-parliamentary-party-urges-to-end-budget-vacuum-as-soon-as-possible",
+      "published_at": "2026-09-22T17:28:01+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढीपीडितका लागि पोखराका भारतीय भूतपूर्व सैनिकबाट २४ लाख सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593933/indian-ex-servicemen-from-pokhara-donate-rs-24-million-for-flood-victims",
+      "published_at": "2026-09-22T15:29:11+05:45",
+      "flash": false
+    },
+    {
+      "title": "सर्लाही र सिन्धुली जोड्ने सडक पहिरोका कारण अवरुद्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593930/road-connecting-sarlahi-and-sindhuli-blocked-due-to-landslide",
+      "published_at": "2026-09-22T15:24:35+05:45",
+      "flash": false
+    },
+    {
+      "title": "सवारी दुर्घटनाको सङ्ख्या बर्सेनि बढ्दो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593928/the-number-of-traffic-accidents-is-increasing-every-year",
+      "published_at": "2026-09-22T15:22:16+05:45",
+      "flash": false
+    },
     {
       "title": "नवलपरासीमा कुटपिटबाट घाइते भएका युवकको उपचार क्रममा मृत्यु",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/593921/youth-injured-in-beating-in-nawalparasi-dies-during-treatment",
       "published_at": "2026-09-22T14:55:07+05:45",
-      "flash": true
-    },
-    {
-      "title": "राजमार्ग खुल्दा पनि घटेन महँगी : तरकारीको मूल्य १५० प्रतिशतसम्म वृद्धि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593918/mark-wood-retires-from-international-cricket",
-      "published_at": "2026-09-22T14:51:08+05:45",
-      "flash": true
-    },
-    {
-      "title": "खाँदबारी–सभाखोला सडक दैनिक नौ घण्टा बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593910/khandbari-sabhakhola-road-closed-for-nine-hours-daily",
-      "published_at": "2026-09-22T14:26:02+05:45",
-      "flash": true
-    },
-    {
-      "title": "४. आगामी शुक्रबारदेखि सोमबारसम्म कहाँ–कहाँ हुँदैछ अति भारी वर्षा ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593880/where-will-there-be-heavy-rain-from-next-friday-to-monday",
-      "published_at": "2026-09-22T12:56:28+05:45",
-      "flash": false
-    },
-    {
-      "title": "श्रीमान्‌ले फरुवा प्रहार गर्दा श्रीमतीको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593875/wife-dies-after-husband-stabs-her-with-a-hammer",
-      "published_at": "2026-09-22T12:20:06+05:45",
-      "flash": false
-    },
-    {
-      "title": "३. त्रिपुरेश्वर घटनामा मृत्यु हुने चालक अर्जुन दोङ तामाङ भएको पुष्टि, प्रहरी अनुसन्धानबाट अर्काको लाइसेन्स प्रयोग गरेको खुल्यो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593874/driver-who-died-in-tripureshwor-incident-confirmed-to-be-arjun-dong-tamang-police-investigation-reveals-he-used-someone-elses-license",
-      "published_at": "2026-09-22T12:12:33+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     },
@@ -63,8 +84,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 6
+      "flash": 4,
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,
@@ -74,7 +95,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

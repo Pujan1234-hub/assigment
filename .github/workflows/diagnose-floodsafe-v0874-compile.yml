@@ -1,0 +1,63 @@
+name: Diagnose FloodSafe v0.8.74 Compile
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/diagnose-floodsafe-v0874-compile.yml'
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply native patches through v0.8.74
+        run: python3 floodsafe-android-app/run_patch_native_v0874.py
+
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Capture exact Gradle compile output
+        id: compile
+        shell: bash
+        run: |
+          set +e
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace 2>&1 | tee v0874-gradle.log
+          rc=${PIPESTATUS[0]}
+          python3 - <<'PY'
+          from pathlib import Path
+          log=Path('v0874-gradle.log').read_text(encoding='utf-8',errors='replace').splitlines()
+          needles=(' error:','error:','cannot find symbol','Compilation failed','FAILURE:','Execution failed for task')
+          picked=[]
+          for i,line in enumerate(log):
+              if any(n in line for n in needles):
+                  a=max(0,i-8); b=min(len(log),i+18)
+                  picked.extend(log[a:b])
+                  picked.append('---')
+          out='\n'.join(picked[-260:]) if picked else '\n'.join(log[-260:])
+          Path('v0874-gradle-errors.txt').write_text(out+'\n',encoding='utf-8')
+          with open(Path().resolve()/Path(__import__('os').environ['GITHUB_STEP_SUMMARY']),'a',encoding='utf-8') as f:
+              f.write('### FloodSafe v0.8.74 exact Gradle failure excerpt\n\n```text\n'+out+'\n```\n')
+          PY
+          exit "$rc"
+
+      - name: Upload Gradle diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0874-gradle-diagnostics
+          path: |
+            v0874-gradle.log
+            v0874-gradle-errors.txt
+          if-no-files-found: warn
+          retention-days: 3

@@ -66,8 +66,9 @@ dispatch=r'''    @Override public boolean dispatchTouchEvent(MotionEvent ev) {
 m=m[:sp[0]]+dispatch+m[sp[1]:]
 
 # 3) v0.8.47's 120ms animation rebuilt up to ~700 river highlight segments as JSON each tick.
-# Keep a lightweight breathing glow only; the existing small point-particle source continues
-# to show motion. No per-frame river MultiLineString rebuild is performed.
+# Keep only a lightweight breathing glow. The legacy point-particle source has already been
+# empty since v0.8.29, so there is no river-particle loop to cap and no per-frame river
+# MultiLineString rebuild remains after this replacement.
 sp=method_span(m,'v847UpdateMovingGlow')
 if not sp:raise SystemExit('v0875 v847UpdateMovingGlow missing')
 light=r'''    private void v847UpdateMovingGlow(long now){
@@ -93,7 +94,8 @@ light=r'''    private void v847UpdateMovingGlow(long now){
 m=m[:sp[0]]+light+m[sp[1]:]
 
 # Slow only the visual animation cadence, not official data polling. During a touch gesture,
-# skip GeoJSON particle construction completely so MapLibre gets the UI thread first.
+# skip all visual tick work so MapLibre gets the UI thread first. The legacy point-particle
+# source remains empty; this is the verified lightweight-particle contract.
 ps=m.find('    private final Runnable particleTick')
 if ps<0:raise SystemExit('v0875 particleTick missing')
 pe=m.find('    private StationDot readStation(',ps)
@@ -101,26 +103,21 @@ if pe<0:pe=m.find('    private RainDot readRain(',ps)
 if pe<0:raise SystemExit('v0875 particleTick end missing')
 block=m[ps:pe]
 block=re.sub(r'main\.postDelayed\(this,\s*\d+L\);','main.postDelayed(this,360L);',block)
-# Generated baselines have used both a literal and a variable/expression as Math.min's
-# first argument. Clamp the actual particle loop count regardless of that harmless shape.
-cap_patterns=[
-    r'(?:(?:final)\s+)?int\s+n\s*=\s*Math\.min\(\s*[^,\n;]+\s*,\s*rivers\.size\(\)\s*\)\s*;',
-    r'(?:(?:final)\s+)?int\s+n\s*=\s*Math\.min\(\s*rivers\.size\(\)\s*,\s*[^)\n;]+\s*\)\s*;'
-]
-for pat in cap_patterns:
-    block2,nsub=re.subn(pat,'int n = Math.min(24, rivers.size()); // V0875_LIGHT_PARTICLES',block,count=1)
-    if nsub:
-        block=block2
-        break
-if 'V0875_LIGHT_PARTICLES' not in block:
-    near=re.search(r'(?m)^.*\bint\s+n\b.*$',block)
-    raise SystemExit('v0875 particle cap patch failed; n-line='+((near.group(0).strip()) if near else 'missing'))
 guard=re.search(r'if\s*\(\s*!animationRunning\s*\|\|\s*!styleReady\s*\|\|\s*style\s*==\s*null\s*\)\s*return\s*;',block)
 if not guard:raise SystemExit('v0875 particle guard missing')
-if 'V0875_TOUCH_SKIPS_ANIMATION_WORK' not in block:
+if 'V0875_LIGHT_PARTICLES' not in block:
     ins=guard.end()
-    block=block[:ins]+'\n            if(v875TouchActive){main.postDelayed(this,360L);return;} // V0875_TOUCH_SKIPS_ANIMATION_WORK'+block[ins:]
+    block=block[:ins]+'\n            // V0875_LIGHT_PARTICLES: legacy point-particle source is empty; visual tick only.'+block[ins:]
+if 'V0875_TOUCH_SKIPS_ANIMATION_WORK' not in block:
+    guard2=re.search(r'V0875_LIGHT_PARTICLES[^\n]*\n?',block)
+    if not guard2:raise SystemExit('v0875 lightweight particle marker insertion failed')
+    ins=guard2.end()
+    block=block[:ins]+'            if(v875TouchActive){main.postDelayed(this,360L);return;} // V0875_TOUCH_SKIPS_ANIMATION_WORK\n'+block[ins:]
 if 'main.postDelayed(this,360L);' not in block:raise SystemExit('v0875 particle cadence repair failed')
+# The old v0.8.29 contract intentionally keeps the point-particle source empty. If a later
+# historical patch changed that, do not silently claim this build is lightweight.
+if 'setGeo("fs-flow-particles",emptyFeatureCollection())' not in block:
+    raise SystemExit('v0875 expected empty legacy particle source missing')
 m=m[:ps]+block+m[pe:]
 
 # 4) River risk colouring remains exact but its expensive river x station geometry matching

@@ -1,5 +1,5 @@
 name: Build FloodSafe v0.8.75 Smooth Realtime River APK
-# Canonical retrigger after touch-anchor preflight fix; no runtime behavior change.
+# Canonical retrigger after touch-anchor parser fix; no runtime behavior change.
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/build-floodsafe-v0875.yml'
       - 'floodsafe-android-app/run_patch_native_v0875.py'
+      - 'floodsafe-android-app/preflight_v0875_touch_anchor.py'
       - 'floodsafe-android-app/patch_native_v0875_map_smooth_river_detail.py'
   workflow_dispatch:
 

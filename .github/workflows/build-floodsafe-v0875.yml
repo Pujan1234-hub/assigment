@@ -1,0 +1,122 @@
+name: Build FloodSafe v0.8.75 Smooth Realtime River APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0875.yml'
+      - 'floodsafe-android-app/run_patch_native_v0875.py'
+      - 'floodsafe-android-app/patch_native_v0875_map_smooth_river_detail.py'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply native patches through v0.8.75
+        run: python3 floodsafe-android-app/run_patch_native_v0875.py
+
+      - name: Verify v0.8.75 smoothness and source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          S='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java'
+          L='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java'
+          G='floodsafe-android-app/app/build.gradle'
+
+          grep -Fq 'V0875_TOUCH_PRIORITY' "$M"
+          grep -Fq 'V0875_LIGHTWEIGHT_FLOW_ANIMATION' "$M"
+          grep -Fq 'V0875_LIGHT_PARTICLES' "$M"
+          grep -Fq 'V0875_TOUCH_SKIPS_ANIMATION_WORK' "$M"
+          grep -Fq 'V0875_ASYNC_RISK_REBUILD' "$M"
+          grep -Fq 'V0875_RENDER_WORKER_SHUTDOWN' "$M"
+          grep -Fq 'V0875_RIVER_TAP_GEOMETRY_SOURCE_DETAIL' "$M"
+          grep -Fq 'v866RiverGauge(r,la,lo)' "$M"
+          grep -Fq 'main.postDelayed(this,360L)' "$M"
+          ! grep -Fq 'maxAnimated=700' "$M"
+          ! grep -Fq 'main.postDelayed(this,120L);' "$M"
+
+          grep -Fq 'V0874_HIDE_RAIN_ONLY_MAP_STATIONS' "$M"
+          grep -Fq 'V0874_FLOW_BELOW_NEPAL_MASK' "$M"
+          grep -Fq 'V0874_RISK_BELOW_NEPAL_MASK' "$M"
+          grep -Fq 'V0874_NEPAL_FIXED_CAMERA' "$M"
+          grep -Fq 'V0874_RAIN_DETAIL_ONLY_NO_MAP_DOTS' "$A"
+          grep -Fq 'V0874_CANONICAL_77_DISTRICT_NAMES' "$A"
+          grep -Fq 'V0871_ONE_SECOND_SOURCE_RECHECK' "$A"
+          grep -Fq 'V0871_SOURCE_EXACT_DETAIL' "$A"
+          grep -Fq 'V0871_OPEN_POPUP_LIVE_UPDATE' "$A"
+          grep -Fq 'V0872_START_1S_BACKGROUND_SOURCE' "$S"
+          grep -Fq 'V0872_ONE_SECOND_BACKGROUND_RECHECK' "$L"
+          grep -Fq 'RADIUS_KM=2d' "$L"
+          grep -Fq 'versionCode 95' "$G"
+          grep -Fq "versionName '0.8.75'" "$G"
+          ! grep -Fq 'android.webkit.WebView' "$A"
+          ! grep -Fq 'android.webkit.WebView' "$M"
+          echo 'V0875_SMOOTH_SOURCE_CONTRACT PASS'
+
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Rebuild strictly Nepal-clipped river display assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+
+      - name: Verify 77 district names in bundled GeoJSON
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          hits=list(Path('floodsafe-android-app/app/build').rglob('floodsafe-nepal/v24/nepal-districts.geojson'))
+          if not hits: raise SystemExit('district asset missing')
+          j=json.loads(hits[0].read_text(encoding='utf-8'))
+          names=sorted({str((f.get('properties') or {}).get('nameEn','')).strip() for f in j.get('features',[]) if str((f.get('properties') or {}).get('nameEn','')).strip()})
+          if len(names)!=77: raise SystemExit(f'expected 77 district names, got {len(names)}')
+          if any(x.isdigit() for x in names): raise SystemExit('numeric district display name found')
+          print('V0875_DISTRICT_77 PASS',len(names))
+          PY
+
+      - name: Unit test and build native APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify APK contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-major-v0842.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-medium-v0842.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          cp "$APK" FloodSafe-Nepal-v0.8.75-SMOOTH-REALTIME-RIVER.apk
+          sha256sum FloodSafe-Nepal-v0.8.75-SMOOTH-REALTIME-RIVER.apk > FloodSafe-Nepal-v0.8.75-SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0875-SMOOTH-REALTIME-RIVER-APK
+          path: |
+            FloodSafe-Nepal-v0.8.75-SMOOTH-REALTIME-RIVER.apk
+            FloodSafe-Nepal-v0.8.75-SHA256.txt
+          retention-days: 14

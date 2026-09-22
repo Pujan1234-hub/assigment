@@ -1,4 +1,5 @@
 name: Build FloodSafe v0.8.74 Nepal Fixed Realtime River APK
+# CI verification rerun for current v0.8.74 patch chain; no runtime behavior change.
 
 on:
   push:

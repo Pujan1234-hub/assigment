@@ -15,7 +15,7 @@ patches=[
 'patch_native_v0814_compile_fix.py','patch_native_v0815_single_source_truth.py','patch_native_v0816_current_only_map.py',
 'patch_native_v0817_clean_web_map.py','patch_native_v0817_compile_rain_fix.py','patch_native_v0818_direct_river_clean_flow.py',
 'patch_native_v0819_web_live_master.py','patch_native_v0820_place_labels_prep.py','patch_native_v0820_nepal_mask_prep.py',
-'patch_native_v0820_nepal_only_local_rivers.py','patch_native_v0821_actual_river_geometry.py','patch_native_v0822_viewport_rivers.py',
+'patch_native_v0820_nepal_only_local_rivers.py','patch_native_v0821_actual_river_geometry.py','patch_native_v0821_compile_release_fix.py','patch_native_v0822_viewport_rivers.py',
 'patch_native_v0823_visible_bounds_rivers.py','patch_native_v0824_strict_nepal_source_truth.py','patch_native_v0825_segment_current_flow.py',
 'patch_native_v0825_helper_restore.py','patch_native_v0826_video_map_ui.py','patch_native_v0827_compact_realtime_map.py',
 'patch_native_v0828_finish_blue_nepal_map.py','patch_native_v0828_compile_fix.py','patch_native_v0829_flow_glow_dense_network.py',

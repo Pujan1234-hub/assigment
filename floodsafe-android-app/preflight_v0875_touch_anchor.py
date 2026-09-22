@@ -5,19 +5,18 @@ root=Path(__file__).resolve().parent
 p=root/'app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
 s=p.read_text(encoding='utf-8')
 
-# Normalize any existing one-line @Override method declaration first. Older generated
-# patch layers can produce "@Override public boolean dispatchTouchEvent(...)" on one
-# line, while the generic method-span parser intentionally starts at a visibility token.
+# Older generated patch layers sometimes emit "@Override public/protected ..." on
+# one line. Normalize all such declarations so the v0.8.75 generic method parser can
+# locate lifecycle and touch methods consistently. This is formatting-only.
 s=re.sub(
-    r'(?m)^(\s*)@Override\s+(public\s+boolean\s+dispatchTouchEvent\s*\()',
+    r'(?m)^(\s*)@Override\s+((?:public|protected|private)\s+)',
     lambda m: m.group(1)+'@Override\n'+m.group(1)+m.group(2),
     s,
-    count=1,
 )
 
-# The v0.8.74 generated MapView may have no dispatchTouchEvent override. Add a neutral,
+# The generated MapView may have no dispatchTouchEvent override. Add a neutral,
 # compiler-safe anchor so the v0.8.75 performance patch can replace it with the
-# touch-priority implementation. No runtime behavior changes in this preflight.
+# touch-priority implementation.
 if 'dispatchTouchEvent(' not in s:
     if 'import android.view.MotionEvent;' not in s:
         anchor='import android.view.'
@@ -35,7 +34,18 @@ if 'dispatchTouchEvent(' not in s:
     neutral='''    @Override\n    public boolean dispatchTouchEvent(MotionEvent ev){\n        return super.dispatchTouchEvent(ev);\n    } // V0875_TOUCH_ANCHOR_PREFLIGHT\n\n'''
     s=s[:i]+neutral+s[i:]
 
+# Some generated baselines have no detach override at all. The smoothness patch needs
+# a lifecycle anchor to close both executors. Add the same pre-existing IO shutdown
+# semantics as a neutral detach anchor only when absent.
+if 'onDetachedFromWindow(' not in s:
+    i=s.rfind('\n}')
+    if i<0: raise SystemExit('v0875 preflight class-close anchor missing')
+    neutral='''\n    @Override\n    protected void onDetachedFromWindow(){\n        io.shutdownNow();\n        super.onDetachedFromWindow();\n    } // V0875_DETACH_ANCHOR_PREFLIGHT\n'''
+    s=s[:i]+neutral+s[i:]
+
 if 'dispatchTouchEvent(' not in s:
     raise SystemExit('v0875 preflight touch anchor insert failed')
+if 'onDetachedFromWindow(' not in s:
+    raise SystemExit('v0875 preflight detach anchor insert failed')
 p.write_text(s,encoding='utf-8')
-print('FloodSafe v0.8.75 preflight PASS: touch override anchor ready')
+print('FloodSafe v0.8.75 preflight PASS: touch + detach method anchors ready')

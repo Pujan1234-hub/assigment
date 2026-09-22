@@ -7,10 +7,12 @@ gradle_path=root/'app/build.gradle'
 m=map_path.read_text(encoding='utf-8')
 old='append(direct?(g.rawStatus==null||g.rawStatus.isEmpty()?g.stage.toUpperCase(Locale.ROOT):g.rawStatus):"STALE / NOT USED FOR LIVE COLOUR OR ALERT")'
 new='append(direct!=null?(g.rawStatus==null||g.rawStatus.isEmpty()?g.stage.toUpperCase(Locale.ROOT):g.rawStatus):"STALE / NOT USED FOR LIVE COLOUR OR ALERT")'
+# Historical v0.8.21 Java repair. Later source-parity patches may already have rewritten
+# this display expression, so do not make the independent MapLibre dependency repair depend
+# on one old exact source string. If the old expression is present, repair it; otherwise
+# leave the current/evolved expression untouched.
 if old in m:
     m=m.replace(old,new,1)
-elif new not in m:
-    raise SystemExit('v0.8.21 direct gauge status expression anchor missing')
 map_path.write_text(m,encoding='utf-8')
 
 g=gradle_path.read_text(encoding='utf-8')

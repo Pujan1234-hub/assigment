@@ -1,22 +1,50 @@
 {
-  "generated_at": "2026-09-22T23:50:12.236617+05:45",
-  "updated_at_npt": "22 Sep 23:50 NPT",
+  "generated_at": "2026-09-23T02:59:52.297802+05:45",
+  "updated_at_npt": "23 Sep 02:59 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "हाकुवासीको पीडा: भूकम्पले उठिबास, बाढीले सर्वनाश",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594059/the-suffering-of-haku-residents-earthquakes-cause-upheaval-floods-cause-devastation",
+      "published_at": "2026-09-23T02:56:20+05:45",
+      "flash": true
+    },
+    {
+      "title": "पोखरा अन्तर्राष्ट्रिय विमानस्थलमा फ्लाई दुबईको आजदेखि नियमित उडान",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594056/fly-dubai-to-launch-regular-flights-to-pokhara-international-airport-from-today",
+      "published_at": "2026-09-23T01:55:36+05:45",
+      "flash": false
+    },
+    {
+      "title": "युक्रेनको रक्षा पहिलेभन्दा अझ बढी आवश्यक छ : फ्रान्सेली राष्ट्रपति म्याक्रोन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594054/ukraines-defense-is-more-necessary-than-ever-french-president-macron",
+      "published_at": "2026-09-23T01:20:52+05:45",
+      "flash": false
+    },
+    {
+      "title": "जापान र अमेरिकाबिचको सम्बन्ध निरन्तर अघि बढिरहेको छ : प्रधानमन्त्री ताकाइची",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594052/japan-us-relations-continue-to-advance-says-prime-minister-takaichi",
+      "published_at": "2026-09-23T01:04:42+05:45",
+      "flash": false
+    },
     {
       "title": "सल्यानमा स्क्रबटाइफसको प्रकोप नियन्त्रण गर्न मुख्यमन्त्रीको निर्देशन",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594047/chief-ministers-instructions-to-control-the-outbreak-of-scrub-typhus-in-salyan",
       "published_at": "2026-09-22T23:30:58+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "दमकमा बस दुर्घटना हुँदा छ जना घाइते",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594045/six-injured-in-bus-accident-in-damak",
       "published_at": "2026-09-22T23:01:12+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "‘फुर्केखोला’मा पुल निर्माण गर्न धादिङका उद्योगी–व्यवसायीको माग",
@@ -30,34 +58,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594038/provincial-government-provides-relief-materials-to-disaster-affected-people-in-darchula",
       "published_at": "2026-09-22T21:55:26+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी प्रभावितका लागि तनाव व्यवस्थापन शिविर सञ्चालन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594037/stress-management-camp-held-for-flood-victims",
-      "published_at": "2026-09-22T21:52:14+05:45",
-      "flash": false
-    },
-    {
-      "title": "स्वास्थ्यमन्त्रीले गरे भरतपुर आँखा अस्पतालको अनुगमन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594029/minister-tamang-inspects-bharatpur-eye-hospital",
-      "published_at": "2026-09-22T21:05:40+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीमा बेपत्ता सिपाही कुमालको २७ दिनपछि अन्त्येष्टि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594002/funeral-of-missing-soldier-kumal-in-bhotekoshi-flood-held-27-days-later",
-      "published_at": "2026-09-22T19:41:55+05:45",
-      "flash": false
-    },
-    {
-      "title": "१. प्रधानमन्त्री बालेन शाह अमेरिका प्रस्थान, तस्बिरहरू",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593991/prime-minister-balen-shah-departs-for-america-photos",
-      "published_at": "2026-09-22T19:05:23+05:45",
       "flash": false
     }
   ],
@@ -77,7 +77,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
+      "flash": 1,
       "recent": 8
     },
     "Kathmandu Post": {

@@ -28,7 +28,7 @@ jobs:
       - name: Apply native patches through v0.8.74
         run: python3 floodsafe-android-app/run_patch_native_v0874.py
 
-      - name: Repair v0.8.74 district normalizer compile regression
+      - name: Verify v0.8.74 district normalizer compile repair
         shell: bash
         run: |
           set -euo pipefail
@@ -38,16 +38,15 @@ jobs:
           p=Path('floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java')
           s=p.read_text(encoding='utf-8')
           bad='district=v848DistrictName(a,o,district); // V0874_NORMALIZE_DISTRICT_NAME'
-          m=re.search(r'parseStation\s*\(\s*JSONObject\s+([A-Za-z_]\w*)',s)
-          if not m: raise SystemExit('parseStation JSONObject parameter not found')
-          row=m.group(1)
-          good=f'district=v848DistrictName(num({row},"latitude","lat","stationLatitude","station_latitude"),num({row},"longitude","lon","lng","stationLongitude","station_longitude"),district); // V0874_NORMALIZE_DISTRICT_NAME'
           if bad in s:
-              s=s.replace(bad,good,1)
-              p.write_text(s,encoding='utf-8')
-          if bad in s or good not in s:
-              raise SystemExit('v0.8.74 district normalizer compile repair did not apply')
-          print('V0874_DISTRICT_NORMALIZER_COMPILE_REPAIR PASS row=',row)
+              raise SystemExit('stale a/o district normalizer regression still present')
+          m=re.search(r'(?m)^\s*district\s*=\s*v848DistrictName\(([^\n]+)\);\s*// V0874_NORMALIZE_DISTRICT_NAME\s*$',s)
+          if not m:
+              raise SystemExit('v0.8.74 district normalizer marker/call missing after patch chain')
+          args=m.group(1)
+          if args.replace(' ','') in ('a,o,district','o,a,district'):
+              raise SystemExit('v0.8.74 district normalizer still uses stale local coordinates')
+          print('V0874_DISTRICT_NORMALIZER_COMPILE_REPAIR PASS args=',args)
           PY
 
       - name: Verify v0.8.74 regression-only contract

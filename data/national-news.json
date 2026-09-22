@@ -1,28 +1,77 @@
 {
-  "generated_at": "2026-09-22T05:44:38.783272+05:45",
-  "updated_at_npt": "22 Sep 05:44 NPT",
+  "generated_at": "2026-09-22T10:26:56.255543+05:45",
+  "updated_at_npt": "22 Sep 10:26 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "सेखुवाका नागरिकलाई गाउँमै स्वास्थ्य सेवा",
+      "title": "स्वास्थ्य सेवा विभागको निमित्त महानिर्देशकमा डा. कृष्णप्रसाद पौडेल नियुक्त",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593808/health-services-in-the-village-for-the-citizens-of-sekhuwa",
-      "published_at": "2026-09-22T01:48:43+05:45",
+      "url": "https://www.ratopati.com/story/593844/dr-krishna-prasad-poudel-appointed-as-acting-director-general-of-the-department-of-health-services",
+      "published_at": "2026-09-22T09:22:57+05:45",
       "flash": false
     },
     {
-      "title": "स्याउ बोकेको ट्रक दुर्घटना",
+      "title": "नयाँपुल–बिरेठाँटी–घान्द्रुक सडकमा पूर्ण रुपमा यातायात सेवा सञ्चालन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/593805/apple-truck-accident",
-      "published_at": "2026-09-22T00:42:26+05:45",
+      "url": "https://www.ratopati.com/story/593841/full-transport-service-operation-on-nayapul-birethanti-ghandruk-road",
+      "published_at": "2026-09-22T09:10:52+05:45",
+      "flash": false
+    },
+    {
+      "title": "दसैँको मुखमा बाढीपीडितको पुनर्वास अन्योलमा, सरकार जग्गा खोज्दै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593839/flood-victims-rehabilitation-in-limbo-ahead-of-dashain-government-looking-for-land",
+      "published_at": "2026-09-22T08:58:03+05:45",
+      "flash": false
+    },
+    {
+      "title": "कर्णाली करिडोर : छारेभिरको पहिरो पन्छाउन सकस",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593835/karnali-corridor-efforts-to-clear-chharebhir-landslide",
+      "published_at": "2026-09-22T08:18:22+05:45",
+      "flash": false
+    },
+    {
+      "title": "प्रधानमन्त्री शाह आज अमेरिका प्रस्थान गर्दै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593833/prime-minister-shah-leaving-for-the-us-today",
+      "published_at": "2026-09-22T08:12:23+05:45",
+      "flash": false
+    },
+    {
+      "title": "रसुवा बाढीपछि चार तुइन सञ्चालनमा, ३३ झोलुङ्गे पुल पुनर्निर्माणको तयारी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593831/four-bridges-operational-after-rasuwa-flood-preparations-for-reconstruction-of-33-suspension-bridges",
+      "published_at": "2026-09-22T08:10:05+05:45",
+      "flash": false
+    },
+    {
+      "title": "राष्ट्रिय मापदण्ड र अदालतको आदेश लत्याउँदै कोशी प्रदेश",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593830/koshi-province-ignoring-national-standards-and-court-orders",
+      "published_at": "2026-09-22T07:52:31+05:45",
+      "flash": false
+    },
+    {
+      "title": "निलम्बित मेयर यादवको पुनरावेदन सर्वोच्चद्वारा अस्वीकार, ३ वर्ष कैद र १५ लाख जरिवाना सदर",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593829/supreme-court-rejects-suspended-mayor-yadavs-appeal-upholds-3-year-prison-sentence-and-fine-of-rs-15-million",
+      "published_at": "2026-09-22T07:46:19+05:45",
+      "flash": false
+    },
+    {
+      "title": "७. देशभर मनसुनी र पश्चिमी वायुको दोहोरो प्रभाव, आज यी पाँच प्रदेशमा भारी वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/593818/dual-effect-of-monsoon-and-westerly-winds-across-the-country-heavy-rain-likely-in-these-five-provinces-today",
+      "published_at": "2026-09-22T06:12:36+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     },
@@ -36,7 +85,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 2
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,
@@ -45,8 +94,8 @@
       "recent": 0
     },
     "The Rising Nepal": {
-      "ok": false,
-      "error": "HTTPSConnectionPool(host='risingnepaldaily.com', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCert",
+      "ok": true,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     }

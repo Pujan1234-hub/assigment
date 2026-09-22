@@ -101,8 +101,20 @@ if pe<0:pe=m.find('    private RainDot readRain(',ps)
 if pe<0:raise SystemExit('v0875 particleTick end missing')
 block=m[ps:pe]
 block=re.sub(r'main\.postDelayed\(this,\s*\d+L\);','main.postDelayed(this,360L);',block)
-block=re.sub(r'int\s+n\s*=\s*Math\.min\(\s*\d+\s*,\s*rivers\.size\(\)\s*\)\s*;',
-             'int n = Math.min(24, rivers.size()); // V0875_LIGHT_PARTICLES',block,count=1)
+# Generated baselines have used both a literal and a variable/expression as Math.min's
+# first argument. Clamp the actual particle loop count regardless of that harmless shape.
+cap_patterns=[
+    r'(?:(?:final)\s+)?int\s+n\s*=\s*Math\.min\(\s*[^,\n;]+\s*,\s*rivers\.size\(\)\s*\)\s*;',
+    r'(?:(?:final)\s+)?int\s+n\s*=\s*Math\.min\(\s*rivers\.size\(\)\s*,\s*[^)\n;]+\s*\)\s*;'
+]
+for pat in cap_patterns:
+    block2,nsub=re.subn(pat,'int n = Math.min(24, rivers.size()); // V0875_LIGHT_PARTICLES',block,count=1)
+    if nsub:
+        block=block2
+        break
+if 'V0875_LIGHT_PARTICLES' not in block:
+    near=re.search(r'(?m)^.*\bint\s+n\b.*$',block)
+    raise SystemExit('v0875 particle cap patch failed; n-line='+((near.group(0).strip()) if near else 'missing'))
 guard=re.search(r'if\s*\(\s*!animationRunning\s*\|\|\s*!styleReady\s*\|\|\s*style\s*==\s*null\s*\)\s*return\s*;',block)
 if not guard:raise SystemExit('v0875 particle guard missing')
 if 'V0875_TOUCH_SKIPS_ANIMATION_WORK' not in block:

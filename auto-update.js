@@ -122,6 +122,7 @@
   addPolish();
   load('./portfolio-netsathi.js?v=20260920-netsathi-v2','pjio-netsathi-v2');
   load('./assets/portfolio/netsathi-photo-fix.js?v=20260921-real-photos-v1','pjio-netsathi-photo-fix-v1');
+  load('./assets/portfolio/netsathi-real-gallery-compact.js?v=20260922-compact-v1','pjio-netsathi-compact-v1');
   refreshProjectStatus();
   window.addEventListener('focus',check);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden) check();});

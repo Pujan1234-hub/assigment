@@ -89,3 +89,5 @@ map_path.write_text(m,encoding='utf-8')
 
 subprocess.run([sys.executable,str(root/'patch_native_v0874_nepal_fixed_map_district.py')],check=True)
 print('FloodSafe v0.8.74 complete: v0.8.73 realtime source chain + Nepal-only map/district regression repair PASS')
+
+# V0874_CI_RECHECK_20260922

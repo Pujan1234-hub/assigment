@@ -1,0 +1,145 @@
+name: Build FloodSafe v0.8.77 Full Station Observation Parity APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0877.yml'
+      - 'floodsafe-android-app/run_patch_native_v0877.py'
+      - 'floodsafe-android-app/patch_native_v0877_full_station_observation_parity.py'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply native patches through v0.8.77
+        run: python3 floodsafe-android-app/run_patch_native_v0877.py
+
+      - name: Verify v0.8.77 source parity contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          L='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java'
+          G='floodsafe-android-app/app/build.gradle'
+
+          grep -Fq 'V0877_STABLE_STATION_ID' "$A"
+          grep -Fq 'V0877_STATION_NAME_BEFORE_RIVER' "$A"
+          grep -Fq 'V0877_BIPAD_RIVER_AND_TRIMED_UNION' "$A"
+          grep -Fq 'river/?limit=5000' "$A"
+          grep -Fq 'river-trimed/?limit=5000' "$A"
+          grep -Fq 'river-stations/?latest=true&limit=5000' "$A"
+          grep -Fq 'flood-station/?limit=5000' "$A"
+          grep -Fq 'streamflow/?limit=5000' "$A"
+          grep -Fq 'station-location/?limit=5000' "$A"
+          grep -Fq 'V0877_FULL_284_INVENTORY_MAX_OFFICIAL_OBSERVATIONS' "$A"
+          grep -Fq 'V0877_HEADER_NO_FALSE_OFFLINE' "$A"
+          grep -Fq 'V0877_GAUGE_COVERAGE_UI' "$A"
+          grep -Fq 'V0877_FULL_STATION_RIVER_LAKE_DETAIL' "$A"
+          grep -Fq 'V0877_LAKE_OUTLET_METADATA' "$A"
+          grep -Fq 'V0877_BACKGROUND_RIVER_FEEDS' "$L"
+          grep -Fq 'river/?limit=5000' "$L"
+          grep -Fq 'river-trimed/?limit=5000' "$L"
+
+          # Keep v0.8.76 safety truth: only <=20m observations are LIVE/risk-capable.
+          grep -Fq 'RIVER_FRESH_MS=20L*60L*1000L' "$A"
+          grep -Fq 'V0876_STALE_NEVER_DRIVES_RISK' "$M"
+          grep -Fq '!x.fresh' "$M"
+          grep -Fq 'main.postDelayed(this,1_000L)' "$A"
+          grep -Fq 'versionCode 97' "$G"
+          grep -Fq "versionName '0.8.77'" "$G"
+          ! grep -Fq 'android.webkit.WebView' "$A"
+          ! grep -Fq 'android.webkit.WebView' "$M"
+          echo 'V0877_SOURCE_PARITY_CONTRACT PASS'
+
+      - name: Probe official BIPAD hydrology coverage
+        continue-on-error: true
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request
+          base='https://bipadportal.gov.np/api/v1/'
+          for path in ['river-stations/?limit=5000','river/?limit=5000','river-trimed/?limit=5000','flood-station/?limit=5000','streamflow/?limit=5000','station-location/?limit=5000']:
+              try:
+                  req=urllib.request.Request(base+path,headers={'User-Agent':'FloodSafe-Nepal/0.8.77','Accept':'application/json'})
+                  with urllib.request.urlopen(req,timeout=30) as r:
+                      data=json.load(r)
+                  if isinstance(data,dict):
+                      rows=data.get('results',data.get('data',data.get('features',[])))
+                      count=data.get('count',len(rows) if isinstance(rows,list) else '?')
+                  elif isinstance(data,list):
+                      rows=data;count=len(rows)
+                  else: rows=[];count='?'
+                  sample=rows[0] if isinstance(rows,list) and rows else None
+                  keys=sorted(sample.keys())[:40] if isinstance(sample,dict) else []
+                  print('BIPAD_PROBE',path,'count=',count,'sample_keys=',keys)
+              except Exception as e:
+                  print('BIPAD_PROBE_ERROR',path,repr(e))
+          PY
+
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Rebuild strictly Nepal-clipped river display assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+
+      - name: Verify 77 district names in bundled GeoJSON
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          hits=list(Path('floodsafe-android-app/app/build').rglob('floodsafe-nepal/v24/nepal-districts.geojson'))
+          if not hits: raise SystemExit('district asset missing')
+          j=json.loads(hits[0].read_text(encoding='utf-8'))
+          names=sorted({str((f.get('properties') or {}).get('nameEn','')).strip() for f in j.get('features',[]) if str((f.get('properties') or {}).get('nameEn','')).strip()})
+          if len(names)!=77: raise SystemExit(f'expected 77 district names, got {len(names)}')
+          if any(x.isdigit() for x in names): raise SystemExit('numeric district display name found')
+          print('V0877_DISTRICT_77 PASS',len(names))
+          PY
+
+      - name: Unit test and build native APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify APK contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-major-v0842.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-medium-v0842.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          cp "$APK" FloodSafe-Nepal-v0.8.77-FULL-STATION-PARITY.apk
+          sha256sum FloodSafe-Nepal-v0.8.77-FULL-STATION-PARITY.apk > FloodSafe-Nepal-v0.8.77-SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0877-FULL-STATION-PARITY-APK
+          path: |
+            FloodSafe-Nepal-v0.8.77-FULL-STATION-PARITY.apk
+            FloodSafe-Nepal-v0.8.77-SHA256.txt
+          retention-days: 14

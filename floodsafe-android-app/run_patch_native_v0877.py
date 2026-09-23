@@ -16,3 +16,5 @@ if old not in code:
 code=code.replace(old,new,1)
 exec(compile(code,str(p),'exec'),{'__file__':str(p),'__name__':'__main__'})
 print('FloodSafe v0.8.77 complete: v0.8.76 truth + full BIPAD river/river-trimed observation parity + stable station identity + honest inventory/live/latest status')
+
+# Canonical v0.8.77 parity build trigger after low-end patch compatibility repair.

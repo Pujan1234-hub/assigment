@@ -56,6 +56,7 @@ jobs:
           python3 floodsafe-android-app/patch_low_end_sathi.py
           python3 floodsafe-android-app/patch_pjbuilts_intro.py
           python3 floodsafe-android-app/patch_native_v0885_release.py
+          python3 floodsafe-android-app/patch_native_v0885_postfix.py
           grep -Fq 'V0885_NATIVE_LAUNCHER' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
           grep -Fq 'V0885_MAPLIBRE_NATIVE' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
           grep -Fq 'V0885_SAME_RIVER_GAUGE_ONLY' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java

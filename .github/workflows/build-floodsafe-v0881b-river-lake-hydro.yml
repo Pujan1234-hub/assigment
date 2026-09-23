@@ -1,0 +1,118 @@
+name: Build FloodSafe v0.8.81b River Lake Hydro APK
+
+on:
+  push:
+    branches: [ fix/floodsafe-full-river-detail-v0879 ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0881b-river-lake-hydro.yml'
+      - 'floodsafe-android-app/run_patch_native_v0881.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply known-good v0.8.77 baseline
+        run: python3 floodsafe-android-app/run_patch_native_v0877.py
+      - name: Apply v0.8.78 station resilience
+        run: python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+      - name: Apply v0.8.79 complete river geometry
+        run: python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+      - name: Apply v0.8.80 viewport same-river matching
+        run: python3 floodsafe-android-app/patch_native_v0880_viewport_same_river_detail.py
+      - name: Apply corrected v0.8.81 river lake hydro detail
+        run: python3 floodsafe-android-app/run_patch_native_v0881.py
+
+      - name: Verify detail and safety contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0881_RIVER_FIRST_CLASS_DETAIL' "$M"
+          grep -Fq 'V0881_NO_STATION_REDIRECT' "$M"
+          grep -Fq 'V0881_HYDRO_WATERBODY_GEO' "$M"
+          grep -Fq 'V0881_WATERBODY_DETAIL_POPUP' "$M"
+          grep -Fq 'V0881_WATERBODY_TAP_PRIORITY' "$M"
+          grep -Fq 'V0880_VISIBLE_REGION_ALL_TILES' "$M"
+          grep -Fq 'V0880_EXACT_SAME_RIVER_ONLY' "$M"
+          grep -Fq 'V0877_CLEAN_FRESH_ONLY_LIVE' "$A"
+          ! grep -Fq 'android.webkit.WebView' "$M"
+          grep -Fq 'versionCode 101' "$G"
+          grep -Fq "versionName '0.8.81'" "$G"
+          echo 'V0881B_CONTRACT PASS'
+
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Rebuild all Nepal river assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+
+      - name: Build native APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify and stage APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          cp "$APK" FloodSafe-Nepal-v0.8.81-RIVER-LAKE-HYDRO.apk
+          sha256sum FloodSafe-Nepal-v0.8.81-RIVER-LAKE-HYDRO.apk | tee FloodSafe-Nepal-v0.8.81-SHA256.txt
+          cat > V0881-FIELD-TEST-NOTES.txt <<'EOF'
+          FloodSafe Nepal v0.8.81 corrected build
+          - river taps open first-class river details
+          - exact same-river official gauge details shown when safely matched
+          - hydrology sites have a dedicated map layer
+          - lake/reservoir/dam/outlet sites have dedicated status markers and detail popups
+          - no-current-reading sites remain visible without fabricated live values
+          - fresh-only LIVE truth and existing emergency safety behavior remain unchanged
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0881b-RIVER-LAKE-HYDRO
+          path: |
+            FloodSafe-Nepal-v0.8.81-RIVER-LAKE-HYDRO.apk
+            FloodSafe-Nepal-v0.8.81-SHA256.txt
+            V0881-FIELD-TEST-NOTES.txt
+          retention-days: 14
+
+      - name: Publish direct-download prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='floodsafe-v0.8.81-river-lake-hydro'
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.8.81 — River Lake Hydro Details' --prerelease --notes-file V0881-FIELD-TEST-NOTES.txt
+          fi
+          gh release upload "$TAG" FloodSafe-Nepal-v0.8.81-RIVER-LAKE-HYDRO.apk FloodSafe-Nepal-v0.8.81-SHA256.txt V0881-FIELD-TEST-NOTES.txt --repo "$GITHUB_REPOSITORY" --clobber

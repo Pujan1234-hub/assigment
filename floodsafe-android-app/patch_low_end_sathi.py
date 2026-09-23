@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 ROOT = Path('floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25')
 
@@ -60,17 +61,40 @@ text = text.replace('-webkit-backdrop-filter:blur(10px)', '-webkit-backdrop-filt
 write(p, text)
 
 # Pause heavy official-river network/merge work while the user is actively typing.
+# v0.8.77 changed some runtime function bodies/signatures, so patch by function
+# signature rather than requiring the old exact body. This is a performance
+# optimization only and must never block a release if the runtime is refactored.
 p, text = read('trusted-river-runtime-v3.js')
-old_delay = "function nextDelay(){if(document.hidden)return POLL_HIDDEN;"
-new_delay = "function nextDelay(){if(window.__fsSathiTyping)return 60000;if(document.hidden)return POLL_HIDDEN;"
-if old_delay in text:
-    text = text.replace(old_delay, new_delay, 1)
-old_refresh = "async function refresh(){if(busy)return;busy=true;"
-new_refresh = "async function refresh(){if(window.__fsSathiTyping){schedule(60000);return}if(busy)return;busy=true;"
-if old_refresh in text:
-    text = text.replace(old_refresh, new_refresh, 1)
-if 'window.__fsSathiTyping)return 60000' not in text or 'window.__fsSathiTyping){schedule(60000);return}' not in text:
-    raise SystemExit('river typing throttle patch failed')
+delay_guard = "if(window.__fsSathiTyping)return 60000;"
+refresh_guard = "if(window.__fsSathiTyping){schedule(60000);return}"
+
+if delay_guard not in text:
+    text, delay_count = re.subn(
+        r'(function\s+nextDelay\s*\([^)]*\)\s*\{)',
+        lambda m: m.group(1) + delay_guard,
+        text,
+        count=1,
+    )
+    if delay_count == 0:
+        print('Low-end Android: nextDelay runtime signature changed; optional typing delay guard skipped')
+
+if refresh_guard not in text:
+    text, refresh_count = re.subn(
+        r'(async\s+function\s+refresh\s*\([^)]*\)\s*\{)',
+        lambda m: m.group(1) + refresh_guard,
+        text,
+        count=1,
+    )
+    if refresh_count == 0:
+        # Some newer bundles drop `async` or expose refresh as a plain function.
+        text, refresh_count = re.subn(
+            r'(function\s+refresh\s*\([^)]*\)\s*\{)',
+            lambda m: m.group(1) + refresh_guard,
+            text,
+            count=1,
+        )
+    if refresh_count == 0:
+        print('Low-end Android: refresh runtime signature changed; optional typing refresh guard skipped')
 write(p, text)
 
 # Startup cache does not need to scan/write DOM every 1.2s forever.

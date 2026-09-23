@@ -1,0 +1,137 @@
+name: Build FloodSafe v0.8.78 Government Field Test APK
+
+on:
+  push:
+    branches: [ fix/floodsafe-station-retention-20260923 ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0878-fieldtest.yml'
+      - 'floodsafe-android-app/patch_native_v0878_station_resilience.py'
+      - 'floodsafe-nepal/v25/trusted-river-runtime-v3.js'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply known-good v0.8.77 baseline
+        run: python3 floodsafe-android-app/run_patch_native_v0877.py
+
+      - name: Apply v0.8.78 station resilience hotfix
+        run: python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+
+      - name: Verify v0.8.78 safety contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0878_STATION_CATALOG_FALLBACK' "$A"
+          grep -Fq 'V0878_STATION_CATALOG_NEVER_EMPTY' "$A"
+          grep -Fq 'V0878_LAST_GOOD_OBSERVATION_CACHE' "$A"
+          grep -Fq 'V0878_LAST_GOOD_OBSERVATION_PERSIST' "$A"
+          grep -Fq 'V0878_NO_READING_FLICKER' "$A"
+          grep -Fq 'V0878_METADATA_NEVER_LIVE' "$A"
+          grep -Fq 'V0878_EXPLICIT_MATCH_REQUIRED' "$A"
+          grep -Fq 'V0878_RESILIENT_STATION_REFRESH' "$A"
+          grep -Fq 'V0877_CLEAN_FULL_INVENTORY_TRUTH' "$A" || true
+          grep -Fq 'versionCode 98' "$G"
+          grep -Fq "versionName '0.8.78'" "$G"
+          ! grep -Fq 'android.webkit.WebView' "$A"
+          echo 'V0878_FIELD_TEST_CONTRACT PASS'
+
+      - name: Probe official BIPAD/DHM feeds
+        continue-on-error: true
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request
+          urls=[
+            'https://bipadportal.gov.np/api/v1/river-stations/?limit=5000',
+            'https://bipadportal.gov.np/api/v1/river/?limit=5000',
+            'https://bipadportal.gov.np/api/v1/river-trimed/?limit=5000',
+            'https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=5000',
+          ]
+          for u in urls:
+              try:
+                  req=urllib.request.Request(u,headers={'User-Agent':'FloodSafe-Nepal/0.8.78','Accept':'application/json'})
+                  with urllib.request.urlopen(req,timeout=30) as r:data=json.load(r)
+                  rows=data.get('results',data.get('data',[])) if isinstance(data,dict) else data
+                  print('OFFICIAL_PROBE',u,'rows=',len(rows) if isinstance(rows,list) else '?')
+              except Exception as e:print('OFFICIAL_PROBE_ERROR',u,repr(e))
+          PY
+
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Rebuild Nepal river assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+
+      - name: Verify 77 districts
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          hits=list(Path('floodsafe-android-app/app/build').rglob('floodsafe-nepal/v24/nepal-districts.geojson'))
+          if not hits: raise SystemExit('district asset missing')
+          j=json.loads(hits[0].read_text(encoding='utf-8'))
+          names={str((f.get('properties') or {}).get('nameEn','')).strip() for f in j.get('features',[]) if str((f.get('properties') or {}).get('nameEn','')).strip()}
+          if len(names)!=77: raise SystemExit(f'expected 77 districts, got {len(names)}')
+          print('DISTRICT_77 PASS')
+          PY
+
+      - name: Unit test and build native APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify and stage field-test APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/floodsafe-core.json'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-major-v0842.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          cp "$APK" FloodSafe-Nepal-v0.8.78-GOV-FIELD-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.8.78-GOV-FIELD-TEST.apk | tee FloodSafe-Nepal-v0.8.78-SHA256.txt
+          cat > GOV-FIELD-TEST-NOTES.txt <<'EOF'
+          FloodSafe Nepal v0.8.78 — field-test build
+          Purpose: Nepal river/flood monitoring evaluation under real rainfall conditions.
+          Fixes in this build:
+          - official station inventory remains visible during transient/partial upstream failures
+          - last verified official reading is retained with its original source time
+          - cached/stale readings never become LIVE risk unless within the configured freshness window
+          - metadata-only stations never fabricate water-level readings
+          - 77-district map assets remain bundled
+          This APK is for field testing/evaluation and is not a substitute for official emergency instructions.
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0878-GOV-FIELD-TEST
+          path: |
+            FloodSafe-Nepal-v0.8.78-GOV-FIELD-TEST.apk
+            FloodSafe-Nepal-v0.8.78-SHA256.txt
+            GOV-FIELD-TEST-NOTES.txt
+          retention-days: 14

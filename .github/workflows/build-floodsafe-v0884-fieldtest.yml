@@ -1,4 +1,4 @@
-name: Build FloodSafe v0.8.84 Field Test
+name: Build FloodSafe v0.8.85 Native Field Test
 
 on:
   push:
@@ -46,22 +46,26 @@ jobs:
           require 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
           test -s floodsafe-android-app/android-web/all-stations-realtime-v1.js
           test -s floodsafe-android-app/ci_reopen_smoke.sh
-          echo 'v0.8.84 current source safety gate PASS'
+          echo 'pre-native safety gate PASS'
 
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
 
-      - name: Apply compatible presentation patches
+      - name: Apply presentation and native v0.8.85 patch
         run: |
           python3 floodsafe-android-app/patch_low_end_sathi.py
-          # Current river bundle already contains the newer adaptive river renderer.
-          # Do not run the obsolete patch_low_end_map.py marker rewrite against it.
           python3 floodsafe-android-app/patch_pjbuilts_intro.py
+          python3 floodsafe-android-app/patch_native_v0885_release.py
+          grep -Fq 'V0885_NATIVE_LAUNCHER' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
+          grep -Fq 'V0885_MAPLIBRE_NATIVE' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          grep -Fq 'V0885_SAME_RIVER_GAUGE_ONLY' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -Fq "versionName '0.8.85'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 15' floodsafe-android-app/app/build.gradle
 
       - name: Unit tests and APK build
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
 
-      - name: Verify APK
+      - name: Verify native APK
         shell: bash
         run: |
           set -euo pipefail
@@ -69,15 +73,15 @@ jobs:
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
-          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/index.html'
-          cp "$APK" FloodSafe-Nepal-v0.8.84-RIVER-DETAIL-OFFICIAL-PARITY-FIELD-TEST.apk
-          sha256sum FloodSafe-Nepal-v0.8.84-RIVER-DETAIL-OFFICIAL-PARITY-FIELD-TEST.apk | tee FloodSafe-Nepal-v0.8.84-SHA256.txt
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-snapshot.json'
+          cp "$APK" FloodSafe-Nepal-v0.8.85-NATIVE-MAPLIBRE-RIVER-DETAIL-FIELD-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.8.85-NATIVE-MAPLIBRE-RIVER-DETAIL-FIELD-TEST.apk | tee FloodSafe-Nepal-v0.8.85-SHA256.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0884-RIVER-DETAIL-OFFICIAL-PARITY-FIELD-TEST
+          name: FloodSafe-Nepal-v0885-NATIVE-MAPLIBRE-RIVER-DETAIL-FIELD-TEST
           path: |
-            FloodSafe-Nepal-v0.8.84-RIVER-DETAIL-OFFICIAL-PARITY-FIELD-TEST.apk
-            FloodSafe-Nepal-v0.8.84-SHA256.txt
+            FloodSafe-Nepal-v0.8.85-NATIVE-MAPLIBRE-RIVER-DETAIL-FIELD-TEST.apk
+            FloodSafe-Nepal-v0.8.85-SHA256.txt
           if-no-files-found: error
           retention-days: 14

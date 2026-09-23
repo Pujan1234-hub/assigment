@@ -22,5 +22,20 @@ if old_headline not in code:
     raise SystemExit('v0.8.77 original feedFresh matcher anchor missing')
 code=code.replace(old_headline,new_headline,1)
 
+# The shared strDeep helper accepts (row, fields, keys...). v0.8.77 added three
+# nested-object calls using the old two-argument shape; normalize them before exec.
+compile_repairs={
+    'strDeep(s,"index","id","stationIndex","station_index","stationId","station_id","code")':
+        'strDeep(s,s.optJSONObject("fields"),"index","id","stationIndex","station_index","stationId","station_id","code")',
+    'strDeep(s,"station_name","stationName","name","title","location")':
+        'strDeep(s,s.optJSONObject("fields"),"station_name","stationName","name","title","location")',
+    'strDeep((JSONObject)rv,"name","title","river_name","riverName")':
+        'strDeep((JSONObject)rv,((JSONObject)rv).optJSONObject("fields"),"name","title","river_name","riverName")',
+}
+for bad,good in compile_repairs.items():
+    if bad not in code:
+        raise SystemExit('v0.8.77 nested strDeep compile anchor missing: '+bad)
+    code=code.replace(bad,good,1)
+
 exec(compile(code,str(p),'exec'),{'__file__':str(p),'__name__':'__main__'})
 print('FloodSafe v0.8.77 complete: v0.8.76 truth + full BIPAD river/river-trimed observation parity + stable station identity + honest inventory/live/latest status')

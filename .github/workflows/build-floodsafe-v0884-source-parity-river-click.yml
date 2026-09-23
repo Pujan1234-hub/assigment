@@ -1,0 +1,71 @@
+name: Build FloodSafe v0.8.84 Source Parity River Click APK
+on:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0884-source-parity-river-click.yml'
+      - 'floodsafe-android-app/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.11.1'}
+      - name: Apply complete corrected native chain
+        run: |
+          python3 floodsafe-android-app/run_patch_native_v0877.py
+          python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+          python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0880_viewport_same_river_detail.py
+          python3 floodsafe-android-app/run_patch_native_v0881.py
+          python3 floodsafe-android-app/patch_native_v0883_map_camera_river_tap.py
+          python3 floodsafe-android-app/patch_native_v0884_source_parity_river_click.py
+      - name: Verify source parity contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          grep -Fq 'V0884_SOURCE_TIMESTAMP_PARITY_NO_ARBITRARY_20M_GATE' "$A"
+          grep -Fq 'V0884_RIVER_GEOMETRY_CLICK_FIRST' "$M"
+          grep -Fq 'V0884_FULL_OFFICIAL_CATALOG_RETAINED' "$M"
+          grep -Fq 'V0881_WATERBODY_DETAIL_POPUP' "$M"
+          grep -Fq 'V0881_RIVER_FIRST_CLASS_DETAIL' "$M"
+          ! grep -Fq 'LIVE (≤20m)' "$A"
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+      - name: Rebuild Nepal river assets
+        run: |
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+      - name: Test and build APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          cp "$APK" FloodSafe-Nepal-v0.8.84-SOURCE-PARITY-RIVER-CLICK-FIELD-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.8.84-SOURCE-PARITY-RIVER-CLICK-FIELD-TEST.apk > FloodSafe-Nepal-v0.8.84-SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0884-SOURCE-PARITY-RIVER-CLICK-FIELD-TEST
+          path: |
+            FloodSafe-Nepal-v0.8.84-SOURCE-PARITY-RIVER-CLICK-FIELD-TEST.apk
+            FloodSafe-Nepal-v0.8.84-SHA256.txt
+          retention-days: 14

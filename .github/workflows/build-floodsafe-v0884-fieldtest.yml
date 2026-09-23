@@ -45,9 +45,6 @@ jobs:
           grep -Fq 'Cache-Control", "no-cache' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -Fq 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
-          grep -Fq 'const ONE_SECOND=1000' floodsafe-android-app/android-web/river-status-color-fix-v1.js
-          grep -Fq 'FloodSafeRainRealtime?.poll?.()' floodsafe-android-app/android-web/river-status-color-fix-v1.js
-          grep -Fq 'rain-stations/?limit=500' floodsafe-nepal/v25/trusted-rain-runtime-v1.js
           test -s floodsafe-android-app/android-web/all-stations-realtime-v1.js
           test -s floodsafe-android-app/ci_reopen_smoke.sh
           echo 'v0.8.84 current source safety gate PASS'

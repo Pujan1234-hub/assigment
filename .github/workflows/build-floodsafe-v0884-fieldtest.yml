@@ -44,17 +44,18 @@ jobs:
           require 'LOOKAHEAD_MINUTES = 35' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
           require 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
           require 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
-          test -s floodsafe-android-app/android-web/all-stations-realtime-v1.js || { echo 'Missing all-stations realtime asset'; exit 1; }
-          test -s floodsafe-android-app/ci_reopen_smoke.sh || { echo 'Missing reopen smoke test'; exit 1; }
+          test -s floodsafe-android-app/android-web/all-stations-realtime-v1.js
+          test -s floodsafe-android-app/ci_reopen_smoke.sh
           echo 'v0.8.84 current source safety gate PASS'
 
       - name: Bundle verified Android assets
         run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
 
-      - name: Optimize SATHI and map
+      - name: Apply compatible presentation patches
         run: |
           python3 floodsafe-android-app/patch_low_end_sathi.py
-          python3 floodsafe-android-app/patch_low_end_map.py
+          # Current river bundle already contains the newer adaptive river renderer.
+          # Do not run the obsolete patch_low_end_map.py marker rewrite against it.
           python3 floodsafe-android-app/patch_pjbuilts_intro.py
 
       - name: Unit tests and APK build

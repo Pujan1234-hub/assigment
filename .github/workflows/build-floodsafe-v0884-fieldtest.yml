@@ -1,0 +1,86 @@
+name: Build FloodSafe v0.8.84 Field Test
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0884-fieldtest.yml'
+      - 'floodsafe-android-app/**'
+      - 'floodsafe-nepal/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply safety and lifecycle patches
+        run: |
+          python3 floodsafe-android-app/patch_webview_crash.py
+          python3 floodsafe-android-app/patch_auto_alerts.py
+          python3 floodsafe-android-app/patch_river_waterlevel.py
+
+      - name: Current source safety gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "versionName '0.7.0'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 14' floodsafe-android-app/app/build.gradle
+          grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
+          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'LOOKAHEAD_MINUTES = 35' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'Cache-Control", "no-cache' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          grep -Fq 'const ONE_SECOND=1000' floodsafe-android-app/android-web/river-status-color-fix-v1.js
+          grep -Fq 'FloodSafeRainRealtime?.poll?.()' floodsafe-android-app/android-web/river-status-color-fix-v1.js
+          grep -Fq 'rain-stations/?limit=500' floodsafe-nepal/v25/trusted-rain-runtime-v1.js
+          test -s floodsafe-android-app/android-web/all-stations-realtime-v1.js
+          test -s floodsafe-android-app/ci_reopen_smoke.sh
+          echo 'v0.8.84 current source safety gate PASS'
+
+      - name: Bundle verified Android assets
+        run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
+
+      - name: Optimize SATHI and map
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+          python3 floodsafe-android-app/patch_pjbuilts_intro.py
+
+      - name: Unit tests and APK build
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/index.html'
+          cp "$APK" FloodSafe-Nepal-v0.8.84-RIVER-DETAIL-OFFICIAL-PARITY-FIELD-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.8.84-RIVER-DETAIL-OFFICIAL-PARITY-FIELD-TEST.apk | tee FloodSafe-Nepal-v0.8.84-SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0884-RIVER-DETAIL-OFFICIAL-PARITY-FIELD-TEST
+          path: |
+            FloodSafe-Nepal-v0.8.84-RIVER-DETAIL-OFFICIAL-PARITY-FIELD-TEST.apk
+            FloodSafe-Nepal-v0.8.84-SHA256.txt
+          if-no-files-found: error
+          retention-days: 14

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-23T16:55:48.498482Z",
+  "generated_at": "2026-09-23T20:05:22.219068Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,7 +12,7 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
@@ -23,12 +23,5 @@
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "मौसमी जोखिम: असोज ८ र ९ गते पालिकाको समन्वयमा विद्यालय बन्द गर्न निर्देशन",
-      "url": "https://www.ronbpost.com/2026/09/20255/",
-      "published_at": "2026-09-23T16:52:26Z",
-      "source": "RONB Post"
-    }
-  ]
+  "items": []
 }

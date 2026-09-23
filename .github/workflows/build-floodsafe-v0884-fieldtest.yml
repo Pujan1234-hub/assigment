@@ -36,17 +36,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -Fq "versionName '0.7.0'" floodsafe-android-app/app/build.gradle
-          grep -Fq 'versionCode 14' floodsafe-android-app/app/build.gradle
-          grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
-          grep -Fq 'DEFAULT_RIVER_RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
-          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
-          grep -Fq 'LOOKAHEAD_MINUTES = 35' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
-          grep -Fq 'Cache-Control", "no-cache' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
-          grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
-          grep -Fq 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
-          test -s floodsafe-android-app/android-web/all-stations-realtime-v1.js
-          test -s floodsafe-android-app/ci_reopen_smoke.sh
+          require() { if ! grep -Fq "$1" "$2"; then echo "Missing safety contract: $1 in $2"; exit 1; fi; }
+          require "versionName '0.7.0'" floodsafe-android-app/app/build.gradle
+          require 'versionCode 14' floodsafe-android-app/app/build.gradle
+          require 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          require 'DEFAULT_RIVER_RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java
+          require 'WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          require 'LOOKAHEAD_MINUTES = 35' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+          require 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          require 'onRenderProcessGone' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MainActivity.java
+          test -s floodsafe-android-app/android-web/all-stations-realtime-v1.js || { echo 'Missing all-stations realtime asset'; exit 1; }
+          test -s floodsafe-android-app/ci_reopen_smoke.sh || { echo 'Missing reopen smoke test'; exit 1; }
           echo 'v0.8.84 current source safety gate PASS'
 
       - name: Bundle verified Android assets

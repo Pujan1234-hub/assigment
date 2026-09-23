@@ -1,35 +1,49 @@
 {
-  "generated_at": "2026-09-23T05:22:25.916746+05:45",
-  "updated_at_npt": "23 Sep 05:22 NPT",
+  "generated_at": "2026-09-23T07:32:37.254800+05:45",
+  "updated_at_npt": "23 Sep 07:32 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "टरिगाउँ विमानस्थल विस्तारका लागि बजेट त छुट्ट्याइयो, कामले गति लिन्छ ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594078/budget-has-been-allocated-for-the-expansion-of-tarigaun-airport-will-the-work-pick-up-speed",
+      "published_at": "2026-09-23T07:30:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढी पहिरोका कारण देशका विभिन्न राजमार्ग प्रभावित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594076/various-highways-across-the-country-affected-by-floods-and-landslides",
+      "published_at": "2026-09-23T06:58:28+05:45",
+      "flash": true
+    },
+    {
+      "title": "तीव्र बन्दै गएको एल निनोले एसियामा खडेरीको जोखिम, विश्वभर खाद्य मूल्य बढ्न सक्ने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594073/intensifying-el-nino-threatens-drought-in-asia-could-raise-food-prices-worldwide",
+      "published_at": "2026-09-23T06:27:53+05:45",
+      "flash": false
+    },
     {
       "title": "निर्माण ढिलाइले अलपत्र बन्दै लमजुङको निर्वाचन क्षेत्र रणनीतिक सडक",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594067/lamjung-constituency-strategic-road-stalled-due-to-construction-delays",
       "published_at": "2026-09-23T05:19:08+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भोटेकोशी बाढी: अधुरो आशा र काजकिरियाको दोधारमा छन् बेपत्ताका परिवार",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594063/bhotekoshi-flood-families-of-the-missing-are-torn-between-unfulfilled-hopes-and-a-sense-of-hopelessness",
       "published_at": "2026-09-23T04:44:21+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "भारी वर्षाको प्रक्षेपणपछि काभ्रेमा सचेतना",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594061/alert-in-kavre-after-heavy-rain-forecast",
       "published_at": "2026-09-23T04:14:46+05:45",
-      "flash": false
-    },
-    {
-      "title": "रुससँग ‘ऊर्जा युद्धविराम’ का लागि वार्ता गर्न युक्रेन तयार : राष्ट्रपति जेलेन्स्की",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594060/ukraine-ready-to-negotiate-energy-ceasefire-with-russia-president-zelensky",
-      "published_at": "2026-09-23T03:01:10+05:45",
       "flash": false
     },
     {
@@ -45,19 +59,12 @@
       "url": "https://www.ratopati.com/story/594056/fly-dubai-to-launch-regular-flights-to-pokhara-international-airport-from-today",
       "published_at": "2026-09-23T01:55:36+05:45",
       "flash": false
-    },
-    {
-      "title": "सल्यानमा स्क्रबटाइफसको प्रकोप नियन्त्रण गर्न मुख्यमन्त्रीको निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594047/chief-ministers-instructions-to-control-the-outbreak-of-scrub-typhus-in-salyan",
-      "published_at": "2026-09-22T23:30:58+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     },
@@ -71,7 +78,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 2,
-      "recent": 7
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -81,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     }

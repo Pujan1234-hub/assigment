@@ -1,70 +1,63 @@
 {
-  "generated_at": "2026-09-23T07:32:37.254800+05:45",
-  "updated_at_npt": "23 Sep 07:32 NPT",
+  "generated_at": "2026-09-23T12:32:14.183166+05:45",
+  "updated_at_npt": "23 Sep 12:32 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "संसद्‍लाई ऊर्जामन्त्रीको ब्रिफिङ : बाढीबाट जलविद्युत् क्षेत्रमा ३ खर्ब ९० अर्बको क्षति, ८ सयभन्दा बढी बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594162/energy-ministers-briefing-to-parliament-floods-cause-rs-390-billion-damage-to-hydropower-sector-over-800-missing",
+      "published_at": "2026-09-23T12:25:34+05:45",
+      "flash": true
+    },
+    {
+      "title": "पूर्वप्रधानमन्त्री नेपाल भोटेकोशी बाढी प्रभावित क्षेत्रको अनुगमनमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594161/former-prime-minister-nepal-visits-bhotekoshi-flood-affected-areas",
+      "published_at": "2026-09-23T12:24:43+05:45",
+      "flash": true
+    },
+    {
+      "title": "काठमाडौँमा प्रहरीको स्विप अपरेसन : २४ घण्टामा १२१ जना पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594156/police-sweep-operation-in-kathmandu-121-people-arrested-in-24-hours",
+      "published_at": "2026-09-23T12:10:13+05:45",
+      "flash": true
+    },
+    {
+      "title": "नेपाल विद्युत् प्राधिकरणका पूर्वकार्यकारी निर्देशक शाक्यको रिटमा सर्वोच्चमा सुनुवाइ सुरु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594155/hearing-begins-in-supreme-court-on-writ-petition-filed-by-former-nepal-electricity-authority-executive-director-shakya",
+      "published_at": "2026-09-23T12:09:43+05:45",
+      "flash": true
+    },
+    {
+      "title": "सिलबन्दी खोलेर ग्यासको कृत्रिम अभाव : सिद्धीपुर ग्यास स्टोरका सञ्चालक पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594100/artificial-gas-shortage-by-opening-seals-siddhipur-gas-store-operator-arrested",
+      "published_at": "2026-09-23T09:58:42+05:45",
+      "flash": false
+    },
+    {
+      "title": "लुम्बिनीमा असोज ९ देखि भारी वर्षाको सम्भावना, सतर्क रहन मुख्यमन्त्री आचार्यको अपिल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594093/heavy-rain-likely-in-lumbini-from-asoj-21-chief-minister-acharya-appeals-to-be-alert",
+      "published_at": "2026-09-23T09:11:02+05:45",
+      "flash": false
+    },
     {
       "title": "टरिगाउँ विमानस्थल विस्तारका लागि बजेट त छुट्ट्याइयो, कामले गति लिन्छ ?",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594078/budget-has-been-allocated-for-the-expansion-of-tarigaun-airport-will-the-work-pick-up-speed",
       "published_at": "2026-09-23T07:30:00+05:45",
-      "flash": true
-    },
-    {
-      "title": "बाढी पहिरोका कारण देशका विभिन्न राजमार्ग प्रभावित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594076/various-highways-across-the-country-affected-by-floods-and-landslides",
-      "published_at": "2026-09-23T06:58:28+05:45",
-      "flash": true
-    },
-    {
-      "title": "तीव्र बन्दै गएको एल निनोले एसियामा खडेरीको जोखिम, विश्वभर खाद्य मूल्य बढ्न सक्ने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594073/intensifying-el-nino-threatens-drought-in-asia-could-raise-food-prices-worldwide",
-      "published_at": "2026-09-23T06:27:53+05:45",
-      "flash": false
-    },
-    {
-      "title": "निर्माण ढिलाइले अलपत्र बन्दै लमजुङको निर्वाचन क्षेत्र रणनीतिक सडक",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594067/lamjung-constituency-strategic-road-stalled-due-to-construction-delays",
-      "published_at": "2026-09-23T05:19:08+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढी: अधुरो आशा र काजकिरियाको दोधारमा छन् बेपत्ताका परिवार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594063/bhotekoshi-flood-families-of-the-missing-are-torn-between-unfulfilled-hopes-and-a-sense-of-hopelessness",
-      "published_at": "2026-09-23T04:44:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "भारी वर्षाको प्रक्षेपणपछि काभ्रेमा सचेतना",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594061/alert-in-kavre-after-heavy-rain-forecast",
-      "published_at": "2026-09-23T04:14:46+05:45",
-      "flash": false
-    },
-    {
-      "title": "हाकुवासीको पीडा: भूकम्पले उठिबास, बाढीले सर्वनाश",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594059/the-suffering-of-haku-residents-earthquakes-cause-upheaval-floods-cause-devastation",
-      "published_at": "2026-09-23T02:56:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "पोखरा अन्तर्राष्ट्रिय विमानस्थलमा फ्लाई दुबईको आजदेखि नियमित उडान",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594056/fly-dubai-to-launch-regular-flights-to-pokhara-international-airport-from-today",
-      "published_at": "2026-09-23T01:55:36+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -77,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 8
+      "flash": 4,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,

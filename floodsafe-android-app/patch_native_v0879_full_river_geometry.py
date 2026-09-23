@@ -8,10 +8,9 @@ g_path=root/'app/build.gradle'
 m=m_path.read_text(encoding='utf-8')
 g=g_path.read_text(encoding='utf-8')
 
-# v0.8.79: the native MapLibre map must use the river assets that were already built
-# for progressive national/regional/local detail. The previous native map parsed the
-# full snapshot and then globally kept only the top 1,400 OSM ways, which made many
-# rivers appear as isolated/half segments and left local rivers missing.
+# v0.8.79: use the progressive national/regional/exact river assets that are already
+# bundled for FloodSafe. The previous native MapLibre path parsed the huge snapshot and
+# then globally retained only 1,400 OSM ways, creating disconnected/half river lines.
 
 def method_span(text,name):
     q=re.search(r'(?m)^\s*(?:private|public|protected)\s+[^\n{]+\b'+re.escape(name)+r'\s*\([^\n]*\)\s*(?:throws\s+[^{]+)?\{',text)
@@ -44,7 +43,7 @@ if 'V0879_FULL_RIVER_TILE_RUNTIME' not in m:
     m=m.replace(field_anchor,fields,1)
 
 click_anchor='            map.addOnMapClickListener(this::onMapClick);\n'
-if 'v879RefreshRiverGeometryForCamera' not in m:
+if 'V0879_CAMERA_IDLE_RIVER_DETAIL' not in m:
     if click_anchor not in m:raise SystemExit('v0879 camera listener anchor missing')
     m=m.replace(click_anchor,click_anchor+'            map.addOnCameraIdleListener(this::v879RefreshRiverGeometryForCamera); // V0879_CAMERA_IDLE_RIVER_DETAIL\n',1)
 
@@ -57,8 +56,6 @@ loader=r'''    private void loadBundledGeometry() {
             }
             int gen=++v879RiverLoadGeneration;
             try {
-                // Whole-Nepal view: use the already balanced 6,279-way overview as-is.
-                // Do not globally re-rank/truncate it; that was the source of half-rivers.
                 List<RiverWay> all=v879ReadRiverAsset("data/nepal-waterways-tiles/overview.json");
                 v879ApplyRiverGeometry(all,"overview",gen);
             } catch (Exception ignored) {
@@ -116,10 +113,8 @@ helpers=r'''
             if(generation!=v879RiverLoadGeneration||next.isEmpty())return;
             try{
                 rivers.clear();rivers.addAll(next);riversGeoJson=makeRiversGeoJson(next);v879RiverGeometryKey=key;
-                if(styleReady&&style!=null){
-                    GeoJsonSource s=style.getSourceAs("fs-rivers");
-                    if(s!=null)s.setGeoJson(riversGeoJson);else installGeoLayers();
-                }else installGeoLayers();
+                if(styleReady&&style!=null){GeoJsonSource s=style.getSourceAs("fs-rivers");if(s!=null)s.setGeoJson(riversGeoJson);else installGeoLayers();}
+                else installGeoLayers();
             }catch(Exception ignored){}
         });
     } // V0879_ATOMIC_RIVER_SOURCE_SWAP
@@ -129,8 +124,7 @@ helpers=r'''
 
     private void v879RefreshRiverGeometryForCamera(){
         if(map==null)return;CameraPosition cp=map.getCameraPosition();if(cp==null||cp.target==null)return;
-        final double zoom=cp.zoom,lon=cp.target.getLongitude(),lat=cp.target.getLatitude();
-        if(!isNepalish(lat,lon))return;
+        final double zoom=cp.zoom,lon=cp.target.getLongitude(),lat=cp.target.getLatitude();if(!isNepalish(lat,lon))return;
         if(zoom<7.35){v879QueueRiverAssets("overview",java.util.Collections.singletonList("data/nepal-waterways-tiles/overview.json"));return;}
         int cx=v879TileX(lon),cy=v879TileY(lat);
         if(zoom<10.0){
@@ -138,11 +132,9 @@ helpers=r'''
             for(int x=Math.max(0,cx-1);x<=Math.min(V879_TILE_NX-1,cx+1);x++)for(int y=Math.max(0,cy-1);y<=Math.min(V879_TILE_NY-1,cy+1);y++)paths.add("data/nepal-waterways-tiles-regional/"+x+"-"+y+".json");
             v879QueueRiverAssets("regional:"+cx+":"+cy,paths);return;
         }
-        // High zoom: exact source tiles. Load the center tile plus only the neighbour(s)
-        // needed near a tile edge so local rivers stay continuous without parsing all 62k.
         List<Integer> xs=new ArrayList<>(),ys=new ArrayList<>();xs.add(cx);ys.add(cy);
-        double fx=((lon-V879_TILE_MIN_LON)/V879_TILE_STEP_LON)-Math.floor((lon-V879_TILE_MIN_LON)/V879_TILE_STEP_LON);
-        double fy=((lat-V879_TILE_MIN_LAT)/V879_TILE_STEP_LAT)-Math.floor((lat-V879_TILE_MIN_LAT)/V879_TILE_STEP_LAT);
+        double qx=(lon-V879_TILE_MIN_LON)/V879_TILE_STEP_LON,qy=(lat-V879_TILE_MIN_LAT)/V879_TILE_STEP_LAT;
+        double fx=qx-Math.floor(qx),fy=qy-Math.floor(qy);
         if(fx<0.22&&cx>0)xs.add(cx-1);else if(fx>0.78&&cx<V879_TILE_NX-1)xs.add(cx+1);
         if(fy<0.22&&cy>0)ys.add(cy-1);else if(fy>0.78&&cy<V879_TILE_NY-1)ys.add(cy+1);
         List<String> paths=new ArrayList<>();for(int x:xs)for(int y:ys)paths.add("data/nepal-waterways-tiles/"+x+"-"+y+".json");
@@ -154,19 +146,22 @@ helpers=r'''
         io.execute(()->{
             List<RiverWay> all=new ArrayList<>();
             if(paths!=null)for(String p:paths){try{all.addAll(v879ReadRiverAsset(p));}catch(Exception ignored){}}
-            if(all.isEmpty()&&!"overview".equals(key)){try{all.addAll(v879ReadRiverAsset("data/nepal-waterways-tiles/overview.json"));key.equals("overview");}catch(Exception ignored){}}
+            if(all.isEmpty()&&!"overview".equals(key)){try{all.addAll(v879ReadRiverAsset("data/nepal-waterways-tiles/overview.json"));}catch(Exception ignored){}}
             v879ApplyRiverGeometry(all,key,gen);
         });
     } // V0879_VISIBLE_TILE_LOADER
 '''
 m=m[:sp[1]]+helpers+m[sp[1]:]
 
-old_river_class='    private static final class RiverWay {\n        String name, type; final List<double[]> points = new ArrayList<>();\n    }'
-new_river_class='    private static final class RiverWay {\n        String id, name, type; final List<double[]> points = new ArrayList<>();\n    } // V0879_RIVER_IDENTITY'
-if old_river_class not in m:raise SystemExit('v0879 RiverWay anchor missing')
-m=m.replace(old_river_class,new_river_class,1)
+# Patch whatever RiverWay shape the proven v0.8.77 chain produced; preserve all its
+# existing fields and only add the stable OSM id used to deduplicate overlapping tiles.
+if 'V0879_RIVER_IDENTITY' not in m:
+    q=re.search(r'private static final class RiverWay\s*\{',m)
+    if not q:raise SystemExit('v0879 RiverWay class missing')
+    pos=q.end()
+    m=m[:pos]+'\n        String id; // V0879_RIVER_IDENTITY'+m[pos:]
 
-# This build is materially different from v0.8.78 and must be distinguishable in field testing.
+# Distinguishable field-test version.
 g=re.sub(r'versionCode\s+98\b','versionCode 99',g,count=1)
 g=g.replace("versionName '0.8.78'","versionName '0.8.79'",1)
 if 'versionCode 99' not in g or "versionName '0.8.79'" not in g:raise SystemExit('v0879 version bump failed')

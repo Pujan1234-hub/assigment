@@ -8,6 +8,9 @@ on:
       - 'floodsafe-android-app/patch_native_v0879_full_river_geometry.py'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -82,10 +85,6 @@ jobs:
           regional=wd.parent/'nepal-waterways-tiles-regional'
           rtiles=[p for p in regional.glob('*.json') if re.fullmatch(r'\d+-\d+\.json',p.name)]
           if count < 60000: raise SystemExit(f'expected source inventory >=60000 Nepal waterways, got {count}')
-          # The strict Nepal polygon clip intentionally removes cross-border/outside-only
-          # display segments. The balanced national overview produced from the clipped
-          # geometry is currently 4,219 ways; require a dense >=4,000 network rather than
-          # the pre-clip 6k estimate.
           if overview < 4000: raise SystemExit(f'expected >=4000 balanced Nepal overview waterways, got {overview}')
           if len(tiles) < 90: raise SystemExit(f'expected dense exact tiles, got {len(tiles)}')
           if len(rtiles) < 90: raise SystemExit(f'expected dense regional tiles, got {len(rtiles)}')
@@ -136,3 +135,25 @@ jobs:
             FloodSafe-Nepal-v0.8.79-SHA256.txt
             V0879-RIVER-FIX-NOTES.txt
           retention-days: 14
+
+      - name: Publish direct-download prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='floodsafe-v0.8.79-full-river-detail'
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title 'FloodSafe Nepal v0.8.79 — Full River Detail' \
+              --prerelease \
+              --notes-file V0879-RIVER-FIX-NOTES.txt
+          fi
+          gh release upload "$TAG" \
+            FloodSafe-Nepal-v0.8.79-FULL-RIVER-DETAIL.apk \
+            FloodSafe-Nepal-v0.8.79-SHA256.txt \
+            V0879-RIVER-FIX-NOTES.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber

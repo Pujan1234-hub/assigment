@@ -25,26 +25,6 @@ def span(text,name):
                 if d==0:return q.start(),i+1
     return None
 
-def span_containing_marker(text,marker):
-    pos=text.find(marker)
-    if pos<0:return None
-    starts=list(re.finditer(r'(?m)^\s*(?:private|public|protected)\s+[^\n{]+\([^\n]*\)\s*(?:throws\s+[^{]+)?\{',text[:pos+1]))
-    if not starts:return None
-    q=starts[-1]; op=text.find('{',q.start()); d=0; quote=None; esc=False
-    for i in range(op,len(text)):
-        ch=text[i]
-        if quote:
-            if esc:esc=False
-            elif ch=='\\':esc=True
-            elif ch==quote:quote=None
-        else:
-            if ch in ('\"',"'"):quote=ch
-            elif ch=='{':d+=1
-            elif ch=='}':
-                d-=1
-                if d==0:return q.start(),i+1
-    return None
-
 def replace_method(text,name,block):
     s=span(text,name)
     if not s:raise SystemExit('v0892 method missing: '+name)
@@ -124,11 +104,11 @@ guard='''\n        long v892Now=System.currentTimeMillis();
 b=b[:brace]+guard+b[brace:]
 a=a[:s[0]]+'    private long v892LastLocationWorkAt=0L; // V0892_GPS_NO_GLOBAL_RIVER_REFRESH\n'+b+a[s[1]:]
 
-# Newest timestamp always wins in the exact generated method that owns the clean
-# full-inventory truth marker. This survives later patch renames/signature changes.
-s=span_containing_marker(a,'V0877_CLEAN_FULL_INVENTORY_TRUTH')
-if not s:raise SystemExit('v0892 clean inventory loader block missing')
-loader=a[s[0]:s[1]]
+# Newest timestamp always wins anywhere the generated official loader writes its
+# local `newest` observation map. Insert helper before a known stable method rather
+# than relying on the generated loader method name/signature.
+s=span(a,'onLocationChanged')
+if not s:raise SystemExit('v0892 helper insertion anchor missing')
 helper=r'''    private void v892PutNewest(java.util.Map<String,JSONObject> target,String key,JSONObject row){
         if(target==null||key==null||key.isEmpty()||row==null)return;
         JSONObject old=target.get(key);long nt=v877ObservationTime(row),ot=old==null?0L:v877ObservationTime(old);double nl=v877ObservationLevel(row),ol=old==null?Double.NaN:v877ObservationLevel(old);
@@ -136,10 +116,11 @@ helper=r'''    private void v892PutNewest(java.util.Map<String,JSONObject> targe
     } // V0892_NEWEST_OFFICIAL_TIMESTAMP_WINS
 
 '''
-loader,n=re.subn(r'\bnewest\.put\(([^,;]+),\s*([^;]+)\);',r'v892PutNewest(newest,\1,\2);',loader)
-if n<1:raise SystemExit('v0892 newest writes missing in clean loader')
-loader=loader.replace('V0877_CLEAN_FULL_INVENTORY_TRUTH','V0892_RUNTIME_NOCACHE_SOURCE V0877_CLEAN_FULL_INVENTORY_TRUTH',1)
-a=a[:s[0]]+helper+loader+a[s[1]:]
+a=a[:s[0]]+helper+a[s[0]:]
+a,n=re.subn(r'\bnewest\.put\(([^,;]+),\s*([^;]+)\);',r'v892PutNewest(newest,\1,\2);',a)
+if n<1:raise SystemExit('v0892 newest observation writes missing')
+if 'V0877_CLEAN_FULL_INVENTORY_TRUTH' not in a:raise SystemExit('v0892 clean inventory truth marker missing')
+a=a.replace('V0877_CLEAN_FULL_INVENTORY_TRUTH','V0892_RUNTIME_NOCACHE_SOURCE V0877_CLEAN_FULL_INVENTORY_TRUTH',1)
 
 g=re.sub(r'versionCode\s+111\b','versionCode 112',g,count=1);g=g.replace("versionName '0.8.91'","versionName '0.8.92'",1)
 for x in ['V0892_CLEAR_TOPO_BASE','V0892_SMALL_STATION_DOTS','V0892_THIN_BLUE_RIVERS','V0892_SUBTLE_RIVER_FLOW','V0891_FRESH_ONLY_RISK_LINE','V0890_NO_UNCHANGED_STATION_FLICKER']:

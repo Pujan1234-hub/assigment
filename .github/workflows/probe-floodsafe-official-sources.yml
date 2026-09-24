@@ -40,15 +40,15 @@ jobs:
           req=urllib.request.Request('https://dhm.gov.np/hydrology/rainfall-watch-map',headers=hdr);html=op.open(req,timeout=30).read().decode('utf-8','ignore')
           token=re.search(r'name="csrf_test_name"\s+value="([^"]+)"',html);token=token.group(1) if token else ''
           print('DHM_CSRF',bool(token),'COOKIES',[(c.name,c.value[:8]) for c in jar])
-          for needle in ['loadMapData(',"$('#applyfilter')",'var mapValue','filterData').serialize','rainfallTab.active']:
+          for needle in ['loadMapData(', "$(\'#applyfilter\')", 'var mapValue', "filterData').serialize", 'rainfallTab.active']:
             pos=0
             while True:
               i=html.find(needle,pos)
               if i<0:break
-              print('DHM_CONTEXT',needle,repr(html[max(0,i-1100):min(len(html),i+1900)]));pos=i+len(needle)
-          data=urllib.parse.urlencode({'csrf_test_name':token,'sortby':'','basinname[]':'','stationindex[]':'','districtname[]':''}).encode()
+              print('DHM_CONTEXT',needle,repr(html[max(0,i-900):min(len(html),i+1500)]));pos=i+len(needle)
+          data=urllib.parse.urlencode({'csrf_test_name':token,'sortby':'','basinname[]':'','stationindex[]':'','districtname[]':''},doseq=True).encode()
           req=urllib.request.Request('https://dhm.gov.np/hydrology/filterInRainfallTable',data=data,headers={'User-Agent':'Mozilla/5.0 FloodSafe','Accept':'application/json','Content-Type':'application/x-www-form-urlencoded','Referer':'https://dhm.gov.np/hydrology/rainfall-watch-map'})
           try:
-            raw=op.open(req,timeout=30).read().decode('utf-8','ignore');print('DHM_TABLE_RESPONSE',raw[:1800])
+            raw=op.open(req,timeout=30).read().decode('utf-8','ignore');print('DHM_TABLE_RESPONSE',raw[:2500])
           except Exception as e:print('DHM_TABLE_ERROR',repr(e))
           PY

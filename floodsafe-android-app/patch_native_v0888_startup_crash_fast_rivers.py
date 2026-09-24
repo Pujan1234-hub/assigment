@@ -92,7 +92,7 @@ detail=r'''    private StationDot v884SameRiverGaugeForDetail(RiverWay r,double 
 '''
 m=replace_method(m,'v884SameRiverGaugeForDetail',detail)
 
-# Protect cold-start style paint from any unexpected runtime exception in the monitored-river
+# Protect cold-start style paint from unexpected runtime exceptions in the monitored-river
 # refresh path. OutOfMemoryError is intentionally not swallowed.
 sp=method_span(m,'v887ApplyMonitoredRiverGeometry')
 if not sp:raise SystemExit('v0888 monitored apply missing')
@@ -100,7 +100,7 @@ block=m[sp[0]:sp[1]]
 if 'V0888_STARTUP_MAP_GUARD' not in block:
     p=block.find('{')+1
     body=block[p:-1]
-    block=block[:p]+'\n        try{ // V0888_STARTUP_MAP_GUARD\n'+body+'\n        }catch(Exception ignored){}\n    '
+    block=block[:p]+'\n        try{ // V0888_STARTUP_MAP_GUARD\n'+body+'\n        }catch(Exception ignored){}\n    }'
     m=m[:sp[0]]+block+m[sp[1]:]
 
 g=re.sub(r'versionCode\s+107\b','versionCode 108',g,count=1)

@@ -1,49 +1,63 @@
 {
-  "generated_at": "2026-09-24T17:47:04.518431+05:45",
-  "updated_at_npt": "24 Sep 17:47 NPT",
+  "generated_at": "2026-09-24T22:49:51.608409+05:45",
+  "updated_at_npt": "24 Sep 22:49 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "रौतहट प्रशासनद्वारा उच्च सतर्कता अपनाउन आग्रह",
+      "title": "बाढी प्रभावित क्षेत्रमा पुनर्निर्माणका लागि सघाउन आग्रह",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594610/rautahat-administration-urges-people-to-adopt-high-alert",
-      "published_at": "2026-09-24T17:37:10+05:45",
+      "url": "https://www.ratopati.com/story/594676/request-for-assistance-for-reconstruction-in-flood-affected-areas",
+      "published_at": "2026-09-24T22:02:33+05:45",
       "flash": true
     },
     {
-      "title": "अति भारी वर्षाको जोखिमपछि नारायणगढ–मुग्लिन सडकमा राति सवारी आवागमन बन्द",
+      "title": "जीप दुर्घटनामा एक जनाको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594609/traffic-on-narayangadh-muglin-road-closed-at-night-due-to-risk-of-heavy-rain",
-      "published_at": "2026-09-24T17:35:11+05:45",
-      "flash": true
-    },
-    {
-      "title": "ताप्लेजुङ आगलागी अपडेट : बाक्लो बस्तीका १० घर जले",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594544/fire-update-in-taplejung-10-houses-in-dense-settlement-burned-down",
-      "published_at": "2026-09-24T15:00:03+05:45",
+      "url": "https://www.ratopati.com/story/594671/one-person-dies-in-jeep-accident",
+      "published_at": "2026-09-24T21:34:35+05:45",
       "flash": false
     },
     {
-      "title": "मधेस सरकारले दियो सशस्त्र प्रहरी बललाई २० थान मोटरसाइकल",
+      "title": "पहिरोले खाँदबारी-किमाथाङ्का सडक अवरुद्ध",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594506/madhesh-government-gives-20-motorcycles-to-armed-police-force",
-      "published_at": "2026-09-24T13:28:43+05:45",
+      "url": "https://www.ratopati.com/story/594670/landslide-blocks-khandbari-kimathanka-road",
+      "published_at": "2026-09-24T21:32:09+05:45",
       "flash": false
     },
     {
-      "title": "भारी वर्षाको पूर्वानुमानपछि लुम्बिनीमा उच्च सतर्कता, दाङका पाँच सडक राति बन्द",
+      "title": "सिद्धार्थ राजमार्गमा राति सवारी आवागमन बन्द",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594500/high-alert-in-lumbini-after-heavy-rain-forecast-five-roads-in-dang-closed-at-night",
-      "published_at": "2026-09-24T13:18:29+05:45",
+      "url": "https://www.ratopati.com/story/594656/traffic-on-siddhartha-highway-closed-at-night",
+      "published_at": "2026-09-24T19:52:25+05:45",
       "flash": false
     },
     {
-      "title": "ट्याक्टर दुर्घटना हुँदा चालकको मृत्यु",
+      "title": "सङ्खुवासभामा भारी वर्षाको सम्भावना : उत्तर-दक्षिण कोशी खण्डमा यात्रा नगर्न आग्रह",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594470/driver-dies-in-tractor-accident",
-      "published_at": "2026-09-24T12:07:40+05:45",
+      "url": "https://www.ratopati.com/story/594655/heavy-rain-likely-in-sankhuwasabha-request-to-avoid-traveling-in-the-north-south-koshi-section",
+      "published_at": "2026-09-24T19:48:28+05:45",
+      "flash": false
+    },
+    {
+      "title": "काठमाडौँ उपत्यकामा भारी वर्षाको सम्भावना, जिल्ला प्रशासनद्वारा सतर्क रहन आग्रह",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594645/heavy-rain-likely-in-kathmandu-valley-district-administration-urges-caution",
+      "published_at": "2026-09-24T19:26:02+05:45",
+      "flash": false
+    },
+    {
+      "title": "विद्युत् सर्ट हुँदा ताप्लेजुङको दोभानमा आगलागी : ८ घर पूर्ण र २ घरमा आंशिक क्षति",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594636/fire-breaks-out-in-dobhan-taplejung-due-to-electrical-short-circuit-8-houses-completely-damaged-and-2-partially-damaged",
+      "published_at": "2026-09-24T18:35:57+05:45",
+      "flash": false
+    },
+    {
+      "title": "सिन्धुपाल्चोकका राजमार्गमा रात्रिकालीन सवारी बन्द",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594631/night-traffic-ban-on-sindhupalchowk-highways",
+      "published_at": "2026-09-24T18:23:02+05:45",
       "flash": false
     }
   ],
@@ -63,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 6
+      "flash": 1,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -74,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     }

@@ -1,42 +1,56 @@
 {
-  "generated_at": "2026-09-24T07:06:14.410924+05:45",
-  "updated_at_npt": "24 Sep 07:06 NPT",
+  "generated_at": "2026-09-24T12:06:44.708798+05:45",
+  "updated_at_npt": "24 Sep 12:06 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "एक वर्षयता क्यानडाका प्रधानमन्त्रीलाई ‘पेल्दै’ आएका थिए ट्रम्प, अहिले कार्नी तिर्दैछन् पैँचो",
+      "title": "ईभी र मोटरसाइकल ठोक्किँदा मोटरसाइकल चालकको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594387/trump-has-been-scolding-the-canadian-prime-minister-for-over-a-year-now-carney-is-paying-the-price",
-      "published_at": "2026-09-24T06:41:21+05:45",
-      "flash": true
-    },
-    {
-      "title": "देशभर मनसुनी र पश्चिमी वायुको दोहोरो प्रभाव, आज यी प्रदेशमा धेरै भारी वर्षाको सम्भावना",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594385/dual-effect-of-monsoon-and-westerly-winds-across-the-country-possibility-of-very-heavy-rainfall-in-these-regions-today",
-      "published_at": "2026-09-24T06:14:44+05:45",
-      "flash": true
-    },
-    {
-      "title": "सङ्घीय संसद्का दुवै सदन र पाँच संसदीय समितिको बैठक आज बस्दै, यस्ता छन् कार्यसूची",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594381/meetings-of-both-houses-of-the-federal-parliament-and-five-parliamentary-committees-are-being-held-today-here-is-the-agenda",
-      "published_at": "2026-09-24T05:15:16+05:45",
+      "url": "https://www.ratopati.com/story/594434/motorcyclist-dies-after-collision-between-ev-and-motorcycle",
+      "published_at": "2026-09-24T10:56:08+05:45",
       "flash": false
     },
     {
-      "title": "स्वास्थ्य सेवा मूल्याङ्कनमा माडी पहिलो",
+      "title": "६. भारतको तट आइपुग्यो ‘अर्नब’ चक्रवात : आन्ध्र प्रदेश र ओडिसाममा भारी वर्षा, हजारौँ विस्थापित",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594376/madi-ranks-first-in-health-service-evaluation",
-      "published_at": "2026-09-24T04:38:06+05:45",
+      "url": "https://www.ratopati.com/story/594428/cyclone-arnab-hits-indias-coast-heavy-rains-in-andhra-pradesh-and-odisha-thousands-displaced",
+      "published_at": "2026-09-24T10:39:33+05:45",
+      "flash": false
+    },
+    {
+      "title": "भारी वर्षाको जोखिम : विराटनगरका विद्यालय दुई दिन बन्द हुने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594407/risk-of-heavy-rain-schools-in-biratnagar-to-be-closed-for-two-days",
+      "published_at": "2026-09-24T09:05:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "पोखराका स्कुलहरू २ दिन बन्द",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594403/schools-in-pokhara-closed-for-2-days",
+      "published_at": "2026-09-24T08:44:01+05:45",
+      "flash": false
+    },
+    {
+      "title": "सरुवा भएको भनिएका अर्थसचिव हमाल अझै मन्त्रालयमै, बजेट निर्माणमा सक्रिय",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594397/finance-secretary-hamal-who-was-reportedly-transferred-is-still-in-the-ministry-active-in-budget-preparation",
+      "published_at": "2026-09-24T08:12:06+05:45",
+      "flash": false
+    },
+    {
+      "title": "पछिल्लो १२ घण्टामा लुम्बिनी प्रदेशमा भारीदेखि धेरै भारी वर्षा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594391/heavy-to-very-heavy-rainfall-in-lumbini-province-in-the-last-12-hours",
+      "published_at": "2026-09-24T07:25:50+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
-      "ok": true,
-      "candidates": 16,
+      "ok": false,
+      "error": "HTTPSConnectionPool(host='www.onlinekhabar.com', port=443): Read timed out.",
       "flash": 0,
       "recent": 0
     },
@@ -49,18 +63,18 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 4
+      "flash": 0,
+      "recent": 6
     },
     "Kathmandu Post": {
-      "ok": true,
-      "candidates": 16,
+      "ok": false,
+      "error": "HTTPSConnectionPool(host='kathmandupost.com', port=443): Read timed out.",
       "flash": 0,
       "recent": 0
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     }

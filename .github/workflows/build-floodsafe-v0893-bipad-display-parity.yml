@@ -120,4 +120,4 @@ jobs:
           path: |
             FloodSafe-Nepal-v0.8.93-BIPAD-DISPLAY-PARITY-FIELD-TEST.apk
             FloodSafe-Nepal-v0.8.93-SHA256.txt
-          retention-days: 14
+          retention-days: 1

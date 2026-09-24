@@ -104,8 +104,16 @@ apply=r'''    private void v887ApplyMonitoredRiverGeometry(){
             render=new ArrayList<>(v889StableMonitoredRivers);
         }
         if(render.isEmpty()&&!rivers.isEmpty())return; // V0889_NO_ZOOM_BLANK_FRAME
-        rivers.clear();rivers.addAll(render);riversGeoJson=makeRiversGeoJson(render);
-        try{GeoJsonSource s=style.getSourceAs("fs-rivers");if(s!=null)s.setGeoJson(riversGeoJson);else installGeoLayers();}catch(Exception ignored){}
+        try{
+            String nextGeoJson=makeRiversGeoJson(render); // V0889_COMPILE_SAFE_GEOJSON_BUILD
+            rivers.clear();rivers.addAll(render);riversGeoJson=nextGeoJson;
+            GeoJsonSource s=style.getSourceAs("fs-rivers");
+            if(s!=null)s.setGeoJson(riversGeoJson);else installGeoLayers();
+        }catch(Exception ignored){
+            // Keep the last successfully rendered monitored network if GeoJSON generation/style swap fails.
+            // V0889_RENDER_FAILURE_RETAINS_LAST_GOOD
+            return;
+        }
         refreshRiverRiskSources();
     } // V0889_PERSISTENT_MONITORED_RIVER_NETWORK V0889_ZOOM_TILE_SWAP_NO_DISAPPEAR
 '''
@@ -119,6 +127,7 @@ required=[
  'V0889_PARTIAL_REFRESH_MERGES_STATIONS','V0889_COMPLETE_REFRESH_REPLACES_STATIONS',
  'V0889_STATION_REFRESH_PRESERVES_RIVERS','V0889_EMPTY_STATION_WINDOW_KEEPS_RIVER_GEOMETRY',
  'V0889_NO_ZOOM_BLANK_FRAME','V0889_PERSISTENT_MONITORED_RIVER_NETWORK','V0889_ZOOM_TILE_SWAP_NO_DISAPPEAR',
+ 'V0889_COMPILE_SAFE_GEOJSON_BUILD','V0889_RENDER_FAILURE_RETAINS_LAST_GOOD',
  'V0888_FAST_MONITORED_RIVER_FILTER','V0886_NO_NEARBY_ONLY_FALLBACK'
 ]
 for x in required:
@@ -127,4 +136,4 @@ if 'versionCode 109' not in g or "versionName '0.8.89'" not in g:raise SystemExi
 
 m_path.write_text(m,encoding='utf-8')
 g_path.write_text(g,encoding='utf-8')
-print('FloodSafe v0.8.89 PASS: station dots survive partial/empty refresh; monitored river network survives zoom/tile swaps')
+print('FloodSafe v0.8.89 PASS: station dots survive partial/empty refresh; monitored river network survives zoom/tile swaps; compile-safe GeoJSON swap')

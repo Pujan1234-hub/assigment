@@ -10,31 +10,29 @@ old="""def replace_method(text,name,block):
 new="""def replace_method(text,name,block):
     s=span(text,name)
     if not s and name=='loadTrustedRiverStationsV862':
-        # Late native patches can rename/reformat the canonical river loader. Locate the
-        # method that owns the official river-stations request instead of depending on its name.
-        anchors=[]
-        for token in ('V0877_CLEAN_FULL_INVENTORY_TRUTH','river-stations/?limit=5000','V0867_LATEST_OFFICIAL'):
-            pos=text.find(token)
-            if pos>=0: anchors.append(pos)
-        for marker in anchors:
-            methods=list(re.finditer(r'(?m)^\\s*private\\s+(?:java\\.util\\.)?List<RiverStation>\\s+\\w+\\s*\\(',text[:marker]))
-            if not methods: continue
-            start=methods[-1].start();op=text.find('{',methods[-1].end());d=0;quote=None;esc=False
-            if op<0: continue
-            for i in range(op,len(text)):
-                ch=text[i]
-                if quote:
-                    if esc:esc=False
-                    elif ch=='\\\\':esc=True
-                    elif ch==quote:quote=None
-                else:
-                    if ch in ('\\\"',\"'\"):quote=ch
-                    elif ch=='{':d+=1
-                    elif ch=='}':
-                        d-=1
-                        if d==0:
-                            s=(start,i+1);break
-            if s:break
+        # The generated loader signature may wrap across lines. Find its declaration prefix,
+        # then balance braces from the first body brace instead of requiring a one-line signature.
+        methods=list(re.finditer(r'(?m)^\\s*private\\s+(?:java\\.util\\.)?List<RiverStation>\\s+(\\w+)\\s*\\(',text))
+        chosen=None
+        for mm in methods:
+            if mm.group(1)==name: chosen=mm;break
+        if chosen is None and methods: chosen=methods[-1]
+        if chosen is not None:
+            start=chosen.start();op=text.find('{',chosen.end());d=0;quote=None;esc=False
+            if op>=0:
+                for i in range(op,len(text)):
+                    ch=text[i]
+                    if quote:
+                        if esc:esc=False
+                        elif ch=='\\\\':esc=True
+                        elif ch==quote:quote=None
+                    else:
+                        if ch in ('\\\"',\"'\"):quote=ch
+                        elif ch=='{':d+=1
+                        elif ch=='}':
+                            d-=1
+                            if d==0:
+                                s=(start,i+1);break
     if not s:
         names=re.findall(r'(?m)^\\s*private\\s+(?:java\\.util\\.)?List<RiverStation>\\s+(\\w+)\\s*\\(',text)
         raise SystemExit('v0894 method missing: '+name+' candidates='+','.join(names[-12:]))
@@ -44,4 +42,4 @@ if old not in s:
     raise SystemExit('repair_v0894: replace_method anchor missing')
 s=s.replace(old,new,1)
 p.write_text(s,encoding='utf-8')
-print('repair_v0894 PASS: loader resolves by current official-source method ownership')
+print('repair_v0894 PASS: multiline loader signature supported')

@@ -33,10 +33,7 @@ def replace_method(text,name,block):
 # Clear readable Nepal base map.
 if 'World_Imagery/MapServer/tile' not in m:raise SystemExit('v0892 imagery URL anchor missing')
 m=m.replace('World_Imagery/MapServer/tile','World_Topo_Map/MapServer/tile')
-if 'V0892_CLEAR_TOPO_BASE' not in m:
-    anchor='public final class FloodSafeNativeMapView'
-    if anchor not in m:raise SystemExit('v0892 class anchor missing')
-    m=m.replace(anchor,'// V0892_CLEAR_TOPO_BASE: readable ESRI topo base\n'+anchor,1)
+if 'V0892_CLEAR_TOPO_BASE' not in m:m='// V0892_CLEAR_TOPO_BASE: readable ESRI topo base\n'+m
 
 # Thin the normal blue rivers and shrink station symbols.
 s=span(m,'installGeoLayers')

@@ -33,7 +33,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0880_viewport_same_river_detail.py
           python3 floodsafe-android-app/run_patch_native_v0881.py
           python3 floodsafe-android-app/patch_native_v0883_map_camera_river_tap.py
-          python3 floodsafe-android-app/patch_native_v0884_realtime_river_status_detail.py
+          python3 floodsafe-android-app/run_patch_native_v0884.py
 
       - name: Verify real-device river detail and colour contracts
         shell: bash

@@ -1,0 +1,57 @@
+name: Probe FloodSafe Official Sources
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths: [ '.github/workflows/probe-floodsafe-official-sources.yml' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe BIPAD 24h River Watch count and DHM rainfall page internals
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,urllib.request,datetime,time
+          u='https://bipadportal.gov.np/api/v1/river-stations/?format=json&limit=5000&_fs='+str(time.time_ns())
+          req=urllib.request.Request(u,headers={'User-Agent':'FloodSafe-Nepal/source-probe','Accept':'application/json','Cache-Control':'no-cache,no-store'})
+          with urllib.request.urlopen(req,timeout=30) as r:j=json.load(r)
+          rows=j.get('results') or []
+          now=time.time(); active=[]
+          for x in rows:
+            t=x.get('waterLevelOn') or x.get('water_level_on')
+            lvl=x.get('waterLevel') if x.get('waterLevel') is not None else x.get('water_level')
+            if not t or lvl is None: continue
+            try:
+              dt=datetime.datetime.fromisoformat(str(t).replace('Z','+00:00'))
+              if dt.tzinfo is None: dt=dt.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=5,minutes=45)))
+              age=now-dt.timestamp()
+            except: continue
+            if -300 <= age <= 24*3600: active.append(x)
+          print('BIPAD_CATALOG',len(rows),'BIPAD_24H_RIVER_WATCH',len(active))
+          for x in sorted(active,key=lambda q:q.get('waterLevelOn') or '',reverse=True)[:8]:print('BIPAD_LIVE',x.get('title'),x.get('waterLevel'),x.get('waterLevelOn'),x.get('status'))
+          PY
+          curl -fsSL --max-time 30 -A 'Mozilla/5.0 FloodSafe' 'https://dhm.gov.np/hydrology/rainfall-watch-map' -o /tmp/dhm-rain.html
+          echo "DHM_HTML_BYTES $(wc -c </tmp/dhm-rain.html)"
+          python3 - <<'PY'
+          import re
+          s=open('/tmp/dhm-rain.html',encoding='utf-8',errors='ignore').read()
+          pats=[r'https?://[^"\' ]+',r'url\s*:\s*["\']([^"\']+)',r'fetch\s*\(\s*["\']([^"\']+)',r'axios[^\n]{0,160}',r'ajax[^\n]{0,200}',r'rain[^\n]{0,220}']
+          seen=set()
+          for p in pats:
+            for m in re.finditer(p,s,re.I):
+              v=m.group(1) if m.lastindex else m.group(0)
+              if any(k in v.lower() for k in ['rain','hydro','api','ajax','station']):
+                v=v[:300]
+                if v not in seen: seen.add(v); print('DHM_HINT',v)
+          scripts=re.findall(r'<script[^>]+src=["\']([^"\']+)',s,re.I)
+          for x in scripts: print('DHM_SCRIPT',x)
+          PY

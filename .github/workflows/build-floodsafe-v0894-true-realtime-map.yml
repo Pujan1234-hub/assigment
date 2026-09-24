@@ -7,6 +7,7 @@ on:
       - '.github/workflows/build-floodsafe-v0894-true-realtime-map.yml'
       - '.github/scripts/patch_floodsafe_v0894_true_realtime_map_stability.py'
       - '.github/scripts/patch_floodsafe_v0894b_current_riverwatch.py'
+      - '.github/scripts/repair_v0894_loader_anchor.py'
   workflow_dispatch:
 
 permissions:
@@ -75,6 +76,7 @@ jobs:
           python3 .github/scripts/patch_floodsafe_v0891_fresh_visual_truth.py
           python3 .github/scripts/patch_floodsafe_v0892_clear_map_fresh_source.py
           python3 .github/scripts/patch_floodsafe_v0893_bipad_display_parity.py
+          python3 .github/scripts/repair_v0894_loader_anchor.py
           python3 .github/scripts/patch_floodsafe_v0894_true_realtime_map_stability.py
           python3 .github/scripts/patch_floodsafe_v0894b_current_riverwatch.py
 

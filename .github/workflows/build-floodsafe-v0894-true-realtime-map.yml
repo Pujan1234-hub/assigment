@@ -1,0 +1,160 @@
+name: Build FloodSafe v0.8.94 True Realtime Map APK
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0894-true-realtime-map.yml'
+      - '.github/scripts/patch_floodsafe_v0894_true_realtime_map_stability.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Probe actual BIPAD realtime river feeds
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, urllib.request, time, datetime
+          base='https://bipadportal.gov.np/api/v1/'
+          paths=['river/?limit=5000','river-trimed/?limit=5000','river-stations/?latest=true&limit=5000','river-stations/?limit=5000']
+          tkeys=['waterLevelOn','water_level_on','eventOn','event_on','measuredOn','measured_on','measurementTime','measurement_time','observationTime','observation_time','observedAt','observed_at','datetime','timestamp','dateTime','date_time']
+          lkeys=['waterLevel','water_level','currentWaterLevel','current_water_level','currentLevel','current_level','level','value','magnitude']
+          def flat(o):
+            if not isinstance(o,dict): return {}
+            f=o.get('fields') if isinstance(o.get('fields'),dict) else {}
+            return {**f,**o}
+          def parse_t(v):
+            if v in (None,''): return None
+            s=str(v).strip().replace('Z','+00:00')
+            try:
+              dt=datetime.datetime.fromisoformat(s.replace(' ','T'))
+              if dt.tzinfo is None: dt=dt.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=5,minutes=45)))
+              return dt.timestamp()
+            except: return None
+          now=time.time(); fresh=[]
+          for path in paths:
+            u=base+path+('&' if '?' in path else '?')+'_fs='+str(time.time_ns())
+            req=urllib.request.Request(u,headers={'User-Agent':'FloodSafe-Nepal/0.8.94','Accept':'application/json','Cache-Control':'no-cache, no-store','Pragma':'no-cache'})
+            with urllib.request.urlopen(req,timeout=45) as r: obj=json.load(r)
+            rows=obj.get('results') if isinstance(obj,dict) else obj
+            rows=rows if isinstance(rows,list) else []
+            newest=None; newestrow=None; levels=0
+            for raw in rows:
+              o=flat(raw); tv=None
+              for k in tkeys:
+                if k in o:
+                  tv=parse_t(o.get(k))
+                  if tv: break
+              lv=None
+              for k in lkeys:
+                if k in o and o.get(k) not in (None,''):
+                  try: lv=float(str(o.get(k)).replace(',',''))
+                  except: pass
+                  if lv is not None: break
+              if lv is not None: levels+=1
+              if tv and (newest is None or tv>newest): newest,newestrow=tv,o
+              if tv and lv is not None and -300 <= now-tv <= 24*3600: fresh.append((path,tv,lv,o.get('title') or o.get('stationName') or o.get('name') or ''))
+            print('V0894_PROBE',path,'rows=',len(rows),'levels=',levels,'newest=',datetime.datetime.fromtimestamp(newest,datetime.timezone.utc).isoformat() if newest else None)
+            if newestrow: print('V0894_NEWEST_SAMPLE',path,{k:newestrow.get(k) for k in ['id','station','stationId','stationIndex','title','stationName','name','waterLevel','waterLevelOn','eventOn','magnitude','status'] if k in newestrow})
+          print('V0894_FRESH_24H_ROWS',len(fresh))
+          for x in sorted(fresh,key=lambda z:z[1],reverse=True)[:8]: print('V0894_FRESH_SAMPLE',x[0],datetime.datetime.fromtimestamp(x[1],datetime.timezone.utc).isoformat(),x[2],x[3])
+          assert fresh, 'No current <=24h BIPAD river observation was found; refusing to build a fake realtime APK'
+          PY
+
+      - name: Apply native chain through v0.8.94
+        run: |
+          python3 floodsafe-android-app/run_patch_native_v0877.py
+          python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+          python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0880_viewport_same_river_detail.py
+          python3 floodsafe-android-app/run_patch_native_v0881.py
+          python3 floodsafe-android-app/patch_native_v0883_map_camera_river_tap.py
+          python3 floodsafe-android-app/run_patch_native_v0884.py
+          python3 floodsafe-android-app/patch_native_v0885_official_parity_river_network.py
+          python3 floodsafe-android-app/patch_native_v0885b_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0886_same_river_official_station_join.py
+          python3 floodsafe-android-app/patch_native_v0887_preflight.py
+          python3 floodsafe-android-app/patch_native_v0887_monitored_rivers_instant_stations.py
+          python3 floodsafe-android-app/patch_native_v0887_postflight.py
+          python3 floodsafe-android-app/patch_native_v0887_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0888_startup_crash_fast_rivers.py
+          python3 floodsafe-android-app/patch_native_v0889_persistent_stations_rivers.py
+          python3 .github/scripts/patch_floodsafe_v0890_risk_lines.py
+          python3 .github/scripts/patch_floodsafe_v0891_fresh_visual_truth.py
+          python3 .github/scripts/patch_floodsafe_v0892_clear_map_fresh_source.py
+          python3 .github/scripts/patch_floodsafe_v0893_bipad_display_parity.py
+          python3 .github/scripts/patch_floodsafe_v0894_true_realtime_map_stability.py
+
+      - name: Verify v0.8.94 contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0894_BIPAD_MAGNITUDE_IS_RIVER_LEVEL' "$A"
+          grep -Fq 'V0894_BIPAD_EVENTON_WATERLEVELON' "$A"
+          grep -Fq 'V0894_CATALOG_IS_METADATA_NOT_REALTIME' "$A"
+          grep -Fq 'V0894_TRUE_REALTIME_SOURCE_NO_STALE_CATALOG_READING' "$A"
+          grep -Fq 'V0894_KEEP_CURRENT_ROWS_EVEN_WITHOUT_CATALOG_JOIN' "$A"
+          grep -Fq 'V0894_REAL_NEPAL_CAMERA_BOUNDS' "$M"
+          grep -Fq 'V0894_NEPAL_FIT_CAMERA' "$M"
+          grep -Fq 'V0894_HIDE_CATALOG_AND_OLD_STATION_DOTS' "$M"
+          grep -Fq 'V0894_NO_STARTUP_GEOMETRY_FREEZE' "$M"
+          grep -Fq 'V0877_CLEAN_FRESH_ONLY_LIVE' "$A"
+          grep -Fq 'versionCode 114' "$G"
+          grep -Fq "versionName '0.8.94'" "$G"
+          echo 'V0894_TRUE_REALTIME_MAP_CONTRACT PASS'
+
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Rebuild river assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+
+      - name: Unit test and build APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify and stage APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          cp "$APK" FloodSafe-Nepal-v0.8.94-TRUE-REALTIME-MAP-STABILITY-FIELD-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.8.94-TRUE-REALTIME-MAP-STABILITY-FIELD-TEST.apk | tee FloodSafe-Nepal-v0.8.94-SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0894-TRUE-REALTIME-MAP-STABILITY-FIELD-TEST
+          path: |
+            FloodSafe-Nepal-v0.8.94-TRUE-REALTIME-MAP-STABILITY-FIELD-TEST.apk
+            FloodSafe-Nepal-v0.8.94-SHA256.txt
+          retention-days: 1

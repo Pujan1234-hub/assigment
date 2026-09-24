@@ -1,0 +1,67 @@
+name: Audit FloodSafe official river live sources
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths:
+      - '.github/workflows/audit-floodsafe-official-river-live.yml'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe BIPAD realtime river endpoints
+        shell: bash
+        run: |
+          set -u
+          python3 - <<'PY'
+          import json, urllib.request
+          urls=[
+            'https://bipadportal.gov.np/api/v1/river/?limit=20',
+            'https://bipadportal.gov.np/api/v1/river-trimed/?limit=20',
+            'https://bipadportal.gov.np/api/v1/river-stations/?limit=20',
+            'https://bipadportal.gov.np/api/v1/streamflow/?limit=20',
+            'https://bipadportal.gov.np/api/v1/station-location/?limit=20',
+          ]
+          interesting=['id','title','name','station','stationName','station_name','stationSeriesId','station_series_id','riverName','river_name','basin','basinName','waterLevel','water_level','waterLevelOn','water_level_on','status','status_name','warningLevel','warning_level','dangerLevel','danger_level','modifiedOn','updatedAt']
+          for url in urls:
+            print('\n===',url,'===')
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'FloodSafe-Nepal-source-audit/0.8.85','Accept':'application/json','Cache-Control':'no-cache'})
+              with urllib.request.urlopen(req,timeout=25) as r:
+                raw=r.read(); print('HTTP',r.status,'bytes',len(raw),'content-type',r.headers.get('content-type'))
+              obj=json.loads(raw.decode('utf-8','replace'))
+              if isinstance(obj,dict):
+                arr=obj.get('results') or obj.get('data') or []
+                print('root keys',list(obj)[:30],'count field',obj.get('count'),'rows',len(arr) if isinstance(arr,list) else type(arr).__name__)
+              elif isinstance(obj,list): arr=obj; print('root list rows',len(arr))
+              else: arr=[]; print('root type',type(obj).__name__)
+              if isinstance(arr,list) and arr:
+                row=arr[0] if isinstance(arr[0],dict) else {}
+                print('first keys',list(row)[:60])
+                fields=row.get('fields') if isinstance(row.get('fields'),dict) else {}
+                snap={k:(row.get(k) if k in row else fields.get(k)) for k in interesting if k in row or k in fields}
+                print('first selected',json.dumps(snap,ensure_ascii=False,default=str)[:4000])
+            except Exception as e:
+              print('ERROR',repr(e))
+          PY
+      - name: Probe DHM public hydrology pages
+        shell: bash
+        run: |
+          set -u
+          python3 - <<'PY'
+          import urllib.request,re
+          for url in ['https://dhm.gov.np/','https://dhm.gov.np/hydrology/river-watch-map','https://www.dhm.gov.np/']:
+            print('\n===',url,'===')
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 FloodSafe-Nepal/0.8.85','Cache-Control':'no-cache'})
+              with urllib.request.urlopen(req,timeout=25) as r: html=r.read().decode('utf-8','replace');print('HTTP',r.status,'chars',len(html))
+              for token in ['Real Time Stream Flow','river-watch','Water Lvl','BELOW WARNING','WARNING','DANGER','api/','ajax','streamflow','river']:
+                print(token, html.lower().count(token.lower()))
+              urls=sorted(set(re.findall(r'https?://[^\"\'<> ]+',html)))
+              print('candidate urls', [u for u in urls if any(x in u.lower() for x in ['hydro','river','api','stream'])][:30])
+            except Exception as e: print('ERROR',repr(e))
+          PY

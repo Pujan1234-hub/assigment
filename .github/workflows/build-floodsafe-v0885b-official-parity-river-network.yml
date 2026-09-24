@@ -1,0 +1,131 @@
+name: Build FloodSafe v0.8.85b Official Parity River Network APK
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0885b-official-parity-river-network.yml'
+      - 'floodsafe-android-app/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Verify BIPAD river-stations carries official reading fields
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,urllib.request
+          u='https://bipadportal.gov.np/api/v1/river-stations/?limit=100&_fs=0885b'
+          req=urllib.request.Request(u,headers={'User-Agent':'FloodSafe-Nepal/0.8.85b','Accept':'application/json','Cache-Control':'no-cache'})
+          with urllib.request.urlopen(req,timeout=30) as r: obj=json.load(r)
+          rows=obj.get('results') or []
+          assert rows, 'BIPAD river-stations returned no rows'
+          obs=[x for x in rows if x.get('waterLevel') is not None and x.get('waterLevelOn')]
+          assert obs, 'BIPAD river-stations has no waterLevel+waterLevelOn observation rows'
+          statuses=sorted({str(x.get('status') or '') for x in obs})
+          print('BIPAD_RIVER_STATIONS_OBSERVATION_FIELDS_PASS rows=',len(obs),'statuses=',statuses[:12])
+          PY
+
+      - name: Apply native chain through v0.8.85b
+        run: |
+          python3 floodsafe-android-app/run_patch_native_v0877.py
+          python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+          python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0880_viewport_same_river_detail.py
+          python3 floodsafe-android-app/run_patch_native_v0881.py
+          python3 floodsafe-android-app/patch_native_v0883_map_camera_river_tap.py
+          python3 floodsafe-android-app/run_patch_native_v0884.py
+          python3 floodsafe-android-app/patch_native_v0885_official_parity_river_network.py
+          python3 floodsafe-android-app/patch_native_v0885b_compile_fix.py
+
+      - name: Verify official-source display and river-network contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0885_BIPAD_CATALOG_IS_LIVE_OBSERVATION' "$A"
+          grep -Fq 'V0885_WATER_LEVEL_ON_TIME' "$A"
+          grep -Fq 'V0885_OFFICIAL_LATEST_HEADER_NO_20M' "$A"
+          grep -Fq 'V0885_OFFICIAL_LATEST_COUNTS' "$A"
+          grep -Fq '🟡 "+al+" 🔵' "$A"
+          ! grep -Fq 'LIVE (≤20m)' "$A"
+          grep -Fq 'V0877_CLEAN_FRESH_ONLY_LIVE' "$A"
+          grep -Fq 'V0885_ALWAYS_VISIBLE_NATIONAL_RIVER_NETWORK' "$M"
+          grep -Fq 'fs-rivers-national-core' "$M"
+          grep -Fq 'data/nepal-waterways-national-v0841.geojson' "$M"
+          grep -Fq 'V0885_STATION_COLOUR_OFFICIAL_LATEST' "$M"
+          grep -Fq 'V0885_OFFICIAL_LATEST_RIVER_COLOUR' "$M"
+          grep -Fq 'V0885_MAP_COLOUR_FOLLOWS_OFFICIAL_LATEST' "$M"
+          grep -Fq 'V0884_REAL_RIVER_DETAIL_TIME_SOURCE_THRESHOLDS' "$M"
+          grep -Fq 'versionCode 105' "$G"
+          grep -Fq "versionName '0.8.85'" "$G"
+          echo 'V0885B_OFFICIAL_PARITY_RIVER_NETWORK_CONTRACT PASS'
+
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Rebuild and verify full Nepal river network
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          files=list(Path('floodsafe-android-app/app/build').rglob('data/nepal-waterways-national-v0841.geojson'))
+          assert files, 'national river network missing'
+          x=json.loads(files[0].read_text())
+          assert x.get('line_count',0)>=45000, x.get('line_count')
+          assert x.get('far_west_line_count',0)>=500, x.get('far_west_line_count')
+          assert x.get('far_east_line_count',0)>=400, x.get('far_east_line_count')
+          print('V0885B_FULL_NEPAL_RIVER_NETWORK_PASS',x.get('line_count'),x.get('far_west_line_count'),x.get('far_east_line_count'))
+          PY
+
+      - name: Unit test and build APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify and stage APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-national-v0841.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          cp "$APK" FloodSafe-Nepal-v0.8.85b-OFFICIAL-PARITY-RIVER-NETWORK-FIELD-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.8.85b-OFFICIAL-PARITY-RIVER-NETWORK-FIELD-TEST.apk | tee FloodSafe-Nepal-v0.8.85b-SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0885b-OFFICIAL-PARITY-RIVER-NETWORK-FIELD-TEST
+          path: |
+            FloodSafe-Nepal-v0.8.85b-OFFICIAL-PARITY-RIVER-NETWORK-FIELD-TEST.apk
+            FloodSafe-Nepal-v0.8.85b-SHA256.txt
+          retention-days: 14

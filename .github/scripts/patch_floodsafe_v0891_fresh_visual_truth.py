@@ -11,7 +11,7 @@ g=g_path.read_text(encoding='utf-8')
 # v0.8.91 safety/truth repair:
 # - old official WARNING/DANGER rows are history, not a current flood.
 # - map station and river risk colours are severe ONLY while the reading is fresh.
-# - stale observed gauges are grey; no-reading remains black/unknown.
+# - stale observed gauges are placed in the stale/unknown source rather than warning/danger.
 # - retain v0.8.90 name/geometry join and anti-flicker behavior.
 
 def method_span(text,name):
@@ -39,13 +39,13 @@ def replace_method(text,name,new_block):
     return text[:sp[0]]+new_block+text[sp[1]:]
 
 map_colour=r'''    private static String v884MapColour(StationDot s){
-        if(s==null||!Double.isFinite(s.level)||s.v881At<=0L)return "#111827";
-        if(!s.fresh)return "#6b7280"; // V0891_STALE_STATION_GREY
+        if(s==null||!Double.isFinite(s.level)||s.v881At<=0L)return "GREY / NO OFFICIAL READING";
+        if(!s.fresh)return "GREY / STALE"; // V0891_STALE_STATION_GREY
         String g=normalizeStage(s.stage);
-        if("danger".equals(g))return "#ef4444";
-        if("warning".equals(g))return "#f59e0b";
-        if("alert".equals(g))return "#facc15";
-        return "#22c55e";
+        if("danger".equals(g))return "RED";
+        if("warning".equals(g))return "ORANGE";
+        if("alert".equals(g))return "YELLOW";
+        return "GREEN / NORMAL";
     } // V0891_FRESH_ONLY_STATION_COLOUR
 '''
 m=replace_method(m,'v884MapColour',map_colour)
@@ -67,24 +67,21 @@ risk=r'''    private StationDot v872RiskGaugeForRiver(RiverWay r,List<StationDot
 '''
 m=replace_method(m,'v872RiskGaugeForRiver',risk)
 
-# stationGeo in the v0.8.85 chain hard-coded official-latest colours and bypassed freshness.
-# Re-use v884MapColour so one truth policy drives every station dot.
-station_geo=r'''    private String stationGeo(List<StationDot> ss){
-        try{
-            JSONArray fs=new JSONArray();
-            for(StationDot s:ss){
-                JSONObject g=new JSONObject();g.put("type","Point");
-                JSONArray c=new JSONArray();c.put(s.lon);c.put(s.lat);g.put("coordinates",c);
-                JSONObject p=new JSONObject();
-                p.put("name",s.name==null?"":s.name);
-                p.put("level",Double.isFinite(s.level)?s.level:JSONObject.NULL);
-                p.put("stage",normalizeStage(s.stage));
-                p.put("fresh",s.fresh);
-                p.put("colour",v884MapColour(s)); // V0891_STATION_GEO_USES_FRESH_TRUTH
-                JSONObject f=new JSONObject();f.put("type","Feature");f.put("geometry",g);f.put("properties",p);fs.put(f);
+# Keep the existing two-argument source API used by refreshStationSources, but
+# classify a severe status as severe only while its observation is fresh.
+station_geo=r'''    private static String stationGeo(List<StationDot> list, String group) {
+        try {
+            JSONArray f = new JSONArray();
+            for (StationDot s : list) {
+                boolean observed=s!=null&&Double.isFinite(s.level)&&s.v881At>0L;
+                String g;
+                if(!observed||!s.fresh)g="stale"; // V0891_STATION_GEO_USES_FRESH_TRUTH
+                else g=normalizeStage(s.stage);
+                if (!group.equals(g)) continue;
+                f.put(pointFeature(s.lon,s.lat,s.name));
             }
-            JSONObject fc=new JSONObject();fc.put("type","FeatureCollection");fc.put("features",fs);return fc.toString();
-        }catch(Exception e){return "{\"type\":\"FeatureCollection\",\"features\":[]}";}
+            return new JSONObject().put("type","FeatureCollection").put("features",f).toString();
+        } catch (Exception e) { return emptyFeatureCollection(); }
     }
 '''
 m=replace_method(m,'stationGeo',station_geo)
@@ -104,4 +101,4 @@ if 'versionCode 111' not in g or "versionName '0.8.91'" not in g:raise SystemExi
 
 m_path.write_text(m,encoding='utf-8')
 g_path.write_text(g,encoding='utf-8')
-print('FloodSafe v0.8.91 PASS: fresh-only river risk colours + grey stale gauges + stable non-flickering stations')
+print('FloodSafe v0.8.91 PASS: fresh-only river risk colours + stale gauges removed from severe layers + stable non-flickering stations')

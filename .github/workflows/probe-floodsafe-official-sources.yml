@@ -15,12 +15,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Probe BIPAD River Watch and DHM rainfall POST contract
+      - name: Probe BIPAD River Watch and DHM rainfall map API
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json,urllib.request,datetime,time
+          import json,urllib.request,urllib.parse,http.cookiejar,re,datetime,time
+          # BIPAD River Watch parity
           u='https://bipadportal.gov.np/api/v1/river-stations/?format=json&limit=5000&_fs='+str(time.time_ns())
           req=urllib.request.Request(u,headers={'User-Agent':'FloodSafe-Nepal/source-probe','Accept':'application/json','Cache-Control':'no-cache,no-store'})
           with urllib.request.urlopen(req,timeout=30) as r:j=json.load(r)
@@ -33,22 +34,18 @@ jobs:
             except:continue
             if -300<=age<=24*3600:active.append(x)
           print('BIPAD_CATALOG',len(rows),'BIPAD_24H_RIVER_WATCH',len(active))
-          PY
-          python3 - <<'PY'
-          import urllib.request,urllib.parse,http.cookiejar,re,json
-          jar=http.cookiejar.CookieJar();op=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar));hdr={'User-Agent':'Mozilla/5.0 FloodSafe','Accept':'text/html,application/xhtml+xml'}
-          req=urllib.request.Request('https://dhm.gov.np/hydrology/rainfall-watch-map',headers=hdr);html=op.open(req,timeout=30).read().decode('utf-8','ignore')
-          token=re.search(r'name="csrf_test_name"\s+value="([^"]+)"',html);token=token.group(1) if token else ''
-          print('DHM_CSRF',bool(token),'COOKIES',[(c.name,c.value[:8]) for c in jar])
-          for needle in ['loadMapData(', "$(\'#applyfilter\')", 'var mapValue', "filterData').serialize", 'rainfallTab.active']:
-            pos=0
-            while True:
-              i=html.find(needle,pos)
-              if i<0:break
-              print('DHM_CONTEXT',needle,repr(html[max(0,i-900):min(len(html),i+1500)]));pos=i+len(needle)
-          data=urllib.parse.urlencode({'csrf_test_name':token,'sortby':'','basinname[]':'','stationindex[]':'','districtname[]':''},doseq=True).encode()
-          req=urllib.request.Request('https://dhm.gov.np/hydrology/filterInRainfallTable',data=data,headers={'User-Agent':'Mozilla/5.0 FloodSafe','Accept':'application/json','Content-Type':'application/x-www-form-urlencoded','Referer':'https://dhm.gov.np/hydrology/rainfall-watch-map'})
-          try:
-            raw=op.open(req,timeout=30).read().decode('utf-8','ignore');print('DHM_TABLE_RESPONSE',raw[:2500])
-          except Exception as e:print('DHM_TABLE_ERROR',repr(e))
+          # DHM rainfall map API: same POST the official page uses.
+          jar=http.cookiejar.CookieJar();op=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+          page=op.open(urllib.request.Request('https://dhm.gov.np/hydrology/rainfall-watch-map',headers={'User-Agent':'Mozilla/5.0 FloodSafe'}),timeout=30).read().decode('utf-8','ignore')
+          token=re.search(r'name="csrf_test_name"\s+value="([^"]+)"',page);token=token.group(1) if token else ''
+          assert token,'DHM CSRF token missing'
+          for hour in [1,3,6,12,24]:
+            body=urllib.parse.urlencode({'csrf_test_name':token,'type':'0','mapValue':'all','hour':str(hour)}).encode()
+            req=urllib.request.Request('https://dhm.gov.np/hydrology/getRainfallFilter',data=body,headers={'User-Agent':'Mozilla/5.0 FloodSafe','Accept':'application/json','Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest','Referer':'https://dhm.gov.np/hydrology/rainfall-watch-map'})
+            raw=op.open(req,timeout=30).read().decode('utf-8','ignore');obj=json.loads(raw)
+            data=obj.get('data');arr=data[0] if isinstance(data,list) and data and isinstance(data[0],list) else []
+            updated=data.get('rainfall_date_time') if isinstance(data,dict) else (None)
+            if isinstance(data,list) and hasattr(data,'__len__'): updated=None
+            print('DHM_RAIN',hour,'status=',obj.get('status'),'stations=',len(arr),'sample=',arr[0] if arr else None,'updated=',updated)
+            assert obj.get('status')=='success' and arr,'DHM rainfall map returned empty for hour '+str(hour)
           PY

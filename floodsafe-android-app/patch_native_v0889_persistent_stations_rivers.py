@@ -10,8 +10,7 @@ g=g_path.read_text(encoding='utf-8')
 # v0.8.89 real-device persistence repair:
 # - transient/partial refreshes must not erase already-rendered official station dots;
 # - zoom/tile swaps must not blank the monitored river network while replacement geometry loads;
-# - retained river geometry is revalidated against the CURRENT official station set so stale
-#   monitored rivers do not remain live forever.
+# - retained river geometry is revalidated against the CURRENT official station set.
 
 def method_span(text,name):
     q=re.search(r'(?m)^\s*(?:private|public|protected)?\s*[^\n{]+\b'+re.escape(name)+r'\s*\([^\n]*\)\s*(?:throws\s+[^{]+)?\{',text)
@@ -68,7 +67,6 @@ set_stations=r'''    void setStations(List<?> source, double lat, double lon) {
         synchronized (stations) {
             int oldCount=stations.size();
             if(next.isEmpty() && oldCount>0){
-                // A transient empty refresh must never wipe the bootstrap/live official map.
                 // V0889_EMPTY_REFRESH_RETAINS_STATIONS
             }else if(oldCount>0 && next.size()<Math.max(25,(int)Math.floor(oldCount*0.65))){
                 java.util.LinkedHashMap<String,StationDot> merged=new java.util.LinkedHashMap<>();
@@ -93,16 +91,12 @@ apply=r'''    private void v887ApplyMonitoredRiverGeometry(){
         List<RiverWay> current=v887MonitoredRivers(candidates);
         List<RiverWay> render;
         synchronized(v889StableMonitoredRivers){
-            // Revalidate old geometry against today's/current station set first, then merge the
-            // newly loaded zoom tile. Empty tile swaps therefore cannot blank the map.
             List<RiverWay> stillValid=v887MonitoredRivers(v889StableMonitoredRivers);
             if(!current.isEmpty())stillValid.addAll(current);
             List<RiverWay> dedup=v879Dedup(stillValid);
             if(!dedup.isEmpty()){
                 v889StableMonitoredRivers.clear();v889StableMonitoredRivers.addAll(dedup);
             }else if(stations.isEmpty()){
-                // Keep the last rendered monitored geometry while an official station refresh is
-                // temporarily unavailable; it will be revalidated when stations return.
                 // V0889_EMPTY_STATION_WINDOW_KEEPS_RIVER_GEOMETRY
             }else{
                 v889StableMonitoredRivers.clear();
@@ -125,10 +119,10 @@ required=[
  'V0889_PARTIAL_REFRESH_MERGES_STATIONS','V0889_COMPLETE_REFRESH_REPLACES_STATIONS',
  'V0889_STATION_REFRESH_PRESERVES_RIVERS','V0889_EMPTY_STATION_WINDOW_KEEPS_RIVER_GEOMETRY',
  'V0889_NO_ZOOM_BLANK_FRAME','V0889_PERSISTENT_MONITORED_RIVER_NETWORK','V0889_ZOOM_TILE_SWAP_NO_DISAPPEAR',
- 'V0888_FAST_MONITORED_RIVER_FILTER','V0888_FIRST_FRAME_BEFORE_BOOTSTRAP','V0886_NO_UNRELATED_STATION_FALLBACK'
+ 'V0888_FAST_MONITORED_RIVER_FILTER','V0886_NO_NEARBY_ONLY_FALLBACK'
 ]
 for x in required:
-    if x not in m and x!='V0888_FIRST_FRAME_BEFORE_BOOTSTRAP':raise SystemExit('v0889 map contract missing: '+x)
+    if x not in m:raise SystemExit('v0889 map contract missing: '+x)
 if 'versionCode 109' not in g or "versionName '0.8.89'" not in g:raise SystemExit('v0889 version bump failed')
 
 m_path.write_text(m,encoding='utf-8')

@@ -1,28 +1,35 @@
 {
-  "generated_at": "2026-09-24T04:51:06.013946+05:45",
-  "updated_at_npt": "24 Sep 04:51 NPT",
+  "generated_at": "2026-09-24T07:06:14.410924+05:45",
+  "updated_at_npt": "24 Sep 07:06 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "एक वर्षयता क्यानडाका प्रधानमन्त्रीलाई ‘पेल्दै’ आएका थिए ट्रम्प, अहिले कार्नी तिर्दैछन् पैँचो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594387/trump-has-been-scolding-the-canadian-prime-minister-for-over-a-year-now-carney-is-paying-the-price",
+      "published_at": "2026-09-24T06:41:21+05:45",
+      "flash": true
+    },
+    {
+      "title": "देशभर मनसुनी र पश्चिमी वायुको दोहोरो प्रभाव, आज यी प्रदेशमा धेरै भारी वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594385/dual-effect-of-monsoon-and-westerly-winds-across-the-country-possibility-of-very-heavy-rainfall-in-these-regions-today",
+      "published_at": "2026-09-24T06:14:44+05:45",
+      "flash": true
+    },
+    {
+      "title": "सङ्घीय संसद्का दुवै सदन र पाँच संसदीय समितिको बैठक आज बस्दै, यस्ता छन् कार्यसूची",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594381/meetings-of-both-houses-of-the-federal-parliament-and-five-parliamentary-committees-are-being-held-today-here-is-the-agenda",
+      "published_at": "2026-09-24T05:15:16+05:45",
+      "flash": false
+    },
     {
       "title": "स्वास्थ्य सेवा मूल्याङ्कनमा माडी पहिलो",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594376/madi-ranks-first-in-health-service-evaluation",
       "published_at": "2026-09-24T04:38:06+05:45",
-      "flash": true
-    },
-    {
-      "title": "प्रहरीको गतिशीलता बढाउन मधेस सरकारले ३५ मोटरसाइकल प्रदान",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594373/madhesh-government-provides-35-motorcycles-to-increase-police-mobility",
-      "published_at": "2026-09-24T00:30:43+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाँकेमा उच्च सतर्कता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594372/high-alert-in-banke",
-      "published_at": "2026-09-24T00:10:16+05:45",
       "flash": false
     }
   ],
@@ -42,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 3
+      "flash": 2,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,
@@ -53,7 +60,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     }

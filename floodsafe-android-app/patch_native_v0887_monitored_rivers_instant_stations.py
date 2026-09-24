@@ -83,14 +83,10 @@ if 'V0887_BOOTSTRAP_OFFICIAL_STATIONS' not in a:
 '''
     a=a[:sp[1]]+helper+a[sp[1]:]
 
-sp=method_span(a,'onCreate')
-if not sp:raise SystemExit('v0887 onCreate missing')
-block=a[sp[0]:sp[1]]
-if 'V0887_BOOTSTRAP_CALL' not in block:
+if 'V0887_BOOTSTRAP_CALL' not in a:
     anchor='setContentView(buildScreen());'
-    if anchor not in block:raise SystemExit('v0887 setContentView anchor missing')
-    block=block.replace(anchor,anchor+'\n        v887LoadBootstrapOfficialStations(); // V0887_BOOTSTRAP_CALL',1)
-    a=a[:sp[0]]+block+a[sp[1]:]
+    if anchor not in a:raise SystemExit('v0887 setContentView anchor missing')
+    a=a.replace(anchor,anchor+'\n        v887LoadBootstrapOfficialStations(); // V0887_BOOTSTRAP_CALL',1)
 
 # -----------------------------------------------------------------------------
 # B) Keep the full official river geometry as candidate data, but render/tap only rivers
@@ -170,9 +166,6 @@ set_stations=r'''    void setStations(List<?> source, double lat, double lon) {
 '''
 m=replace_method(m,'setStations',set_stations)
 
-# Disable the all-55k-line bright national overlay. It made the map look "live" even though
-# most tiny tributaries had no official gauge. Exact viewport candidates remain available and
-# are filtered above to monitored rivers only.
 national=r'''    private void v885EnsureNationalRiverLayer(){
         // V0887_NO_DECORATIVE_FULL_BLUE_NETWORK
         // Full national hydrography stays bundled for geometry lookup/fallback, but is not
@@ -181,7 +174,6 @@ national=r'''    private void v885EnsureNationalRiverLayer(){
 '''
 m=replace_method(m,'v885EnsureNationalRiverLayer',national)
 
-# User-facing wording: blue/status river lines now have official details.
 sp=method_span(m,'showRiver')
 if not sp:raise SystemExit('v0887 showRiver missing')
 show=m[sp[0]:sp[1]]
@@ -190,7 +182,6 @@ if 'V0887_VISIBLE_RIVER_MUST_HAVE_DETAIL' not in show:
     show=show[:p]+'\n        // V0887_VISIBLE_RIVER_MUST_HAVE_DETAIL'+show[p:]
     m=m[:sp[0]]+show+m[sp[1]:]
 
-# Release identity.
 g=re.sub(r'versionCode\s+106\b','versionCode 107',g,count=1)
 g=g.replace("versionName '0.8.86'","versionName '0.8.87'",1)
 

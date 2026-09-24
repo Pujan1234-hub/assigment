@@ -1,0 +1,72 @@
+name: Diagnose FloodSafe Official River Feeds
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths:
+      - '.github/workflows/diagnose-floodsafe-official-river-feeds.yml'
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect current official river feeds safely
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, re, urllib.request
+          from html import unescape
+          UA={'User-Agent':'FloodSafeNepal-Diagnostic/0.8.85','Accept':'application/json,text/html,*/*','Cache-Control':'no-cache'}
+          def get(url):
+              req=urllib.request.Request(url,headers=UA)
+              with urllib.request.urlopen(req,timeout=25) as r:
+                  return r.status, r.headers.get('content-type',''), r.read().decode('utf-8','replace')
+          def compact(v): return str(v)[:180].replace('\n',' ')
+          def walk_rows(obj):
+              if isinstance(obj,list): return obj
+              if not isinstance(obj,dict): return []
+              for k in ('results','data','items','features'):
+                  v=obj.get(k)
+                  if isinstance(v,list): return v
+                  if isinstance(v,dict):
+                      for kk in ('results','data','items'):
+                          vv=v.get(kk)
+                          if isinstance(vv,list): return vv
+              return []
+          urls=['https://bipadportal.gov.np/api/v1/river/?limit=5','https://bipadportal.gov.np/api/v1/river-trimed/?limit=5','https://bipadportal.gov.np/api/v1/river-stations/?limit=5','https://bipadportal.gov.np/api/v1/flood-station/?limit=5','https://bipadportal.gov.np/api/v1/streamflow/?limit=5','https://bipadportal.gov.np/api/v1/station-location/?limit=5']
+          interesting=re.compile(r'(station|river|water|level|warn|danger|status|time|date|updated|modified|point|coord|lat|lon|source|trend|flow)',re.I)
+          for url in urls:
+              print('\n===',url,'===')
+              try:
+                  status,ct,body=get(url); print('HTTP',status,'CT',ct,'bytes',len(body)); obj=json.loads(body)
+                  if isinstance(obj,dict): print('TOP_KEYS',sorted(obj.keys()))
+                  rows=walk_rows(obj); print('ROWS_RETURNED',len(rows),'COUNT',obj.get('count') if isinstance(obj,dict) else None)
+                  if rows and isinstance(rows[0],dict):
+                      row=rows[0]; print('ROW_KEYS',sorted(row.keys()))
+                      fields=row.get('fields') if isinstance(row.get('fields'),dict) else None
+                      if fields: print('FIELDS_KEYS',sorted(fields.keys()))
+                      for k,v in row.items():
+                          if interesting.search(k): print(' ',k,'=',compact(v))
+                      for nk in ('station','river','latest','reading','measurement','observation','data'):
+                          v=row.get(nk)
+                          if isinstance(v,dict):
+                              print(' ',nk,'_KEYS=',sorted(v.keys()))
+                              for k2,v2 in v.items():
+                                  if interesting.search(k2): print('   ',k2,'=',compact(v2))
+              except Exception as e: print('ERROR',type(e).__name__,str(e)[:300])
+          for url in ['https://www.dhm.gov.np/hydrology/river-watch','https://www.dhm.gov.np/hydrology/realtime-stream']:
+              print('\n===',url,'===')
+              try:
+                  status,ct,body=get(url); print('HTTP',status,'CT',ct,'bytes',len(body)); low=body.lower()
+                  for needle in ('water level','warning level','danger level','station no.','loading data','realtime','river-watch'): print('HAS',needle,needle in low)
+                  srcs=re.findall(r'<script[^>]+src=[\"\']([^\"\']+)',body,re.I); print('SCRIPT_SRCS',srcs[-12:])
+                  api_hits=[]
+                  for mm in re.finditer(r'https?://[^\"\'\s<>]+|/api/[^\"\'\s<>]+',body,re.I):
+                      x=unescape(mm.group(0))
+                      if 'api' in x.lower() and x not in api_hits: api_hits.append(x)
+                  print('API_HITS',api_hits[:30])
+              except Exception as e: print('ERROR',type(e).__name__,str(e)[:300])
+          PY

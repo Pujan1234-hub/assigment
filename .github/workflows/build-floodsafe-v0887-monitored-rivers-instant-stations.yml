@@ -59,6 +59,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0886_same_river_official_station_join.py
           python3 floodsafe-android-app/patch_native_v0887_preflight.py
           python3 floodsafe-android-app/patch_native_v0887_monitored_rivers_instant_stations.py
+          python3 floodsafe-android-app/patch_native_v0887_postflight.py
 
       - name: Verify v0.8.87 field contracts
         shell: bash
@@ -78,6 +79,7 @@ jobs:
           grep -Fq 'V0887_STATION_REFRESH_REBUILDS_MONITORED_RIVERS' "$M"
           grep -Fq 'V0887_NO_DECORATIVE_FULL_BLUE_NETWORK' "$M"
           grep -Fq 'V0887_VISIBLE_RIVER_MUST_HAVE_DETAIL' "$M"
+          grep -Fq 'V0887_FIRST_STYLE_MONITORED_RIVERS' "$M"
           grep -Fq 'V0886_OFFICIAL_TITLE_RIVER_JOIN' "$M"
           grep -Fq 'versionCode 107' "$G"
           grep -Fq "versionName '0.8.87'" "$G"

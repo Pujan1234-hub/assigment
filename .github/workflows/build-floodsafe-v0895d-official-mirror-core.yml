@@ -1,0 +1,104 @@
+name: Build FloodSafe v0.8.95d Official Mirror Core APK
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0895d-official-mirror-core.yml'
+      - '.github/scripts/preflight_v0895_patch_span.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.11.1' }
+
+      - name: Verify BIPAD and DHM official sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,urllib.request,urllib.parse,http.cookiejar,re,datetime,time
+          now=time.time();u='https://bipadportal.gov.np/api/v1/river-stations/?format=json&limit=5000&_fs='+str(time.time_ns());req=urllib.request.Request(u,headers={'User-Agent':'FloodSafe-Nepal/0.8.95','Accept':'application/json','Cache-Control':'no-cache,no-store'});j=json.load(urllib.request.urlopen(req,timeout=35));rows=j.get('results') or [];active=[]
+          for x in rows:
+            t=x.get('waterLevelOn');v=x.get('waterLevel')
+            if not t or v is None:continue
+            try:dt=datetime.datetime.fromisoformat(str(t).replace('Z','+00:00'));dt=dt if dt.tzinfo else dt.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=5,minutes=45)));age=now-dt.timestamp()
+            except:continue
+            if -300<=age<=86400:active.append(x)
+          print('BIPAD_RIVER_WATCH_NOW',len(active),'of',len(rows));assert len(active)>=100
+          jar=http.cookiejar.CookieJar();op=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar));page='https://dhm.gov.np/hydrology/rainfall-watch-map';html=op.open(urllib.request.Request(page,headers={'User-Agent':'Mozilla/5.0 FloodSafe'}),timeout=30).read().decode('utf-8','ignore');m=re.search(r'name="csrf_test_name"\s+value="([^"]+)"',html);assert m;token=m.group(1)
+          for h in [1,3,6,12,24]:
+            body=urllib.parse.urlencode({'csrf_test_name':token,'type':'0','mapValue':'all','hour':str(h)}).encode();q=urllib.request.Request('https://dhm.gov.np/hydrology/getRainfallFilter',data=body,headers={'User-Agent':'Mozilla/5.0 FloodSafe','Accept':'application/json','Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest','Referer':page});o=json.loads(op.open(q,timeout=30).read().decode());d=o.get('data') or {};arr=d.get('0') if isinstance(d,dict) else None;print('DHM_RAIN_NOW',h,len(arr or []),d.get('rainfall_date_time'));assert isinstance(arr,list) and len(arr)>=100
+          PY
+
+      - name: Apply chain and official mirror
+        run: |
+          python3 floodsafe-android-app/run_patch_native_v0877.py
+          python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+          python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0880_viewport_same_river_detail.py
+          python3 floodsafe-android-app/run_patch_native_v0881.py
+          python3 floodsafe-android-app/patch_native_v0883_map_camera_river_tap.py
+          python3 floodsafe-android-app/run_patch_native_v0884.py
+          python3 floodsafe-android-app/patch_native_v0885_official_parity_river_network.py
+          python3 floodsafe-android-app/patch_native_v0885b_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0886_same_river_official_station_join.py
+          python3 floodsafe-android-app/patch_native_v0887_preflight.py
+          python3 floodsafe-android-app/patch_native_v0887_monitored_rivers_instant_stations.py
+          python3 floodsafe-android-app/patch_native_v0887_postflight.py
+          python3 floodsafe-android-app/patch_native_v0887_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0888_startup_crash_fast_rivers.py
+          python3 floodsafe-android-app/patch_native_v0889_persistent_stations_rivers.py
+          python3 .github/scripts/patch_floodsafe_v0890_risk_lines.py
+          python3 .github/scripts/patch_floodsafe_v0891_fresh_visual_truth.py
+          python3 .github/scripts/patch_floodsafe_v0892_clear_map_fresh_source.py
+          python3 .github/scripts/patch_floodsafe_v0893_bipad_display_parity.py
+          python3 .github/scripts/preflight_v0895_patch_span.py
+          python3 .github/scripts/patch_floodsafe_v0895_official_mirror_core.py
+
+      - name: Verify v0.8.95 contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java';M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java';L='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java';S='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java';D='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/DhmRainMirror.java';G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0895_BIPAD_RIVER_WATCH_MIRROR_NO_ARCHIVE' "$A";grep -Fq 'V0895_TEN_SECOND_BIPAD_MIRROR' "$A";grep -Fq 'V0895_DHM_RAIN_MIRROR_START' "$A";grep -Fq 'V0895_DHM_RAIN_DETAIL_PRIMARY' "$M";grep -Fq 'V0895_NAMED_ACTIVE_BIPAD_RIVERS_ONLY' "$M";grep -Fq 'V0895_PLACE_TOWN_LABEL_LAYER' "$M";grep -Fq 'V0895_REAL_NEPAL_CAMERA_BOUNDS' "$M";grep -Fq 'V0893_BIPAD_RIVER_COLOUR_PARITY' "$M";grep -Fq 'V0895_BACKGROUND_DIRECT_BIPAD' "$L";grep -Fq 'V0895_BACKGROUND_TEN_SECOND_MIRROR' "$L";grep -Fq 'V0895_ALERT_FRESHNESS_SEPARATE_FROM_24H_DISPLAY' "$L";grep -Fq 'V0895_DHM_RAIN_BACKGROUND_MIRROR' "$S";grep -Fq 'getRainfallFilter' "$D";grep -Fq 'versionCode 115' "$G";grep -Fq "versionName '0.8.95'" "$G"
+          echo 'V0895_OFFICIAL_MIRROR_CONTRACT PASS'
+
+      - name: Bundle assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Rebuild river geometry
+        run: |
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+
+      - name: Unit tests and APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Stage verified APK
+        run: |
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk';test -s "$APK";unzip -t "$APK" >/dev/null;cp "$APK" FloodSafe-Nepal-v0.8.95-OFFICIAL-MIRROR-CORE-FIELD-TEST.apk;sha256sum FloodSafe-Nepal-v0.8.95-OFFICIAL-MIRROR-CORE-FIELD-TEST.apk | tee FloodSafe-Nepal-v0.8.95-SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0895-OFFICIAL-MIRROR-CORE-FIELD-TEST
+          path: |
+            FloodSafe-Nepal-v0.8.95-OFFICIAL-MIRROR-CORE-FIELD-TEST.apk
+            FloodSafe-Nepal-v0.8.95-SHA256.txt
+          retention-days: 1

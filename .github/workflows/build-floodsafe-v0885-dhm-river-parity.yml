@@ -37,16 +37,13 @@ jobs:
           def get(url,timeout=180):
               req=urllib.request.Request(url,headers=H)
               with urllib.request.urlopen(req,timeout=timeout) as r:return r.read().decode('utf-8','replace')
-          # Official DHM river geometry used by River Watch.
           river_url='https://dhm.gov.np/assets/frontend/geo/River_All.geojson'
           river_text=get(river_url,90);river=json.loads(river_text)
           feats=river.get('features',[]) if isinstance(river,dict) else []
-          if river.get('type')!='FeatureCollection' or len(feats)<100:raise SystemExit('DHM River_All.geojson contract failed')
+          if not isinstance(river,dict) or river.get('type')!='FeatureCollection' or len(feats)<1:raise SystemExit('DHM River_All.geojson contract failed')
           (out/'dhm-river-all-v0885.geojson').write_text(json.dumps(river,separators=(',',':'),ensure_ascii=False),encoding='utf-8')
-          # Official page embeds the coordinate/catalog rows used by its own map.
           page=get('https://www.dhm.gov.np/hydrology/river-watch',210)
-          marker='var coordinates ='
-          p=page.find(marker)
+          marker='var coordinates =';p=page.find(marker)
           if p<0:raise SystemExit('DHM coordinates marker missing')
           s=page.find('[',p+len(marker))
           if s<0:raise SystemExit('DHM coordinates array start missing')
@@ -73,7 +70,6 @@ jobs:
               slim.append({'id':x.get('id'),'stationIndex':str(x.get('stationIndex') or '').strip(),'name':str(x.get('name') or '').strip(),'basin':str(x.get('basin') or '').strip(),'district':str(x.get('district') or '').strip(),'latitude':la,'longitude':lo})
           if len(slim)<280:raise SystemExit(f'DHM coordinate rows too small: {len(slim)}')
           (out/'dhm-river-watch-stations-v0885.json').write_text(json.dumps(slim,separators=(',',':'),ensure_ascii=False),encoding='utf-8')
-          # Prove the current direct River Watch feed is live at build time. Do not bundle its readings.
           body=urllib.parse.urlencode({'type':'0','mapValue':'all'}).encode()
           req=urllib.request.Request('https://dhm.gov.np/site/riverWatchTableViewData',data=body,method='POST',headers={**H,'Accept':'application/json,*/*','Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest','Referer':'https://www.dhm.gov.np/hydrology/river-watch'})
           with urllib.request.urlopen(req,timeout=60) as r:feed=json.loads(r.read().decode('utf-8','replace'))

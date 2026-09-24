@@ -11,10 +11,8 @@ m=m_path.read_text(encoding='utf-8')
 g=g_path.read_text(encoding='utf-8')
 
 # v0.8.85: real-device official-source parity + river-map repair.
-# Important separation:
-# - what the MAP displays mirrors the latest official BIPAD/DHM-connected row and its official status
-# - the existing stricter freshness gate remains untouched for automatic emergency alerts/push safety
-# This removes the misleading user-facing <=20m rule without weakening alert safety.
+# Display mirrors latest official BIPAD/DHM-connected data. The existing stricter
+# freshness gate is retained only for automatic emergency notification safety.
 
 def method_span(text,name):
     q=re.search(r'(?m)^\s*(?:private|public|protected)\s+[^\n{]+\b'+re.escape(name)+r'\s*\([^\n]*\)\s*(?:throws\s+[^{]+)?\{',text)
@@ -40,11 +38,7 @@ def replace_method(text,name,new_block):
     if not sp:raise SystemExit('v0885 method missing: '+name)
     return text[:sp[0]]+new_block+text[sp[1]:]
 
-# -----------------------------------------------------------------------------
-# A) BIPAD river-stations is not metadata-only: it currently carries waterLevel,
-#    waterLevelOn and status. Read those rows as first-class observations, then let
-#    river/river-trimed/DHM replace them only when they have a newer source timestamp.
-# -----------------------------------------------------------------------------
+# BIPAD currently exposes waterLevel + waterLevelOn + status directly on river-stations.
 obs_time=r'''    private long v877ObservationTime(JSONObject r){
         if(r==null)return 0L;JSONObject f=r.optJSONObject("fields");
         String raw=strDeep(r,f,"_measurementTime","waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","dataTime","data_time","timestamp","dateTime","datetime","modifiedOn","modified_on","updatedAt","updated_at");
@@ -60,17 +54,25 @@ obs_time=r'''    private long v877ObservationTime(JSONObject r){
 '''
 a=replace_method(a,'v877ObservationTime',obs_time)
 
-sp=method_span(a,'loadTrustedRiverStationsV862')
-if not sp:raise SystemExit('v0885 loader missing')
-loader=a[sp[0]:sp[1]]
-old='''        java.util.LinkedHashMap<String,JSONObject> newest=new java.util.LinkedHashMap<>();\n        java.util.LinkedHashMap<String,JSONObject> metadataMatch=new java.util.LinkedHashMap<>();'''
-new='''        java.util.LinkedHashMap<String,JSONObject> newest=new java.util.LinkedHashMap<>();\n        java.util.LinkedHashMap<String,JSONObject> metadataMatch=new java.util.LinkedHashMap<>();\n        // BIPAD river-stations itself carries the current/latest DHM-connected observation.\n        for(int i=0;i<catalog.length();i++){\n            JSONObject c=catalog.optJSONObject(i);if(c==null)continue;\n            String key=v862FinalKey(v846StationIndex(c),v846StationName(c));if(key.isEmpty())continue;\n            double level=v877ObservationLevel(c);long at=v877ObservationTime(c);\n            if(!Double.isFinite(level)||at<=0L)continue;\n            try{c.put("_floodsafeObservationMatched",true);c.put("_floodsafeOnline",true);c.put("_floodsafeSource","BIPAD river-stations / DHM-connected latest");String rn=v877RiverName(c);if(!rn.isEmpty())c.put("_floodsafeRiverName",rn);}catch(Exception ignored){}\n            newest.put(key,c);metadataMatch.put(key,c);\n        } // V0885_BIPAD_CATALOG_IS_LIVE_OBSERVATION'''
-if old not in loader:raise SystemExit('v0885 loader newest anchor missing')
-loader=loader.replace(old,new,1)
-a=a[:sp[0]]+loader+a[sp[1]:]
+# Robust unique loader anchor: older generated chains format the method signature differently.
+old='''        java.util.LinkedHashMap<String,JSONObject> newest=new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<String,JSONObject> metadataMatch=new java.util.LinkedHashMap<>();'''
+new='''        java.util.LinkedHashMap<String,JSONObject> newest=new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<String,JSONObject> metadataMatch=new java.util.LinkedHashMap<>();
+        // Current BIPAD river-stations rows are observations too, not metadata-only rows.
+        for(int i=0;i<catalog.length();i++){
+            JSONObject c=catalog.optJSONObject(i);if(c==null)continue;
+            String key=v862FinalKey(v846StationIndex(c),v846StationName(c));if(key.isEmpty())continue;
+            double level=v877ObservationLevel(c);long at=v877ObservationTime(c);
+            if(!Double.isFinite(level)||at<=0L)continue;
+            try{c.put("_floodsafeObservationMatched",true);c.put("_floodsafeOnline",true);c.put("_floodsafeSource","BIPAD river-stations / DHM-connected latest");String rn=v877RiverName(c);if(!rn.isEmpty())c.put("_floodsafeRiverName",rn);}catch(Exception ignored){}
+            newest.put(key,c);metadataMatch.put(key,c);
+        } // V0885_BIPAD_CATALOG_IS_LIVE_OBSERVATION'''
+if old not in a:raise SystemExit('v0885 loader newest anchor missing')
+a=a.replace(old,new,1)
 
-# Primary UI mirrors official latest rows and source status. Do not expose an arbitrary
-# global 20-minute rule as if it came from DHM/BIPAD.
+# User-facing display follows official latest rows; do not label an internal 20-minute rule
+# as though it were the DHM/BIPAD display policy.
 hint=r'''    private void updateMapHintCounts(){
         if(mapHint==null)return;
         mapHint.setText(t("🌊 आधिकारिक catalog "+v849CatalogCount+" • latest official reading "+v877LatestObservationCount+" • reading नभएको "+v877NoObservationCount,
@@ -96,15 +98,10 @@ station_line=r'''    private String stationLine(RiverStation s){
     } // V0885_STATION_ROW_OFFICIAL_LATEST
 '''
 a=replace_method(a,'stationLine',station_line)
-
 a=a.replace('यो latest official reading हो; २० मिनेटभन्दा पुरानो भएकाले LIVE alert मा प्रयोग हुँदैन।','यो आधिकारिक source मा देखिएको पछिल्लो reading हो; source time र reading age देखाइएको छ।')
 a=a.replace('This is the latest official reading; because it is older than 20 minutes it is not used for LIVE alerts.','This is the latest reading shown by the official source; source time and reading age are shown.')
 
-# -----------------------------------------------------------------------------
-# B) Full Nepal river network. Keep the exact viewport river tiles for tapping, but also
-#    render the generated nationwide MultiLineString permanently underneath them so the
-#    network never disappears at Nepal overview zoom.
-# -----------------------------------------------------------------------------
+# Permanent national network under exact tappable viewport tiles.
 field_anchor='    private String riversGeoJson = null;\n'
 if 'V0885_NATIONAL_NETWORK_FIELD' not in m:
     if field_anchor not in m:raise SystemExit('v0885 river field anchor missing')
@@ -157,8 +154,7 @@ if 'V0885_INSTALL_NATIONAL_NETWORK' not in block:
     block=block[:p]+'\n        v885EnsureNationalRiverLayer(); // V0885_INSTALL_NATIONAL_NETWORK'+block[p:]
     m=m[:sp[0]]+block+m[sp[1]:]
 
-# Latest official observation controls DISPLAY colour, while alert/push freshness is still
-# governed by NativeFullActivity's existing safety gate.
+# Display colour follows official latest observation; automatic notification safety still uses s.fresh.
 station_geo=r'''    private static String stationGeo(List<StationDot> list, String group) {
         try {
             JSONArray f = new JSONArray();
@@ -204,7 +200,6 @@ show=show.replace('if(!gauge.fresh)b.append("\\n\\n").append(englishUi?"This lat
 if ' • OFFICIAL LATEST' not in show:raise SystemExit('v0885 river status wording anchor missing')
 m=m[:sp[0]]+show+m[sp[1]:]
 
-# Release identity.
 g=re.sub(r'versionCode\s+104\b','versionCode 105',g,count=1)
 g=g.replace("versionName '0.8.84'","versionName '0.8.85'",1)
 
@@ -216,4 +211,4 @@ if 'LIVE (≤20m)' in a or 'LIVE (<=20m)' in a:raise SystemExit('v0885 user-faci
 if 'versionCode 105' not in g or "versionName '0.8.85'" not in g:raise SystemExit('v0885 version bump failed')
 
 a_path.write_text(a,encoding='utf-8');m_path.write_text(m,encoding='utf-8');g_path.write_text(g,encoding='utf-8')
-print('FloodSafe v0.8.85 PASS: BIPAD current river-stations observations + official-latest UI/status colours + always-visible full Nepal river network; emergency freshness gate untouched')
+print('FloodSafe v0.8.85 PASS: current BIPAD river-stations observations + official-latest UI/status colours + full Nepal river network; emergency freshness gate untouched')

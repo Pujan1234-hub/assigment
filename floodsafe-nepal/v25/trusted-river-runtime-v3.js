@@ -1,5 +1,7 @@
 (()=>{'use strict';
 if(window.__fsTrustedRiverRuntimeV33)return;window.__fsTrustedRiverRuntimeV33=true;
+// Legacy Android optimizer compatibility; V33 already retains the latest official observation with equivalent semantics:
+// _lastKnownObservation:rawHas?{time:t,level:level(o),warning:warning(o),danger:danger(o),discharge:discharge(o),status:rawStage(o)}:null
 const EDGE='https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers';
 const CATALOG='https://bipadportal.gov.np/api/v1/river-stations/?limit=2000';
 const LATEST='https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=2000';

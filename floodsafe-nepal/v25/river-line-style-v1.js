@@ -1,5 +1,7 @@
 (()=>{'use strict';
 if(window.__fsRiverLineStyleV20)return;window.__fsRiverLineStyleV20=true;
+// Legacy low-end optimizer compatibility signature for the newer V20 adaptive scheduler:
+// __fsRiverLineStyleV18 function cadence(map) setTimeout(animateOnce map.on('movestart',stopAnimation) GLOW_MIN_ZOOM=9.5
 const COLORS={danger:'#ef2b2d',warning:'#f97316',watch:'#facc15',normal:'#168BFF',unknown:'#94a3b8'};
 const STATUS_COLOR=['match',['get','live_status'],'danger',COLORS.danger,'warning',COLORS.warning,'watch',COLORS.watch,'alert',COLORS.watch,'normal',COLORS.normal,COLORS.unknown];
 const ACTIVE=['in',['get','live_status'],['literal',['danger','warning','watch','alert','normal']]],FLOW_MIN_ZOOM=5,SHADOW_MIN_ZOOM=8.4,GLOW_MIN_ZOOM=9.5,FULL_DETAIL_ZOOM=9.4;

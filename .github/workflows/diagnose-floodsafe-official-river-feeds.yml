@@ -13,23 +13,21 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Verify direct DHM River Watch JSON endpoints
+      - name: Verify DHM River Watch map endpoint with coordinates
         shell: bash
         run: |
           python3 - <<'PY'
           import json,urllib.request,urllib.parse
-          urls=['https://dhm.gov.np/site/riverWatchTableViewData','https://dhm.gov.np/frontend_dhm/site/getRiverWatchMapFilterData']
-          for url in urls:
-              for data in ({},{'type':'0','mapValue':'all'}):
-                  print('\n===',url,data,'===')
-                  try:
-                      body=urllib.parse.urlencode(data).encode()
-                      req=urllib.request.Request(url,data=body,method='POST',headers={'User-Agent':'Mozilla/5.0 FloodSafeNepal/0.8.85','Accept':'application/json,*/*','Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest','Referer':'https://www.dhm.gov.np/hydrology/river-watch','Cache-Control':'no-cache'})
-                      with urllib.request.urlopen(req,timeout=40) as r:s=r.read().decode('utf-8','replace');print('HTTP',r.status,'CT',r.headers.get('content-type'),'BYTES',len(s))
-                      print('HEAD',s[:350].replace('\n',' '))
-                      o=json.loads(s); print('TOP',type(o).__name__, sorted(o.keys()) if isinstance(o,dict) else '')
-                      rows=o.get('data',[]) if isinstance(o,dict) else []
-                      print('STATUS',o.get('status') if isinstance(o,dict) else None,'ROWS',len(rows))
-                      if rows and isinstance(rows[0],dict):print('ROW_KEYS',sorted(rows[0].keys()),'ROW0',json.dumps(rows[0],ensure_ascii=False)[:1400])
-                  except Exception as e:print('ERROR',type(e).__name__,str(e)[:500])
+          url='https://dhm.gov.np/site/getRiverWatchFilter'
+          for data in ({'type':'0','mapValue':'all'},{'type':'','mapValue':'all'},{}):
+              print('\n===',data,'===')
+              try:
+                  body=urllib.parse.urlencode(data).encode()
+                  req=urllib.request.Request(url,data=body,method='POST',headers={'User-Agent':'Mozilla/5.0 FloodSafeNepal/0.8.85','Accept':'application/json,*/*','Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest','Referer':'https://www.dhm.gov.np/hydrology/river-watch','Cache-Control':'no-cache'})
+                  with urllib.request.urlopen(req,timeout=40) as r:s=r.read().decode('utf-8','replace');print('HTTP',r.status,'CT',r.headers.get('content-type'),'BYTES',len(s))
+                  print('HEAD',s[:400].replace('\n',' '));o=json.loads(s)
+                  rows=o.get('data',[]) if isinstance(o,dict) else []
+                  print('STATUS',o.get('status') if isinstance(o,dict) else None,'ROWS',len(rows))
+                  if rows and isinstance(rows[0],dict):print('ROW_KEYS',sorted(rows[0].keys()),'ROW0',json.dumps(rows[0],ensure_ascii=False)[:1800])
+              except Exception as e:print('ERROR',type(e).__name__,str(e)[:500])
           PY

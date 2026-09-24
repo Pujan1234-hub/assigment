@@ -5,6 +5,8 @@ on:
     branches: [ fix/floodsafe-v0882-realtime-river-rain ]
     paths:
       - '.github/workflows/build-floodsafe-v0885b-dhm-river-parity.yml'
+      - 'floodsafe-android-app/run_patch_native_v0885.py'
+      - 'floodsafe-android-app/patch_native_v0885_dhm_river_parity.py'
   workflow_dispatch:
 
 permissions:

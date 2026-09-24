@@ -1,0 +1,43 @@
+name: Diagnose v0.8.84 Generated Anchors
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths:
+      - '.github/workflows/diagnose-v0884-generated-anchors.yml'
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply chain through v0.8.84
+        run: |
+          python3 floodsafe-android-app/run_patch_native_v0877.py
+          python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+          python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0880_viewport_same_river_detail.py
+          python3 floodsafe-android-app/run_patch_native_v0881.py
+          python3 floodsafe-android-app/patch_native_v0883_map_camera_river_tap.py
+          python3 floodsafe-android-app/run_patch_native_v0884.py
+      - name: Print exact generated anchors
+        shell: bash
+        run: |
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          echo '=== loader refs ==='
+          grep -n -C 5 'loadTrustedRiverStationsV862' "$A" || true
+          echo '=== output anchor ==='
+          grep -n -C 5 'List<RiverStation> out' "$A" || true
+          echo '=== cache anchor ==='
+          grep -n -C 5 'v878WriteLastGoodObservations' "$A" || true
+          echo '=== freshness anchor ==='
+          grep -n -C 4 'V0877_CLEAN_FRESH_ONLY_LIVE' "$A" || true
+          echo '=== coverage text ==='
+          grep -n -C 3 'LIVE (≤20m)' "$A" || true
+          echo '=== map load asset anchor ==='
+          grep -n -C 5 'main.post(this::installGeoLayers)' "$M" || true
+          echo '=== map river layer anchor ==='
+          grep -n -C 5 'riversGeoJson' "$M" | head -120 || true

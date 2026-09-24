@@ -57,6 +57,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0885_official_parity_river_network.py
           python3 floodsafe-android-app/patch_native_v0885b_compile_fix.py
           python3 floodsafe-android-app/patch_native_v0886_same_river_official_station_join.py
+          python3 floodsafe-android-app/patch_native_v0887_preflight.py
           python3 floodsafe-android-app/patch_native_v0887_monitored_rivers_instant_stations.py
 
       - name: Verify v0.8.87 field contracts

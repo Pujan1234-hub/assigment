@@ -13,46 +13,31 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect DHM River Watch current-data contract
+      - name: Trace DHM River Watch inline current-data request
         shell: bash
         run: |
           python3 - <<'PY'
-          import json,re,urllib.request,urllib.parse
-          UA={'User-Agent':'Mozilla/5.0 FloodSafeNepal/0.8.85','Accept':'*/*','Cache-Control':'no-cache','Referer':'https://www.dhm.gov.np/hydrology/river-watch'}
-          def req(url,data=None):
-              b=None if data is None else urllib.parse.urlencode(data).encode()
-              r=urllib.request.Request(url,data=b,headers=UA,method='POST' if b else 'GET')
-              with urllib.request.urlopen(r,timeout=30) as x:return x.status,x.headers.get('content-type',''),x.read().decode('utf-8','replace')
-          js='https://dhm.gov.np/assets/frontend/js/riverMap.js'
-          print('=== riverMap.js ===')
-          try:
-              st,ct,s=req(js);print('HTTP',st,'bytes',len(s))
-              for needle in ['getApiFilter','river-watch','ajax','fetch(','frontend_dhm']:
-                  print('\n--',needle,'--')
-                  for m in list(re.finditer(re.escape(needle),s,re.I))[:6]:
-                      print(s[max(0,m.start()-700):min(len(s),m.end()+1200)].replace('\n',' ')[:2000])
-          except Exception as e:print('JS ERROR',repr(e))
-          endpoint='https://dhm.gov.np/frontend_dhm/hydrology/getApiFilter'
-          trials=[('GET',None),('POST-empty',{}),('POST-basic',{'page':'1','limit':'500'}),('POST-date',{'page':'1','limit':'500','filter_type':'','province':'','district':'','basin':''})]
-          for label,data in trials:
-              print('\n===',label,endpoint,'===')
-              try:
-                  st,ct,b=req(endpoint,data);print('HTTP',st,'CT',ct,'bytes',len(b),'HEAD',b[:500].replace('\n',' '))
-                  try:
-                      o=json.loads(b);print('JSON_TYPE',type(o).__name__,'KEYS',sorted(o.keys()) if isinstance(o,dict) else '');
-                      def rows(x):
-                          if isinstance(x,list):return x
-                          if isinstance(x,dict):
-                              for k in ('data','results','items'):
-                                  v=x.get(k)
-                                  if isinstance(v,list):return v
-                                  if isinstance(v,dict):
-                                      for kk in ('data','results','items'):
-                                          vv=v.get(kk)
-                                          if isinstance(vv,list):return vv
-                          return []
-                      rr=rows(o);print('ROWS',len(rr));
-                      if rr and isinstance(rr[0],dict): print('ROW_KEYS',sorted(rr[0].keys()),'ROW0',json.dumps(rr[0],ensure_ascii=False)[:1600])
-                  except Exception as je:print('NOT_JSON',type(je).__name__)
-              except Exception as e:print('ERROR',type(e).__name__,str(e)[:400])
+          import re,urllib.request,html
+          URL='https://www.dhm.gov.np/hydrology/river-watch'
+          req=urllib.request.Request(URL,headers={'User-Agent':'Mozilla/5.0 FloodSafeNepal/0.8.85','Accept':'text/html,*/*','Cache-Control':'no-cache'})
+          with urllib.request.urlopen(req,timeout=35) as r:s=r.read().decode('utf-8','replace')
+          print('PAGE_BYTES',len(s))
+          needles=['getApiFilter','frontend_dhm','hydrology/get','Loading data','water_level','warning_level','danger_level','station_no','axios','$.ajax','fetch(']
+          for needle in needles:
+              print('\n===== NEEDLE',needle,'=====')
+              hits=list(re.finditer(re.escape(needle),s,re.I))
+              print('HITS',len(hits))
+              for m in hits[:12]:
+                  x=html.unescape(s[max(0,m.start()-1300):min(len(s),m.end()+2200)])
+                  x=re.sub(r'\s+',' ',x)
+                  print(x[:3500])
+          print('\n===== FORMS =====')
+          for x in re.findall(r'<form[^>]*>',s,re.I)[:20]:print(re.sub(r'\s+',' ',x))
+          print('\n===== XHR-LIKE URLS =====')
+          found=[]
+          for pat in [r'url\s*:\s*[\"\']([^\"\']+)',r'fetch\s*\(\s*[\"\']([^\"\']+)',r'axios\.[a-z]+\s*\(\s*[\"\']([^\"\']+)']:
+              for x in re.findall(pat,s,re.I):
+                  x=html.unescape(x)
+                  if x not in found:found.append(x)
+          for x in found:print(x)
           PY

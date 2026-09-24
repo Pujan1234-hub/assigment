@@ -1,56 +1,56 @@
 {
-  "generated_at": "2026-09-24T12:06:44.708798+05:45",
-  "updated_at_npt": "24 Sep 12:06 NPT",
+  "generated_at": "2026-09-24T17:47:04.518431+05:45",
+  "updated_at_npt": "24 Sep 17:47 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "ईभी र मोटरसाइकल ठोक्किँदा मोटरसाइकल चालकको मृत्यु",
+      "title": "रौतहट प्रशासनद्वारा उच्च सतर्कता अपनाउन आग्रह",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594434/motorcyclist-dies-after-collision-between-ev-and-motorcycle",
-      "published_at": "2026-09-24T10:56:08+05:45",
+      "url": "https://www.ratopati.com/story/594610/rautahat-administration-urges-people-to-adopt-high-alert",
+      "published_at": "2026-09-24T17:37:10+05:45",
+      "flash": true
+    },
+    {
+      "title": "अति भारी वर्षाको जोखिमपछि नारायणगढ–मुग्लिन सडकमा राति सवारी आवागमन बन्द",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594609/traffic-on-narayangadh-muglin-road-closed-at-night-due-to-risk-of-heavy-rain",
+      "published_at": "2026-09-24T17:35:11+05:45",
+      "flash": true
+    },
+    {
+      "title": "ताप्लेजुङ आगलागी अपडेट : बाक्लो बस्तीका १० घर जले",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594544/fire-update-in-taplejung-10-houses-in-dense-settlement-burned-down",
+      "published_at": "2026-09-24T15:00:03+05:45",
       "flash": false
     },
     {
-      "title": "६. भारतको तट आइपुग्यो ‘अर्नब’ चक्रवात : आन्ध्र प्रदेश र ओडिसाममा भारी वर्षा, हजारौँ विस्थापित",
+      "title": "मधेस सरकारले दियो सशस्त्र प्रहरी बललाई २० थान मोटरसाइकल",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594428/cyclone-arnab-hits-indias-coast-heavy-rains-in-andhra-pradesh-and-odisha-thousands-displaced",
-      "published_at": "2026-09-24T10:39:33+05:45",
+      "url": "https://www.ratopati.com/story/594506/madhesh-government-gives-20-motorcycles-to-armed-police-force",
+      "published_at": "2026-09-24T13:28:43+05:45",
       "flash": false
     },
     {
-      "title": "भारी वर्षाको जोखिम : विराटनगरका विद्यालय दुई दिन बन्द हुने",
+      "title": "भारी वर्षाको पूर्वानुमानपछि लुम्बिनीमा उच्च सतर्कता, दाङका पाँच सडक राति बन्द",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594407/risk-of-heavy-rain-schools-in-biratnagar-to-be-closed-for-two-days",
-      "published_at": "2026-09-24T09:05:00+05:45",
+      "url": "https://www.ratopati.com/story/594500/high-alert-in-lumbini-after-heavy-rain-forecast-five-roads-in-dang-closed-at-night",
+      "published_at": "2026-09-24T13:18:29+05:45",
       "flash": false
     },
     {
-      "title": "पोखराका स्कुलहरू २ दिन बन्द",
+      "title": "ट्याक्टर दुर्घटना हुँदा चालकको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594403/schools-in-pokhara-closed-for-2-days",
-      "published_at": "2026-09-24T08:44:01+05:45",
-      "flash": false
-    },
-    {
-      "title": "सरुवा भएको भनिएका अर्थसचिव हमाल अझै मन्त्रालयमै, बजेट निर्माणमा सक्रिय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594397/finance-secretary-hamal-who-was-reportedly-transferred-is-still-in-the-ministry-active-in-budget-preparation",
-      "published_at": "2026-09-24T08:12:06+05:45",
-      "flash": false
-    },
-    {
-      "title": "पछिल्लो १२ घण्टामा लुम्बिनी प्रदेशमा भारीदेखि धेरै भारी वर्षा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594391/heavy-to-very-heavy-rainfall-in-lumbini-province-in-the-last-12-hours",
-      "published_at": "2026-09-24T07:25:50+05:45",
+      "url": "https://www.ratopati.com/story/594470/driver-dies-in-tractor-accident",
+      "published_at": "2026-09-24T12:07:40+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
-      "ok": false,
-      "error": "HTTPSConnectionPool(host='www.onlinekhabar.com', port=443): Read timed out.",
+      "ok": true,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     },
@@ -63,18 +63,18 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
+      "flash": 2,
       "recent": 6
     },
     "Kathmandu Post": {
-      "ok": false,
-      "error": "HTTPSConnectionPool(host='kathmandupost.com', port=443): Read timed out.",
+      "ok": true,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     }

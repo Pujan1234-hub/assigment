@@ -88,13 +88,21 @@ m=replace_method(m,'v847UpdateMovingGlow',pulse)
 m=m.replace('int n = Math.min(36, rivers.size());','int n = Math.min(16, rivers.size()); // V0892_LIGHT_FLOW_PARTICLES')
 m=m.replace('main.postDelayed(this, 160L);','main.postDelayed(this, 320L); // V0892_LIGHT_FLOW_PARTICLES')
 
-# GPS/current location should update location/weather only, not refetch the whole national hydrology feed.
+# GPS/current location: debounce duplicate provider callbacks. If an older chain still
+# contains a national river refetch in this callback, remove it; normal source polling
+# continues independently in the existing realtime pipeline.
 s=span(a,'onLocationChanged')
 if not s:raise SystemExit('v0892 onLocationChanged missing')
 b=a[s[0]:s[1]]
-b,n=re.subn(r'\s*fetchOfficialRiverData\(\);','\n        // V0892_GPS_NO_GLOBAL_RIVER_REFRESH: normal source polling continues independently',b,count=1)
-if n==0 and 'V0892_GPS_NO_GLOBAL_RIVER_REFRESH' not in b:raise SystemExit('v0892 GPS refresh anchor missing')
-a=a[:s[0]]+b+a[s[1]:]
+b=re.sub(r'\s*fetchOfficialRiverData\(\);','\n        // national river polling is independent of GPS',b,count=1)
+brace=b.find('{')+1
+if brace<=0:raise SystemExit('v0892 location method brace missing')
+guard='''\n        long v892Now=System.currentTimeMillis();
+        if(v892Now-v892LastLocationWorkAt<3500L)return; // V0892_GPS_LOCATION_DEBOUNCE
+        v892LastLocationWorkAt=v892Now;
+'''
+b=b[:brace]+guard+b[brace:]
+a=a[:s[0]]+'    private long v892LastLocationWorkAt=0L; // V0892_GPS_NO_GLOBAL_RIVER_REFRESH\n'+b+a[s[1]:]
 
 # Newest timestamp always wins across catalog, BIPAD live paths and DHM joins.
 s=span(a,'loadTrustedRiverStationsV862')
@@ -117,9 +125,9 @@ a=a[:s[0]]+b+a[s[1]:]
 g=re.sub(r'versionCode\s+111\b','versionCode 112',g,count=1);g=g.replace("versionName '0.8.91'","versionName '0.8.92'",1)
 for x in ['V0892_CLEAR_TOPO_BASE','V0892_SMALL_STATION_DOTS','V0892_THIN_BLUE_RIVERS','V0892_SUBTLE_RIVER_FLOW','V0891_FRESH_ONLY_RISK_LINE','V0890_NO_UNCHANGED_STATION_FLICKER']:
     if x not in m:raise SystemExit('v0892 map contract missing: '+x)
-for x in ['V0892_GPS_NO_GLOBAL_RIVER_REFRESH','V0892_NEWEST_OFFICIAL_TIMESTAMP_WINS','V0892_RUNTIME_NOCACHE_SOURCE','V0877_CLEAN_FULL_INVENTORY_TRUTH']:
+for x in ['V0892_GPS_NO_GLOBAL_RIVER_REFRESH','V0892_GPS_LOCATION_DEBOUNCE','V0892_NEWEST_OFFICIAL_TIMESTAMP_WINS','V0892_RUNTIME_NOCACHE_SOURCE','V0877_CLEAN_FULL_INVENTORY_TRUTH']:
     if x not in a:raise SystemExit('v0892 activity contract missing: '+x)
 if 'World_Imagery/MapServer/tile' in m or 'World_Topo_Map/MapServer/tile' not in m:raise SystemExit('v0892 topo swap failed')
 if 'versionCode 112' not in g or "versionName '0.8.92'" not in g:raise SystemExit('v0892 version bump failed')
 a_path.write_text(a,encoding='utf-8');m_path.write_text(m,encoding='utf-8');g_path.write_text(g,encoding='utf-8')
-print('FloodSafe v0.8.92 PASS: clear topo + thin subtle flow + small stations + GPS no-stall + newest timestamp wins')
+print('FloodSafe v0.8.92 PASS: clear topo + thin subtle flow + small stations + GPS debounce + newest timestamp wins')

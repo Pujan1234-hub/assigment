@@ -1,0 +1,121 @@
+name: Build FloodSafe v0.8.84 Realtime River Status APK
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0882-realtime-river-rain ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0884-realtime-river-status.yml'
+      - 'floodsafe-android-app/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply verified native chain through v0.8.84
+        run: |
+          python3 floodsafe-android-app/run_patch_native_v0877.py
+          python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+          python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0880_viewport_same_river_detail.py
+          python3 floodsafe-android-app/run_patch_native_v0881.py
+          python3 floodsafe-android-app/patch_native_v0883_map_camera_river_tap.py
+          python3 floodsafe-android-app/patch_native_v0884_realtime_river_status_detail.py
+
+      - name: Verify real-device river detail and colour contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          R='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0884_REAL_RIVER_DETAIL_TIME_SOURCE_THRESHOLDS' "$M"
+          grep -Fq 'String sk=v884CanonicalRiverName(x.riverName)' "$M"
+          grep -Fq 'V0884_FRESH_SAME_RIVER_RISK_ONLY' "$M"
+          grep -Fq 'V0884_RISK_REFRESH_AFTER_TILE_SWAP' "$M"
+          grep -Fq 'V0884_STATUS_COLOUR_FLOW_GLOW' "$M"
+          grep -Fq 'V0884_RISK_GLOW_LAYERS' "$M"
+          grep -Fq 'Observation time: ' "$M"
+          grep -Fq 'Official source: ' "$M"
+          grep -Fq 'Warning level: ' "$M"
+          grep -Fq 'Danger level: ' "$M"
+          grep -Fq 'River map colour: ' "$M"
+          grep -Fq 'V0883_NEPAL_MIN_ZOOM' "$M"
+          grep -Fq 'V0881_HYDRO_WATERBODY_GEO' "$M"
+          grep -Fq 'V0877_CLEAN_FRESH_ONLY_LIVE' "$A"
+          grep -Fq 'LOOKAHEAD_MINUTES = 35' "$R"
+          grep -Fq 'Cache-Control", "no-cache' "$R"
+          grep -Fq 'versionCode 104' "$G"
+          grep -Fq "versionName '0.8.84'" "$G"
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java').read_text()
+          a=p.index('private void showRiver(')
+          b=p.find('\n    private ',a+30)
+          block=p[a:b if b>0 else a+9000]
+          assert 'stationTapListener.onStationTap(gauge.original)' not in block
+          for s in ['Observation time: ','Official source: ','Warning level: ','Danger level: ','River map colour: ']:
+              assert s in block, s
+          risk_a=p.index('private StationDot v872RiskGaugeForRiver(')
+          risk_b=p.find('\n    private ',risk_a+40)
+          risk=p[risk_a:risk_b if risk_b>0 else risk_a+3500]
+          assert 'x.riverName' in risk
+          assert 'x.name==null' not in risk
+          assert '!x.fresh' in risk
+          print('V0884_RUNTIME_RELATIONSHIP_CHECK PASS')
+          PY
+          ! grep -Fq 'android.webkit.WebView' "$M"
+          echo 'V0884_REAL_DEVICE_RIVER_STATUS_CONTRACT PASS'
+
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Rebuild complete Nepal river assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+
+      - name: Unit test and build APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify and stage APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          cp "$APK" FloodSafe-Nepal-v0.8.84-REALTIME-RIVER-STATUS-FIELD-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.8.84-REALTIME-RIVER-STATUS-FIELD-TEST.apk | tee FloodSafe-Nepal-v0.8.84-SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0884-REALTIME-RIVER-STATUS-FIELD-TEST
+          path: |
+            FloodSafe-Nepal-v0.8.84-REALTIME-RIVER-STATUS-FIELD-TEST.apk
+            FloodSafe-Nepal-v0.8.84-SHA256.txt
+          retention-days: 14

@@ -22,8 +22,8 @@ android {
         applicationId 'io.github.pujan1234hub.floodsafe.app'
         minSdk 26
         targetSdk 36
-        versionCode 15
-        versionName '0.7.1-native'
+        versionCode 110
+        versionName '0.8.90-native'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 

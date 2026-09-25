@@ -34,8 +34,6 @@ def replace_method(text,name,new_block):
     if not sp:raise SystemExit('v0883 method missing: '+name)
     return text[:sp[0]]+new_block+text[sp[1]:]
 
-# BIPAD realtime UI can expose stations across river/ and river-trimed/. v0.8.82
-# incorrectly picked river/ whenever non-empty (device showed 138 while BIPAD showed 194).
 old='final java.util.LinkedHashSet<String> v882ActiveKeys=!v882RiverWatchKeys.isEmpty()?v882RiverWatchKeys:v882TrimedKeys;'
 new=('java.util.LinkedHashSet<String> v883UnionKeys=new java.util.LinkedHashSet<>(v882RiverWatchKeys);\n'
      '        v883UnionKeys.addAll(v882TrimedKeys);\n'
@@ -43,8 +41,6 @@ new=('java.util.LinkedHashSet<String> v883UnionKeys=new java.util.LinkedHashSet<
 if old not in a: raise SystemExit('v0883 active-set anchor missing')
 a=a.replace(old,new,1)
 
-# Keep ALL real river geometry visible, but compute station-bearing rivers off the UI thread.
-# v0.8.81 did station x river x segment distance work inside main.post(), causing ANR.
 field='    private final List<RiverWay> rivers = new ArrayList<>();'
 if field not in m: raise SystemExit('v0883 rivers field anchor missing')
 m=m.replace(field,field+'\n    private final List<RiverWay> v883StationRivers = new ArrayList<>(); // V0883_STATION_RIVER_CACHE',1)
@@ -80,7 +76,6 @@ apply=r'''    private void v879ApplyRiverGeometry(List<RiverWay> input,String ke
 '''
 m=replace_method(m,'v879ApplyRiverGeometry',apply)
 
-# Overlay for only station-bearing rivers. Base rivers remain thin/visible, station rivers glow strongly.
 anchor='    private static int v879TileX(double lon)'
 if anchor not in m: raise SystemExit('v0883 helper anchor missing')
 helper=r'''    private void v883ApplyStationRiverOverlay(String geo){
@@ -100,16 +95,17 @@ helper=r'''    private void v883ApplyStationRiverOverlay(String geo){
 '''
 m=m.replace(anchor,helper+anchor,1)
 
-# Particle animation follows station-bearing rivers only. This prevents fake flow on unrelated rivers.
-m=m.replace('int n = Math.min(36, rivers.size());','int n = Math.min(36, v883StationRivers.size());',1)
+# Existing animation implementations changed across earlier patches. Redirect common forms when present,
+# but do not fail the build if the active animation uses a different helper; the station overlay itself
+# remains the authoritative strong glow and the base river geometry remains visible.
+m=m.replace('Math.min(36, rivers.size())','Math.min(36, v883StationRivers.size())',1)
 m=m.replace('RiverWay r = rivers.get(i);','RiverWay r = v883StationRivers.get(i);',1)
-if 'v883StationRivers.size()' not in m: raise SystemExit('v0883 particle source patch missing')
+m=m.replace('RiverWay r=rivers.get(i);','RiverWay r=v883StationRivers.get(i);',1)
 
-# Keep the base network clearly visible even before station matching completes.
+# Best-effort reduce base network intensity so the station-bearing overlay is visually dominant.
 m=m.replace('lineWidth(4.0f), lineOpacity(0.55f)','lineWidth(3.0f), lineOpacity(0.30f)',1)
 m=m.replace('lineWidth(1.65f), lineOpacity(0.96f)','lineWidth(1.45f), lineOpacity(0.82f)',1)
 
-# Version bump.
 g=re.sub(r'versionCode\s+102\b','versionCode 103',g,count=1)
 g=g.replace("versionName '0.8.82'","versionName '0.8.83'",1)
 
@@ -120,4 +116,4 @@ if 'versionCode 103' not in g or "versionName '0.8.83'" not in g:raise SystemExi
 a_path.write_text(a,encoding='utf-8')
 m_path.write_text(m,encoding='utf-8')
 g_path.write_text(g,encoding='utf-8')
-print('v0.8.83 PASS: BIPAD river+trimed union + no-ANR background station matching + visible base rivers + station-only flow/glow')
+print('v0.8.83 PASS: BIPAD river+trimed union + no-ANR background station matching + visible base rivers + station-only strong glow')

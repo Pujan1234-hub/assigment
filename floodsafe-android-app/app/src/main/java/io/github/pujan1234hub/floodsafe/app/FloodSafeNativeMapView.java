@@ -31,7 +31,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -55,15 +54,11 @@ import static org.maplibre.android.style.layers.Property.LINE_JOIN_ROUND;
 
 /**
  * 100% native Android river map using MapLibre Native. No WebView is used.
- * Mirrors the proven FloodSafe web map: Nepal bounds, Esri satellite imagery,
- * terrain hillshade, cyan river network, verified station status colours,
- * native pan/pinch/zoom, and tap details.
+ * Nepal map + river geometry + official live station status + GPS puck.
  */
 final class FloodSafeNativeMapView extends FrameLayout {
     interface StationTapListener { void onStationTap(Object stationObject); }
 
-    private static final double NEPAL_MIN_LAT = 26.2, NEPAL_MAX_LAT = 30.5;
-    private static final double NEPAL_MIN_LON = 80.0, NEPAL_MAX_LON = 88.35;
     private static final LatLng NEPAL_CENTER = new LatLng(28.10, 84.15);
     private static final String STYLE_JSON = "{\"version\":8,\"sources\":{" +
             "\"satellite\":{\"type\":\"raster\",\"tiles\":[\"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}\"],\"tileSize\":256,\"maxzoom\":19,\"attribution\":\"Imagery © Esri\"}," +
@@ -110,6 +105,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 installGeoLayers();
                 resetView();
                 refreshStationSources();
+                refreshRiverRiskSources();
                 refreshUserSource();
                 startParticles();
             });
@@ -144,7 +140,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         return super.dispatchTouchEvent(ev);
     }
 
-    void setBase(Bitmap ignored) { /* Legacy Canvas hook; MapLibre loads native layers itself. */ }
+    void setBase(Bitmap ignored) { }
 
     void setStations(List<?> source, double lat, double lon) {
         userLat = lat;
@@ -161,6 +157,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
             stations.addAll(next);
         }
         refreshStationSources();
+        refreshRiverRiskSources();
         refreshUserSource();
     }
 
@@ -225,7 +222,10 @@ final class FloodSafeNativeMapView extends FrameLayout {
                     riversGeoJson = makeRiversGeoJson(all);
                 }
             } catch (Exception ignored) {}
-            main.post(this::installGeoLayers);
+            main.post(() -> {
+                installGeoLayers();
+                refreshRiverRiskSources();
+            });
         });
     }
 
@@ -246,6 +246,9 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 style.addLayer(new LineLayer("fs-rivers-layer", "fs-rivers").withProperties(
                         lineColor("#49dcff"), lineWidth(1.65f), lineOpacity(0.96f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
             }
+            ensureRiverRiskSource("fs-river-alert", "fs-river-alert-glow", "fs-river-alert-layer", "#ffc928");
+            ensureRiverRiskSource("fs-river-warning", "fs-river-warning-glow", "fs-river-warning-layer", "#ff8a1f");
+            ensureRiverRiskSource("fs-river-danger", "fs-river-danger-glow", "fs-river-danger-layer", "#f22f4b");
             ensurePointSource("fs-flow-particles", "fs-flow-particles-layer", "#d6fbff", 2.7f, 0.90f);
             ensurePointSource("fs-stale", "fs-stale-layer", "#8e99a5", 4.0f, 0.92f);
             ensurePointSource("fs-normal", "fs-normal-layer", "#2d8cff", 4.4f, 0.98f);
@@ -260,8 +263,20 @@ final class FloodSafeNativeMapView extends FrameLayout {
                         circleColor("#0b7fd0"), circleRadius(5.7f), circleStrokeColor("#ffffff"), circleStrokeWidth(1.5f)));
             }
             refreshStationSources();
+            refreshRiverRiskSources();
             refreshUserSource();
         } catch (Exception ignored) {}
+    }
+
+    private void ensureRiverRiskSource(String sourceId, String glowId, String layerId, String color) {
+        if (style.getSource(sourceId) != null) return;
+        style.addSource(new GeoJsonSource(sourceId, emptyFeatureCollection()));
+        style.addLayer(new LineLayer(glowId, sourceId).withProperties(
+                lineColor(color), lineWidth(7.0f), lineOpacity(0.30f),
+                lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
+        style.addLayer(new LineLayer(layerId, sourceId).withProperties(
+                lineColor(color), lineWidth(3.6f), lineOpacity(1.0f),
+                lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
     }
 
     private void ensurePointSource(String sourceId, String layerId, String color, float radius, float opacity) {
@@ -281,6 +296,74 @@ final class FloodSafeNativeMapView extends FrameLayout {
         setGeo("fs-alert", stationGeo(snapshot, "alert"));
         setGeo("fs-warning", stationGeo(snapshot, "warning"));
         setGeo("fs-danger", stationGeo(snapshot, "danger"));
+    }
+
+    private void refreshRiverRiskSources() {
+        if (!styleReady || style == null || rivers.isEmpty()) return;
+        List<StationDot> snapshot;
+        synchronized (stations) { snapshot = new ArrayList<>(stations); }
+        for (RiverWay river : rivers) river.stage = riverStage(river, snapshot);
+        setGeo("fs-river-alert", riverGeoByStage(rivers, "alert"));
+        setGeo("fs-river-warning", riverGeoByStage(rivers, "warning"));
+        setGeo("fs-river-danger", riverGeoByStage(rivers, "danger"));
+    }
+
+    private static String riverStage(RiverWay river, List<StationDot> snapshot) {
+        int best = 0;
+        for (StationDot s : snapshot) {
+            if (!s.fresh) continue;
+            String stage = normalizeStage(s.stage);
+            int severity = severity(stage);
+            if (severity <= best || severity == 0) continue;
+            if (nameMatches(river.name, s.name) || stationNearRiver(s, river, 2.5)) best = severity;
+        }
+        if (best >= 3) return "danger";
+        if (best == 2) return "warning";
+        if (best == 1) return "alert";
+        return "normal";
+    }
+
+    private static boolean stationNearRiver(StationDot s, RiverWay r, double maxKm) {
+        int stride = Math.max(1, r.points.size() / 100);
+        double best = Double.MAX_VALUE;
+        for (int i = 0; i < r.points.size(); i += stride) {
+            double[] p = r.points.get(i);
+            double d = km(s.lat, s.lon, p[1], p[0]);
+            if (d < best) best = d;
+            if (best <= maxKm) return true;
+        }
+        return false;
+    }
+
+    private static boolean nameMatches(String a, String b) {
+        String x = normalizeName(a), y = normalizeName(b);
+        if (x.isEmpty() || y.isEmpty()) return false;
+        if (x.equals(y) || x.contains(y) || y.contains(x)) return true;
+        String[] xx = x.split(" "), yy = y.split(" ");
+        int common = 0;
+        for (String p : xx) {
+            if (p.length() < 3 || genericWord(p)) continue;
+            for (String q : yy) if (p.equals(q)) { common++; break; }
+        }
+        return common >= 1;
+    }
+
+    private static String normalizeName(String value) {
+        if (value == null) return "";
+        return value.toLowerCase(Locale.ROOT).replace('_', ' ').replace('-', ' ')
+                .replaceAll("[^\\p{L}\\p{N} ]", " ").replaceAll("\\s+", " ").trim();
+    }
+
+    private static boolean genericWord(String s) {
+        return "river".equals(s) || "khola".equals(s) || "nadi".equals(s)
+                || "station".equals(s) || "gauge".equals(s) || "नदी".equals(s) || "खोला".equals(s);
+    }
+
+    private static int severity(String stage) {
+        if ("danger".equals(stage)) return 3;
+        if ("warning".equals(stage)) return 2;
+        if ("alert".equals(stage)) return 1;
+        return 0;
     }
 
     private void refreshUserSource() {
@@ -342,14 +425,18 @@ final class FloodSafeNativeMapView extends FrameLayout {
     private void showRiver(RiverWay r, double la, double lo) {
         StationDot gauge = nearestStation(la, lo);
         StringBuilder msg = new StringBuilder();
+        msg.append("River status: ").append(r.stage.toUpperCase(Locale.ROOT));
         if (gauge != null) {
             double d = km(la, lo, gauge.lat, gauge.lon);
-            msg.append("नजिकको official gauge: ").append(gauge.name)
+            msg.append("\n\nनजिकको official gauge: ").append(gauge.name)
                     .append(String.format(Locale.US, " • %.1f km", d));
             if (Double.isFinite(gauge.level)) msg.append(String.format(Locale.US, "\nपानीको सतह: %.2f m", gauge.level));
             msg.append("\nStatus: ").append(gauge.fresh ? gauge.stage.toUpperCase(Locale.ROOT) : "STALE / UNKNOWN");
-        } else msg.append("यो नदी segment नजिक direct official gauge reference भेटिएन।");
-        msg.append("\n\nRiver geometry: OpenStreetMap / FloodSafe bundled network");
+            if (Double.isFinite(gauge.rainfallMm)) {
+                msg.append(String.format(Locale.US, "\nवर्षा: %.1f mm", gauge.rainfallMm));
+            }
+        } else msg.append("\n\nयो नदी segment नजिक direct official gauge reference भेटिएन।");
+        msg.append("\n\nRainfall station markers map मा देखाइँदैनन्; उपलब्ध rainfall detail station/river detail भित्र मात्र देखाइन्छ।");
         new AlertDialog.Builder(getContext()).setTitle(r.name).setMessage(msg.toString()).setPositiveButton("ठीक छ", null).show();
     }
 
@@ -396,12 +483,27 @@ final class FloodSafeNativeMapView extends FrameLayout {
             s.stage = getString(c, o, "stage", "normal").toLowerCase(Locale.ROOT);
             s.fresh = getBoolean(c, o, "fresh", false);
             s.level = getDouble(c, o, "level");
+            s.rainfallMm = getOptionalDouble(c, o,
+                    "rainfallMm", "rainfall", "rainfall24h", "rain24h", "rain_mm", "precipitation");
             return s;
         } catch (Exception ignored) { return null; }
     }
 
     private static double getDouble(Class<?> c, Object o, String name) throws Exception {
         Field f = c.getDeclaredField(name); f.setAccessible(true); return ((Number) f.get(o)).doubleValue();
+    }
+    private static double getOptionalDouble(Class<?> c, Object o, String... names) {
+        for (String name : names) {
+            try {
+                Field f = c.getDeclaredField(name); f.setAccessible(true);
+                Object v = f.get(o);
+                if (v instanceof Number) {
+                    double n = ((Number) v).doubleValue();
+                    if (Double.isFinite(n)) return n;
+                }
+            } catch (Exception ignored) {}
+        }
+        return Double.NaN;
     }
     private static boolean getBoolean(Class<?> c, Object o, String name, boolean fallback) {
         try { Field f=c.getDeclaredField(name); f.setAccessible(true); return f.getBoolean(o); } catch (Exception e) { return fallback; }
@@ -421,14 +523,24 @@ final class FloodSafeNativeMapView extends FrameLayout {
 
     private static String makeRiversGeoJson(List<RiverWay> ways) throws Exception {
         JSONArray features = new JSONArray();
-        for (RiverWay r : ways) {
-            JSONArray coords = new JSONArray();
-            for (double[] p : r.points) coords.put(new JSONArray().put(p[0]).put(p[1]));
-            JSONObject geom = new JSONObject().put("type", "LineString").put("coordinates", coords);
-            JSONObject props = new JSONObject().put("name", r.name).put("type", r.type);
-            features.put(new JSONObject().put("type", "Feature").put("geometry", geom).put("properties", props));
-        }
+        for (RiverWay r : ways) features.put(riverFeature(r));
         return new JSONObject().put("type", "FeatureCollection").put("features", features).toString();
+    }
+
+    private static String riverGeoByStage(List<RiverWay> ways, String stage) {
+        try {
+            JSONArray features = new JSONArray();
+            for (RiverWay r : ways) if (stage.equals(r.stage)) features.put(riverFeature(r));
+            return new JSONObject().put("type", "FeatureCollection").put("features", features).toString();
+        } catch (Exception e) { return emptyFeatureCollection(); }
+    }
+
+    private static JSONObject riverFeature(RiverWay r) throws Exception {
+        JSONArray coords = new JSONArray();
+        for (double[] p : r.points) coords.put(new JSONArray().put(p[0]).put(p[1]));
+        JSONObject geom = new JSONObject().put("type", "LineString").put("coordinates", coords);
+        JSONObject props = new JSONObject().put("name", r.name).put("type", r.type).put("stage", r.stage);
+        return new JSONObject().put("type", "Feature").put("geometry", geom).put("properties", props);
     }
 
     private static String stationGeo(List<StationDot> list, String group) {
@@ -474,9 +586,9 @@ final class FloodSafeNativeMapView extends FrameLayout {
     }
 
     private static final class StationDot {
-        Object original; String name, stage; double lat, lon, level; boolean fresh;
+        Object original; String name, stage; double lat, lon, level, rainfallMm; boolean fresh;
     }
     private static final class RiverWay {
-        String name, type; final List<double[]> points = new ArrayList<>();
+        String name, type, stage = "normal"; final List<double[]> points = new ArrayList<>();
     }
 }

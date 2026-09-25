@@ -14,7 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-/** Network-independent PJBUILTS launch intro with a hard timeout. */
+/** Network-independent PJBUILTS launch intro. Launches the native Android UI only. */
 public final class PJBuiltsSplashActivity extends Activity {
     private boolean launched;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -65,11 +65,7 @@ public final class PJBuiltsSplashActivity extends Activity {
         launched = true;
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
-        Intent app = new Intent(this, VoiceMainActivity.class);
-        // Do NOT clear the task here. Clearing it destroyed the already-loaded WebView
-        // on every launcher reopen, forcing a full cold reload of map, river, news and
-        // SATHI. CLEAR_TOP + SINGLE_TOP reuses the existing VoiceMainActivity when it
-        // is alive, while still creating it normally on a genuine cold start.
+        Intent app = new Intent(this, NativeFullActivity.class);
         app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (source != null) {
             app.setData(source.getData());

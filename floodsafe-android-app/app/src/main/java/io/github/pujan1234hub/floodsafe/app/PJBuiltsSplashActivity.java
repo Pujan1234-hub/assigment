@@ -65,7 +65,7 @@ public final class PJBuiltsSplashActivity extends Activity {
         launched = true;
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
-        Intent app = new Intent(this, NativeFullActivity.class);
+        Intent app = new Intent(this, FloodSafeNativeActivity.class);
         app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (source != null) {
             app.setData(source.getData());

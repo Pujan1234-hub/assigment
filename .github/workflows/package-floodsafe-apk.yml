@@ -1,11 +1,10 @@
-name: Package FloodSafe Android APK
+name: Package FloodSafe Native Android APK
 
 on:
   workflow_dispatch:
   push:
     paths:
       - 'floodsafe-android-app/**'
-      - 'floodsafe-nepal/**'
       - '.github/workflows/package-floodsafe-apk.yml'
 
 permissions:
@@ -27,45 +26,10 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Apply Android safety and lifecycle patches
-        run: |
-          python3 floodsafe-android-app/patch_webview_crash.py
-          python3 floodsafe-android-app/patch_auto_alerts.py
-          python3 floodsafe-android-app/patch_river_waterlevel.py
+      - name: Unit tests and native APK build
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
-      - name: Bundle verified Android assets
-        run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
-
-      - name: Optimize SATHI and map for budget Android
-        run: |
-          python3 floodsafe-android-app/patch_low_end_sathi.py
-          python3 floodsafe-android-app/patch_low_end_map.py
-
-      - name: Apply smooth PJBUILTS launch intro
-        run: python3 floodsafe-android-app/patch_pjbuilts_intro.py
-
-      - name: Prepare reliable direct startup
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('floodsafe-android-app/app/build/generated/floodsafe-assets/floodsafe-nepal/v25/index.html')
-          text=p.read_text(encoding='utf-8')
-          text=text.replace('<script src="./android-fast-start-v1.js?v=1" defer></script>','')
-          aware='<script src="./sathi-app-aware-v1.js?v=1" defer></script>'
-          marker='<script src="./sathi-flood-ai/place-weather-v1.js?v=1" defer></script>'
-          if aware not in text:
-            if marker not in text: raise SystemExit('SATHI place-weather marker missing')
-            text=text.replace(marker,aware+marker,1)
-          auto='<script src="./auto-alert-ui-v1.js?v=1" defer></script>'
-          if auto not in text: text=text.replace('</body>',auto+'</body>',1)
-          p.write_text(text,encoding='utf-8')
-          PY
-
-      - name: Unit tests and APK build
-        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon
-
-      - name: Verify packaged APK
+      - name: Verify native-only APK
         shell: bash
         run: |
           set -euo pipefail
@@ -73,29 +37,22 @@ jobs:
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
-          unzip -p "$APK" assets/floodsafe-nepal/v25/index.html > /tmp/index.html
-          unzip -p "$APK" assets/floodsafe-nepal/v25/trusted-river-runtime-v3.js > /tmp/river.js
-          unzip -p "$APK" assets/floodsafe-nepal/v25/permanent-281-map-v1.js > /tmp/map.js
-          grep -Fq 'id="humanStatus"' /tmp/index.html
-          grep -Fq 'id="pjbuiltsIntro"' /tmp/index.html
-          grep -Fq 'map-loader-v3.js?v=31' /tmp/index.html
-          grep -Fq 'permanent-281-map-v1.js?v=6' /tmp/index.html
-          grep -Fq 'sathi-flood-ai/advanced-server-v1.js?v=1' /tmp/index.html
-          if grep -Fq 'android-fast-start-v1.js' /tmp/index.html; then echo 'bad serial startup loader found'; exit 1; fi
-          if grep -Fq 'id="alertBtn"' /tmp/index.html; then echo 'alert button found'; exit 1; fi
-          grep -Fq "const CATALOG='https://bipadportal.gov.np/api/v1/river-stations/?limit=2000'" /tmp/river.js
-          grep -Fq '_isCurrentOfficial' /tmp/river.js
-          grep -Fq '_staleOfficial' /tmp/river.js
-          grep -Fq 'LAST OFFICIAL READING — NOT CURRENT' /tmp/map.js
-          sha256sum "$APK" | tee /tmp/floodsafe-apk-sha256.txt
-          echo 'FloodSafe package-verified APK PASS'
+          if unzip -l "$APK" | grep -Eq 'assets/floodsafe-nepal|\.html$|\.js$'; then
+            echo 'ERROR: web assets found in native-only APK'
+            exit 1
+          fi
+          unzip -l "$APK" | tee /tmp/apk-files.txt >/dev/null
+          sha256sum "$APK" | tee /tmp/floodsafe-native-apk-sha256.txt
+          stat -c '%s' "$APK" | tee /tmp/floodsafe-native-apk-size.txt
+          echo 'FloodSafe native-only APK PASS'
 
-      - name: Upload package-verified APK
+      - name: Upload native-only APK
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-0.7.0-PackageVerified-APK
+          name: FloodSafe-Nepal-0.7.1-NativeOnly-APK
           path: |
             floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
-            /tmp/floodsafe-apk-sha256.txt
+            /tmp/floodsafe-native-apk-sha256.txt
+            /tmp/floodsafe-native-apk-size.txt
           if-no-files-found: error
           retention-days: 14

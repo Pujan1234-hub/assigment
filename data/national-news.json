@@ -1,35 +1,84 @@
 {
-  "generated_at": "2026-09-25T07:25:45.212993+05:45",
-  "updated_at_npt": "25 Sep 07:25 NPT",
+  "generated_at": "2026-09-25T12:24:51.196109+05:45",
+  "updated_at_npt": "25 Sep 12:24 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "सर्पदंशका बिरामीलाई ‘सञ्जीवनी’ बन्दै भेरी अस्पताल",
+      "title": "राष्ट्रसंघको महासभामा बालेनको मुख्य मुद्दा जलवायु परिवर्तन, यसअघि नेपालका अन्य प्रधानमन्त्रीले कस्ता मुद्दा उठाए ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594704/bheri-hospital-becomes-sanjeevani-for-snakebite-patients",
-      "published_at": "2026-09-25T05:15:04+05:45",
+      "url": "https://www.ratopati.com/story/594803/climate-change-is-the-main-issue-balen-raised-at-the-united-nations-general-assembly-what-issues-have-other-nepali-prime-ministers-raised-before",
+      "published_at": "2026-09-25T12:20:14+05:45",
+      "flash": true
+    },
+    {
+      "title": "राष्ट्रसङ्घमा प्रधानमन्त्रीको सम्बोधन : कूटनीतिक रूपमा परिपक्व, साना राष्ट्रहरूको साझा आवाज",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594802/prime-ministers-address-at-the-united-nations-a-common-voice-of-diplomatically-mature-small-nations",
+      "published_at": "2026-09-25T12:18:46+05:45",
+      "flash": true
+    },
+    {
+      "title": "भक्तपुर र मुलपानी जोड्ने पुल सँगैको जमिन भासिएपछि आवागमनमा रोक",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594800/traffic-halted-after-landslide-near-bridge-connecting-bhaktapur-and-mulpani",
+      "published_at": "2026-09-25T12:15:49+05:45",
+      "flash": true
+    },
+    {
+      "title": "लगातारको वर्षापछि बुटवल–पाल्पा सडक अवरुद्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594797/butwal-palpa-road-blocked-after-continuous-rain",
+      "published_at": "2026-09-25T12:10:02+05:45",
+      "flash": true
+    },
+    {
+      "title": "कोशीमा अविरल वर्षा, केही भित्री सडक अवरुद्ध, हालसम्म कुनै क्षति नभएको प्रहरीको भनाइ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594798/incessant-rains-in-koshi-some-internal-roads-blocked-police-say-no-damage-so-far",
+      "published_at": "2026-09-25T12:09:49+05:45",
+      "flash": true
+    },
+    {
+      "title": "तनहुँबाट काठमाडौँ र भरतपुर जाने खण्डमा पहिरो, यातायात प्रभावित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594779/landslides-affect-traffic-on-the-route-from-tanahun-to-kathmandu-and-bharatpur",
+      "published_at": "2026-09-25T11:26:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "सिद्धिचरण लोकमार्ग अवरुद्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594777/siddhicharan-highway-blocked",
+      "published_at": "2026-09-25T11:21:28+05:45",
       "flash": false
     },
     {
-      "title": "दुई महिनामा चितवनमा ४३ सवारी दुर्घटना, १५ जनाको मृत्यु",
+      "title": "कुलेखानी जलाशय भरिन ७ मिटर बाँकी, चौबिसै घण्टा विद्युत् उत्पादन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594699/43-vehicle-accidents-in-chitwan-in-two-months-15-people-killed",
-      "published_at": "2026-09-25T04:32:01+05:45",
+      "url": "https://www.ratopati.com/story/594769/kulekhani-reservoir-7-meters-left-to-fill-24-hour-electricity-generation",
+      "published_at": "2026-09-25T11:05:00+05:45",
       "flash": false
     },
     {
-      "title": "‘सतर्क रहौँ, सुरक्षित रहौँ’, मधेस सरकारको आग्रह",
+      "title": "पाल्पाका दुई स्थानमा पहिरो खस्दा सडक अवरुद्ध",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594698/be-vigilant-be-safe-urges-madhesh-government",
-      "published_at": "2026-09-25T03:53:03+05:45",
+      "url": "https://www.ratopati.com/story/594768/landslides-block-roads-in-two-places-in-palpa",
+      "published_at": "2026-09-25T10:58:59+05:45",
       "flash": false
     },
     {
-      "title": "मौसमी जोखिमबाट सतर्क रहन कर्णाली सरकारको अनुरोध",
+      "title": "अविरल वर्षाका कारण टेकु कालो पुल क्षेत्रको कोरिडोर बाटो डुबानमा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594697/karnali-government-requests-to-be-vigilant-against-seasonal-risks",
-      "published_at": "2026-09-25T03:28:44+05:45",
+      "url": "https://www.ratopati.com/story/594767/corridor-road-in-teku-kalo-bridge-area-flooded-due-to-incessant-rains",
+      "published_at": "2026-09-25T10:58:23+05:45",
+      "flash": false
+    },
+    {
+      "title": "सेतीमा बेपत्ता डोटीकी शिक्षिकाको शव कैलालीमा भेटियो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594727/body-of-doti-teacher-who-went-missing-in-seti-found-in-kailali",
+      "published_at": "2026-09-25T08:32:32+05:45",
       "flash": false
     }
   ],
@@ -49,8 +98,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 4
+      "flash": 6,
+      "recent": 11
     },
     "Kathmandu Post": {
       "ok": true,
@@ -60,7 +109,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

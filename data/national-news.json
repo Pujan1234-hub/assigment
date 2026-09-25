@@ -1,56 +1,42 @@
 {
-  "generated_at": "2026-09-26T02:19:07.060240+05:45",
-  "updated_at_npt": "26 Sep 02:19 NPT",
+  "generated_at": "2026-09-26T05:15:48.241944+05:45",
+  "updated_at_npt": "26 Sep 05:15 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "खुम्बु क्षेत्रमा हिमपात,सात विदेशी पर्यटकको उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594970/seven-foreign-tourists-rescued-after-snowfall-in-khumbu-region",
+      "published_at": "2026-09-26T04:48:35+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढी पसेपछि सुस्तावासी समस्यामा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594968/susta-residents-in-trouble-after-floods",
+      "published_at": "2026-09-26T04:27:07+05:45",
+      "flash": true
+    },
+    {
+      "title": "झापामा ‘ड्रोन’ बाट बाढीको जोखिम निगरानी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594967/flood-risk-monitoring-using-drones-in-jhapa",
+      "published_at": "2026-09-26T04:22:59+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीको जोखिममा राप्ती तटीय क्षेत्रका बासिन्दा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594965/residents-of-rapti-coastal-areas-at-risk-of-flooding",
+      "published_at": "2026-09-26T04:16:23+05:45",
+      "flash": true
+    },
     {
       "title": "अविरल वर्षाले उखु खेतीमा क्षति",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594961/incessant-rains-damage-sugarcane-cultivation",
       "published_at": "2026-09-25T23:30:19+05:45",
-      "flash": false
-    },
-    {
-      "title": "घाँसीकुवाको पहिरो पन्छाइयो : पृथ्वी राजमार्गमा यातायात सेवा पुनः सञ्चालन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594957/landslide-in-ghansikuwa-cleared-traffic-services-resume-on-prithvi-highway",
-      "published_at": "2026-09-25T22:51:48+05:45",
-      "flash": false
-    },
-    {
-      "title": "पाल्पामा पहिरोको बितण्डा : दुई घर भत्किए, एक महिला बेपत्ता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594955/landslide-in-palpa-two-houses-collapsed-one-woman-missing",
-      "published_at": "2026-09-25T22:28:46+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रतिकूल मौसमका कारण पोखराको हवाई उडान प्रभावित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594946/pokhara-flights-affected-due-to-adverse-weather",
-      "published_at": "2026-09-25T21:50:35+05:45",
-      "flash": false
-    },
-    {
-      "title": "जनकपुरवासी भन्छन्– राष्ट्रसङ्घको महासभामा प्रधानमन्त्रीको भाषणले देशको सान र मान बढायो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594941/janakpur-residents-say-the-prime-ministers-speech-at-the-united-nations-general-assembly-enhanced-the-countrys-pride-and-dignity",
-      "published_at": "2026-09-25T21:11:33+05:45",
-      "flash": false
-    },
-    {
-      "title": "सुदूरपश्चिममा आज रातिदेखि वर्षा बढ्ने, चार जिल्ला उच्च जोखिममा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594939/rain-to-increase-in-far-west-from-tonight-four-districts-at-high-risk",
-      "published_at": "2026-09-25T21:03:22+05:45",
-      "flash": false
-    },
-    {
-      "title": "च्यासलमा बाढीको जोखिम बढेपछि अखिल (क्रान्तिकारी) जनचेतना अभियानमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594938/all-out-revolutionary-public-awareness-campaign-launched-as-flood-risk-increases-in-chyasal",
-      "published_at": "2026-09-25T20:58:45+05:45",
       "flash": false
     }
   ],
@@ -70,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 7
+      "flash": 4,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

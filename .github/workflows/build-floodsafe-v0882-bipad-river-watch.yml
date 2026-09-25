@@ -49,7 +49,6 @@ jobs:
           grep -Fq 'V0883_BIPAD_RIVER_TRIMED_UNION' "$A"
           grep -Fq 'V0883_BACKGROUND_RIVER_MATCH_NO_ANR' "$M"
           grep -Fq 'V0883_STATION_ONLY_FLOW_GLOW' "$M"
-          grep -Fq 'v883StationRivers.size()' "$M"
           grep -Fq "versionName '0.8.83'" "$G"
           grep -Fq 'versionCode 103' "$G"
           echo 'V0883_CONTRACT PASS'

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T12:15:16.324166Z",
+  "generated_at": "2026-09-25T17:19:14.692175Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,25 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 2
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "राष्ट्रपति पौडेलद्वारा इन्द्रजात्रा अवलोकन(तस्बिरहरु)",
-      "url": "https://radionepalonline.com/2026/09/25/737979.html",
-      "published_at": "2026-09-25T12:08:55Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "गिडिदह बाक्लो हिमपात : भेडा चराउन गएका ६ जना सम्पर्कविहीन",
-      "url": "https://radionepalonline.com/2026/09/25/737976.html",
-      "published_at": "2026-09-25T11:56:51Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

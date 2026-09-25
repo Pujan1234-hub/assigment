@@ -1,4 +1,4 @@
-name: Package FloodSafe Native Android APK
+name: Package FloodSafe v0.8.90 Native Android APK
 
 on:
   workflow_dispatch:
@@ -29,11 +29,14 @@ jobs:
       - name: Unit tests and native APK build
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
-      - name: Verify native-only APK
+      - name: Verify v0.8.90 native-only APK
         shell: bash
         run: |
           set -euo pipefail
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'versionCode 110' "$G"
+          grep -Fq "versionName '0.8.90-native'" "$G"
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
@@ -41,15 +44,14 @@ jobs:
             echo 'ERROR: web assets found in native-only APK'
             exit 1
           fi
-          unzip -l "$APK" | tee /tmp/apk-files.txt >/dev/null
           sha256sum "$APK" | tee /tmp/floodsafe-native-apk-sha256.txt
           stat -c '%s' "$APK" | tee /tmp/floodsafe-native-apk-size.txt
-          echo 'FloodSafe native-only APK PASS'
+          echo 'FloodSafe v0.8.90 native-only APK PASS'
 
-      - name: Upload native-only APK
+      - name: Upload v0.8.90 native-only APK
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-0.7.1-NativeOnly-APK
+          name: FloodSafe-Nepal-v0.8.90-NativeOnly-APK
           path: |
             floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
             /tmp/floodsafe-native-apk-sha256.txt

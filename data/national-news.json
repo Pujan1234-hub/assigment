@@ -1,15 +1,22 @@
 {
-  "generated_at": "2026-09-25T05:06:28.222136+05:45",
-  "updated_at_npt": "25 Sep 05:06 NPT",
+  "generated_at": "2026-09-25T07:25:45.212993+05:45",
+  "updated_at_npt": "25 Sep 07:25 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "सर्पदंशका बिरामीलाई ‘सञ्जीवनी’ बन्दै भेरी अस्पताल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594704/bheri-hospital-becomes-sanjeevani-for-snakebite-patients",
+      "published_at": "2026-09-25T05:15:04+05:45",
+      "flash": false
+    },
     {
       "title": "दुई महिनामा चितवनमा ४३ सवारी दुर्घटना, १५ जनाको मृत्यु",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594699/43-vehicle-accidents-in-chitwan-in-two-months-15-people-killed",
       "published_at": "2026-09-25T04:32:01+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "‘सतर्क रहौँ, सुरक्षित रहौँ’, मधेस सरकारको आग्रह",
@@ -24,26 +31,12 @@
       "url": "https://www.ratopati.com/story/594697/karnali-government-requests-to-be-vigilant-against-seasonal-risks",
       "published_at": "2026-09-25T03:28:44+05:45",
       "flash": false
-    },
-    {
-      "title": "भारी वर्षाको जोखिम: खोटाङमा राति सवारी सञ्चालनमा रोक",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594691/risk-of-heavy-rain-nighttime-vehicle-traffic-banned-in-khotang",
-      "published_at": "2026-09-25T01:12:55+05:45",
-      "flash": false
-    },
-    {
-      "title": "रुग्ण आयोजनालाई लयमा ल्याउँदै भौतिक मन्त्रालय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594688/ministry-of-physical-planning-bringing-ailing-projects-back-on-track",
-      "published_at": "2026-09-25T00:24:35+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -56,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 5
+      "flash": 0,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +60,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     }

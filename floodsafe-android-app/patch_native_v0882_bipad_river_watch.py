@@ -11,9 +11,14 @@ m=m_path.read_text(encoding='utf-8')
 g=g_path.read_text(encoding='utf-8')
 
 def method_span(text,name):
-    q=re.search(r'(?m)^\s*(?:(?:private|public|protected)\s+)?[A-Za-z0-9_<>\[\]?., ]+\b'+re.escape(name)+r'\s*\([^\n]*\)\s*(?:throws\s+[^{]+)?\{',text)
-    if not q:return None
-    op=text.find('{',q.start());depth=0;quote=None;esc=False;i=op
+    # Patch-chain output has changed modifiers/spacing many times; locate by method name
+    # and balance braces instead of depending on a fragile Java declaration regex.
+    mm=re.search(r'\b'+re.escape(name)+r'\s*\(',text)
+    if not mm:return None
+    start=text.rfind('\n',0,mm.start())+1
+    op=text.find('{',mm.end())
+    if op<0:return None
+    depth=0;quote=None;esc=False;i=op
     while i<len(text):
         ch=text[i]
         if quote:
@@ -25,7 +30,7 @@ def method_span(text,name):
             elif ch=='{':depth+=1
             elif ch=='}':
                 depth-=1
-                if depth==0:return q.start(),i+1
+                if depth==0:return start,i+1
         i+=1
     return None
 
@@ -64,7 +69,6 @@ loader=loader.replace(count_old,'        v849CatalogCount=v882ActiveKeys.size();
 loader=loader.replace('} // V0878_RESILIENT_STATION_REFRESH','} // V0882_BIPAD_RIVER_WATCH_DISPLAY_TRUTH',1)
 a=a[:sp[0]]+loader+a[sp[1]:]
 
-# Header count must describe BIPAD River Watch rather than the 284 metadata catalog.
 hint=r'''    private void updateMapHintCounts(){
         if(mapHint==null)return;
         mapHint.setText(t("🌊 BIPAD River Watch "+v849CatalogCount+" • map मा "+mapRiverTotal+" • recent reading "+v877FreshObservationCount+" • latest reading "+v877LatestObservationCount,
@@ -73,8 +77,6 @@ hint=r'''    private void updateMapHintCounts(){
 '''
 a=replace_method(a,'updateMapHintCounts',hint)
 
-# River presence follows BIPAD River Watch membership. A station with an older/latest
-# official reading still has a station and therefore its river must stay visible.
 spm=method_span(m,'v881RiverHasLiveStation')
 if not spm:raise SystemExit('v0882 river matcher missing')
 matcher=m[spm[0]:spm[1]]
@@ -84,9 +86,8 @@ matcher=matcher.replace('s==null||!s.fresh||!Double.isFinite(s.lat)||!Double.isF
 matcher=matcher.replace('} // V0881_LIVE_STATION_MATCH','} // V0882_ACTIVE_STATION_RIVER_MATCH',1)
 m=m[:spm[0]]+matcher+m[spm[1]:]
 
-# Make the implementation contract explicit for field-test verification.
-if '!s.fresh' in m[method_span(m,'v881RiverHasLiveStation')[0]:method_span(m,'v881RiverHasLiveStation')[1]]:
-    raise SystemExit('v0882 river visibility still depends on freshness')
+check=method_span(m,'v881RiverHasLiveStation')
+if not check or '!s.fresh' in m[check[0]:check[1]]:raise SystemExit('v0882 river visibility still depends on freshness')
 
 g=re.sub(r'versionCode\s+101\b','versionCode 102',g,count=1)
 g=g.replace("versionName '0.8.81'","versionName '0.8.82'",1)

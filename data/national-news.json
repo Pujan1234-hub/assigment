@@ -1,112 +1,77 @@
 {
-  "generated_at": "2026-09-25T18:01:26.290129+05:45",
-  "updated_at_npt": "25 Sep 18:01 NPT",
+  "generated_at": "2026-09-25T23:04:40.513980+05:45",
+  "updated_at_npt": "25 Sep 23:04 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "वर्षा र पहिरोले कोशीका कुन कुन सडक अवरुद्ध ?",
+      "title": "घाँसीकुवाको पहिरो पन्छाइयो : पृथ्वी राजमार्गमा यातायात सेवा पुनः सञ्चालन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594906/which-roads-in-koshi-are-blocked-by-rain-and-landslides",
-      "published_at": "2026-09-25T17:30:34+05:45",
+      "url": "https://www.ratopati.com/story/594957/landslide-in-ghansikuwa-cleared-traffic-services-resume-on-prithvi-highway",
+      "published_at": "2026-09-25T22:51:48+05:45",
       "flash": true
     },
     {
-      "title": "‘डोजर आतंक बन्द गर’ भन्दै सडकमा उत्रिए जनकपुरवासी",
+      "title": "पाल्पामा पहिरोको बितण्डा : दुई घर भत्किए, एक महिला बेपत्ता",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594904/janakpur-residents-take-to-the-streets-demanding-stop-the-dozer-terror",
-      "published_at": "2026-09-25T17:25:05+05:45",
+      "url": "https://www.ratopati.com/story/594955/landslide-in-palpa-two-houses-collapsed-one-woman-missing",
+      "published_at": "2026-09-25T22:28:46+05:45",
       "flash": true
     },
     {
-      "title": "कोरलानाका क्षेत्रमा बेमौसमी हिमपात",
+      "title": "प्रतिकूल मौसमका कारण पोखराको हवाई उडान प्रभावित",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594873/unseasonal-snowfall-in-the-koralana-area",
-      "published_at": "2026-09-25T16:02:06+05:45",
+      "url": "https://www.ratopati.com/story/594946/pokhara-flights-affected-due-to-adverse-weather",
+      "published_at": "2026-09-25T21:50:35+05:45",
       "flash": false
     },
     {
-      "title": "अविरल वर्षाले बाढी प्रभावितको जनजीवन थप कष्टकर",
+      "title": "जनकपुरवासी भन्छन्– राष्ट्रसङ्घको महासभामा प्रधानमन्त्रीको भाषणले देशको सान र मान बढायो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594872/incessant-rains-make-life-more-difficult-for-flood-affected-people",
-      "published_at": "2026-09-25T15:59:41+05:45",
+      "url": "https://www.ratopati.com/story/594941/janakpur-residents-say-the-prime-ministers-speech-at-the-united-nations-general-assembly-enhanced-the-countrys-pride-and-dignity",
+      "published_at": "2026-09-25T21:11:33+05:45",
       "flash": false
     },
     {
-      "title": "धौलीगङ्गा जलविद्युत्‌काे बाँध खोलिँदै, महकाली तटीय क्षेत्रमा सतर्कता अपनाउन आग्रह",
+      "title": "सुदूरपश्चिममा आज रातिदेखि वर्षा बढ्ने, चार जिल्ला उच्च जोखिममा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594869/dhauliganga-hydropower-dam-being-opened-urges-vigilance-in-mahakali-coastal-area",
-      "published_at": "2026-09-25T15:55:22+05:45",
+      "url": "https://www.ratopati.com/story/594939/rain-to-increase-in-far-west-from-tonight-four-districts-at-high-risk",
+      "published_at": "2026-09-25T21:03:22+05:45",
       "flash": false
     },
     {
-      "title": "मार्दीखोलामा जलसतहले सतर्कता तह पार गर्‍यो, सप्तकोशीमा बाढीको जोखिम उच्च",
+      "title": "च्यासलमा बाढीको जोखिम बढेपछि अखिल (क्रान्तिकारी) जनचेतना अभियानमा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594866/water-level-in-mardikhola-crosses-alert-level-flood-risk-high-in-saptakoshi",
-      "published_at": "2026-09-25T15:49:52+05:45",
+      "url": "https://www.ratopati.com/story/594938/all-out-revolutionary-public-awareness-campaign-launched-as-flood-risk-increases-in-chyasal",
+      "published_at": "2026-09-25T20:58:45+05:45",
       "flash": false
     },
     {
-      "title": "तिनाउ नदीले जलसतह सतर्कताको तह पार गर्‍यो",
+      "title": "स्थानान्तरण गरिएका सात वटा बाघको बर्दियामा उद्धार",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594865/tinau-river-water-level-crosses-alert-level-those-living-under-the-bridge-shifted-to-school",
-      "published_at": "2026-09-25T15:47:37+05:45",
+      "url": "https://www.ratopati.com/story/594929/seven-relocated-tigers-rescued-in-bardiya",
+      "published_at": "2026-09-25T19:54:32+05:45",
       "flash": false
     },
     {
-      "title": "इन्द्रजात्राको रौनक: राष्ट्रपतिसहित विशिष्ट व्यक्तिहरू वसन्तपुरमा",
+      "title": "हावाहुरी र वर्षाले उखु खेतीमा क्षति, तस्बिरहरू",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594863/indrajatra-festival-in-full-swing-president-dignitaries-in-basantapur",
-      "published_at": "2026-09-25T15:40:43+05:45",
+      "url": "https://www.ratopati.com/story/594924/damage-to-sugarcane-cultivation-due-to-wind-and-rain-photos",
+      "published_at": "2026-09-25T19:35:37+05:45",
       "flash": false
     },
     {
-      "title": "करेन्ट लागेर १० वर्षीय बालकको मृत्यु",
+      "title": "कपिलवस्तुमा एक पुरुष बेपत्ता",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594851/death",
-      "published_at": "2026-09-25T15:05:46+05:45",
-      "flash": false
-    },
-    {
-      "title": "सन्धिखर्क–गोरुसिङ्गे सडकखण्डमा पहिरो, आवागमन बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594850/landslide-on-sandhikharka-gorusinghe-road-section-traffic-blocked",
-      "published_at": "2026-09-25T14:59:54+05:45",
-      "flash": false
-    },
-    {
-      "title": "वर्षाका कारण चितवनका सबै विद्यालय बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594835/all-schools-in-chitwan-closed-due-to-rain",
-      "published_at": "2026-09-25T14:14:54+05:45",
-      "flash": false
-    },
-    {
-      "title": "स्थायी दरबन्दी हटाएर करारमा कम्प्युटर अपरेटर राख्ने प्रस्ताव !",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594771/proposal-to-remove-permanent-positions-and-hire-computer-operators-on-contract",
-      "published_at": "2026-09-25T13:00:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "लगातारको वर्षापछि बुटवल–पाल्पा सडक अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594797/butwal-palpa-road-blocked-after-continuous-rain",
-      "published_at": "2026-09-25T12:10:02+05:45",
-      "flash": false
-    },
-    {
-      "title": "कोशीमा अविरल वर्षा, केही भित्री सडक अवरुद्ध, हालसम्म कुनै क्षति नभएको प्रहरीको भनाइ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594798/incessant-rains-in-koshi-some-internal-roads-blocked-police-say-no-damage-so-far",
-      "published_at": "2026-09-25T12:09:49+05:45",
+      "url": "https://www.ratopati.com/story/594917/a-man-goes-missing-in-kapilvastu",
+      "published_at": "2026-09-25T18:38:14+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -120,7 +85,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 2,
-      "recent": 14
+      "recent": 9
     },
     "Kathmandu Post": {
       "ok": true,
@@ -130,7 +95,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

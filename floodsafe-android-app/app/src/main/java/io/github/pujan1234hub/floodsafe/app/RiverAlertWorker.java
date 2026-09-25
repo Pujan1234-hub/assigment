@@ -10,11 +10,14 @@ import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.net.Uri;
 import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -32,9 +35,10 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Closed-app fallback for nearby official river warnings. Only fresh, verified
- * BIPAD/DHM warning/danger observations inside 2 km of the current device location
- * can trigger. Android WorkManager enforces a 15-minute minimum periodic interval.
+ * Closed-app fallback for nearby official river warnings. Fresh verified
+ * BIPAD/DHM warning/danger observations can trigger when the device is within
+ * 2 km of the affected river geometry. Station distance is retained as a safe
+ * fallback when a river name cannot be mapped to the bundled native river network.
  */
 public final class RiverAlertWorker extends Worker {
     private static final String ENDPOINT =
@@ -86,7 +90,7 @@ public final class RiverAlertWorker extends Worker {
             for (int i = 0; i < rows.length(); i++) {
                 JSONObject row = rows.optJSONObject(i);
                 if (row == null) continue;
-                Hazard hazard = hazard(row, homeLat, homeLon, now);
+                Hazard hazard = hazard(app, row, homeLat, homeLon, now);
                 if (hazard != null) hazards.add(hazard);
             }
             hazards.sort(Comparator
@@ -135,17 +139,19 @@ public final class RiverAlertWorker extends Worker {
         final String stationId;
         final String name;
         final double distanceKm;
+        final boolean riverDistance;
         final double level;
         final double warning;
         final double danger;
         final long measuredAt;
 
         Hazard(String stage, String stationId, String name, double distanceKm,
-               double level, double warning, double danger, long measuredAt) {
+               boolean riverDistance, double level, double warning, double danger, long measuredAt) {
             this.stage = stage;
             this.stationId = stationId;
             this.name = name;
             this.distanceKm = distanceKm;
+            this.riverDistance = riverDistance;
             this.level = level;
             this.warning = warning;
             this.danger = danger;
@@ -153,14 +159,11 @@ public final class RiverAlertWorker extends Worker {
         }
     }
 
-    private static Hazard hazard(JSONObject row, double homeLat, double homeLon, long now) {
+    private static Hazard hazard(Context app, JSONObject row, double homeLat, double homeLon, long now) {
         double lat = firstNumber(row, "latitude", "lat", "stationLatitude", "station_latitude");
         double lon = firstNumber(row, "longitude", "lon", "lng", "stationLongitude", "station_longitude");
         if (!Double.isFinite(lat) || !Double.isFinite(lon)) return null;
         if (!insideNepal(lat, lon)) return null;
-
-        double distance = haversineKm(homeLat, homeLon, lat, lon);
-        if (!Double.isFinite(distance) || distance > RADIUS_KM) return null;
 
         double level = firstNumber(row, "waterLevel", "water_level", "currentWaterLevel",
                 "current_water_level", "currentLevel", "current_level", "level", "value", "_lastWaterLevel");
@@ -200,7 +203,14 @@ public final class RiverAlertWorker extends Worker {
         if (name.isEmpty()) name = "Official river station";
         if (stationId.isEmpty()) stationId = name + "@" + String.format(Locale.US, "%.5f,%.5f", lat, lon);
 
-        return new Hazard(stage, stationId, name, distance, level, warning, danger, measuredAt);
+        double stationDistance = haversineKm(homeLat, homeLon, lat, lon);
+        double geometryDistance = NativeRiverRiskDistance.distanceKm(app, homeLat, homeLon, name);
+        boolean useRiverDistance = Double.isFinite(geometryDistance);
+        double distance = useRiverDistance ? geometryDistance : stationDistance;
+        if (!Double.isFinite(distance) || distance > RADIUS_KM) return null;
+
+        return new Hazard(stage, stationId, name, distance, useRiverDistance,
+                level, warning, danger, measuredAt);
     }
 
     private boolean claim(Hazard hazard, long now) {
@@ -244,7 +254,7 @@ public final class RiverAlertWorker extends Worker {
             channel.enableVibration(true);
             Uri sound = android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;
             AudioAttributes audio = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                    .setUsage(AudioAttributes.USAGE_ALARM)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();
             channel.setSound(sound, audio);
             manager.createNotificationChannel(channel);
@@ -255,6 +265,7 @@ public final class RiverAlertWorker extends Worker {
                 : "⚠️ नजिकको नदी चेतावनी";
         StringBuilder body = new StringBuilder(hazard.name)
                 .append(" • ").append(String.format(Locale.US, "%.1f km", hazard.distanceKm));
+        if (hazard.riverDistance) body.append(" नदी किनारबाट");
         if (Double.isFinite(hazard.level)) {
             body.append(" • ").append(String.format(Locale.US, "%.2f m", hazard.level));
         }

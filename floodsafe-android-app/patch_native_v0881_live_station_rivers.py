@@ -11,7 +11,7 @@ m=m_path.read_text(encoding='utf-8')
 g=g_path.read_text(encoding='utf-8')
 
 def method_span(text,name):
-    q=re.search(r'(?m)^\s*(?:private|public|protected|void)\s+[^\n{]+\b'+re.escape(name)+r'\s*\([^\n]*\)\s*(?:throws\s+[^{]+)?\{',text)
+    q=re.search(r'(?m)^\s*(?:(?:private|public|protected)\s+)?[A-Za-z0-9_<>\[\]?., ]+\b'+re.escape(name)+r'\s*\([^\n]*\)\s*(?:throws\s+[^{]+)?\{',text)
     if not q:return None
     op=text.find('{',q.start());depth=0;quote=None;esc=False;i=op
     while i<len(text):
@@ -34,8 +34,7 @@ def replace_method(text,name,new_block):
     if not sp:raise SystemExit('v0881 method missing: '+name)
     return text[:sp[0]]+new_block+text[sp[1]:]
 
-# 1) Always drive the UI/map from the resilient official BIPAD+DHM loader built in v0.8.78.
-#    This fixes the zero-station symptom caused by relying on one Supabase mirror response shape.
+# Use the resilient official BIPAD+DHM loader rather than a single mirror response.
 refresh=r'''    private void refreshRivers(){
         if(feedFresh!=null)feedFresh.setText(t("BIPAD/DHM live station refresh हुँदैछ…","Refreshing BIPAD/DHM live stations…"));
         io.execute(()->{
@@ -59,8 +58,7 @@ a=replace_method(a,'refreshRivers',refresh)
 if 'V0879_FULL_RIVER_TILE_RUNTIME' not in m:
     raise SystemExit('v0881 requires v0.8.79 progressive river runtime')
 
-# 2) River geometry shown/animated must correspond to a currently LIVE official station.
-#    No-station streams remain hidden, as requested.
+# Only draw/animate river geometry that corresponds to a currently fresh official station.
 apply=r'''    private void v879ApplyRiverGeometry(List<RiverWay> input,String key,int generation){
         final List<RiverWay> base=v879Dedup(input);
         main.post(()->{
@@ -81,7 +79,7 @@ apply=r'''    private void v879ApplyRiverGeometry(List<RiverWay> input,String ke
 '''
 m=replace_method(m,'v879ApplyRiverGeometry',apply)
 
-# 3) After station refresh, force the current visible river tile to be re-filtered.
+# A station refresh must immediately re-filter the currently visible river tile.
 setstations=r'''    void setStations(List<?> source, double lat, double lon) {
         userLat = lat;
         userLon = lon;
@@ -104,7 +102,6 @@ setstations=r'''    void setStations(List<?> source, double lat, double lon) {
 '''
 m=replace_method(m,'setStations',setstations)
 
-# Insert live-station/river matching helpers before the camera tile loader.
 anchor='    private static int v879TileX(double lon)'
 if anchor not in m:raise SystemExit('v0881 tile helper anchor missing')
 helpers=r'''    private List<RiverWay> v881OnlyLiveStationRivers(List<RiverWay> input,List<StationDot> ss){
@@ -150,14 +147,13 @@ helpers=r'''    private List<RiverWay> v881OnlyLiveStationRivers(List<RiverWay> 
 '''
 m=m.replace(anchor,helpers+anchor,1)
 
-# Make official station markers easier to see/tap without changing status semantics.
+# Make station dots clearly visible and easier to tap.
 m=m.replace('ensurePointSource("fs-stale", "fs-stale-layer", "#8e99a5", 4.0f, 0.92f);','ensurePointSource("fs-stale", "fs-stale-layer", "#8e99a5", 5.3f, 0.96f);')
 m=m.replace('ensurePointSource("fs-normal", "fs-normal-layer", "#2d8cff", 4.4f, 0.98f);','ensurePointSource("fs-normal", "fs-normal-layer", "#2d8cff", 6.0f, 1f);')
 m=m.replace('ensurePointSource("fs-alert", "fs-alert-layer", "#ffc928", 5.0f, 1f);','ensurePointSource("fs-alert", "fs-alert-layer", "#ffc928", 6.7f, 1f);')
 m=m.replace('ensurePointSource("fs-warning", "fs-warning-layer", "#ff8a1f", 5.8f, 1f);','ensurePointSource("fs-warning", "fs-warning-layer", "#ff8a1f", 7.3f, 1f);')
 m=m.replace('ensurePointSource("fs-danger", "fs-danger-layer", "#f22f4b", 6.3f, 1f);','ensurePointSource("fs-danger", "fs-danger-layer", "#f22f4b", 8.0f, 1f);')
 
-# Bump from the verified v0.8.80 build.
 g=re.sub(r'versionCode\s+100\b','versionCode 101',g,count=1)
 g=g.replace("versionName '0.8.80'","versionName '0.8.81'",1)
 if 'versionCode 101' not in g or "versionName '0.8.81'" not in g:

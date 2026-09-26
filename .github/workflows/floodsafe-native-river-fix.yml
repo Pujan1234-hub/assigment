@@ -34,6 +34,23 @@ jobs:
           sudo udevadm trigger --name-match=kvm || true
           ls -l /dev/kvm
 
+      - name: Preinstall Android emulator with retries
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          for attempt in 1 2 3 4; do
+            echo "Android emulator install attempt ${attempt}/4"
+            if sdkmanager --install emulator platform-tools 'platforms;android-34'; then
+              emulator -version
+              exit 0
+            fi
+            rm -rf "$ANDROID_SDK_ROOT/.temp" "$ANDROID_SDK_ROOT/temp" "$HOME/.android/cache" || true
+            sleep 15
+          done
+          echo 'Android emulator package failed after retries'
+          exit 1
+
       - name: Apply station-rivers-only patch
         run: |
           python3 floodsafe-android-app/patch_native_v0899_verified_river_flow_safety.py

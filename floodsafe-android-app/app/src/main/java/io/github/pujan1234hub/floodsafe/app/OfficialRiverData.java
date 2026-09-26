@@ -32,8 +32,6 @@ final class OfficialRiverData {
     static final String MIRROR_URL =
             "https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers";
 
-    // BIPAD/DHM river stations do not all report in the same minute. Two hours is a
-    // conservative current window while still preventing historical values from being live.
     static final long CURRENT_MAX_AGE_MS = 2L * 60L * 60L * 1000L;
     static final long FUTURE_TOLERANCE_MS = 5L * 60L * 1000L;
 
@@ -107,7 +105,6 @@ final class OfficialRiverData {
             String key = identity(live);
             JSONObject base = key.isEmpty() ? null : merged.get(key);
             if (base == null) {
-                // Try a name-only identity if one side used a numeric station id.
                 String nameKey = "name:" + key(firstString(live,
                         "station_name", "stationName", "title", "name"));
                 for (Map.Entry<String, JSONObject> e : merged.entrySet()) {
@@ -128,12 +125,12 @@ final class OfficialRiverData {
 
             long liveAt = observationTime(live);
             long cachedAt = observationTime(base);
-            // Direct BIPAD is authoritative when it is newer or when the mirror has no
-            // observation timestamp. Older direct data must not erase a newer mirror row.
             if (liveAt <= 0L || cachedAt <= 0L || liveAt >= cachedAt) {
                 overlay(base, live);
-                base.put("_fsDirectBipad", true);
-                base.put("_fsDirectObservationAt", liveAt);
+                try {
+                    base.put("_fsDirectBipad", true);
+                    base.put("_fsDirectObservationAt", liveAt);
+                } catch (Exception ignored) {}
             }
         }
 
@@ -162,7 +159,6 @@ final class OfficialRiverData {
         return at > 0L && at - now <= FUTURE_TOLERANCE_MS && now - at <= CURRENT_MAX_AGE_MS;
     }
 
-    /** Official BIPAD status wins. Thresholds are fallback only when no usable status exists. */
     static String stage(JSONObject row, boolean current) {
         if (!current || row == null) return "unknown";
         String raw = firstString(row, "status", "status_name", "alertStatus", "alert_status",

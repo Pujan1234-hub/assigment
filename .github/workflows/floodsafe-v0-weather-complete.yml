@@ -1,0 +1,152 @@
+name: FloodSafe v0 Weather Complete Build
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0-weather-complete ]
+    paths:
+      - '.github/workflows/floodsafe-v0-weather-complete.yml'
+      - 'floodsafe-android-app/patch_native_language_safe.py'
+      - 'floodsafe-android-app/patch_native_weather_complete.py'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/WeatherMapOverlayController.java'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Freeze map and river implementation hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAVA='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          MAP="$JAVA/FloodSafeNativeMapView.java"
+          test -s "$MAP"
+          sha256sum "$MAP" | tee /tmp/map.before.sha256
+          find "$JAVA" -maxdepth 1 -type f \( -name '*River*.java' -o -name 'FloodMonitorService.java' -o -name 'DhmRainMirror.java' \) -print0 \
+            | sort -z | xargs -0 sha256sum > /tmp/river.before.sha256
+          cat /tmp/river.before.sha256
+
+      - name: Apply proven language patch
+        run: python3 floodsafe-android-app/patch_native_language_safe.py
+
+      - name: Apply GPS district weather and map overlay patch
+        run: python3 floodsafe-android-app/patch_native_weather_complete.py
+
+      - name: Enforce map river freeze and weather-only patch scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAVA='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          UI="$JAVA/NativeFullActivity.java"
+          MAP="$JAVA/FloodSafeNativeMapView.java"
+          OVERLAY="$JAVA/WeatherMapOverlayController.java"
+          G='floodsafe-android-app/app/build.gradle'
+          sha256sum "$MAP" | tee /tmp/map.after.sha256
+          cmp /tmp/map.before.sha256 /tmp/map.after.sha256
+          find "$JAVA" -maxdepth 1 -type f \( -name '*River*.java' -o -name 'FloodMonitorService.java' -o -name 'DhmRainMirror.java' \) -print0 \
+            | sort -z | xargs -0 sha256sum > /tmp/river.after.sha256
+          cmp /tmp/river.before.sha256 /tmp/river.after.sha256
+          git diff --exit-code -- "$MAP"
+          CHANGED="$(git diff --name-only)"
+          printf 'Runtime-patched files:\n%s\n' "$CHANGED"
+          printf '%s\n' "$CHANGED" | grep -Fxq "$UI"
+          printf '%s\n' "$CHANGED" | grep -Fxq "$G"
+          test "$(printf '%s\n' "$CHANGED" | sed '/^$/d' | wc -l)" -eq 2
+          grep -Fq 'WeatherMapOverlayController weatherOverlay' "$UI"
+          grep -Fq 'refreshDistrictWeather()' "$UI"
+          grep -Fq 'weather_code,cloud_cover' "$UI"
+          grep -Fq 'WEATHER_OVERLAY_V1' "$OVERLAY"
+          grep -Fq 'addLayerBelow(layer, "fs-rivers-layer")' "$OVERLAY"
+          grep -Fq "versionName '0.9.01-weather'" "$G"
+          ! grep -Fq 'android.webkit.WebView' "$UI"
+          echo 'WEATHER_SCOPE_GUARD PASS'
+
+      - name: Verify 77 district asset and Open-Meteo multi-location schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request, time
+          p=pathlib.Path('floodsafe-nepal/v24/nepal-districts.geojson')
+          j=json.loads(p.read_text(encoding='utf-8'))
+          features=j.get('features') or []
+          names=[(f.get('properties') or {}).get('nameEn') for f in features]
+          assert len(features)==77, len(features)
+          assert len(set(names))==77, 'district names not unique'
+          url=('https://api.open-meteo.com/v1/forecast?latitude=27.7172,28.2096,26.4525'
+               '&longitude=85.3240,83.9856,87.2718'
+               '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m'
+               '&timezone=Asia%2FKathmandu&forecast_days=1')
+          last=None
+          for attempt in range(3):
+              try:
+                  with urllib.request.urlopen(url, timeout=20) as r:
+                      data=json.loads(r.read().decode('utf-8'))
+                  assert isinstance(data,list) and len(data)==3
+                  for row in data:
+                      cur=row.get('current') or {}
+                      for k in ('temperature_2m','apparent_temperature','relative_humidity_2m','precipitation','weather_code','cloud_cover','wind_speed_10m'):
+                          assert k in cur, k
+                  print('WEATHER_API_SCHEMA PASS locations=',len(data),'districts=',len(features))
+                  break
+              except Exception as e:
+                  last=e
+                  if attempt==2: raise
+                  time.sleep(2)
+          PY
+
+      - name: Unit test and build native APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK package assets signature and weather markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'classes.dex'
+          unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -n "$APKSIGNER"
+          "$APKSIGNER" verify --verbose "$APK"
+          unzip -p "$APK" classes.dex | strings | grep -Fq 'FloodSafe Nepal'
+          unzip -p "$APK" classes.dex | strings | grep -Fq 'fs-weather-cloud-heavy'
+          unzip -p "$APK" classes.dex | strings | grep -Fq 'api.open-meteo.com/v1/forecast'
+          cp "$APK" FloodSafe-Nepal-v0.9.01-GPS-DISTRICT-CLOUD-WEATHER.apk
+          sha256sum FloodSafe-Nepal-v0.9.01-GPS-DISTRICT-CLOUD-WEATHER.apk | tee FloodSafe-Nepal-v0.9.01-SHA256.txt
+          printf '%s\n' \
+            'FloodSafe Nepal v0.9.01 weather field build' \
+            '- GPS current weather: temperature, feels-like, humidity, rain, wind, cloud cover and WMO condition' \
+            '- 77 district current weather via one Open-Meteo multi-location request' \
+            '- Native MapLibre cloud-cover and precipitation overlay, toggleable, map-synchronised' \
+            '- Weather refresh every 10 minutes while the Activity is alive' \
+            '- Existing FloodSafeNativeMapView and river worker/service source hashes unchanged' \
+            '- Native Android; no WebView introduced' \
+            > FloodSafe-Nepal-v0.9.01-WEATHER-NOTES.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0901-GPS-DISTRICT-CLOUD-WEATHER
+          path: |
+            FloodSafe-Nepal-v0.9.01-GPS-DISTRICT-CLOUD-WEATHER.apk
+            FloodSafe-Nepal-v0.9.01-SHA256.txt
+            FloodSafe-Nepal-v0.9.01-WEATHER-NOTES.txt
+          retention-days: 14

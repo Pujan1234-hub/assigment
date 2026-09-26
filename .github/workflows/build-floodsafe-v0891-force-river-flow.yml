@@ -1,4 +1,4 @@
-name: Build FloodSafe v0.8.91 Forced Station River Flow APK
+name: Build FloodSafe v0.8.92 Direct Station River Render APK
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/build-floodsafe-v0891-force-river-flow.yml'
       - 'floodsafe-android-app/patch_native_v0891_force_station_river_geometry.py'
+      - 'floodsafe-android-app/patch_native_v0892_force_render_station_rivers.py'
   workflow_dispatch:
 
 permissions:
@@ -54,19 +55,20 @@ jobs:
         run: python3 floodsafe-android-app/patch_native_v0890_station_river_network_only.py
       - name: Apply v0.8.91 force station river flow
         run: python3 floodsafe-android-app/patch_native_v0891_force_station_river_geometry.py
-      - name: Verify v0.8.91 contracts
+      - name: Apply v0.8.92 direct station river render source
+        run: python3 floodsafe-android-app/patch_native_v0892_force_render_station_rivers.py
+      - name: Verify v0.8.92 contracts
         shell: bash
         run: |
           set -euo pipefail
           M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
           G='floodsafe-android-app/app/build.gradle'
-          grep -Fq 'V0891_EVERY_STATION_FORCES_NEAREST_REAL_RIVER' "$M"
-          grep -Fq 'V0891_FORCE_LAYER_AFTER_STATION_REFRESH' "$M"
-          grep -Fq 'lineWidth(9.0f),lineOpacity(0.50f)' "$M"
-          grep -Fq 'lineWidth(3.8f),lineOpacity(1.0f)' "$M"
-          grep -Fq "versionName '0.8.91'" "$G"
-          grep -Fq 'versionCode 111' "$G"
-          echo 'V0891_CONTRACT PASS'
+          grep -Fq 'V0892_DIRECT_STATION_RIVER_RENDER_SOURCE' "$M"
+          grep -Fq 'rs.setGeoJson(sg)' "$M"
+          grep -Fq 'v886EnsureRiverVisibility();' "$M"
+          grep -Fq "versionName '0.8.92'" "$G"
+          grep -Fq 'versionCode 112' "$G"
+          echo 'V0892_CONTRACT PASS'
       - name: Bundle source assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
       - name: Rebuild Nepal river assets
@@ -91,12 +93,12 @@ jobs:
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
-          cp "$APK" FloodSafe-Nepal-v0.8.91-STATION-RIVER-FLOW-GLOW.apk
-          sha256sum FloodSafe-Nepal-v0.8.91-STATION-RIVER-FLOW-GLOW.apk | tee FloodSafe-Nepal-v0.8.91-SHA256.txt
+          cp "$APK" FloodSafe-Nepal-v0.8.92-DIRECT-STATION-RIVER-RENDER.apk
+          sha256sum FloodSafe-Nepal-v0.8.92-DIRECT-STATION-RIVER-RENDER.apk | tee FloodSafe-Nepal-v0.8.92-SHA256.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0891-STATION-RIVER-FLOW-GLOW
+          name: FloodSafe-Nepal-v0892-DIRECT-STATION-RIVER-RENDER
           path: |
-            FloodSafe-Nepal-v0.8.91-STATION-RIVER-FLOW-GLOW.apk
-            FloodSafe-Nepal-v0.8.91-SHA256.txt
+            FloodSafe-Nepal-v0.8.92-DIRECT-STATION-RIVER-RENDER.apk
+            FloodSafe-Nepal-v0.8.92-SHA256.txt
           retention-days: 14

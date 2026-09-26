@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   build-verify-runtime:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -29,9 +29,9 @@ jobs:
 
       - name: Apply station-rivers-only patch
         run: |
-          python floodsafe-android-app/patch_native_v0899_verified_river_flow_safety.py
-          python floodsafe-android-app/patch_native_v0900_station_rivers_only.py
-          python floodsafe-android-app/patch_native_v0900_station_river_alias.py
+          python3 floodsafe-android-app/patch_native_v0899_verified_river_flow_safety.py
+          python3 floodsafe-android-app/patch_native_v0900_station_rivers_only.py
+          python3 floodsafe-android-app/patch_native_v0900_station_river_alias.py
 
       - name: Verify station-only source contracts
         shell: bash
@@ -57,9 +57,9 @@ jobs:
           echo 'Station-only native map source contracts PASS'
 
       - name: Verify bundled candidate geometry contains Bagmati and Nepal rivers
-        shell: python
+        shell: python3 {0}
         run: |
-          import json,re
+          import json
           from pathlib import Path
           p=Path('data/nepal-waterways-tiles/overview.json')
           j=json.loads(p.read_text(encoding='utf-8'))
@@ -97,28 +97,34 @@ jobs:
       - name: Runtime MapLibre render verification
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_6
           disable-animations: true
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
             set -e
             APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
             adb install -r "$APK"
             adb logcat -c
             adb shell monkey -p io.github.pujan1234hub.floodsafe.app -c android.intent.category.LAUNCHER 1
-            sleep 35
-            adb shell input swipe 540 1900 540 450 900 || true
+            sleep 45
+            adb shell input swipe 540 2000 540 400 900 || true
             sleep 5
-            adb exec-out screencap -p > floodsafe-android-app/runtime-station-rivers.png
+            adb exec-out screencap -p > floodsafe-android-app/runtime-station-rivers-1.png
+            sleep 1
+            adb exec-out screencap -p > floodsafe-android-app/runtime-station-rivers-2.png
             adb logcat -d > floodsafe-android-app/runtime-log.txt
             echo '--- FloodSafeRiver runtime ---'
-            grep 'FloodSafeRiver' floodsafe-android-app/runtime-log.txt | tail -80 || true
+            grep 'FloodSafeRiver' floodsafe-android-app/runtime-log.txt | tail -100 || true
             grep -Eq 'station_linked_features=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt
             grep -Eq 'flow_frame=[1-9][0-9]*.*animated_station_features=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt
             grep -q 'station-only river layers active' floodsafe-android-app/runtime-log.txt
             grep -Eq 'sample=.*(Bagmati|Gaurighat|bagmati|gaurighat)' floodsafe-android-app/runtime-log.txt
+            test -s floodsafe-android-app/runtime-station-rivers-1.png
+            test -s floodsafe-android-app/runtime-station-rivers-2.png
 
       - name: Commit verified source
         run: |
@@ -133,7 +139,7 @@ jobs:
         if: success()
         run: |
           cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk floodsafe-android-app/FloodSafe-Nepal-v0.9.00-station-rivers-native.apk
-          sha256sum floodsafe-android-app/FloodSafe-Nepal-v0.9.00-station-rivers-native.apk > floodsafe-android-app/FloodSafe-Nepal-v0.9.00-sha256.txt
+          shasum -a 256 floodsafe-android-app/FloodSafe-Nepal-v0.9.00-station-rivers-native.apk > floodsafe-android-app/FloodSafe-Nepal-v0.9.00-sha256.txt
 
       - name: Upload runtime evidence
         if: always()
@@ -141,7 +147,8 @@ jobs:
         with:
           name: FloodSafe-v0.9.00-runtime-evidence
           path: |
-            floodsafe-android-app/runtime-station-rivers.png
+            floodsafe-android-app/runtime-station-rivers-1.png
+            floodsafe-android-app/runtime-station-rivers-2.png
             floodsafe-android-app/runtime-log.txt
           if-no-files-found: warn
           retention-days: 7

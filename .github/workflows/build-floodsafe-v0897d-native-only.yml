@@ -1,0 +1,113 @@
+name: Build FloodSafe v0.8.97d Native-Only APK
+
+on:
+  push:
+    branches: [ fix/floodsafe-full-river-detail-v0879 ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0897d-native-only.yml'
+      - 'floodsafe-android-app/patch_native_v0897d_native_only_package.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Apply native BIPAD mirror chain
+        run: |
+          python3 floodsafe-android-app/run_patch_native_v0877.py
+          python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+          python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0896_station_rivers_truth.py
+          python3 floodsafe-android-app/patch_native_v0896_compile_repair.py
+          python3 floodsafe-android-app/patch_native_v0896_compile_repair2.py
+          python3 floodsafe-android-app/patch_native_v0897_bipad_mirror.py
+          python3 floodsafe-android-app/patch_native_v0897b_join_repair.py
+          python3 floodsafe-android-app/patch_native_v0897c_syntax_repair.py
+          python3 floodsafe-android-app/patch_native_v0897d_native_only_package.py
+      - name: Verify native-only source contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          A="$SRC/NativeFullActivity.java"
+          M="$SRC/FloodSafeNativeMapView.java"
+          L="$SRC/FloodLiveGaugeMonitor.java"
+          G='floodsafe-android-app/app/build.gradle'
+          for x in V0897_OFFICIAL_POINT_AND_CURRENT_TRUTH V0897_BIPAD_WATER_LEVEL_ON_TIME V0897_MIRROR_BIPAD_CURRENT_COUNT V0897_SOURCE_COUNT_NOT_20M V0897B_ID_NAME_COORDINATE_FALLBACK V0897B_CURRENT_ROW_ROBUST_JOIN V0897C_CACHE_TRY_CATCH_REPAIR; do grep -Fq "$x" "$A"; done
+          for x in V0896_BIND_RIVERS_FROM_STATIONS V0896_NONEMPTY_STATION_RIVER_SOURCE V0896_STATUS_COLOUR_ON_MONITORED_RIVERS; do grep -Fq "$x" "$M"; done
+          grep -Fq 'V0897B_DIRECT_BIPAD_BACKGROUND_LITERAL' "$L"
+          grep -Fq "versionName '0.8.97-native'" "$G"
+          grep -Fq 'versionCode 118' "$G"
+          grep -Fq 'NativeFullActivity.class' "$SRC/PJBuiltsSplashActivity.java"
+          ! grep -R -E 'android\.webkit|androidx\.webkit|\bWebView\b' "$SRC" --include='*.java'
+          ! grep -Fq 'androidx.webkit:webkit' "$G"
+          ! grep -Fq "from(rootProject.file('../floodsafe-nepal'))" "$G"
+          echo 'V0897D_NATIVE_SOURCE PASS'
+      - name: Bundle native data only
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+      - name: Verify no web assets before river preprocessing
+        shell: bash
+        run: |
+          set -euo pipefail
+          D='floodsafe-android-app/app/build/generated/floodsafe-assets'
+          test -s "$D/data/floodsafe-core.json"
+          test -s "$D/data/nepal-waterways-snapshot.json"
+          test -s "$D/floodsafe-nepal/v24/nepal-districts.geojson"
+          if find "$D" -type f \( -name '*.html' -o -name '*.htm' -o -name '*.js' -o -name '*.mjs' -o -name '*.webmanifest' \) | grep -q .; then
+            echo 'Forbidden web asset found'; find "$D" -type f \( -name '*.html' -o -name '*.htm' -o -name '*.js' -o -name '*.mjs' -o -name '*.webmanifest' \); exit 1
+          fi
+          echo 'V0897D_NO_WEB_ASSETS_PREBUILD PASS'
+      - name: Rebuild real Nepal river assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+      - name: Verify station river geometry
+        run: python3 floodsafe-android-app/verify_v0896_station_river_assets.py
+      - name: Unit test and compile native APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+      - name: Verify native-only APK and stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          unzip -l "$APK" | grep -Fq 'classes.dex'
+          if unzip -Z1 "$APK" | grep -E '\.(html?|js|mjs|webmanifest)$'; then
+            echo 'Forbidden web file packaged in APK'; exit 1
+          fi
+          if unzip -Z1 "$APK" | grep -E '^assets/floodsafe-nepal/(index|v2/|v23/|v25/)'; then
+            echo 'Legacy web application assets packaged in APK'; exit 1
+          fi
+          cp "$APK" FloodSafe-Nepal-v0.8.97-NATIVE-ONLY.apk
+          sha256sum FloodSafe-Nepal-v0.8.97-NATIVE-ONLY.apk | tee FloodSafe-Nepal-v0.8.97-NATIVE-ONLY-SHA256.txt
+          stat -c '%n %s bytes' FloodSafe-Nepal-v0.8.97-NATIVE-ONLY.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0897d-NATIVE-ONLY
+          path: |
+            FloodSafe-Nepal-v0.8.97-NATIVE-ONLY.apk
+            FloodSafe-Nepal-v0.8.97-NATIVE-ONLY-SHA256.txt
+          retention-days: 14

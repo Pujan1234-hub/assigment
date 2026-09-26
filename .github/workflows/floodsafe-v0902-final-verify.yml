@@ -1,0 +1,319 @@
+name: FloodSafe v0.9.02 final runtime verify
+
+on:
+  push:
+    branches: [fix/floodsafe-full-river-detail-v0879]
+
+permissions:
+  contents: write
+
+jobs:
+  verify-v0902:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/floodsafe-full-river-detail-v0879
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Prepare emulator host
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm || true
+          sudo apt-get update -qq
+          if ! sudo apt-get install -y --no-install-recommends libpulse0; then sudo apt-get install -y --no-install-recommends libpulse0t64; fi
+
+      - name: Apply only requested v0.9.02 fixes
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_v0899_verified_river_flow_safety.py
+          python3 floodsafe-android-app/patch_native_v0900_station_rivers_only.py
+          python3 floodsafe-android-app/patch_native_v0900_station_river_alias.py
+          python3 floodsafe-android-app/patch_native_v0902_activity_truth_ui.py
+          python3 floodsafe-android-app/patch_native_v0902_map_status_flow.py
+          python3 floodsafe-android-app/patch_native_v0902_rain_background.py
+          python3 floodsafe-android-app/patch_native_v0902_truth_followup.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/build.gradle')
+          s=p.read_text()
+          s=s.replace("versionCode 17","versionCode 18")
+          s=s.replace("versionName '0.9.00-native'","versionName '0.9.02-native'")
+          p.write_text(s)
+          PY
+
+      - name: Source contract gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app
+          MAP=$SRC/FloodSafeNativeMapView.java
+          ACT=$SRC/NativeFullActivity.java
+          grep -q 'V0902_OFFICIAL_STATUS_FIRST_OBSERVATION_TIME_ONLY' "$ACT"
+          grep -q 'V0902_DIRECT_CURRENT_TRUTH_UI' "$ACT"
+          grep -q 'V0902_77_DISTRICT_SELECTOR' "$ACT"
+          grep -q 'V0902_RESPONSIVE_SCROLL_DIALOG' "$ACT"
+          grep -q 'V0902_NO_CONTRADICTORY_STALE_AGE' "$ACT"
+          grep -q 'V0902_GREEN_NORMAL_STALE_GREY' "$MAP"
+          grep -q 'V0902_RIVER_COLOUR_FOLLOWS_STATION_STATUS' "$MAP"
+          grep -q 'V0902_STATUS_COLOURED_FLOW_GLOW' "$MAP"
+          grep -q '#27a65b' "$MAP"
+          grep -q 'V0902_RAIN_MATCH_TIERS' "$SRC/DhmRainMirror.java"
+          grep -q 'V0902_CATALOG_BOUND_DIRECT_CURRENT' "$SRC/OfficialRiverData.java"
+          grep -q 'if (catalogBacked) continue' "$SRC/OfficialRiverData.java"
+          grep -q 'V0902_WORKER_OFFICIAL_TRUTH' "$SRC/RiverAlertWorker.java"
+          grep -q 'if(!OfficialRiverData.isCurrent(measuredAt,now))return null' "$SRC/RiverAlertWorker.java"
+          grep -q 'distanceToRiverKm(homeLat, homeLon, affected)' "$SRC/RiverAlertWorker.java"
+          grep -q 'V0902_REALISTIC_BACKGROUND_REFRESH' "$SRC/FloodLiveGaugeMonitor.java"
+          ! grep -q 'postDelayed(this,1_000L)' "$SRC/FloodLiveGaugeMonitor.java"
+          grep -q 'SOURCE_REFRESH_MS=5L\*60L\*1000L' "$SRC/FloodLiveGaugeMonitor.java"
+          ! grep -R -n 'android\.webkit\|androidx\.webkit' "$SRC" floodsafe-android-app/app/build.gradle
+          ! grep -q 'riversGeoJson = makeRiversGeoJson(all)' "$MAP"
+          grep -q "versionName '0.9.02-native'" floodsafe-android-app/app/build.gradle
+          python3 - <<'PY'
+          import json
+          j=json.load(open('floodsafe-nepal/v24/nepal-districts.geojson'))
+          names=sorted({f.get('properties',{}).get('nameEn','').strip() for f in j.get('features',[]) if f.get('properties',{}).get('nameEn','').strip()})
+          print('district inventory=',len(names))
+          assert len(names)==77
+          PY
+
+      - name: Unit tests and build APK
+        run: gradle -p floodsafe-android-app clean :app:testDebugUnitTest :app:assembleDebug --stacktrace --no-daemon
+
+      - name: Inspect native APK package
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -Z1 "$APK" > /tmp/apk-files.txt
+          ! grep -Ei '\.(html|js|mjs|webmanifest)$' /tmp/apk-files.txt
+          unzip -l "$APK" | grep -q 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -q 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          : > /tmp/dexstrings
+          while read -r d; do unzip -p "$APK" "$d" | strings >> /tmp/dexstrings; done < <(grep -E '^classes[0-9]*\.dex$' /tmp/apk-files.txt)
+          ! grep -qE 'android/webkit/WebView|androidx/webkit|VoiceMainActivity|BundledContent' /tmp/dexstrings
+          grep -q 'station_sources normal_green=' /tmp/dexstrings
+          grep -q 'river_status_features normal_cyan=' /tmp/dexstrings
+          grep -q 'district_selector_count=' /tmp/dexstrings
+          grep -q 'scroll_dialog_shown' /tmp/dexstrings
+          grep -q 'rain_match unavailable' /tmp/dexstrings
+
+      - name: Runtime verify exact requested cases
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          cores: 2
+          disable-animations: true
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            set -euo pipefail
+            APP=io.github.pujan1234hub.floodsafe.app
+            DIR=floodsafe-android-app
+            APK=$DIR/app/build/outputs/apk/debug/app-debug.apk
+            adb install -r "$APK"
+            adb shell pm grant "$APP" android.permission.POST_NOTIFICATIONS || true
+            adb shell pm grant "$APP" android.permission.ACCESS_FINE_LOCATION || true
+            adb shell pm grant "$APP" android.permission.ACCESS_COARSE_LOCATION || true
+            adb emu geo fix 85.3240 27.7172 || true
+            adb logcat -c
+            adb shell am start -W -n "$APP/.PJBuiltsSplashActivity"
+            sleep 125
+            adb logcat -d > "$DIR/runtime-v0902-live.txt"
+
+            # Capture the working native map after station mapping has completed.
+            adb shell input swipe 540 1950 540 520 700 || true
+            sleep 2
+            adb shell input swipe 540 1900 540 720 600 || true
+            sleep 4
+            adb exec-out screencap -p > "$DIR/runtime-v0902-map.png"
+
+            # Find an actual native station list row and open it, rather than guessing map coordinates.
+            ROW_FOUND=0
+            for N in 1 2 3 4 5 6; do
+              adb shell uiautomator dump /sdcard/fs-ui.xml >/dev/null 2>&1 || true
+              adb pull /sdcard/fs-ui.xml "$DIR/fs-ui.xml" >/dev/null 2>&1 || true
+              if grep -q 'Current official reading\|Historical / last known reading' "$DIR/fs-ui.xml"; then ROW_FOUND=1; break; fi
+              adb shell input swipe 540 1900 540 720 600 || true
+              sleep 1
+            done
+            test "$ROW_FOUND" = 1
+            python3 - <<'PY' > /tmp/station-tap.txt
+            import re,xml.etree.ElementTree as ET
+            root=ET.parse('floodsafe-android-app/fs-ui.xml').getroot()
+            chosen=None
+            for e in root.iter():
+              t=e.attrib.get('text','')
+              if 'Current official reading' in t:
+                chosen=e;break
+              if chosen is None and 'Historical / last known reading' in t:chosen=e
+            assert chosen is not None
+            m=re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',chosen.attrib.get('bounds',''))
+            assert m
+            x1,y1,x2,y2=map(int,m.groups());print((x1+x2)//2,(y1+y2)//2)
+            PY
+            read SX SY < /tmp/station-tap.txt
+            adb shell input tap "$SX" "$SY"
+            sleep 3
+            adb exec-out screencap -p > "$DIR/runtime-v0902-popup.png"
+            adb shell uiautomator dump /sdcard/fs-popup.xml >/dev/null 2>&1 || true
+            adb pull /sdcard/fs-popup.xml "$DIR/fs-popup.xml" >/dev/null 2>&1 || true
+            grep -q 'OK\|ठीक छ' "$DIR/fs-popup.xml"
+            adb shell input keyevent 4 || true
+            sleep 2
+
+            # Find and open the 77-district native selector.
+            DIST_FOUND=0
+            for N in 1 2 3 4 5 6 7; do
+              adb shell uiautomator dump /sdcard/fs-ui2.xml >/dev/null 2>&1 || true
+              adb pull /sdcard/fs-ui2.xml "$DIR/fs-ui2.xml" >/dev/null 2>&1 || true
+              if grep -q '७७ जिल्ला\|77 Districts' "$DIR/fs-ui2.xml"; then DIST_FOUND=1; break; fi
+              adb shell input swipe 540 1900 540 720 600 || true
+              sleep 1
+            done
+            test "$DIST_FOUND" = 1
+            python3 - <<'PY' > /tmp/district-button.txt
+            import re,xml.etree.ElementTree as ET
+            root=ET.parse('floodsafe-android-app/fs-ui2.xml').getroot()
+            for e in root.iter():
+              t=e.attrib.get('text','')
+              if '७७ जिल्ला' in t or '77 Districts' in t:
+                m=re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',e.attrib.get('bounds',''))
+                if m:
+                  x1,y1,x2,y2=map(int,m.groups());print((x1+x2)//2,(y1+y2)//2);break
+            PY
+            read DX DY < /tmp/district-button.txt
+            adb shell input tap "$DX" "$DY"
+            sleep 2
+            adb exec-out screencap -p > "$DIR/runtime-v0902-district-selector.png"
+            adb shell uiautomator dump /sdcard/fs-district.xml >/dev/null 2>&1 || true
+            adb pull /sdcard/fs-district.xml "$DIR/fs-district.xml" >/dev/null 2>&1 || true
+            grep -q 'All Nepal\|सबै नेपाल' "$DIR/fs-district.xml"
+            grep -q 'Achham' "$DIR/fs-district.xml"
+            python3 - <<'PY' > /tmp/achham-tap.txt
+            import re,xml.etree.ElementTree as ET
+            root=ET.parse('floodsafe-android-app/fs-district.xml').getroot()
+            for e in root.iter():
+              if e.attrib.get('text','').strip()=='Achham':
+                m=re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',e.attrib.get('bounds',''))
+                if m:
+                  x1,y1,x2,y2=map(int,m.groups());print((x1+x2)//2,(y1+y2)//2);break
+            PY
+            read AX AY < /tmp/achham-tap.txt
+            adb shell input tap "$AX" "$AY"
+            sleep 3
+            adb exec-out screencap -p > "$DIR/runtime-v0902-district-selected.png"
+
+            adb logcat -d > "$DIR/runtime-v0902.txt"
+            grep -E 'FloodSafeTruth|FloodSafeStationColor|FloodSafeRiverColor|FloodSafeRiver|FloodSafeRain|FloodSafeDistrict|FloodSafeDialog' "$DIR/runtime-v0902.txt" | tail -320 || true
+
+            # 1,2: current normal must be green; stale/historical must remain grey.
+            grep -Eq 'station_sources normal_green=[1-9][0-9]*' "$DIR/runtime-v0902.txt"
+            grep -Eq 'stale_grey=[1-9][0-9]*' "$DIR/runtime-v0902.txt"
+            # 3,4,5: station-linked river core/glow/flow remains alive and warning/danger is checked conditionally below.
+            grep -Eq 'flow_frame=[1-9][0-9]*.*normal_flow=[1-9][0-9]*' "$DIR/runtime-v0902.txt"
+            grep -q 'station-only river layers active' "$DIR/runtime-v0902.txt"
+            # 6: stale cannot alert is source-gated above and stale grey is runtime-proven.
+            # 7: every popup invokes rainfall matcher and must log safe match or explicit unavailable.
+            grep -Eq 'rain_match (ok|unavailable)' "$DIR/runtime-v0902.txt"
+            # 8: selector opened and actual district selection focused the map.
+            grep -q 'district_selector_count=77' "$DIR/runtime-v0902.txt"
+            grep -q 'map_focus_district=Achham' "$DIR/runtime-v0902.txt"
+            # 9: native scroll dialog opened and OK remained reachable in UI tree.
+            grep -Eq 'scroll_dialog_shown|river_scroll_dialog_shown' "$DIR/runtime-v0902.txt"
+
+            # 10 + warning/danger conditional exact parity.
+            python3 - <<'PY'
+            import re
+            log=open('floodsafe-android-app/runtime-v0902.txt',errors='ignore').read()
+            truth=list(re.finditer(r'catalog=(\d+) merged=(\d+) bipad_rows_checked=(\d+) bipad_direct_current=(\d+) latest_readings=(\d+) current=(\d+)',log))
+            ui=list(re.finditer(r'ui current normal=(\d+) alert=(\d+) warning=(\d+) danger=(\d+) stale=(\d+)',log))
+            colors=list(re.finditer(r'river_status_features normal_cyan=(\d+) alert_yellow=(\d+) warning_orange=(\d+) danger_red=(\d+) stale_neutral=(\d+)',log))
+            assert truth and ui and colors
+            catalog,merged,checked,direct_current,latest,current=map(int,truth[-1].groups())
+            normal,alert,warning,danger,stale=map(int,ui[-1].groups())
+            rn,ra,rw,rd,rs=map(int,colors[-1].groups())
+            assert 250 <= catalog <= 320,(catalog,'catalog inventory unexpectedly changed')
+            assert merged <= catalog,(merged,catalog,'raw BIPAD historical rows inflated station inventory')
+            assert current > 0
+            assert normal+alert+warning+danger == current,(normal,alert,warning,danger,current)
+            assert normal+alert+warning+danger+stale == merged,(normal,alert,warning,danger,stale,merged)
+            if alert>0: assert ra>0,('current alert exists but no yellow matched river',alert,ra)
+            if warning>0: assert rw>0,('current warning exists but no orange matched river',warning,rw)
+            else: print('No current official warning in this runtime snapshot; orange case correctly conditional')
+            if danger>0: assert rd>0,('current danger exists but no red matched river',danger,rd)
+            else: print('No current official danger in this runtime snapshot; red case correctly conditional')
+            print('RUNTIME PARITY PASS',dict(catalog=catalog,valid_stations=merged,bipad_rows_checked=checked,bipad_direct_current=direct_current,latest=latest,current=current,normal=normal,alert=alert,warning=warning,danger=danger,stale=stale,normal_rivers=rn,alert_rivers=ra,warning_rivers=rw,danger_rivers=rd,stale_rivers=rs))
+            PY
+
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0.9.02-final-runtime-evidence
+          path: |
+            floodsafe-android-app/runtime-v0902-map.png
+            floodsafe-android-app/runtime-v0902-popup.png
+            floodsafe-android-app/runtime-v0902-district-selector.png
+            floodsafe-android-app/runtime-v0902-district-selected.png
+            floodsafe-android-app/runtime-v0902.txt
+            floodsafe-android-app/runtime-v0902-live.txt
+            floodsafe-android-app/fs-popup.xml
+            floodsafe-android-app/fs-district.xml
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Commit verified source only
+        if: success()
+        run: |
+          set -euo pipefail
+          git config user.name 'FloodSafe Build Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/OfficialRiverData.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/DhmRainMirror.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java \
+                  floodsafe-android-app/app/build.gradle
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: verified status truth colours rainfall districts and popup v0.9.02 [skip ci]'
+            git push origin HEAD:fix/floodsafe-full-river-detail-v0879
+          fi
+
+      - name: Package verified APK
+        if: success()
+        run: |
+          cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk floodsafe-android-app/FloodSafe-Nepal-v0.9.02-VERIFIED.apk
+          sha256sum floodsafe-android-app/FloodSafe-Nepal-v0.9.02-VERIFIED.apk > floodsafe-android-app/FloodSafe-Nepal-v0.9.02-sha256.txt
+
+      - name: Upload verified APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.02-VERIFIED
+          path: |
+            floodsafe-android-app/FloodSafe-Nepal-v0.9.02-VERIFIED.apk
+            floodsafe-android-app/FloodSafe-Nepal-v0.9.02-sha256.txt
+          if-no-files-found: error
+          retention-days: 14

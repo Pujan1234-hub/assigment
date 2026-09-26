@@ -1,42 +1,49 @@
 {
-  "generated_at": "2026-09-26T05:15:48.241944+05:45",
-  "updated_at_npt": "26 Sep 05:15 NPT",
+  "generated_at": "2026-09-26T07:39:58.176639+05:45",
+  "updated_at_npt": "26 Sep 07:39 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "खुम्बु क्षेत्रमा हिमपात,सात विदेशी पर्यटकको उद्धार",
+      "title": "नारायणी र दरमखोलामा जलसतह सतर्कता तह पार, तटीय क्षेत्रका बासिन्दालाई उच्च सतर्क रहन आग्रह",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594970/seven-foreign-tourists-rescued-after-snowfall-in-khumbu-region",
-      "published_at": "2026-09-26T04:48:35+05:45",
+      "url": "https://www.ratopati.com/story/594983/water-levels-in-narayani-and-daramkhola-exceed-alert-level-coastal-residents-urged-to-remain-on-high-alert",
+      "published_at": "2026-09-26T07:14:08+05:45",
       "flash": true
+    },
+    {
+      "title": "देशभर मनसुनी र पश्चिमी वायुको दोहोरो प्रभाव, आज यी प्रदेशमा हुनेछ अति भारी वर्षा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594978/the-dual-effect-of-monsoon-and-westerly-winds-will-prevail-across-the-country-very-heavy-rain-will-be-expected-in-these-states-today",
+      "published_at": "2026-09-26T06:11:12+05:45",
+      "flash": false
+    },
+    {
+      "title": "लगातारको वर्षाले धानबालीमा समस्या आउने जोखिम : प्राविधिक",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/594974/continuous-rains-pose-risk-of-problems-in-rice-crop-technician",
+      "published_at": "2026-09-26T05:34:08+05:45",
+      "flash": false
     },
     {
       "title": "बाढी पसेपछि सुस्तावासी समस्यामा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594968/susta-residents-in-trouble-after-floods",
       "published_at": "2026-09-26T04:27:07+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "झापामा ‘ड्रोन’ बाट बाढीको जोखिम निगरानी",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594967/flood-risk-monitoring-using-drones-in-jhapa",
       "published_at": "2026-09-26T04:22:59+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "बाढीको जोखिममा राप्ती तटीय क्षेत्रका बासिन्दा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/594965/residents-of-rapti-coastal-areas-at-risk-of-flooding",
       "published_at": "2026-09-26T04:16:23+05:45",
-      "flash": true
-    },
-    {
-      "title": "अविरल वर्षाले उखु खेतीमा क्षति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594961/incessant-rains-damage-sugarcane-cultivation",
-      "published_at": "2026-09-25T23:30:19+05:45",
       "flash": false
     }
   ],
@@ -56,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 5
+      "flash": 1,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     }

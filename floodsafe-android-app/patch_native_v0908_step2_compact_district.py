@@ -106,9 +106,11 @@ compact_methods = r'''    private void renderDistrictStationGroups(List<RiverSta
 '''
 sub_once(r'    private void renderDistrictStationGroups\(List<RiverStation> source\)\{.*?(?=    private String districtLabel\(RiverStation st\))', compact_methods, 'replace long district accordion')
 
-for marker in ["V0908_COMPACT_DISTRICT_PICKER","V0908_ONE_DISTRICT_ONLY","V0907_DISTRICT_NAMES_COLLAPSED"]:
+for marker in ["V0908_COMPACT_DISTRICT_PICKER","V0908_ONE_DISTRICT_ONLY","V0908_SELECTED_DISTRICT_DETAILS"]:
     if marker not in s:
         raise SystemExit("missing marker: "+marker)
+if 'private String districtLabel(RiverStation st)' not in s or 'v0907DistrictNameAt' not in s:
+    raise SystemExit('v0.9.07 real district-name resolver was lost')
 if 'android.webkit.WebView' in s:
     raise SystemExit('WebView introduced')
 UI.write_text(s,encoding="utf-8")

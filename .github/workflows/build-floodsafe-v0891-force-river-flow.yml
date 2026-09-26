@@ -1,17 +1,12 @@
-name: Build FloodSafe v0.8.96 Exact Station River Canvas APK
+name: Build FloodSafe v0.8.97 Catalog River Visual Check APK
 
 on:
   push:
     branches: [ fix/floodsafe-v0880-river-status ]
     paths:
       - '.github/workflows/build-floodsafe-v0891-force-river-flow.yml'
-      - 'floodsafe-android-app/patch_native_v0891_force_station_river_geometry.py'
-      - 'floodsafe-android-app/patch_native_v0892_force_render_station_rivers.py'
-      - 'floodsafe-android-app/patch_native_v0893_dedicated_station_river_layer.py'
-      - 'floodsafe-android-app/run_patch_native_v0893.py'
-      - 'floodsafe-android-app/patch_native_v0894_river_render_runtime_fix.py'
-      - 'floodsafe-android-app/patch_native_v0895_station_rivers_only.py'
       - 'floodsafe-android-app/patch_native_v0896_exact_tile_canvas_rivers.py'
+      - 'floodsafe-android-app/patch_native_v0897_full_catalog_map_roster.py'
   workflow_dispatch:
 
 permissions:
@@ -30,68 +25,56 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-      - name: Apply v0.8.77 baseline
-        run: python3 floodsafe-android-app/run_patch_native_v0877.py
-      - name: Apply v0.8.78 station resilience
-        run: python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
-      - name: Apply v0.8.79 full river geometry
-        run: python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
-      - name: Verify v0.8.80 status baseline
-        run: python3 floodsafe-android-app/patch_native_v0880b_verify_status.py
-      - name: Apply v0.8.81 station river layer
-        run: python3 floodsafe-android-app/patch_native_v0881_live_station_rivers.py
-      - name: Apply v0.8.82 BIPAD River Watch truth
-        run: python3 floodsafe-android-app/patch_native_v0882_bipad_river_watch.py
-      - name: Apply v0.8.83 no-ANR station river flow
-        run: python3 floodsafe-android-app/patch_native_v0883_no_anr_station_rivers.py
-      - name: Apply v0.8.84 latest-source status rivers
-        run: python3 floodsafe-android-app/patch_native_v0884_fixed.py
-      - name: Apply v0.8.85 affected-river 2km alert
-        run: python3 floodsafe-android-app/patch_native_v0885_river_geometry_alert.py
-      - name: Apply v0.8.86 realtime map visibility
-        run: python3 floodsafe-android-app/patch_native_v0886_realtime_bigstations_rivernetwork.py
-      - name: Apply v0.8.87 station online visual
-        run: python3 floodsafe-android-app/patch_native_v0887_station_online_visual.py
-      - name: Apply v0.8.88 station river binding
-        run: python3 floodsafe-android-app/patch_native_v0888_station_river_binding.py
-      - name: Apply v0.8.89 freshness truth
-        run: python3 floodsafe-android-app/patch_native_v0889_freshness_truth.py
-      - name: Apply v0.8.90 station river network
-        run: python3 floodsafe-android-app/patch_native_v0890_station_river_network_only.py
-      - name: Apply v0.8.91 force station river flow
-        run: python3 floodsafe-android-app/patch_native_v0891_force_station_river_geometry.py
-      - name: Apply v0.8.92 direct station river render source
-        run: python3 floodsafe-android-app/patch_native_v0892_force_render_station_rivers.py
-      - name: Apply v0.8.93 dedicated station river source
-        run: python3 floodsafe-android-app/run_patch_native_v0893.py
-      - name: Apply v0.8.94 runtime river fix
-        run: python3 floodsafe-android-app/patch_native_v0894_river_render_runtime_fix.py
-      - name: Apply v0.8.95 station rivers only
-        run: python3 floodsafe-android-app/patch_native_v0895_station_rivers_only.py
-      - name: Apply v0.8.96 exact tile + canvas river renderer
-        run: python3 floodsafe-android-app/patch_native_v0896_exact_tile_canvas_rivers.py
-      - name: Verify v0.8.96 source contracts
+      - name: Apply native patch chain
         shell: bash
         run: |
           set -euo pipefail
+          python3 floodsafe-android-app/run_patch_native_v0877.py
+          python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+          python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0880b_verify_status.py
+          python3 floodsafe-android-app/patch_native_v0881_live_station_rivers.py
+          python3 floodsafe-android-app/patch_native_v0882_bipad_river_watch.py
+          python3 floodsafe-android-app/patch_native_v0883_no_anr_station_rivers.py
+          python3 floodsafe-android-app/patch_native_v0884_fixed.py
+          python3 floodsafe-android-app/patch_native_v0885_river_geometry_alert.py
+          python3 floodsafe-android-app/patch_native_v0886_realtime_bigstations_rivernetwork.py
+          python3 floodsafe-android-app/patch_native_v0887_station_online_visual.py
+          python3 floodsafe-android-app/patch_native_v0888_station_river_binding.py
+          python3 floodsafe-android-app/patch_native_v0889_freshness_truth.py
+          python3 floodsafe-android-app/patch_native_v0890_station_river_network_only.py
+          python3 floodsafe-android-app/patch_native_v0891_force_station_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0892_force_render_station_rivers.py
+          python3 floodsafe-android-app/run_patch_native_v0893.py
+          python3 floodsafe-android-app/patch_native_v0894_river_render_runtime_fix.py
+          python3 floodsafe-android-app/patch_native_v0895_station_rivers_only.py
+          python3 floodsafe-android-app/patch_native_v0896_exact_tile_canvas_rivers.py
+          python3 floodsafe-android-app/patch_native_v0897_full_catalog_map_roster.py
+      - name: Verify v0.8.97 source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
           M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
           G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0897_FULL_CATALOG_MAP_ROSTER' "$A"
+          grep -Fq 'V0897_CATALOG_ROSTER_COUNT_IS_TRUTH' "$A"
+          ! grep -Fq 'V0882_ONLY_BIPAD_RIVER_WATCH_ROWS' "$A"
           grep -Fq 'V0896_EXACT_LOCAL_TILE_STATION_RIVERS' "$M"
           grep -Fq 'V0896_NATIVE_CANVAS_FLOW_GLOW_GUARANTEE' "$M"
-          grep -Fq 'v879ReadRiverAsset(path)' "$M"
           grep -Fq 'canvas.drawPath(path,glow)' "$M"
           grep -Fq 'canvas.drawPath(path,core)' "$M"
           grep -Fq 'postInvalidateDelayed(80)' "$M"
-          grep -Fq "versionName '0.8.96'" "$G"
-          grep -Fq 'versionCode 116' "$G"
-          echo 'V0896_SOURCE_CONTRACT PASS'
+          grep -Fq "versionName '0.8.97'" "$G"
+          grep -Fq 'versionCode 117' "$G"
+          echo 'V0897_SOURCE_CONTRACT PASS'
       - name: Bundle source assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
-      - name: Rebuild and verify exact Nepal river tiles
+      - name: Rebuild exact Nepal river assets
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m pip install --quiet shapely
+          python3 -m pip install --quiet shapely matplotlib
           python3 floodsafe-android-app/preclip_nepal_waterways.py
           python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
           python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
@@ -99,16 +82,78 @@ jobs:
           python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
           python3 floodsafe-android-app/build_progressive_river_names_v0863.py
           python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
-          TILE=$(find floodsafe-android-app/app/build -path '*/data/nepal-waterways-tiles/7-2.json' -type f | head -1)
-          test -n "$TILE" && test -s "$TILE"
-          python3 - "$TILE" <<'PY'
-          import json,sys
-          o=json.load(open(sys.argv[1],encoding='utf-8'))
-          w=o.get('waterways') or []
-          good=sum(1 for x in w if len(x.get('pts') or [])>=2)
-          print('V0896_EXACT_TILE ways=',len(w),'drawable=',good)
-          assert good>20
+      - name: Validate catalog stations actually match drawable rivers
+        shell: bash
+        run: |
+          set -euo pipefail
+          CORE=$(find floodsafe-android-app/app/build -path '*/data/floodsafe-core.json' -type f | head -1)
+          TDIR=$(find floodsafe-android-app/app/build -path '*/data/nepal-waterways-tiles' -type d | head -1)
+          test -n "$CORE" && test -s "$CORE" && test -n "$TDIR"
+          python3 - "$CORE" "$TDIR" <<'PY'
+          import json,sys,math,os
+          import matplotlib.pyplot as plt
+          core=json.load(open(sys.argv[1],encoding='utf-8')); td=sys.argv[2]
+          rows=core.get('river_stations') or core.get('riverStations') or []
+          def val(o,*ks):
+              for k in ks:
+                  v=o.get(k)
+                  if v not in (None,''):
+                      try:return float(v)
+                      except:pass
+              return float('nan')
+          def name(o):
+              for k in ('river_name','riverName','station_name','stationName','name','title'):
+                  if o.get(k): return str(o[k])
+              return ''
+          def norm(s):
+              s=''.join(ch.lower() for ch in s if ch.isalnum())
+              for w in ('river','khola','nadi','station','at'):
+                  s=s.replace(w,'')
+              return s
+          def dist_point_seg(lat,lon,a,b):
+              x=lon*math.cos(math.radians(lat)); y=lat
+              x1=a[0]*math.cos(math.radians(lat)); y1=a[1]; x2=b[0]*math.cos(math.radians(lat)); y2=b[1]
+              dx=x2-x1;dy=y2-y1
+              t=0 if dx*dx+dy*dy==0 else max(0,min(1,((x-x1)*dx+(y-y1)*dy)/(dx*dx+dy*dy)))
+              return math.hypot(x-(x1+t*dx),y-(y1+t*dy))*111.2
+          def waydist(lat,lon,w):
+              p=w.get('pts') or []
+              if len(p)<2:return 1e9
+              return min(dist_point_seg(lat,lon,p[i],p[i+1]) for i in range(len(p)-1))
+          valid=[]; matched=[]
+          for s in rows:
+              if not isinstance(s,dict):continue
+              la=val(s,'latitude','lat','stationLatitude','station_latitude');lo=val(s,'longitude','lon','lng','stationLongitude','station_longitude')
+              if not(math.isfinite(la) and math.isfinite(lo) and 26.0<=la<=31 and 79.5<=lo<=89):continue
+              valid.append((s,la,lo)); cx=max(0,min(11,int(math.floor((lo-80.0)/.70))));cy=max(0,min(7,int(math.floor((la-26.2)/.60))))
+              ways=[]
+              for x in range(max(0,cx-1),min(11,cx+1)+1):
+                  for y in range(max(0,cy-1),min(7,cy+1)+1):
+                      p=os.path.join(td,f'{x}-{y}.json')
+                      if os.path.exists(p): ways += (json.load(open(p,encoding='utf-8')).get('waterways') or [])
+              sn=norm(name(s)); candidates=[]
+              for w in ways:
+                  if len(w.get('pts') or [])<2:continue
+                  d=waydist(la,lo,w); rn=norm(str(w.get('name_en') or w.get('name') or w.get('name_ne') or ''))
+                  nm=bool(sn and rn and (sn in rn or rn in sn))
+                  candidates.append((0 if nm else 1,d,w))
+              if candidates:
+                  candidates.sort(key=lambda z:(z[0],z[1])); best=candidates[0]
+                  if best[1] <= 35: matched.append((s,la,lo,best[2],best[1]))
+          print('V0897_CATALOG_RIVER_MATCH catalog=',len(rows),'valid_coords=',len(valid),'matched=',len(matched))
+          assert len(rows)>=250, 'official bundled catalog unexpectedly small'
+          assert len(valid)>=220, 'too few coordinate-valid catalog stations'
+          assert len(matched)>=int(len(valid)*0.90), 'less than 90% of catalog stations matched exact river tiles'
+          fig,ax=plt.subplots(figsize=(7,8))
+          for _,la,lo,w,d in matched:
+              pts=w.get('pts') or []
+              if len(pts)>=2: ax.plot([p[0] for p in pts],[p[1] for p in pts],linewidth=1.0)
+          ax.scatter([x[2] for x in valid],[x[1] for x in valid],s=4)
+          ax.set_xlim(80,88.4);ax.set_ylim(26.2,30.5);ax.set_aspect('equal',adjustable='box');ax.set_title(f'FloodSafe v0.8.97 catalog station river validation: {len(matched)}/{len(valid)} matched')
+          fig.tight_layout();fig.savefig('FloodSafe-v0.8.97-river-validation.png',dpi=180);plt.close(fig)
+          open('FloodSafe-v0.8.97-river-validation.txt','w').write(f'catalog={len(rows)}\nvalid_coords={len(valid)}\nmatched={len(matched)}\n')
           PY
+          test -s FloodSafe-v0.8.97-river-validation.png
       - name: Unit test and build APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
       - name: Verify APK exact tiles and canvas renderer
@@ -118,14 +163,16 @@ jobs:
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
           unzip -t "$APK" >/dev/null
-          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/7-2.json'
-          cp "$APK" FloodSafe-Nepal-v0.8.96-EXACT-STATION-RIVER-FLOW.apk
-          sha256sum FloodSafe-Nepal-v0.8.96-EXACT-STATION-RIVER-FLOW.apk | tee FloodSafe-Nepal-v0.8.96-SHA256.txt
-          stat -c '%s bytes' FloodSafe-Nepal-v0.8.96-EXACT-STATION-RIVER-FLOW.apk
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/'
+          cp "$APK" FloodSafe-Nepal-v0.8.97-CATALOG-STATION-RIVER-FLOW.apk
+          sha256sum FloodSafe-Nepal-v0.8.97-CATALOG-STATION-RIVER-FLOW.apk | tee FloodSafe-Nepal-v0.8.97-SHA256.txt
+          stat -c '%s bytes' FloodSafe-Nepal-v0.8.97-CATALOG-STATION-RIVER-FLOW.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0896-EXACT-STATION-RIVER-FLOW
+          name: FloodSafe-Nepal-v0897-CATALOG-STATION-RIVER-FLOW
           path: |
-            FloodSafe-Nepal-v0.8.96-EXACT-STATION-RIVER-FLOW.apk
-            FloodSafe-Nepal-v0.8.96-SHA256.txt
+            FloodSafe-Nepal-v0.8.97-CATALOG-STATION-RIVER-FLOW.apk
+            FloodSafe-Nepal-v0.8.97-SHA256.txt
+            FloodSafe-v0.8.97-river-validation.png
+            FloodSafe-v0.8.97-river-validation.txt
           retention-days: 14

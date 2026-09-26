@@ -1,0 +1,155 @@
+name: FloodSafe v0.9.02 single-shell final verify
+
+on:
+  push:
+    branches: [fix/floodsafe-full-river-detail-v0879]
+
+permissions:
+  contents: write
+
+jobs:
+  verify-v0902-single-shell:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/floodsafe-full-river-detail-v0879
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Prepare emulator host
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm || true
+          sudo apt-get update -qq
+          if ! sudo apt-get install -y --no-install-recommends libpulse0; then sudo apt-get install -y --no-install-recommends libpulse0t64; fi
+
+      - name: Apply requested fixes and build
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_v0899_verified_river_flow_safety.py
+          python3 floodsafe-android-app/patch_native_v0900_station_rivers_only.py
+          python3 floodsafe-android-app/patch_native_v0900_station_river_alias.py
+          python3 floodsafe-android-app/patch_native_v0902_activity_truth_ui.py
+          python3 floodsafe-android-app/patch_native_v0902_map_status_flow.py
+          python3 floodsafe-android-app/patch_native_v0902_rain_background.py
+          python3 floodsafe-android-app/patch_native_v0902_truth_followup.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/build.gradle')
+          s=p.read_text().replace("versionCode 17","versionCode 18").replace("versionName '0.9.00-native'","versionName '0.9.02-native'")
+          p.write_text(s)
+          PY
+          gradle -p floodsafe-android-app clean :app:testDebugUnitTest :app:assembleDebug --stacktrace --no-daemon
+
+      - name: Static native safety gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app
+          MAP=$SRC/FloodSafeNativeMapView.java
+          ACT=$SRC/NativeFullActivity.java
+          grep -q 'V0902_OFFICIAL_STATUS_FIRST_OBSERVATION_TIME_ONLY' "$ACT"
+          grep -q 'V0902_DIRECT_CURRENT_TRUTH_UI' "$ACT"
+          grep -q 'V0902_77_DISTRICT_SELECTOR' "$ACT"
+          grep -q 'V0902_RESPONSIVE_SCROLL_DIALOG' "$ACT"
+          grep -q 'V0902_GREEN_NORMAL_STALE_GREY' "$MAP"
+          grep -q 'V0902_RIVER_COLOUR_FOLLOWS_STATION_STATUS' "$MAP"
+          grep -q 'V0902_STATUS_COLOURED_FLOW_GLOW' "$MAP"
+          grep -q 'V0902_RAIN_MATCH_TIERS' "$SRC/DhmRainMirror.java"
+          grep -q 'V0902_CATALOG_BOUND_DIRECT_CURRENT' "$SRC/OfficialRiverData.java"
+          grep -q 'V0902_WORKER_OFFICIAL_TRUTH' "$SRC/RiverAlertWorker.java"
+          grep -q 'distanceToRiverKm(homeLat, homeLon, affected)' "$SRC/RiverAlertWorker.java"
+          grep -q 'V0902_REALISTIC_BACKGROUND_REFRESH' "$SRC/FloodLiveGaugeMonitor.java"
+          ! grep -q 'postDelayed(this,1_000L)' "$SRC/FloodLiveGaugeMonitor.java"
+          ! grep -R -n 'android\.webkit\|androidx\.webkit' "$SRC" floodsafe-android-app/app/build.gradle
+          ! grep -q 'riversGeoJson = makeRiversGeoJson(all)' "$MAP"
+          python3 - <<'PY'
+          import json
+          j=json.load(open('floodsafe-nepal/v24/nepal-districts.geojson'))
+          names={f.get('properties',{}).get('nameEn','').strip() for f in j.get('features',[]) if f.get('properties',{}).get('nameEn','').strip()}
+          assert len(names)==77,len(names)
+          print('77 district static gate PASS')
+          PY
+
+      - name: Runtime verify exact requested cases
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          cores: 2
+          disable-animations: true
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash floodsafe-android-app/verify_v0902_runtime.sh
+
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0.9.02-single-shell-runtime-evidence
+          path: |
+            floodsafe-android-app/runtime-v0902-map.png
+            floodsafe-android-app/runtime-v0902-popup.png
+            floodsafe-android-app/runtime-v0902-district-selector.png
+            floodsafe-android-app/runtime-v0902-district-selected.png
+            floodsafe-android-app/runtime-v0902.txt
+            floodsafe-android-app/runtime-v0902-live.txt
+            floodsafe-android-app/fs-popup.xml
+            floodsafe-android-app/fs-district.xml
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Commit verified source only
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'FloodSafe Build Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/OfficialRiverData.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/DhmRainMirror.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java \
+                  floodsafe-android-app/app/build.gradle
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: verified truth colours rainfall districts dialogs v0.9.02 [skip ci]'
+            git push origin HEAD:fix/floodsafe-full-river-detail-v0879
+          fi
+
+      - name: Package verified APK
+        if: success()
+        shell: bash
+        run: |
+          cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk floodsafe-android-app/FloodSafe-Nepal-v0.9.02-VERIFIED.apk
+          sha256sum floodsafe-android-app/FloodSafe-Nepal-v0.9.02-VERIFIED.apk > floodsafe-android-app/FloodSafe-Nepal-v0.9.02-sha256.txt
+
+      - name: Upload verified APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.02-VERIFIED
+          path: |
+            floodsafe-android-app/FloodSafe-Nepal-v0.9.02-VERIFIED.apk
+            floodsafe-android-app/FloodSafe-Nepal-v0.9.02-sha256.txt
+          if-no-files-found: error
+          retention-days: 14

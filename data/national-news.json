@@ -1,105 +1,35 @@
 {
-  "generated_at": "2026-09-26T22:15:20.922257+05:45",
-  "updated_at_npt": "26 Sep 22:15 NPT",
+  "generated_at": "2026-09-27T01:05:31.526653+05:45",
+  "updated_at_npt": "27 Sep 01:05 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "पर्यटक सुरक्षाका लागि एक्यापद्वारा पर्यटक परमिट बन्द",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595148/acap-suspends-tourist-permits-for-tourist-safety",
+      "published_at": "2026-09-27T00:15:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "हुम्लामा भारी वर्षा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595143/heavy-rain-in-humla",
+      "published_at": "2026-09-26T22:26:24+05:45",
+      "flash": false
+    },
+    {
+      "title": "सेतीको बहाव बढेर रामघाटमा ताल बनेपछि उच्च सतर्कता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595142/high-alert-as-seti-river-flows-increase-forming-a-lake-in-ramghat",
+      "published_at": "2026-09-26T22:16:47+05:45",
+      "flash": false
+    },
     {
       "title": "जोगबनीमा नेपाल–भारत सीमा सुरक्षा अधिकारीबिच बैठक",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/595131/meeting-between-nepal-india-border-security-officials-in-jogbani",
       "published_at": "2026-09-26T19:52:09+05:45",
-      "flash": false
-    },
-    {
-      "title": "पाल्पा पहिरोमा बेपत्ता महिलाको शव फेला",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595127/body-of-missing-woman-found-in-palpa-landslide",
-      "published_at": "2026-09-26T18:57:40+05:45",
-      "flash": false
-    },
-    {
-      "title": "बागलुङका दुई मुख्य राजमार्ग अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595124/two-main-highways-in-baglung-blocked",
-      "published_at": "2026-09-26T18:15:45+05:45",
-      "flash": false
-    },
-    {
-      "title": "‘टिकट लिने बेला गगनलाई नेता भन्नेहरूले अहिले गाली गर्ने?’",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595112/will-those-who-called-gagan-a-leader-now-insult-him-when-buying-tickets",
-      "published_at": "2026-09-26T17:23:04+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी र पहिरोका कारण गुल्मीमा ११ परिवार विस्थापित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595106/11-families-displaced-in-gulmi-due-to-floods-and-landslides",
-      "published_at": "2026-09-26T17:10:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीपीडितलाई ग्यास चुल्हो र सिलिन्डर वितरण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595104/gas-stoves-and-cylinders-distributed-to-bhotekoshi-flood-victims",
-      "published_at": "2026-09-26T17:03:50+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाँकेमा अविरल वर्षाका कारण पाकेको धानबाली ढलेर क्षति, किसान चिन्तित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595103/farmers-worried-as-incessant-rains-damage-ripe-rice-crop-in-banke",
-      "published_at": "2026-09-26T17:01:39+05:45",
-      "flash": false
-    },
-    {
-      "title": "नारायणी नदीमा बाढी: गण्डक ब्यारेजका सबै ३६ ढोका खोलिए",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595100/flooding-in-narayani-river-all-36-gates-of-gandak-barrage-opened",
-      "published_at": "2026-09-26T16:55:04+05:45",
-      "flash": false
-    },
-    {
-      "title": "पहिरोका कारण सोलुखुम्बु-काठमाडौँ आवागमन बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595099/solukhumbu-kathmandu-traffic-closed-due-to-landslide",
-      "published_at": "2026-09-26T16:54:43+05:45",
-      "flash": false
-    },
-    {
-      "title": "चितवन राष्ट्रिय निकुञ्ज र मध्यवर्ती क्षेत्रमा सतर्कता अपनाउन आग्रह",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595097/urge-to-be-vigilant-in-chitwan-national-park-and-buffer-zone",
-      "published_at": "2026-09-26T16:50:29+05:45",
-      "flash": false
-    },
-    {
-      "title": "कर्णालीका १० वटै जिल्लाका प्रशासन विपद् व्यवस्थापनमा सतर्क, जनशक्ति र साधनस्रोत तयार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595096/administrations-in-all-10-districts-of-karnali-are-alert-in-disaster-management-manpower-and-resources-are-ready",
-      "published_at": "2026-09-26T16:50:02+05:45",
-      "flash": false
-    },
-    {
-      "title": "खोलाले बगाएर महिलाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595095/woman-dies-after-being-swept-away-by-river",
-      "published_at": "2026-09-26T16:45:40+05:45",
-      "flash": false
-    },
-    {
-      "title": "पहिरोसँग खसेको ढुङ्गा लागेर डोल्पामा एकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595091/one-killed-in-dolpa-after-being-hit-by-falling-rocks",
-      "published_at": "2026-09-26T16:36:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "सडक भासिएपछि मूलपानी-बोडे पुल बन्द (तस्बिर)",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595090/mulpani-bode-bridge-closed-after-road-washed-away-photo",
-      "published_at": "2026-09-26T16:34:06+05:45",
       "flash": false
     }
   ],
@@ -119,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 14
+      "flash": 1,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

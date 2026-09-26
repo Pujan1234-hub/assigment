@@ -33,6 +33,7 @@ jobs:
           from pathlib import Path
           import re
           src = Path('floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app')
+
           a = src / 'NativeFullActivity.java'
           s = a.read_text(encoding='utf-8')
           s = s.replace('private NativeRiverMap map;', 'private FloodSafeNativeMapView map;', 1)
@@ -45,9 +46,15 @@ jobs:
           s = s.replace('case"normal":return"🟢";', 'case"normal":return"🔵";', 1)
           a.write_text(s, encoding='utf-8')
 
+          # Every notification/background/SATHI open intent must route to the native activity.
+          for java in src.glob('*.java'):
+              text = java.read_text(encoding='utf-8')
+              patched = text.replace('VoiceMainActivity.class', 'NativeFullActivity.class')
+              if patched != text:
+                  java.write_text(patched, encoding='utf-8')
+
           splash = src / 'PJBuiltsSplashActivity.java'
           s = splash.read_text(encoding='utf-8')
-          s = s.replace('new Intent(this, VoiceMainActivity.class)', 'new Intent(this, NativeFullActivity.class)')
           s = s.replace('the already-loaded WebView', 'the already-loaded native activity')
           s = s.replace('VoiceMainActivity', 'NativeFullActivity')
           splash.write_text(s, encoding='utf-8')

@@ -16,15 +16,18 @@ jobs:
         with:
           ref: fix/floodsafe-full-river-detail-v0879
           fetch-depth: 0
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-      - name: Patch native runtime and packaging
+
+      - name: Keep native-only baseline packaging
         shell: python
         run: |
           from pathlib import Path
@@ -55,61 +58,44 @@ jobs:
           for name in ('MainActivity.java', 'VoiceMainActivity.java', 'BundledContent.java'):
               p = src / name
               if p.exists(): p.unlink()
-          g = Path('floodsafe-android-app/app/build.gradle')
-          s = g.read_text(encoding='utf-8')
-          if "def bundleWeb = tasks.register('bundleFloodSafe', Copy) {" in s:
-              start = s.index("def bundleWeb = tasks.register('bundleFloodSafe', Copy) {")
-              marker = "tasks.named('preBuild').configure { dependsOn bundleWeb }"
-              end = s.index(marker, start) + len(marker)
-              native_lines = [
-                  "def bundleNativeAssets = tasks.register('bundleNativeAssets', Copy) {",
-                  "    doFirst { delete generatedFloodSafeAssets.get().asFile }",
-                  "    from(rootProject.file('../floodsafe-nepal')) {",
-                  "        into 'floodsafe-nepal'",
-                  "        include 'v24/nepal-districts.geojson'",
-                  "        include 'v24/nepal-districts.json'",
-                  "    }",
-                  "    from(rootProject.file('../data')) {",
-                  "        into 'data'",
-                  "        include '**/*.json'",
-                  "        include '**/*.geojson'",
-                  "    }",
-                  "    includeEmptyDirs = false",
-                  "    into(generatedFloodSafeAssets)",
-                  "    doLast {",
-                  "        def forbiddenExtensions = ['.html', '.js', '.mjs', '.webmanifest']",
-                  "        def forbidden = fileTree(generatedFloodSafeAssets).files.findAll { f -> forbiddenExtensions.any { ext -> f.name.toLowerCase().endsWith(ext) } }",
-                  "        if (!forbidden.isEmpty()) throw new GradleException(\"Web assets leaked into native package: ${forbidden}\")",
-                  "        def districts = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v24/nepal-districts.geojson')",
-                  "        def overview = new File(generatedFloodSafeAssets.get().asFile, 'data/nepal-waterways-tiles/overview.json')",
-                  "        if (!districts.isFile()) throw new GradleException('Native district GeoJSON missing')",
-                  "        if (!overview.isFile()) throw new GradleException('Native river overview JSON missing')",
-                  "        println 'FloodSafe native assets PASS: JSON/GeoJSON only'",
-                  "    }",
-                  "}",
-                  "tasks.named('preBuild').configure { dependsOn bundleNativeAssets }",
-              ]
-              s = s[:start] + '\n'.join(native_lines) + s[end:]
-          s = s.replace("    implementation 'androidx.webkit:webkit:1.12.1'\n", '')
-          g.write_text(s, encoding='utf-8')
-      - name: Static native-only checks
+
+      - name: Apply verified v0.8.99 river flow and safety patch
+        run: python floodsafe-android-app/patch_native_v0899_verified_river_flow_safety.py
+
+      - name: Static native and safety checks
         shell: bash
         run: |
           set -euo pipefail
           SRC=floodsafe-android-app/app/src/main/java
+          MAP=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          ACT=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          WORKER=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          RAIN=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/DhmRainMirror.java
           ! grep -R -n 'android\.webkit\|androidx\.webkit' "$SRC" floodsafe-android-app/app/build.gradle
           ! grep -R -n 'VoiceMainActivity\|BundledContent' "$SRC" floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -q 'new Intent(this, NativeFullActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
-          grep -q 'FloodSafeNativeMapView map' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          grep -q 'new FloodSafeNativeMapView' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          MAP=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -q 'new FloodSafeNativeMapView' "$ACT"
+          grep -q 'V0899_STALE_CURRENT_SEMANTICS' "$ACT"
+          grep -q 'V0899_FOREGROUND_ALERT_USES_RIVER_GEOMETRY' "$ACT"
+          grep -q 'DhmRainMirror.ensureStarted' "$ACT"
+          grep -q 'V0899_VERIFIED_RIVER_FLOW_SAFETY' "$MAP"
           grep -q 'fs-river-glow' "$MAP"
           grep -q 'fs-rivers-layer' "$MAP"
           grep -q 'fs-flow-particles-layer' "$MAP"
-          grep -q 'particleTick' "$MAP"
-          echo 'Static native-only checks PASS'
+          grep -q 'V0899_VISIBLE_MOVING_FLOW_ON_REAL_RIVERS' "$MAP"
+          grep -q 'fs-river-danger-risk-layer' "$MAP"
+          grep -q 'V0899_FRESH_MATCHED_RIVER_STATUS_ONLY' "$MAP"
+          grep -q 'V0899_RIVER_TAP_SAME_RIVER_ONLY' "$MAP"
+          grep -q 'distanceToMatchedRiverKm' "$MAP"
+          grep -q 'bestMatchedRiver' "$WORKER"
+          grep -q 'distanceToRiverKm(homeLat, homeLon, affected)' "$WORKER"
+          grep -q 'DISPLAY_FRESH_MS' "$RAIN"
+          grep -q "versionName '0.8.99-native'" floodsafe-android-app/app/build.gradle
+          echo 'Static v0.8.99 native safety checks PASS'
+
       - name: Unit tests and build debug APK
         run: gradle -p floodsafe-android-app clean :app:testDebugUnitTest :app:assembleDebug --stacktrace --no-daemon
+
       - name: Inspect final APK contents
         shell: bash
         run: |
@@ -126,41 +112,44 @@ jobs:
           while read -r dex; do
             i=$((i+1)); out="/tmp/dex${i}.dex"; unzip -p "$APK" "$dex" > "$out"; strings "$out" >> /tmp/all-dex-strings.txt
           done < <(grep -E '^classes[0-9]*\.dex$' /tmp/apk-files.txt)
-          echo '--- forbidden dex strings ---'
-          grep -nE 'android/webkit/WebView|androidx/webkit|VoiceMainActivity|BundledContent' /tmp/all-dex-strings.txt | head -80 || true
-          DEXDUMP=$(find "$ANDROID_HOME/build-tools" -type f -name dexdump | sort -V | tail -1 || true)
-          if [ -n "$DEXDUMP" ]; then
-            for d in /tmp/dex*.dex; do "$DEXDUMP" -d "$d" 2>/dev/null | grep -B12 -A20 -m8 'Landroid/webkit/WebView;' || true; done
+          if grep -qE 'android/webkit/WebView|androidx/webkit|VoiceMainActivity|BundledContent' /tmp/all-dex-strings.txt; then
+            echo 'Forbidden WebView/runtime code found in final DEX' >&2
+            exit 1
           fi
-          echo '--- runtime dependency hints ---'
-          gradle -p floodsafe-android-app :app:dependencies --configuration debugRuntimeClasspath --no-daemon | grep -iE 'webkit|browser|maplibre|firebase' | head -120 || true
-          if grep -qE 'android/webkit/WebView|androidx/webkit|VoiceMainActivity|BundledContent' /tmp/all-dex-strings.txt; then exit 1; fi
           grep -q 'FloodSafeNativeMapView' /tmp/all-dex-strings.txt
           grep -q 'fs-river-glow' /tmp/all-dex-strings.txt
           grep -q 'fs-rivers-layer' /tmp/all-dex-strings.txt
           grep -q 'fs-flow-particles-layer' /tmp/all-dex-strings.txt
-          cp "$APK" floodsafe-android-app/FloodSafe-Nepal-v0.8.98-native-river-flow-debug.apk
+          grep -q 'fs-river-danger-risk-layer' /tmp/all-dex-strings.txt
+          grep -q 'DhmRainMirror' /tmp/all-dex-strings.txt
+          grep -q 'affected river geometry' /tmp/all-dex-strings.txt
+          cp "$APK" floodsafe-android-app/FloodSafe-Nepal-v0.8.99-native-river-flow-debug.apk
+          sha256sum floodsafe-android-app/FloodSafe-Nepal-v0.8.99-native-river-flow-debug.apk
+          echo 'APK v0.8.99 native-only package inspection PASS'
+
       - name: Commit verified native source fix
         run: |
           if git diff --quiet; then exit 0; fi
           git config user.name 'FloodSafe Build Bot'
           git config user.email 'actions@users.noreply.github.com'
           git add -A floodsafe-android-app/app/src/main floodsafe-android-app/app/build.gradle
-          git commit -m 'fix: activate native MapLibre rivers and remove WebView runtime [native-river-fix]'
+          git commit -m 'fix: verified native river flow safety v0.8.99'
           git push origin HEAD:fix/floodsafe-full-river-detail-v0879
+
       - name: Upload diagnostic APK
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0.8.98-native-river-flow-diagnostic
+          name: FloodSafe-Nepal-v0.8.99-native-river-flow-diagnostic
           path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: warn
           retention-days: 3
+
       - name: Upload verified APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0.8.98-native-river-flow-debug
-          path: floodsafe-android-app/FloodSafe-Nepal-v0.8.98-native-river-flow-debug.apk
+          name: FloodSafe-Nepal-v0.8.99-native-river-flow-debug
+          path: floodsafe-android-app/FloodSafe-Nepal-v0.8.99-native-river-flow-debug.apk
           if-no-files-found: error
           retention-days: 14

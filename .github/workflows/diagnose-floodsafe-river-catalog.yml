@@ -1,0 +1,97 @@
+name: Diagnose FloodSafe Station River Matching
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0880-river-status ]
+    paths: [ '.github/workflows/diagnose-floodsafe-river-catalog.yml' ]
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Bundle data
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+      - name: Rebuild exact tiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely matplotlib
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+      - name: Produce station river diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          CORE=$(find floodsafe-android-app/app/build -path '*/data/floodsafe-core.json' -type f | head -1)
+          TDIR=$(find floodsafe-android-app/app/build -path '*/data/nepal-waterways-tiles' -type d | head -1)
+          python3 - "$CORE" "$TDIR" <<'PY'
+          import json,sys,math,os
+          import matplotlib.pyplot as plt
+          core=json.load(open(sys.argv[1],encoding='utf-8'));td=sys.argv[2]
+          rows=core.get('river_stations') or core.get('riverStations') or []
+          def val(o,*ks):
+            for k in ks:
+              v=o.get(k)
+              if v not in (None,''):
+                try:return float(v)
+                except:pass
+            return float('nan')
+          def nm(o):
+            for k in ('river_name','riverName','station_name','stationName','name','title'):
+              if o.get(k):return str(o[k])
+            return ''
+          def norm(s):
+            s=''.join(ch.lower() for ch in s if ch.isalnum())
+            for w in ('river','khola','nadi','station','at'):s=s.replace(w,'')
+            return s
+          def ds(lat,lon,a,b):
+            x=lon*math.cos(math.radians(lat));y=lat;x1=a[0]*math.cos(math.radians(lat));y1=a[1];x2=b[0]*math.cos(math.radians(lat));y2=b[1];dx=x2-x1;dy=y2-y1
+            t=0 if dx*dx+dy*dy==0 else max(0,min(1,((x-x1)*dx+(y-y1)*dy)/(dx*dx+dy*dy)))
+            return math.hypot(x-(x1+t*dx),y-(y1+t*dy))*111.2
+          def wd(lat,lon,w):
+            p=w.get('pts') or []
+            return min((ds(lat,lon,p[i],p[i+1]) for i in range(len(p)-1)),default=1e9)
+          valid=[];match=[];miss=[]
+          for s in rows:
+            if not isinstance(s,dict):continue
+            la=val(s,'latitude','lat','stationLatitude','station_latitude');lo=val(s,'longitude','lon','lng','stationLongitude','station_longitude')
+            if not(math.isfinite(la) and math.isfinite(lo) and 26<=la<=31 and 79.5<=lo<=89):continue
+            valid.append((s,la,lo));cx=max(0,min(11,int((lo-80)/.70)));cy=max(0,min(7,int((la-26.2)/.60)));ways=[]
+            for x in range(max(0,cx-1),min(11,cx+1)+1):
+              for y in range(max(0,cy-1),min(7,cy+1)+1):
+                p=os.path.join(td,f'{x}-{y}.json')
+                if os.path.exists(p):ways+=(json.load(open(p,encoding='utf-8')).get('waterways') or [])
+            sn=norm(nm(s));cand=[]
+            for w in ways:
+              if len(w.get('pts') or [])<2:continue
+              d=wd(la,lo,w);rn=norm(str(w.get('name_en') or w.get('name') or w.get('name_ne') or ''));same=bool(sn and rn and (sn in rn or rn in sn));cand.append((0 if same else 1,d,w))
+            cand.sort(key=lambda z:(z[0],z[1]))
+            if cand and cand[0][1]<=35:match.append((s,la,lo,cand[0][2],cand[0][1]))
+            else:miss.append((nm(s),la,lo,cand[0][1] if cand else None))
+          report=f'catalog={len(rows)}\nvalid_coords={len(valid)}\nmatched={len(match)}\nmissed={len(miss)}\n'
+          report+='\n'.join(f'MISS {n} {la:.5f},{lo:.5f} nearest={d}' for n,la,lo,d in miss[:100])
+          open('river-diagnostic.txt','w').write(report);print(report)
+          fig,ax=plt.subplots(figsize=(7,8))
+          for _,la,lo,w,d in match:
+            p=w.get('pts') or []
+            if len(p)>=2:ax.plot([q[0] for q in p],[q[1] for q in p],linewidth=1)
+          ax.scatter([x[2] for x in valid],[x[1] for x in valid],s=5)
+          ax.set_xlim(80,88.4);ax.set_ylim(26.2,30.5);ax.set_aspect('equal');ax.set_title(f'catalog {len(rows)} | coords {len(valid)} | matched {len(match)}')
+          fig.tight_layout();fig.savefig('river-diagnostic.png',dpi=180)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-River-Diagnostic
+          path: |
+            river-diagnostic.txt
+            river-diagnostic.png

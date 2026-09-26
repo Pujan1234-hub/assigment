@@ -1,4 +1,4 @@
-name: FloodSafe native station rivers only
+name: FloodSafe native truth colours and district verification
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 jobs:
   build-verify-runtime:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,77 +34,120 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm || true
-          ls -l /dev/kvm
           sudo apt-get update -qq
-          if ! sudo apt-get install -y --no-install-recommends libpulse0; then
-            sudo apt-get install -y --no-install-recommends libpulse0t64
-          fi
+          if ! sudo apt-get install -y --no-install-recommends libpulse0; then sudo apt-get install -y --no-install-recommends libpulse0t64; fi
           SDKROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           SDKMANAGER="$SDKROOT/cmdline-tools/latest/bin/sdkmanager"
           if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="$(find "$SDKROOT/cmdline-tools" -type f -name sdkmanager | head -1)"; fi
-          test -x "$SDKMANAGER"
           yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
-          for attempt in 1 2 3 4; do
-            echo "Android emulator install attempt ${attempt}/4"
-            if "$SDKMANAGER" --install emulator platform-tools 'platforms;android-34'; then
-              "$SDKROOT/emulator/emulator" -version
-              break
-            fi
-            rm -rf "$SDKROOT/.temp" "$SDKROOT/temp" "$HOME/.android/cache" || true
-            test "$attempt" -lt 4 || exit 1
-            sleep 15
-          done
+          "$SDKMANAGER" --install emulator platform-tools 'platforms;android-34'
+          "$SDKROOT/emulator/emulator" -version
 
-      - name: Apply station-rivers-only patch
+      - name: Inspect official live river payload
+        shell: python3 {0}
         run: |
+          import json, urllib.request, datetime
+          urls={
+            'bipad':'https://bipadportal.gov.np/api/v1/river/?limit=1000&ordering=-waterLevelOn',
+            'mirror':'https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers'
+          }
+          def get(url):
+            req=urllib.request.Request(url,headers={'Accept':'application/json','User-Agent':'Mozilla/5.0 FloodSafe-Nepal/CI','Cache-Control':'no-cache'})
+            with urllib.request.urlopen(req,timeout=30) as r:return json.load(r)
+          def rows(j):
+            x=j.get('results') if isinstance(j,dict) else None
+            if not isinstance(x,list):x=j.get('data') if isinstance(j,dict) else None
+            if isinstance(x,dict):x=x.get('results')
+            return x if isinstance(x,list) else []
+          def parse(v):
+            if v in (None,''):return None
+            s=str(v).strip().replace('Z','+00:00')
+            try:
+              if s.isdigit():
+                n=int(s);return datetime.datetime.fromtimestamp(n/1000 if n>10_000_000_000 else n,datetime.timezone.utc)
+              d=datetime.datetime.fromisoformat(s.replace(' ','T'))
+              if d.tzinfo is None:d=d.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=5,minutes=45)))
+              return d.astimezone(datetime.timezone.utc)
+            except:return None
+          now=datetime.datetime.now(datetime.timezone.utc)
+          for name,url in urls.items():
+            try:
+              rr=rows(get(url));print(name,'rows=',len(rr))
+              if rr:print(name,'sample_keys=',sorted(rr[0].keys()))
+              ages=[];statuses={}
+              for row in rr:
+                t=None
+                for k in ('waterLevelOn','water_level_on','measuredOn','measured_on','measurementTime','measurement_time','observationTime','observation_time','observedAt','observed_at','datetime','timestamp','_measurementTime'):
+                  if row.get(k) not in (None,''):t=parse(row.get(k));break
+                if t:ages.append((now-t).total_seconds()/60)
+                raw=''
+                for k in ('status','status_name','alertStatus','alert_status','riskLevel','risk_level','_officialStatus'):
+                  if row.get(k) not in (None,''):raw=str(row.get(k)).upper();break
+                statuses[raw]=statuses.get(raw,0)+1
+              print(name,'age_buckets <=15/30/60/90/120/180=',*[sum(1 for a in ages if -5<=a<=m) for m in (15,30,60,90,120,180)],'timestamped=',len(ages))
+              print(name,'top_statuses=',sorted(statuses.items(),key=lambda x:-x[1])[:12])
+            except Exception as e:print(name,'diagnostic_error=',repr(e))
+
+      - name: Apply fixes in requested order
+        run: |
+          set -euo pipefail
           python3 floodsafe-android-app/patch_native_v0899_verified_river_flow_safety.py
           python3 floodsafe-android-app/patch_native_v0900_station_rivers_only.py
           python3 floodsafe-android-app/patch_native_v0900_station_river_alias.py
-
-      - name: Add temporary runtime inventory diagnostics
-        shell: python3 {0}
-        run: |
+          echo 'Step 1-2: station current/stale truth + dot colours'
+          python3 floodsafe-android-app/patch_native_v0902_activity_truth_ui.py
+          echo 'Step 3-4: matched river status colours + preserve flow/glow'
+          python3 floodsafe-android-app/patch_native_v0902_map_status_flow.py
+          echo 'Step 5-9: rainfall, background truth, parity, safe alerts'
+          python3 floodsafe-android-app/patch_native_v0902_rain_background.py
+          python3 - <<'PY'
           from pathlib import Path
-          p=Path('floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java')
-          s=p.read_text(encoding='utf-8')
-          old='synchronized(stations){stations.clear();stations.addAll(out);}runOnUiThread(this::refreshRiverUi);}catch(Exception e){runOnUiThread(()->feedFresh.setText'
-          new='synchronized(stations){stations.clear();stations.addAll(out);}android.util.Log.i("FloodSafeInventory","parsed_stations="+out.size()+" raw_rows="+rows.length());runOnUiThread(this::refreshRiverUi);}catch(Exception e){android.util.Log.e("FloodSafeInventory","river_refresh_failed",e);runOnUiThread(()->feedFresh.setText'
-          if old not in s:
-              raise SystemExit('refreshRivers diagnostic anchor missing')
-          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          p=Path('floodsafe-android-app/app/build.gradle');s=p.read_text()
+          s=s.replace("versionCode 17","versionCode 18").replace("versionName '0.9.00-native'","versionName '0.9.02-native'")
+          p.write_text(s)
+          PY
 
-      - name: Verify station-only source contracts
+      - name: Source safety and feature gates
         shell: bash
         run: |
           set -euo pipefail
-          MAP=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
-          ACT=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          grep -q 'V0900_STATION_RIVERS_ONLY' "$MAP"
-          grep -q 'V0900_FULL_NETWORK_NEVER_RENDERED' "$MAP"
-          grep -q 'V0900_BUILD_MAPPING_ONCE' "$MAP"
-          grep -q 'V0900_VISIBLE_SOURCE_IS_MONITORED_ONLY' "$MAP"
-          grep -q 'V0900_ANIMATION_MONITORED_SOURCE_ONLY' "$MAP"
-          grep -q 'V0900_STRICT_NEPAL_BOUNDS' "$MAP"
+          SRC=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app
+          MAP=$SRC/FloodSafeNativeMapView.java
+          ACT=$SRC/NativeFullActivity.java
+          grep -q 'V0902_BIPAD_TRUTH_DISTRICT_POPUP' "$ACT"
+          grep -q 'V0902_OFFICIAL_STATUS_FIRST_OBSERVATION_TIME_ONLY' "$ACT"
+          grep -q 'V0902_77_DISTRICT_SELECTOR' "$ACT"
+          grep -q 'V0902_RESPONSIVE_SCROLL_DIALOG' "$ACT"
+          grep -q 'V0902_NO_CONTRADICTORY_STALE_AGE' "$ACT"
+          grep -q 'V0902_STATUS_FLOW_DISTRICT' "$MAP"
+          grep -q 'V0902_GREEN_NORMAL_STALE_GREY' "$MAP"
+          grep -q 'V0902_RIVER_COLOUR_FOLLOWS_STATION_STATUS' "$MAP"
+          grep -q 'V0902_STATUS_COLOURED_FLOW_GLOW' "$MAP"
+          grep -q '#27a65b' "$MAP"
+          grep -q 'V0902_RAIN_MATCH_TIERS' "$SRC/DhmRainMirror.java"
+          grep -q 'V0902_WORKER_OFFICIAL_TRUTH' "$SRC/RiverAlertWorker.java"
+          grep -q 'distanceToRiverKm(homeLat, homeLon, affected)' "$SRC/RiverAlertWorker.java"
+          grep -q 'V0902_REALISTIC_BACKGROUND_REFRESH' "$SRC/FloodLiveGaugeMonitor.java"
+          ! grep -q 'postDelayed(this,1_000L)' "$SRC/FloodLiveGaugeMonitor.java"
+          grep -q 'SOURCE_REFRESH_MS=5L\*60L\*1000L' "$SRC/FloodLiveGaugeMonitor.java"
+          grep -q 'BIPAD_RIVER_URL' "$SRC/OfficialRiverData.java"
+          grep -q 'MIRROR_URL' "$SRC/OfficialRiverData.java"
+          grep -q 'BELOW WARNING' "$SRC/OfficialRiverData.java"
+          grep -q "versionName '0.9.02-native'" floodsafe-android-app/app/build.gradle
+          ! grep -R -n 'android\.webkit\|androidx\.webkit' "$SRC" floodsafe-android-app/app/build.gradle
           ! grep -q 'riversGeoJson = makeRiversGeoJson(all)' "$MAP"
-          grep -q 'new FloodSafeNativeMapView' "$ACT"
-          ! grep -R -n 'android\.webkit\|androidx\.webkit' floodsafe-android-app/app/src/main/java floodsafe-android-app/app/build.gradle
-          grep -q "versionName '0.9.00-native'" floodsafe-android-app/app/build.gradle
-
-      - name: Verify Bagmati candidate geometry
-        shell: python3 {0}
-        run: |
+          python3 - <<'PY'
           import json
-          from pathlib import Path
-          j=json.loads(Path('data/nepal-waterways-tiles/overview.json').read_text(encoding='utf-8'))
-          ways=j.get('waterways') or []
-          bag=[w for w in ways if 'bagmati' in ' '.join(str(w.get(k,'')) for k in ('name','name_en','name_ne')).lower()]
-          print('candidate waterways=',len(ways),'bagmati_named_segments=',len(bag))
-          assert ways and bag and any(len(w.get('pts') or [])>=2 for w in bag)
+          j=json.load(open('floodsafe-nepal/v24/nepal-districts.geojson'))
+          names=sorted({f.get('properties',{}).get('nameEn','').strip() for f in j.get('features',[]) if f.get('properties',{}).get('nameEn','').strip()})
+          print('districts=',len(names),names)
+          assert len(names)==77
+          PY
 
-      - name: Unit tests and build debug APK
-        run: gradle -p floodsafe-android-app clean :app:testDebugUnitTest :app:assembleDebug --stacktrace --no-daemon
+      - name: Compile tests lint and debug APK
+        run: gradle -p floodsafe-android-app clean :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --stacktrace --no-daemon
 
-      - name: Inspect final APK native-only and station-river markers
+      - name: Inspect packaged APK
         shell: bash
         run: |
           set -euo pipefail
@@ -113,15 +156,17 @@ jobs:
           unzip -Z1 "$APK" > /tmp/apk-files.txt
           ! grep -Ei '\.(html|js|mjs|webmanifest)$' /tmp/apk-files.txt
           unzip -l "$APK" | grep -q 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -q 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
           : > /tmp/dexstrings
           while read -r d; do unzip -p "$APK" "$d" | strings >> /tmp/dexstrings; done < <(grep -E '^classes[0-9]*\.dex$' /tmp/apk-files.txt)
           ! grep -qE 'android/webkit/WebView|androidx/webkit|VoiceMainActivity|BundledContent' /tmp/dexstrings
-          grep -q 'station_linked_features=' /tmp/dexstrings
-          grep -q 'fs-river-glow' /tmp/dexstrings
-          grep -q 'fs-rivers-layer' /tmp/dexstrings
-          grep -q 'fs-flow-particles-layer' /tmp/dexstrings
+          grep -q 'station_sources normal_green=' /tmp/dexstrings
+          grep -q 'river_status_features normal_cyan=' /tmp/dexstrings
+          grep -q 'district_selector_count=' /tmp/dexstrings
+          grep -q 'scroll_dialog_shown' /tmp/dexstrings
+          grep -q 'rain_match ok' /tmp/dexstrings
 
-      - name: Runtime MapLibre render verification
+      - name: Runtime verify truth colours flow rainfall district and popup
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -133,69 +178,148 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
-            adb install -r floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+            set -euo pipefail
+            APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+            adb install -r "$APK"
             adb shell pm grant io.github.pujan1234hub.floodsafe.app android.permission.POST_NOTIFICATIONS || true
             adb shell pm grant io.github.pujan1234hub.floodsafe.app android.permission.ACCESS_FINE_LOCATION || true
             adb shell pm grant io.github.pujan1234hub.floodsafe.app android.permission.ACCESS_COARSE_LOCATION || true
             adb emu geo fix 85.3240 27.7172 || true
             adb logcat -c
             adb shell am start -W -n io.github.pujan1234hub.floodsafe.app/.PJBuiltsSplashActivity
-            sleep 100
-            adb logcat -d > floodsafe-android-app/runtime-log-live.txt
+            sleep 125
+            adb logcat -d > floodsafe-android-app/runtime-v0902-live.txt
+            # Move to the map/risk area and capture status rendering.
             adb shell input swipe 540 1950 540 500 700 || true
             sleep 2
             adb shell input swipe 540 1850 540 650 600 || true
-            sleep 4
-            adb exec-out screencap -p > floodsafe-android-app/runtime-station-rivers-1.png
+            sleep 5
+            adb exec-out screencap -p > floodsafe-android-app/runtime-v0902-map.png
+            # Tap several safe points in the visible map until a native scroll dialog opens.
+            for XY in '780 230' '650 300' '920 260' '520 220'; do
+              adb shell input tap $XY || true
+              sleep 2
+              adb logcat -d | grep -q 'FloodSafeDialog.*scroll_dialog_shown\|FloodSafeDialog.*river_scroll_dialog_shown' && break || true
+            done
+            adb exec-out screencap -p > floodsafe-android-app/runtime-v0902-popup.png
+            adb shell input keyevent 4 || true
             sleep 2
-            adb exec-out screencap -p > floodsafe-android-app/runtime-station-rivers-2.png
-            adb logcat -d > floodsafe-android-app/runtime-log.txt
-            grep -E 'FloodSafeInventory|FloodSafeRiver' floodsafe-android-app/runtime-log.txt | tail -160 || true
-            grep -Eq 'parsed_stations=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt
-            grep -Eq 'station_linked_features=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt
-            grep -Eq 'flow_frame=[1-9][0-9]*.*animated_station_features=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt
-            grep -q 'station-only river layers active' floodsafe-android-app/runtime-log.txt
-            grep -Eq 'sample=.*(Bagmati|Gaurighat|bagmati|gaurighat)' floodsafe-android-app/runtime-log.txt
-            test -s floodsafe-android-app/runtime-station-rivers-1.png
-            test -s floodsafe-android-app/runtime-station-rivers-2.png
+            # Scroll until the 77-district selector is visible, then open it dynamically.
+            FOUND=0
+            for N in 1 2 3 4 5; do
+              adb shell input swipe 540 1900 540 650 650 || true
+              sleep 1
+              adb shell uiautomator dump /sdcard/fs-ui.xml >/dev/null 2>&1 || true
+              adb pull /sdcard/fs-ui.xml floodsafe-android-app/fs-ui.xml >/dev/null 2>&1 || true
+              if grep -q '७७ जिल्ला\|77 Districts' floodsafe-android-app/fs-ui.xml; then FOUND=1; break; fi
+            done
+            test "$FOUND" = 1
+            python3 - <<'PY' > /tmp/tap.txt
+            import re,xml.etree.ElementTree as ET
+            root=ET.parse('floodsafe-android-app/fs-ui.xml').getroot()
+            for e in root.iter():
+              t=e.attrib.get('text','')
+              if '७७ जिल्ला' in t or '77 Districts' in t:
+                b=e.attrib.get('bounds','');m=re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',b)
+                if m:
+                  x1,y1,x2,y2=map(int,m.groups());print((x1+x2)//2,(y1+y2)//2);break
+            PY
+            read X Y < /tmp/tap.txt
+            adb shell input tap "$X" "$Y"
+            sleep 2
+            adb shell uiautomator dump /sdcard/fs-district.xml >/dev/null 2>&1 || true
+            adb pull /sdcard/fs-district.xml floodsafe-android-app/fs-district.xml >/dev/null 2>&1 || true
+            grep -q 'All Nepal\|सबै नेपाल' floodsafe-android-app/fs-district.xml
+            # Select first visible actual district (not All Nepal) by bounds.
+            python3 - <<'PY' > /tmp/dtap.txt
+            import re,xml.etree.ElementTree as ET
+            root=ET.parse('floodsafe-android-app/fs-district.xml').getroot()
+            for e in root.iter():
+              t=e.attrib.get('text','').strip()
+              if t and t not in ('🇳🇵 All Nepal','🇳🇵 सबै नेपाल') and ('District' not in t) and ('जिल्ला' not in t) and re.search('[A-Za-z]',t):
+                b=e.attrib.get('bounds','');m=re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',b)
+                if m:
+                  x1,y1,x2,y2=map(int,m.groups());print((x1+x2)//2,(y1+y2)//2);break
+            PY
+            if [ -s /tmp/dtap.txt ]; then read DX DY < /tmp/dtap.txt; adb shell input tap "$DX" "$DY"; sleep 3; fi
+            adb exec-out screencap -p > floodsafe-android-app/runtime-v0902-district.png
+            adb logcat -d > floodsafe-android-app/runtime-v0902.txt
+            grep -E 'FloodSafeTruth|FloodSafeStationColor|FloodSafeRiverColor|FloodSafeRiver|FloodSafeRain|FloodSafeDistrict|FloodSafeDialog' floodsafe-android-app/runtime-v0902.txt | tail -260 || true
+            # Required current normal/green and flow/glow evidence.
+            grep -Eq 'FloodSafeTruth.*current=[1-9][0-9]*' floodsafe-android-app/runtime-v0902.txt
+            grep -Eq 'station_sources normal_green=[1-9][0-9]*' floodsafe-android-app/runtime-v0902.txt
+            grep -Eq 'flow_frame=[1-9][0-9]*.*normal_flow=[1-9][0-9]*' floodsafe-android-app/runtime-v0902.txt
+            grep -Eq 'stale_grey=[1-9][0-9]*' floodsafe-android-app/runtime-v0902.txt
+            grep -Eq 'rain_match (ok|unavailable)' floodsafe-android-app/runtime-v0902.txt
+            grep -Eq 'scroll_dialog_shown|river_scroll_dialog_shown' floodsafe-android-app/runtime-v0902.txt
+            # District inventory is statically 77 and runtime selection must focus when a district was tapped.
+            if [ -s /tmp/dtap.txt ]; then grep -q 'map_focus_district=' floodsafe-android-app/runtime-v0902.txt; fi
+            # Warning/Danger are conditional on the official feed actually containing current cases.
+            python3 - <<'PY'
+            import re
+            log=open('floodsafe-android-app/runtime-v0902.txt',errors='ignore').read()
+            ui=list(re.finditer(r'ui current normal=(\d+) alert=(\d+) warning=(\d+) danger=(\d+) stale=(\d+)',log))
+            truth=list(re.finditer(r'catalog=(\d+) merged=(\d+) bipad_rows=(\d+) latest_readings=(\d+) current=(\d+)',log))
+            assert ui and truth
+            n,a,w,d,st=map(int,ui[-1].groups());cat,merged,bipad,latest,current=map(int,truth[-1].groups())
+            assert n+a+w+d==current,(n,a,w,d,current)
+            assert n+a+w+d+st==merged,(n,a,w,d,st,merged)
+            print('counter parity PASS',dict(catalog=cat,merged=merged,bipad_rows=bipad,latest=latest,current=current,normal=n,alert=a,warning=w,danger=d,stale=st))
+            colors=list(re.finditer(r'river_status_features normal_cyan=(\d+) alert_yellow=(\d+) warning_orange=(\d+) danger_red=(\d+) stale_neutral=(\d+)',log))
+            assert colors
+            rn,ra,rw,rd,rs=map(int,colors[-1].groups())
+            if w>0: assert rw>0,('current warning exists but no orange matched river',w,rw)
+            else: print('No current official warning in this run: orange conditional case skipped')
+            if d>0: assert rd>0,('current danger exists but no red matched river',d,rd)
+            else: print('No current official danger in this run: red conditional case skipped')
+            PY
 
-      - name: Upload runtime evidence
+      - name: Upload runtime verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0.9.00-runtime-evidence
+          name: FloodSafe-v0.9.02-runtime-evidence
           path: |
-            floodsafe-android-app/runtime-station-rivers-1.png
-            floodsafe-android-app/runtime-station-rivers-2.png
-            floodsafe-android-app/runtime-log.txt
-            floodsafe-android-app/runtime-log-live.txt
+            floodsafe-android-app/runtime-v0902-map.png
+            floodsafe-android-app/runtime-v0902-popup.png
+            floodsafe-android-app/runtime-v0902-district.png
+            floodsafe-android-app/runtime-v0902.txt
+            floodsafe-android-app/runtime-v0902-live.txt
+            floodsafe-android-app/fs-ui.xml
+            floodsafe-android-app/fs-district.xml
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Commit verified river-map source
+      - name: Commit only verified source fixes
         if: success()
         run: |
-          git checkout -- floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
-          if git diff --quiet -- floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java floodsafe-android-app/app/build.gradle; then exit 0; fi
+          set -euo pipefail
           git config user.name 'FloodSafe Build Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java floodsafe-android-app/app/build.gradle
-          git commit -m 'fix: render and animate only BIPAD station rivers v0.9.00'
+          git add floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/DhmRainMirror.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java \
+                  floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java \
+                  floodsafe-android-app/app/build.gradle
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'fix: verify river truth colours rainfall districts and dialogs v0.9.02 [skip ci]'
           git push origin HEAD:fix/floodsafe-full-river-detail-v0879
 
       - name: Package verified APK
         if: success()
         run: |
-          cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk floodsafe-android-app/FloodSafe-Nepal-v0.9.00-station-rivers-native.apk
-          sha256sum floodsafe-android-app/FloodSafe-Nepal-v0.9.00-station-rivers-native.apk > floodsafe-android-app/FloodSafe-Nepal-v0.9.00-sha256.txt
+          cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk floodsafe-android-app/FloodSafe-Nepal-v0.9.02-verified-native.apk
+          sha256sum floodsafe-android-app/FloodSafe-Nepal-v0.9.02-verified-native.apk > floodsafe-android-app/FloodSafe-Nepal-v0.9.02-sha256.txt
 
       - name: Upload verified APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0.9.00-station-rivers-native
+          name: FloodSafe-Nepal-v0.9.02-verified-native
           path: |
-            floodsafe-android-app/FloodSafe-Nepal-v0.9.00-station-rivers-native.apk
-            floodsafe-android-app/FloodSafe-Nepal-v0.9.00-sha256.txt
+            floodsafe-android-app/FloodSafe-Nepal-v0.9.02-verified-native.apk
+            floodsafe-android-app/FloodSafe-Nepal-v0.9.02-sha256.txt
           if-no-files-found: error
           retention-days: 14

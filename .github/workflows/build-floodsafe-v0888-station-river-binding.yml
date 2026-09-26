@@ -1,0 +1,96 @@
+name: Build FloodSafe v0.8.88 Station River Binding APK
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0880-river-status ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0888-station-river-binding.yml'
+      - 'floodsafe-android-app/patch_native_v0888_station_river_binding.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Apply v0.8.77 baseline
+        run: python3 floodsafe-android-app/run_patch_native_v0877.py
+      - name: Apply v0.8.78 station resilience
+        run: python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+      - name: Apply v0.8.79 full river geometry
+        run: python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+      - name: Verify v0.8.80 status baseline
+        run: python3 floodsafe-android-app/patch_native_v0880b_verify_status.py
+      - name: Apply v0.8.81 station river layer
+        run: python3 floodsafe-android-app/patch_native_v0881_live_station_rivers.py
+      - name: Apply v0.8.82 BIPAD River Watch truth
+        run: python3 floodsafe-android-app/patch_native_v0882_bipad_river_watch.py
+      - name: Apply v0.8.83 no-ANR station river flow
+        run: python3 floodsafe-android-app/patch_native_v0883_no_anr_station_rivers.py
+      - name: Apply v0.8.84 latest-source status rivers
+        run: python3 floodsafe-android-app/patch_native_v0884_fixed.py
+      - name: Apply v0.8.85 affected-river 2km alert
+        run: python3 floodsafe-android-app/patch_native_v0885_river_geometry_alert.py
+      - name: Apply v0.8.86 realtime map visibility
+        run: python3 floodsafe-android-app/patch_native_v0886_realtime_bigstations_rivernetwork.py
+      - name: Apply v0.8.87 station online visual
+        run: python3 floodsafe-android-app/patch_native_v0887_station_online_visual.py
+      - name: Apply v0.8.88 station river binding
+        run: python3 floodsafe-android-app/patch_native_v0888_station_river_binding.py
+      - name: Verify v0.8.88 contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0888_CANONICAL_BIPAD_RIVER_NAME' "$M"
+          grep -Fq 'V0888_STATION_TO_RIVER_STATUS_BINDING' "$M"
+          grep -Fq 'V0888_STATION_RIVER_VISIBLE_EVEN_WHEN_READING_OLD' "$M"
+          grep -Fq 'V0888_LARGE_STATION_TAP_TARGET' "$M"
+          grep -Fq "versionName '0.8.88'" "$G"
+          grep -Fq 'versionCode 108' "$G"
+          echo 'V0888_CONTRACT PASS'
+      - name: Bundle source assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+      - name: Rebuild Nepal river assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+      - name: Unit test and build APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          cp "$APK" FloodSafe-Nepal-v0.8.88-STATION-RIVER-BINDING.apk
+          sha256sum FloodSafe-Nepal-v0.8.88-STATION-RIVER-BINDING.apk | tee FloodSafe-Nepal-v0.8.88-SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0888-STATION-RIVER-BINDING
+          path: |
+            FloodSafe-Nepal-v0.8.88-STATION-RIVER-BINDING.apk
+            FloodSafe-Nepal-v0.8.88-SHA256.txt
+          retention-days: 14

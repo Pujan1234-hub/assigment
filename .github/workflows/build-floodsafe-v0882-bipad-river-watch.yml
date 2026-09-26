@@ -1,4 +1,4 @@
-name: Build FloodSafe v0.8.83 BIPAD River Flow APK
+name: Build FloodSafe v0.8.84 Latest Source River Status APK
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - '.github/workflows/build-floodsafe-v0882-bipad-river-watch.yml'
       - 'floodsafe-android-app/patch_native_v0882_bipad_river_watch.py'
       - 'floodsafe-android-app/patch_native_v0883_no_anr_station_rivers.py'
+      - 'floodsafe-android-app/patch_native_v0884_latest_source_river_status.py'
   workflow_dispatch:
 
 permissions:
@@ -39,19 +40,24 @@ jobs:
         run: python3 floodsafe-android-app/patch_native_v0882_bipad_river_watch.py
       - name: Apply v0.8.83 no-ANR station river flow
         run: python3 floodsafe-android-app/patch_native_v0883_no_anr_station_rivers.py
-      - name: Verify v0.8.83 contracts
+      - name: Apply v0.8.84 latest-source status rivers
+        run: python3 floodsafe-android-app/patch_native_v0884_latest_source_river_status.py
+      - name: Verify v0.8.84 contracts
         shell: bash
         run: |
           set -euo pipefail
           A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
           M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
           G='floodsafe-android-app/app/build.gradle'
           grep -Fq 'V0883_BIPAD_RIVER_TRIMED_UNION' "$A"
-          grep -Fq 'V0883_BACKGROUND_RIVER_MATCH_NO_ANR' "$M"
-          grep -Fq 'V0883_STATION_ONLY_FLOW_GLOW' "$M"
-          grep -Fq "versionName '0.8.83'" "$G"
-          grep -Fq 'versionCode 103' "$G"
-          echo 'V0883_CONTRACT PASS'
+          grep -Fq 'V0884_STATUS_COLOUR_STATION_RIVERS_BACKGROUND' "$M"
+          grep -Fq 'V0884_RIVER_STATUS_COLOUR_LAYERS' "$M"
+          grep -Fq 'V0884_LATEST_OFFICIAL_READING_VISIBLE' "$M"
+          grep -Fq 'V0884_NO_LOCAL_AGE_CUTOFF' "$W"
+          grep -Fq "versionName '0.8.84'" "$G"
+          grep -Fq 'versionCode 104' "$G"
+          echo 'V0884_CONTRACT PASS'
       - name: Bundle source assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
       - name: Rebuild all Nepal river assets
@@ -78,14 +84,14 @@ jobs:
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/7-2.json'
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles-regional/7-2.json'
-          cp "$APK" FloodSafe-Nepal-v0.8.83-BIPAD-RIVER-FLOW.apk
-          stat -c '%s' FloodSafe-Nepal-v0.8.83-BIPAD-RIVER-FLOW.apk > apk-size.txt
-          sha256sum FloodSafe-Nepal-v0.8.83-BIPAD-RIVER-FLOW.apk | tee FloodSafe-Nepal-v0.8.83-SHA256.txt
+          cp "$APK" FloodSafe-Nepal-v0.8.84-LATEST-SOURCE-RIVER-STATUS.apk
+          stat -c '%s' FloodSafe-Nepal-v0.8.84-LATEST-SOURCE-RIVER-STATUS.apk > apk-size.txt
+          sha256sum FloodSafe-Nepal-v0.8.84-LATEST-SOURCE-RIVER-STATUS.apk | tee FloodSafe-Nepal-v0.8.84-SHA256.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0883-BIPAD-RIVER-FLOW
+          name: FloodSafe-Nepal-v0884-LATEST-SOURCE-RIVER-STATUS
           path: |
-            FloodSafe-Nepal-v0.8.83-BIPAD-RIVER-FLOW.apk
-            FloodSafe-Nepal-v0.8.83-SHA256.txt
+            FloodSafe-Nepal-v0.8.84-LATEST-SOURCE-RIVER-STATUS.apk
+            FloodSafe-Nepal-v0.8.84-SHA256.txt
             apk-size.txt
           retention-days: 14

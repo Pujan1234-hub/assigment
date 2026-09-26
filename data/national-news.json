@@ -1,49 +1,63 @@
 {
-  "generated_at": "2026-09-26T07:39:58.176639+05:45",
-  "updated_at_npt": "26 Sep 07:39 NPT",
+  "generated_at": "2026-09-26T12:54:58.954914+05:45",
+  "updated_at_npt": "26 Sep 12:54 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "नारायणी र दरमखोलामा जलसतह सतर्कता तह पार, तटीय क्षेत्रका बासिन्दालाई उच्च सतर्क रहन आग्रह",
+      "title": "बाढी र पहिरोले गण्डकीका १६ मुख्य सडक पूर्ण अवरुद्ध",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594983/water-levels-in-narayani-and-daramkhola-exceed-alert-level-coastal-residents-urged-to-remain-on-high-alert",
-      "published_at": "2026-09-26T07:14:08+05:45",
+      "url": "https://www.ratopati.com/story/595030/floods-and-landslides-completely-block-16-main-roads-in-gandaki",
+      "published_at": "2026-09-26T12:23:18+05:45",
       "flash": true
     },
     {
-      "title": "देशभर मनसुनी र पश्चिमी वायुको दोहोरो प्रभाव, आज यी प्रदेशमा हुनेछ अति भारी वर्षा",
+      "title": "भारी वर्षाको पूर्वानुमानपछि सुदूरपश्चिमका ७ जिल्लामा यातायात बन्द",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594978/the-dual-effect-of-monsoon-and-westerly-winds-will-prevail-across-the-country-very-heavy-rain-will-be-expected-in-these-states-today",
-      "published_at": "2026-09-26T06:11:12+05:45",
+      "url": "https://www.ratopati.com/story/595024/traffic-closed-in-7-districts-of-the-far-west-after-heavy-rain-forecast",
+      "published_at": "2026-09-26T12:09:49+05:45",
+      "flash": true
+    },
+    {
+      "title": "डाँफे खोलाले बगाउँदा एक जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595022/one-person-dies-after-being-swept-away-by-danfe-river",
+      "published_at": "2026-09-26T12:04:50+05:45",
+      "flash": true
+    },
+    {
+      "title": "पारी सुस्तामा बाढी पसेपछि स्थानीयवासी आश्रयस्थलमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595016/locals-at-shelter-after-flood-in-pari-susta",
+      "published_at": "2026-09-26T11:44:38+05:45",
       "flash": false
     },
     {
-      "title": "लगातारको वर्षाले धानबालीमा समस्या आउने जोखिम : प्राविधिक",
+      "title": "लगातारको वर्षाले गुल्मीको जनजीवन प्रभावित, सडक अवरुद्ध, विद्यालय बन्द",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594974/continuous-rains-pose-risk-of-problems-in-rice-crop-technician",
-      "published_at": "2026-09-26T05:34:08+05:45",
+      "url": "https://www.ratopati.com/story/595003/continuous-rains-affect-normal-life-in-gulmi-roads-blocked-schools-closed",
+      "published_at": "2026-09-26T09:32:14+05:45",
       "flash": false
     },
     {
-      "title": "बाढी पसेपछि सुस्तावासी समस्यामा",
+      "title": "ट्रकको ठक्करबाट स्कुटर चालकको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594968/susta-residents-in-trouble-after-floods",
-      "published_at": "2026-09-26T04:27:07+05:45",
+      "url": "https://www.ratopati.com/story/594995/scooter-driver-dies-after-being-hit-by-truck",
+      "published_at": "2026-09-26T08:24:14+05:45",
       "flash": false
     },
     {
-      "title": "झापामा ‘ड्रोन’ बाट बाढीको जोखिम निगरानी",
+      "title": "अविरल वर्षाले सङ्खुवासभाको जनजीवन प्रभावित",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594967/flood-risk-monitoring-using-drones-in-jhapa",
-      "published_at": "2026-09-26T04:22:59+05:45",
+      "url": "https://www.ratopati.com/story/594994/incessant-rains-affect-normal-life-in-sankhuwasabha",
+      "published_at": "2026-09-26T08:15:59+05:45",
       "flash": false
     },
     {
-      "title": "बाढीको जोखिममा राप्ती तटीय क्षेत्रका बासिन्दा",
+      "title": "भारी वर्षाको पूर्वानुमानपछि सुदूरपश्चिमका दुई जिल्लामा यातायात सेवा बन्द",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594965/residents-of-rapti-coastal-areas-at-risk-of-flooding",
-      "published_at": "2026-09-26T04:16:23+05:45",
+      "url": "https://www.ratopati.com/story/594993/transport-services-suspended-in-two-districts-of-the-far-west-after-heavy-rains-forecast",
+      "published_at": "2026-09-26T08:12:22+05:45",
       "flash": false
     }
   ],
@@ -63,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 6
+      "flash": 3,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -74,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     }

@@ -8,6 +8,7 @@ on:
       - 'floodsafe-android-app/patch_native_v0891_force_station_river_geometry.py'
       - 'floodsafe-android-app/patch_native_v0892_force_render_station_rivers.py'
       - 'floodsafe-android-app/patch_native_v0893_dedicated_station_river_layer.py'
+      - 'floodsafe-android-app/run_patch_native_v0893.py'
   workflow_dispatch:
 
 permissions:
@@ -59,7 +60,7 @@ jobs:
       - name: Apply v0.8.92 direct station river render source
         run: python3 floodsafe-android-app/patch_native_v0892_force_render_station_rivers.py
       - name: Apply v0.8.93 dedicated station river source
-        run: python3 floodsafe-android-app/patch_native_v0893_dedicated_station_river_layer.py
+        run: python3 floodsafe-android-app/run_patch_native_v0893.py
       - name: Verify v0.8.93 source contracts
         shell: bash
         run: |

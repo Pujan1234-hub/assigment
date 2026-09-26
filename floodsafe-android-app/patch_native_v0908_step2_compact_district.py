@@ -71,7 +71,7 @@ compact_methods = r'''    private void renderDistrictStationGroups(List<RiverSta
         }
         if(v0908DistrictPicker!=null)v0908DistrictPicker.setText("📍 "+v0908SelectedDistrict+" • "+rows.size()+t(" स्टेशन"," stations")+"  ▾");
         nationalList.addView(v0908DistrictDetailView(v0908SelectedDistrict,rows));
-    } // V0908_ONE_DISTRICT_ONLY
+    } // V0908_ONE_DISTRICT_ONLY V0907_DISTRICT_NAMES_COLLAPSED
 
     private void v0908ShowDistrictPicker(){
         List<RiverStation> copy; synchronized(stations){copy=new ArrayList<>(stations);}
@@ -106,7 +106,7 @@ compact_methods = r'''    private void renderDistrictStationGroups(List<RiverSta
 '''
 sub_once(r'    private void renderDistrictStationGroups\(List<RiverStation> source\)\{.*?(?=    private String districtLabel\(RiverStation st\))', compact_methods, 'replace long district accordion')
 
-for marker in ["V0908_COMPACT_DISTRICT_PICKER","V0908_ONE_DISTRICT_ONLY","V0908_SELECTED_DISTRICT_DETAILS"]:
+for marker in ["V0908_COMPACT_DISTRICT_PICKER","V0908_ONE_DISTRICT_ONLY","V0908_SELECTED_DISTRICT_DETAILS","V0907_DISTRICT_NAMES_COLLAPSED"]:
     if marker not in s:
         raise SystemExit("missing marker: "+marker)
 if 'private String districtLabel(RiverStation st)' not in s or 'v0907DistrictNameAt' not in s:

@@ -37,12 +37,10 @@ def repl(text,name,block):
     if not s: raise SystemExit('missing method '+name)
     return text[:s[0]]+block+text[s[1]:]
 
-# UI freshness: do not hide the station/river, but only a recent official observation is LIVE/current.
+# UI freshness: retain stations/rivers, but only recent official observations are LIVE/current.
 a=re.sub(r'private static final long RIVER_FRESH_MS\s*=\s*[^;]+;','private static final long RIVER_FRESH_MS='+WINDOW+'; // V0889_45M_LIVE_WINDOW',a,count=1)
-if 'V0889_45M_LIVE_WINDOW' not in a:
-    raise SystemExit('RIVER_FRESH_MS anchor missing')
+if 'V0889_45M_LIVE_WINDOW' not in a: raise SystemExit('RIVER_FRESH_MS anchor missing')
 
-# Map station classification from the actual source timestamp on RiverStation, not merely level presence.
 read=r'''    private StationDot readStation(Object o) {
         if (o == null) return null;
         try {
@@ -64,7 +62,6 @@ read=r'''    private StationDot readStation(Object o) {
 '''
 m=repl(m,'readStation',read)
 
-# helper before getDouble
 anchor='    private static double getDouble(Class<?> c, Object o, String name) throws Exception {'
 if anchor not in m: raise SystemExit('getDouble anchor missing')
 helper=r'''    private static long v889LongAny(Class<?> c,Object o,String... names){
@@ -78,7 +75,6 @@ helper=r'''    private static long v889LongAny(Class<?> c,Object o,String... nam
 '''
 m=m.replace(anchor,helper+anchor,1)
 
-# Old historical readings remain visible as stale/grey and never as green/normal.
 station_geo=r'''    private static String stationGeo(List<StationDot> list, String group) {
         try {
             JSONArray f = new JSONArray();
@@ -93,7 +89,6 @@ station_geo=r'''    private static String stationGeo(List<StationDot> list, Stri
 '''
 m=repl(m,'stationGeo',station_geo)
 
-# Status colours are safety-critical: only current/recent official observations may colour a river.
 stage=r'''    private String v884Stage(RiverWay r,List<StationDot> ss){
         if(r==null||r.points==null||r.points.size()<2)return null;
         String rn=v881Norm(r.name),best=null;int rank=-1;
@@ -113,7 +108,6 @@ stage=r'''    private String v884Stage(RiverWay r,List<StationDot> ss){
 '''
 m=repl(m,'v884Stage',stage)
 
-# Station-bearing river geometry should still be shown even when the latest observation is stale.
 has=r'''    private boolean v881RiverHasLiveStation(RiverWay r,List<StationDot> ss){
         if(r==null||r.points==null||r.points.size()<2)return false;
         String rn=v881Norm(r.name);
@@ -129,30 +123,30 @@ has=r'''    private boolean v881RiverHasLiveStation(RiverWay r,List<StationDot> 
 '''
 m=repl(m,'v881RiverHasLiveStation',has)
 
-# Strengthen station-river overlay so it cannot disappear behind imagery.
 m=m.replace('lineWidth(7.0f),lineOpacity(0.34f)','lineWidth(9.0f),lineOpacity(0.44f)')
 m=m.replace('lineWidth(2.35f),lineOpacity(1.0f)','lineWidth(3.2f),lineOpacity(1.0f)')
 
-# Extend StationDot with source timestamp.
-m=m.replace('Object original; String name, stage; double lat, lon, level; boolean fresh;','Object original; String name, stage; double lat, lon, level; long at; boolean fresh;',1)
-if 'long at; boolean fresh;' not in m: raise SystemExit('StationDot timestamp field patch failed')
+# Robustly add source timestamp field to StationDot regardless of extra fields from older patches.
+pat=re.compile(r'(private static final class StationDot\s*\{)(.*?)(\n\s*\})',re.S)
+mm=pat.search(m)
+if not mm: raise SystemExit('StationDot class missing')
+body=mm.group(2)
+if not re.search(r'\blong\s+at\b',body):
+    body='\n        long at;'+body
+m=m[:mm.start()]+mm.group(1)+body+mm.group(3)+m[mm.end():]
+if not re.search(r'private static final class StationDot\s*\{[^}]*\blong\s+at\b',m,re.S): raise SystemExit('StationDot timestamp field patch failed')
 
-# Closed-app alert safety: stale/historical readings must never trigger 2 km warnings.
 w=re.sub(r'private static final long MAX_AGE_MS\s*=\s*[^;]+;','private static final long MAX_AGE_MS = 45L * 60L * 1000L; // V0889_ALERT_RECENCY_GUARD',w,count=1)
-if 'V0889_ALERT_RECENCY_GUARD' not in w:
-    raise SystemExit('MAX_AGE_MS anchor missing')
-# Restore age rejection if earlier patches removed it.
+if 'V0889_ALERT_RECENCY_GUARD' not in w: raise SystemExit('MAX_AGE_MS anchor missing')
 if 'now - measuredAt > MAX_AGE_MS' not in w:
     needle='if (measuredAt <= 0L) return null;'
     if needle in w:
         w=w.replace(needle,needle+'\n        if (now - measuredAt > MAX_AGE_MS || measuredAt - now > 5L * 60L * 1000L) return null; // V0889_REJECT_STALE_ALERT',1)
     else:
-        # compact variants
-        pat=re.compile(r'(long\s+measuredAt\s*=\s*[^;]+;)')
-        w,n=pat.subn(r'\1\n        if (measuredAt <= 0L || now - measuredAt > MAX_AGE_MS || measuredAt - now > 5L * 60L * 1000L) return null; // V0889_REJECT_STALE_ALERT',w,count=1)
+        p=re.compile(r'(long\s+measuredAt\s*=\s*[^;]+;)')
+        w,n=p.subn(r'\1\n        if (measuredAt <= 0L || now - measuredAt > MAX_AGE_MS || measuredAt - now > 5L * 60L * 1000L) return null; // V0889_REJECT_STALE_ALERT',w,count=1)
         if n==0: raise SystemExit('measuredAt guard anchor missing')
 
-# Version bump after v0.8.88.
 g=re.sub(r'versionCode\s+108\b','versionCode 109',g,count=1)
 g=g.replace("versionName '0.8.88'","versionName '0.8.89'",1)
 

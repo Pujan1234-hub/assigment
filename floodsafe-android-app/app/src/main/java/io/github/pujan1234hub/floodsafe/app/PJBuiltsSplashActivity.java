@@ -65,10 +65,10 @@ public final class PJBuiltsSplashActivity extends Activity {
         launched = true;
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
-        Intent app = new Intent(this, VoiceMainActivity.class);
-        // Do NOT clear the task here. Clearing it destroyed the already-loaded WebView
+        Intent app = new Intent(this, NativeFullActivity.class);
+        // Do NOT clear the task here. Clearing it destroyed the already-loaded native activity
         // on every launcher reopen, forcing a full cold reload of map, river, news and
-        // SATHI. CLEAR_TOP + SINGLE_TOP reuses the existing VoiceMainActivity when it
+        // SATHI. CLEAR_TOP + SINGLE_TOP reuses the existing NativeFullActivity when it
         // is alive, while still creating it normally on a genuine cold start.
         app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (source != null) {

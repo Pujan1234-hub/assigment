@@ -20,9 +20,7 @@
         <service android:name=".FloodMonitorService" android:exported="false" android:stopWithTask="false" android:foregroundServiceType="location" />
         <service android:name=".FloodSafeMessagingService" android:exported="false"><intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT" /></intent-filter></service>
         <service android:name=".SathiWakeService" android:exported="false" android:stopWithTask="false" android:foregroundServiceType="microphone|location" />
-        <activity android:name=".MainActivity" android:exported="false" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".VoiceMainActivity" android:exported="false" android:launchMode="singleTop" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".NativeHomeActivity" android:exported="false" android:launchMode="singleTop" />
+<activity android:name=".NativeHomeActivity" android:exported="false" android:launchMode="singleTop" />
         <activity android:name=".NativeFullActivity" android:exported="false" android:launchMode="singleTop" />
         <activity android:name=".PJBuiltsSplashActivity" android:exported="true" android:theme="@style/PJBuiltsSplashTheme"><intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter></activity>
     </application>

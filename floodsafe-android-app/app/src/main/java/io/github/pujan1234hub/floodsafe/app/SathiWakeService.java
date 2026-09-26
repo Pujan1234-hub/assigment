@@ -140,7 +140,7 @@ public final class SathiWakeService extends Service implements LocationListener 
                 && getSharedPreferences(RainAlertWorker.PREFS, MODE_PRIVATE).getBoolean("follow_device", false);
         if (!mic && !loc) return false;
 
-        Intent launch = new Intent(this, VoiceMainActivity.class)
+        Intent launch = new Intent(this, NativeFullActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(this, 7200, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -281,7 +281,7 @@ public final class SathiWakeService extends Service implements LocationListener 
         paused = true;
         cancelRecognition();
 
-        Intent launch = new Intent(this, VoiceMainActivity.class)
+        Intent launch = new Intent(this, NativeFullActivity.class)
                 .putExtra(EXTRA_QUERY, q)
                 .putExtra(EXTRA_EVENT_ID, eventId)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
@@ -310,7 +310,7 @@ public final class SathiWakeService extends Service implements LocationListener 
         }
         NotificationManager manager = getSystemService(NotificationManager.class);
         if (manager == null) return;
-        Intent launch = new Intent(this, VoiceMainActivity.class)
+        Intent launch = new Intent(this, NativeFullActivity.class)
                 .putExtra(EXTRA_QUERY, query)
                 .putExtra(EXTRA_EVENT_ID, eventId)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);

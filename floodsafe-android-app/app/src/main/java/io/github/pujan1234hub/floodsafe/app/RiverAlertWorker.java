@@ -260,7 +260,7 @@ public final class RiverAlertWorker extends Worker {
         }
         body.append(" • BIPAD/DHM official");
 
-        Intent launch = new Intent(app, VoiceMainActivity.class)
+        Intent launch = new Intent(app, NativeFullActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         int requestCode = 7200 + Math.abs(hazard.stationId.hashCode() % 500);
         PendingIntent open = PendingIntent.getActivity(app, requestCode, launch,

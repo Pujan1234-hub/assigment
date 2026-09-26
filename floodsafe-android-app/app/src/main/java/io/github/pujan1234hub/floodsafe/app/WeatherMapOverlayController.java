@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.maps.Style;
 import org.maplibre.android.style.layers.FillLayer;
+import org.maplibre.android.style.layers.LineLayer;
 import org.maplibre.android.style.sources.GeoJsonSource;
 
 import java.io.BufferedReader;
@@ -24,12 +25,15 @@ import java.util.Map;
 
 import static org.maplibre.android.style.layers.PropertyFactory.fillColor;
 import static org.maplibre.android.style.layers.PropertyFactory.fillOpacity;
+import static org.maplibre.android.style.layers.PropertyFactory.lineColor;
+import static org.maplibre.android.style.layers.PropertyFactory.lineOpacity;
+import static org.maplibre.android.style.layers.PropertyFactory.lineWidth;
 
 /**
- * WEATHER_OVERLAY_V3_AREA_SHADE
- * Map-only weather shading. No circles are rendered.
- * Clear districts stay clear, cloudier districts get progressively darker translucent
- * shading, and current precipitation adds a blue tint. Layers stay below rivers/stations.
+ * WEATHER_OVERLAY_V4_ANIMATED_RAIN_FIELD
+ * Native MapLibre weather layer. Existing river/station geometry is untouched.
+ * Cloud cover is rendered as district-area shading and current model precipitation
+ * gets lightweight animated rain streaks below the existing river/station layers.
  */
 final class WeatherMapOverlayController {
     static final class WeatherPoint {
@@ -50,11 +54,16 @@ final class WeatherMapOverlayController {
     private static final String SRC_MID = "fs-weather-cloud-mid";
     private static final String SRC_HEAVY = "fs-weather-cloud-heavy";
     private static final String SRC_RAIN = "fs-weather-rain";
+    private static final String SRC_RAIN_STREAK_LIGHT = "fs-weather-rain-streak-light";
+    private static final String SRC_RAIN_STREAK_HEAVY = "fs-weather-rain-streak-heavy";
     private static final String LYR_LIGHT = "fs-weather-cloud-light-layer";
     private static final String LYR_MID = "fs-weather-cloud-mid-layer";
     private static final String LYR_HEAVY = "fs-weather-cloud-heavy-layer";
     private static final String LYR_RAIN = "fs-weather-rain-layer";
-    private static final long PULSE_MS = 1800L;
+    private static final String LYR_RAIN_STREAK_LIGHT = "fs-weather-rain-streak-light-layer";
+    private static final String LYR_RAIN_STREAK_HEAVY = "fs-weather-rain-streak-heavy-layer";
+    private static final long PULSE_MS = 1900L;
+    private static final long RAIN_FRAME_MS = 240L;
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private final List<WeatherPoint> points = new ArrayList<>();
@@ -64,6 +73,7 @@ final class WeatherMapOverlayController {
     private boolean destroyed = false;
     private boolean pulseHigh = false;
     private int retries = 0;
+    private long rainStartedAt = System.currentTimeMillis();
     private JSONObject districtGeometry;
 
     WeatherMapOverlayController(FloodSafeNativeMapView host) {
@@ -74,7 +84,7 @@ final class WeatherMapOverlayController {
                 style = s;
                 retries = 0;
                 refresh();
-                startPulse();
+                startAnimation();
             }));
         }
     }
@@ -83,7 +93,7 @@ final class WeatherMapOverlayController {
         this.enabled = enabled;
         retries = 0;
         refresh();
-        if (enabled) startPulse();
+        if (enabled) startAnimation();
     }
 
     void update(List<WeatherPoint> next) {
@@ -93,7 +103,7 @@ final class WeatherMapOverlayController {
         }
         retries = 0;
         refresh();
-        startPulse();
+        startAnimation();
     }
 
     void destroy() {
@@ -101,10 +111,12 @@ final class WeatherMapOverlayController {
         main.removeCallbacksAndMessages(null);
     }
 
-    private void startPulse() {
+    private void startAnimation() {
         if (destroyed) return;
         main.removeCallbacks(pulseTick);
+        main.removeCallbacks(rainTick);
         main.postDelayed(pulseTick, PULSE_MS);
+        main.post(rainTick);
     }
 
     private final Runnable pulseTick = new Runnable() {
@@ -115,6 +127,14 @@ final class WeatherMapOverlayController {
                 applyPulse();
             }
             main.postDelayed(this, PULSE_MS);
+        }
+    };
+
+    private final Runnable rainTick = new Runnable() {
+        @Override public void run() {
+            if (destroyed) return;
+            if (enabled) updateRainFrames();
+            main.postDelayed(this, RAIN_FRAME_MS);
         }
     };
 
@@ -129,25 +149,31 @@ final class WeatherMapOverlayController {
                 return;
             }
             try {
-                ensure(style, SRC_LIGHT, LYR_LIGHT, "#f4f7f8", 0.055f);
-                ensure(style, SRC_MID, LYR_MID, "#aeb8bf", 0.14f);
-                ensure(style, SRC_HEAVY, LYR_HEAVY, "#37424b", 0.27f);
-                ensure(style, SRC_RAIN, LYR_RAIN, "#168de2", 0.16f);
+                ensureFill(style, SRC_LIGHT, LYR_LIGHT, "#f4f7f8", 0.055f);
+                ensureFill(style, SRC_MID, LYR_MID, "#aeb8bf", 0.14f);
+                ensureFill(style, SRC_HEAVY, LYR_HEAVY, "#37424b", 0.27f);
+                ensureFill(style, SRC_RAIN, LYR_RAIN, "#168de2", 0.16f);
+                ensureRainLine(style, SRC_RAIN_STREAK_LIGHT, LYR_RAIN_STREAK_LIGHT, "#8fd3ff", 1.25f, 0.48f);
+                ensureRainLine(style, SRC_RAIN_STREAK_HEAVY, LYR_RAIN_STREAK_HEAVY, "#d8f3ff", 2.05f, 0.72f);
                 if (!enabled || districtGeometry == null) {
                     clearAll();
                     return;
                 }
-                List<WeatherPoint> snapshot;
-                synchronized (points) { snapshot = new ArrayList<>(points); }
+                List<WeatherPoint> snapshot = snapshot();
                 setGeo(style, SRC_LIGHT, polygonBucket(snapshot, 25d, 50d, false));
                 setGeo(style, SRC_MID, polygonBucket(snapshot, 50d, 75d, false));
                 setGeo(style, SRC_HEAVY, polygonBucket(snapshot, 75d, 101d, false));
                 setGeo(style, SRC_RAIN, polygonBucket(snapshot, 0d, 101d, true));
                 applyPulse();
+                updateRainFrames();
             } catch (Exception e) {
-                android.util.Log.e("FloodSafeWeather", "weather area overlay refresh failed", e);
+                android.util.Log.e("FloodSafeWeather", "weather overlay refresh failed", e);
             }
         });
+    }
+
+    private List<WeatherPoint> snapshot() {
+        synchronized (points) { return new ArrayList<>(points); }
     }
 
     private void clearAll() {
@@ -156,6 +182,8 @@ final class WeatherMapOverlayController {
         setGeo(style, SRC_MID, EMPTY);
         setGeo(style, SRC_HEAVY, EMPTY);
         setGeo(style, SRC_RAIN, EMPTY);
+        setGeo(style, SRC_RAIN_STREAK_LIGHT, EMPTY);
+        setGeo(style, SRC_RAIN_STREAK_HEAVY, EMPTY);
     }
 
     private void applyPulse() {
@@ -169,7 +197,26 @@ final class WeatherMapOverlayController {
         } catch (Exception ignored) {}
     }
 
-    private static void ensure(Style style, String sourceId, String layerId, String color, float opacity) {
+    private void updateRainFrames() {
+        if (!enabled || style == null || !style.isFullyLoaded()) return;
+        try {
+            List<WeatherPoint> snapshot = snapshot();
+            boolean any = false;
+            for (WeatherPoint p : snapshot) {
+                if (p != null && Double.isFinite(p.precipitation) && p.precipitation >= 0.10d) { any = true; break; }
+            }
+            if (!any) {
+                setGeo(style, SRC_RAIN_STREAK_LIGHT, EMPTY);
+                setGeo(style, SRC_RAIN_STREAK_HEAVY, EMPTY);
+                return;
+            }
+            double phase = ((System.currentTimeMillis() - rainStartedAt) % 1600L) / 1600.0;
+            setGeo(style, SRC_RAIN_STREAK_LIGHT, rainStreaks(snapshot, false, phase));
+            setGeo(style, SRC_RAIN_STREAK_HEAVY, rainStreaks(snapshot, true, phase));
+        } catch (Exception ignored) {}
+    }
+
+    private static void ensureFill(Style style, String sourceId, String layerId, String color, float opacity) {
         if (style.getSource(sourceId) == null) style.addSource(new GeoJsonSource(sourceId, EMPTY));
         if (style.getLayer(layerId) == null) {
             FillLayer layer = new FillLayer(layerId, sourceId).withProperties(fillColor(color), fillOpacity(opacity));
@@ -178,9 +225,53 @@ final class WeatherMapOverlayController {
         }
     }
 
+    private static void ensureRainLine(Style style, String sourceId, String layerId, String color, float width, float opacity) {
+        if (style.getSource(sourceId) == null) style.addSource(new GeoJsonSource(sourceId, EMPTY));
+        if (style.getLayer(layerId) == null) {
+            LineLayer layer = new LineLayer(layerId, sourceId).withProperties(lineColor(color), lineWidth(width), lineOpacity(opacity));
+            if (style.getLayer("fs-rivers-layer") != null) style.addLayerBelow(layer, "fs-rivers-layer");
+            else style.addLayer(layer);
+        }
+    }
+
     private static void setGeo(Style style, String sourceId, String json) {
         GeoJsonSource src = style.getSourceAs(sourceId);
         if (src != null) src.setGeoJson(json);
+    }
+
+    private String rainStreaks(List<WeatherPoint> weather, boolean heavy, double phase) {
+        try {
+            JSONArray features = new JSONArray();
+            for (WeatherPoint p : weather) {
+                if (p == null || !Double.isFinite(p.lat) || !Double.isFinite(p.lon) || !Double.isFinite(p.precipitation)) continue;
+                boolean isHeavy = p.precipitation >= 2.0d;
+                if (p.precipitation < 0.10d || isHeavy != heavy) continue;
+                int count = heavy ? Math.min(18, 8 + (int)Math.round(Math.min(10d, p.precipitation) * 1.2d))
+                                  : Math.min(10, 4 + (int)Math.round(Math.min(2d, p.precipitation) * 2.0d));
+                double spanLat = heavy ? 0.34d : 0.28d;
+                double spanLon = heavy ? 0.46d : 0.38d;
+                for (int i = 0; i < count; i++) {
+                    long h1 = (long)p.district.hashCode() * 1103515245L + i * 2654435761L;
+                    long h2 = h1 * 1664525L + 1013904223L;
+                    double rx = ((h1 & 0x7fffffffL) % 1000L) / 999.0d;
+                    double ry = ((h2 & 0x7fffffffL) % 1000L) / 999.0d;
+                    double offset = (((h1 >>> 10) & 1023L) / 1023.0d);
+                    double fall = (phase + offset) % 1.0d;
+                    double lo = p.lon + (rx - 0.5d) * spanLon + fall * (heavy ? 0.040d : 0.026d);
+                    double la = p.lat + (ry - 0.5d) * spanLat + spanLat * 0.45d - fall * spanLat * 0.9d;
+                    double len = heavy ? 0.050d : 0.032d;
+                    JSONArray coords = new JSONArray()
+                            .put(new JSONArray().put(lo).put(la))
+                            .put(new JSONArray().put(lo + (heavy ? 0.012d : 0.008d)).put(la - len));
+                    JSONObject geom = new JSONObject().put("type", "LineString").put("coordinates", coords);
+                    JSONObject props = new JSONObject().put("district", p.district).put("precipitation", p.precipitation);
+                    features.put(new JSONObject().put("type", "Feature").put("geometry", geom).put("properties", props));
+                }
+            }
+            return new JSONObject().put("type", "FeatureCollection").put("features", features).toString();
+        } catch (Exception e) {
+            return EMPTY;
+        }
     }
 
     private String polygonBucket(List<WeatherPoint> weather, double minCloud, double maxCloud, boolean rainOnly) {

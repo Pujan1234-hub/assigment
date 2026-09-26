@@ -139,7 +139,18 @@ jobs:
           PY
 
       - name: Unit test and build native APK
-        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/floodsafe-v0906-gradle.log
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0906-build-log
+          path: /tmp/floodsafe-v0906-gradle.log
+          retention-days: 2
 
       - name: Verify APK and stage v0.9.06
         shell: bash

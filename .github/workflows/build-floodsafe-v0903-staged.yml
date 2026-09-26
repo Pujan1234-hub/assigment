@@ -1,0 +1,150 @@
+name: Build FloodSafe v0.9.03 staged
+
+on:
+  push:
+    branches: [ feature/floodsafe-v0903-weather-language-safety ]
+    paths:
+      - 'floodsafe-android-app/**'
+      - '.github/workflows/build-floodsafe-v0903-staged.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout exact feature branch
+        uses: actions/checkout@v4
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Freeze existing river map system
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILES=(
+            floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+            floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/OfficialRiverData.java
+            floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/DhmRainMirror.java
+            floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodLiveGaugeMonitor.java
+          )
+          sha256sum "${FILES[@]}" > /tmp/floodsafe-map-frozen.sha256
+          cp /tmp/floodsafe-map-frozen.sha256 floodsafe-android-app/map-freeze-baseline.sha256
+          grep -Fq '100% native Android river map using MapLibre Native. No WebView is used.' "${FILES[0]}"
+          grep -Fq 'fs-river-danger-status-layer' "${FILES[0]}"
+          grep -Fq 'fs-flow-particles-layer' "${FILES[0]}"
+          echo 'MAP FREEZE PASS'
+
+      - name: Baseline/helper compile
+        run: gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
+
+      - name: Step 1 language system
+        run: |
+          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py language
+          sha256sum -c /tmp/floodsafe-map-frozen.sha256
+          gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
+
+      - name: Step 2 GPS local weather
+        run: |
+          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py gps-weather
+          sha256sum -c /tmp/floodsafe-map-frozen.sha256
+          gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
+
+      - name: Step 3 district weather
+        run: |
+          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py district-weather
+          sha256sum -c /tmp/floodsafe-map-frozen.sha256
+          gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
+
+      - name: Step 4 separate weather overlay
+        run: |
+          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py weather-overlay
+          sha256sum -c /tmp/floodsafe-map-frozen.sha256
+          gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
+
+      - name: Steps 5-10 two-hour weather and rain change notifications
+        run: |
+          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py weather-notifications
+          sha256sum -c /tmp/floodsafe-map-frozen.sha256
+          gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
+
+      - name: Steps 6-8 separate Warning and Danger alarm
+        run: |
+          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py flood-alerts
+          sha256sum -c /tmp/floodsafe-map-frozen.sha256
+          grep -Fq 'private static final double RADIUS_KM = 2d;' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          grep -Fq 'RiverShape affected = bestMatchedRiver' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          grep -Fq 'distanceToRiverKm(homeLat, homeLon, affected)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          grep -Fq 'now - measuredAt > MAX_AGE_MS' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
+
+      - name: Final version and safety gates
+        run: |
+          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py version
+          sha256sum -c /tmp/floodsafe-map-frozen.sha256
+          grep -Fq "versionName '0.9.03-native'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'versionCode 18' floodsafe-android-app/app/build.gradle
+          grep -Fq 'ACCESS_BACKGROUND_LOCATION' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'RECEIVE_BOOT_COMPLETED' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'FloodMonitorService' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'flood_warning_v5' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeEnhancements.java
+          grep -Fq 'flood_danger_emergency_v5' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeEnhancements.java
+          grep -Fq '2L * 60L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java
+
+      - name: Build final source APK
+        run: gradle -p floodsafe-android-app clean :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Package regression checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-snapshot.json'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.json'
+          unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
+          sha256sum -c /tmp/floodsafe-map-frozen.sha256
+          echo 'SOURCE PACKAGE REGRESSION PASS'
+
+      - name: Native map/station/river emulator regression
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: bash floodsafe-android-app/verify_v0902_runtime.sh
+
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0903-diagnostics
+          path: |
+            floodsafe-android-app/*.txt
+            floodsafe-android-app/*.xml
+            floodsafe-android-app/*.png
+            floodsafe-android-app/map-freeze-baseline.sha256
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload staged APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.03-source-build
+          path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14

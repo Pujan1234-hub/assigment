@@ -43,7 +43,7 @@ jobs:
           sha256sum "${FILES[@]}" > /tmp/floodsafe-map-frozen.sha256
           cp /tmp/floodsafe-map-frozen.sha256 floodsafe-android-app/map-freeze-baseline.sha256
           grep -Fq '100% native Android river map using MapLibre Native. No WebView is used.' "${FILES[0]}"
-          grep -Fq 'fs-river-danger-status-layer' "${FILES[0]}"
+          grep -Fq 'fs-river-danger-risk-layer' "${FILES[0]}"
           grep -Fq 'fs-flow-particles-layer' "${FILES[0]}"
           echo 'MAP FREEZE PASS'
 

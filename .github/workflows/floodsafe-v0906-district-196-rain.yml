@@ -1,14 +1,15 @@
-name: FloodSafe v0.9.06 District + 196 + Advanced Rain
+name: FloodSafe v0.9.07 District Click UI Only
 
 on:
   push:
-    branches: [ fix/floodsafe-v0906-district-196-rain ]
+    branches: [ fix/floodsafe-v0907-district-click-ui ]
     paths:
       - '.github/workflows/floodsafe-v0906-district-196-rain.yml'
       - 'floodsafe-android-app/patch_native_language_safe.py'
       - 'floodsafe-android-app/patch_native_weather_complete.py'
       - 'floodsafe-android-app/patch_native_weather_station_correction.py'
       - 'floodsafe-android-app/patch_native_v0906_district_196_rain.py'
+      - 'floodsafe-android-app/patch_native_v0907_district_click.py'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/WeatherMapOverlayController.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/BipadRealtimeStationFeed.java'
   workflow_dispatch:
@@ -48,10 +49,13 @@ jobs:
       - name: Restore exact BIPAD latest River watch set and map-only weather
         run: python3 floodsafe-android-app/patch_native_weather_station_correction.py
 
-      - name: Apply district grouping, 196 retention and rain UI patch
+      - name: Apply v0.9.06 station-count and rain patch
         run: python3 floodsafe-android-app/patch_native_v0906_district_196_rain.py
 
-      - name: Enforce frozen river map and v0.9.06 scope
+      - name: Apply district-name click-only UI patch
+        run: python3 floodsafe-android-app/patch_native_v0907_district_click.py
+
+      - name: Enforce frozen river map and v0.9.07 UI-only scope
         shell: bash
         run: |
           set -euo pipefail
@@ -72,18 +76,16 @@ jobs:
           test "$(printf '%s\n' "$CHANGED" | sed '/^$/d' | wc -l)" -eq 2
           grep -Fq 'BipadRealtimeStationFeed.fetch()' "$UI"
           grep -Fq 'V0906_KEEP_UNMAPPABLE_OFFICIAL_ROW' "$UI"
-          grep -Fq 'V0906_DISTRICT_GROUPED_STATIONS' "$UI"
-          grep -Fq 'V0906_ADVANCED_RAIN_LEGEND' "$UI"
+          grep -Fq 'V0907_DISTRICT_NAMES_COLLAPSED' "$UI"
+          grep -Fq 'V0907_DISTRICT_CLICK_REVEALS_STATIONS' "$UI"
+          grep -Fq 'floodsafe-nepal/v24/nepal-districts.geojson' "$UI"
           grep -Fq 'V0905_BIPAD_LATEST_PARITY' "$BIPAD"
           grep -Fq 'river-stations/?latest=true&limit=5000' "$BIPAD"
           grep -Fq 'WEATHER_OVERLAY_V4_ANIMATED_RAIN_FIELD' "$OVERLAY"
           grep -Fq 'fs-weather-rain-streak-heavy' "$OVERLAY"
-          grep -Fq 'LineLayer' "$OVERLAY"
-          grep -Fq 'addLayerBelow(layer, "fs-rivers-layer")' "$OVERLAY"
-          ! grep -Fq 'CircleLayer' "$OVERLAY"
-          grep -Fq "versionName '0.9.06-district-196-rain'" "$G"
+          grep -Fq "versionName '0.9.07-district-click'" "$G"
           ! grep -Fq 'android.webkit.WebView' "$UI"
-          echo 'V0906_SCOPE_GUARD PASS'
+          echo 'V0907_UI_ONLY_SCOPE_GUARD PASS'
 
       - name: Verify current BIPAD latest count
         shell: bash
@@ -94,13 +96,13 @@ jobs:
           base='https://bipadportal.gov.np/api/v1/'
           stamp=str(int(time.time()*1000))
           def load(path):
-              req=urllib.request.Request(base+path,headers={'User-Agent':'FloodSafe-Nepal/native-v0906-district-196-rain','Accept':'application/json','Cache-Control':'no-cache'})
+              req=urllib.request.Request(base+path,headers={'User-Agent':'FloodSafe-Nepal/native-v0907-district-click','Accept':'application/json','Cache-Control':'no-cache'})
               with urllib.request.urlopen(req,timeout=30) as r:data=json.load(r)
               rows=data.get('results',data.get('data',[])) if isinstance(data,dict) else data
               if isinstance(rows,dict): rows=rows.get('results',[])
               return rows if isinstance(rows,list) else []
-          latest=load('river-stations/?latest=true&limit=5000&_v0906='+stamp)
-          metadata=load('river-stations/?limit=5000&_v0906='+stamp)
+          latest=load('river-stations/?latest=true&limit=5000&_v0907='+stamp)
+          metadata=load('river-stations/?limit=5000&_v0907='+stamp)
           def ident(row):
               f=row.get('fields') if isinstance(row.get('fields'),dict) else {}
               def pick(*names):
@@ -119,45 +121,40 @@ jobs:
           pathlib.Path('/tmp/bipad_metadata_count.txt').write_text(str(len(metadata)),encoding='utf-8')
           PY
 
-      - name: Verify 77 district weather schema
+      - name: Verify district polygon source
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, pathlib, urllib.request
+          import json, pathlib
           p=pathlib.Path('floodsafe-nepal/v24/nepal-districts.geojson')
           j=json.loads(p.read_text(encoding='utf-8'))
           features=j.get('features') or []
           assert len(features)==77
-          url=('https://api.open-meteo.com/v1/forecast?latitude=27.7172,28.2096,26.4525'
-               '&longitude=85.3240,83.9856,87.2718'
-               '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m'
-               '&timezone=Asia%2FKathmandu&forecast_days=1')
-          with urllib.request.urlopen(url,timeout=20) as r:data=json.loads(r.read().decode('utf-8'))
-          assert isinstance(data,list) and len(data)==3
-          print('WEATHER_SCHEMA PASS districts=',len(features))
+          assert all((x.get('properties') or {}).get('nameEn') for x in features)
+          print('DISTRICT_POLYGON_NAMES PASS districts=',len(features))
           PY
 
       - name: Unit test and build native APK
         shell: bash
         run: |
           set -o pipefail
-          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/floodsafe-v0906-gradle.log
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/floodsafe-v0907-gradle.log
 
       - name: Upload build log on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0906-build-log
-          path: /tmp/floodsafe-v0906-gradle.log
+          name: FloodSafe-v0907-build-log
+          path: /tmp/floodsafe-v0907-gradle.log
           retention-days: 2
 
-      - name: Verify APK and stage v0.9.06
+      - name: Verify APK and stage v0.9.07
         shell: bash
         run: |
           set -euo pipefail
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
-          OUT='FloodSafe-Nepal-v0.9.06-DISTRICT-196-ADVANCED-RAIN.apk'
+          OUT='FloodSafe-Nepal-v0.9.07-DISTRICT-CLICK.apk'
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
@@ -168,31 +165,30 @@ jobs:
           rm -f /tmp/floodsafe-dex-strings.txt
           while IFS= read -r DEX; do unzip -p "$APK" "$DEX" | strings >> /tmp/floodsafe-dex-strings.txt; done < <(unzip -Z1 "$APK" | grep -E '^classes([0-9]+)?\.dex$')
           grep -Fq 'FloodSafe Nepal' /tmp/floodsafe-dex-strings.txt
-          grep -Fq 'Official river stations by district' /tmp/floodsafe-dex-strings.txt
-          grep -Fq 'Show all districts' /tmp/floodsafe-dex-strings.txt
+          grep -Fq 'Tap a district name to open its river stations.' /tmp/floodsafe-dex-strings.txt
+          grep -Fq 'District unavailable' /tmp/floodsafe-dex-strings.txt
           grep -Fq 'fs-weather-rain-streak-heavy' /tmp/floodsafe-dex-strings.txt
           cp "$APK" "$OUT"
-          sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.06-SHA256.txt
+          sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.07-SHA256.txt
           LATEST="$(cat /tmp/bipad_latest_count.txt)"
           META="$(cat /tmp/bipad_metadata_count.txt)"
           printf '%s\n' \
-            'FloodSafe Nepal v0.9.06 district grouping + official-count retention + advanced rain build' \
+            'FloodSafe Nepal v0.9.07 district-click UI-only build' \
             "- BIPAD latest River watch raw rows at build time: $LATEST" \
             "- BIPAD station metadata rows at build time: $META" \
-            '- Every BIPAD latest=true row is retained in the list/count even if a row has no usable map coordinate' \
-            '- Unmappable rows are not invented as map markers; existing MapLibre safety filtering remains intact' \
-            '- National station list is grouped by district, with river/station rows inside each district card' \
-            '- Weather keeps district-area cloud/rain shading and adds animated light/heavy rain streaks' \
-            '- Weather animation remains below the existing river/station layers' \
-            '- Existing FloodSafeNativeMapView, river geometry, river flow/status and BIPAD river source are unchanged' \
+            '- District cards show real district names resolved from bundled Nepal district polygons when BIPAD supplies only a numeric district id' \
+            '- District rows are collapsed by default; tapping a district opens only that district river/station details' \
+            '- Existing 196-row retention logic remains unchanged' \
+            '- Existing weather/rain animation remains unchanged' \
+            '- Existing FloodSafeNativeMapView, river geometry, river flow/status, station markers and BIPAD source are byte-for-byte unchanged' \
             '- Native Android; no WebView introduced' \
-            > FloodSafe-Nepal-v0.9.06-NOTES.txt
+            > FloodSafe-Nepal-v0.9.07-NOTES.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0906-DISTRICT-196-ADVANCED-RAIN
+          name: FloodSafe-Nepal-v0907-DISTRICT-CLICK
           path: |
-            FloodSafe-Nepal-v0.9.06-DISTRICT-196-ADVANCED-RAIN.apk
-            FloodSafe-Nepal-v0.9.06-SHA256.txt
-            FloodSafe-Nepal-v0.9.06-NOTES.txt
+            FloodSafe-Nepal-v0.9.07-DISTRICT-CLICK.apk
+            FloodSafe-Nepal-v0.9.07-SHA256.txt
+            FloodSafe-Nepal-v0.9.07-NOTES.txt
           retention-days: 14

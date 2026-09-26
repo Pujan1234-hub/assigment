@@ -10,70 +10,86 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * V0903_BIPAD_PORTAL_PARITY
+ * V0904_BIPAD_RIVER_WATCH_PARITY
  *
- * Restores the v0-style station catch: BIPAD river-stations is the visible station
- * catalogue, live observation endpoints only update those catalogue rows, and the
- * mirror is metadata/fallback only. This deliberately does NOT union mirror-only
- * rows into the visible map/list, so the app follows the BIPAD River watch count.
+ * The visible station set follows BIPAD's current River watch measurement feed, not
+ * the larger river-stations metadata catalogue. The catalogue/mirror are used only
+ * to complete coordinates, thresholds, basin/river names and other metadata.
+ * Therefore catalogue-only/mirror-only rows can never inflate the visible count.
  */
 final class BipadRealtimeStationFeed {
     private static final String BIPAD = "https://bipadportal.gov.np/api/v1/";
+    private static final String CURRENT = BIPAD + "river/?limit=5000&ordering=-waterLevelOn";
+    private static final String TRIMMED = BIPAD + "river-trimed/?limit=5000";
+    private static final String LATEST = BIPAD + "river-stations/?latest=true&limit=5000";
     private static final String CATALOG = BIPAD + "river-stations/?limit=5000";
-    private static final String[] LIVE = new String[]{
-            BIPAD + "river/?limit=5000&ordering=-waterLevelOn",
-            BIPAD + "river-trimed/?limit=5000",
-            BIPAD + "river-stations/?latest=true&limit=5000"
-    };
 
     private BipadRealtimeStationFeed() {}
 
     static JSONArray fetch() throws Exception {
         long now = System.currentTimeMillis();
-        JSONArray mirror = safeRows(OfficialRiverData.MIRROR_URL + "?_v0903=" + now);
-        JSONArray catalog = safeRows(CATALOG + "&_v0903=" + now);
-        boolean directCatalog = catalog.length() > 0;
-        if (!directCatalog) catalog = mirror;
-        if (catalog.length() == 0) throw new IllegalStateException("No BIPAD station catalogue");
 
+        // BIPAD Realtime > River watch is measurement-driven. Use this as the visible set.
+        JSONArray visible = safeRows(CURRENT + "&_v0904=" + now);
+        String source = "river";
+        if (visible.length() == 0) {
+            visible = safeRows(TRIMMED + "&_v0904=" + now);
+            source = "river-trimed";
+        }
+        if (visible.length() == 0) {
+            visible = safeRows(LATEST + "&_v0904=" + now);
+            source = "river-stations-latest";
+        }
+        if (visible.length() == 0) throw new IllegalStateException("No BIPAD River watch observations");
+
+        JSONArray catalog = safeRows(CATALOG + "&_v0904=" + now);
+        JSONArray mirror = safeRows(OfficialRiverData.MIRROR_URL + "?_v0904=" + now);
+
+        Map<String, JSONObject> catalogById = new HashMap<>();
+        Map<String, JSONObject> catalogByName = new HashMap<>();
         Map<String, JSONObject> mirrorById = new HashMap<>();
         Map<String, JSONObject> mirrorByName = new HashMap<>();
+        index(catalog, catalogById, catalogByName);
         index(mirror, mirrorById, mirrorByName);
 
-        Map<String, JSONObject> newestById = new HashMap<>();
-        Map<String, JSONObject> newestByName = new HashMap<>();
-        for (String endpoint : LIVE) {
-            JSONArray rows = safeRows(endpoint + (endpoint.contains("?") ? "&" : "?") + "_v0903=" + now);
-            for (int i = 0; i < rows.length(); i++) {
-                JSONObject live = rows.optJSONObject(i);
-                if (live == null) continue;
-                JSONObject n = normalized(live);
-                putNewest(newestById, newestByName, n);
+        // Keep one newest current BIPAD observation per station identity, preserving API order.
+        LinkedHashMap<String, JSONObject> currentByStation = new LinkedHashMap<>();
+        int anonymous = 0;
+        for (int i = 0; i < visible.length(); i++) {
+            JSONObject raw = visible.optJSONObject(i);
+            if (raw == null) continue;
+            JSONObject live = normalized(raw);
+            String id = stationId(live), name = stationName(live);
+            String identity = !id.isEmpty() ? "id:" + key(id) : (!name.isEmpty() ? "name:" + key(name) : "row:" + (anonymous++));
+            JSONObject old = currentByStation.get(identity);
+            if (old == null || OfficialRiverData.observationTime(live) > OfficialRiverData.observationTime(old)) {
+                currentByStation.put(identity, live);
             }
         }
 
         JSONArray out = new JSONArray();
-        for (int i = 0; i < catalog.length(); i++) {
-            JSONObject original = catalog.optJSONObject(i);
-            if (original == null) continue;
-            JSONObject meta = normalized(original);
-            String id = stationId(meta), name = stationName(meta);
+        for (JSONObject live : currentByStation.values()) {
+            String id = stationId(live), name = stationName(live);
+            JSONObject meta = !id.isEmpty() ? catalogById.get(key(id)) : null;
+            if (meta == null && !name.isEmpty()) meta = catalogByName.get(key(name));
 
-            // Mirror may complete lat/lon, thresholds or river metadata, but never adds rows.
+            // Mirror is metadata fallback only and is never iterated as a visible source.
             JSONObject mirrorMeta = !id.isEmpty() ? mirrorById.get(key(id)) : null;
             if (mirrorMeta == null && !name.isEmpty()) mirrorMeta = mirrorByName.get(key(name));
-            if (mirrorMeta != null) meta = merge(mirrorMeta, meta);
 
-            JSONObject live = !id.isEmpty() ? newestById.get(key(id)) : null;
-            if (live == null && !name.isEmpty()) live = newestByName.get(key(name));
-            JSONObject row = live == null ? meta : merge(meta, live);
+            JSONObject row = new JSONObject();
+            if (mirrorMeta != null) row = merge(row, mirrorMeta);
+            if (meta != null) row = merge(row, meta);
+            row = merge(row, live); // official current observation always wins
             try {
-                row.put("_fsDirectBipadCatalog", directCatalog);
-                row.put("_fsPortalParity", true);
+                row.put("_fsRiverWatchParity", true);
+                row.put("_fsVisibleSource", source);
+                row.put("_fsCatalogCount", catalog.length());
             } catch (Exception ignored) {}
             out.put(row);
         }
@@ -91,19 +107,6 @@ final class BipadRealtimeStationFeed {
         }
     }
 
-    private static void putNewest(Map<String, JSONObject> byId, Map<String, JSONObject> byName, JSONObject row) {
-        String id = stationId(row), name = stationName(row);
-        if (!id.isEmpty()) putNewestOne(byId, key(id), row);
-        if (!name.isEmpty()) putNewestOne(byName, key(name), row);
-    }
-
-    private static void putNewestOne(Map<String, JSONObject> map, String key, JSONObject row) {
-        JSONObject old = map.get(key);
-        long nextAt = OfficialRiverData.observationTime(row);
-        long oldAt = old == null ? -1L : OfficialRiverData.observationTime(old);
-        if (old == null || nextAt > oldAt) map.put(key, row);
-    }
-
     private static JSONArray safeRows(String url) {
         try { return rows(get(url)); }
         catch (Exception ignored) { return new JSONArray(); }
@@ -115,7 +118,7 @@ final class BipadRealtimeStationFeed {
         c.setReadTimeout(18000);
         c.setUseCaches(false);
         c.setRequestProperty("Accept", "application/json");
-        c.setRequestProperty("User-Agent", "FloodSafe-Nepal/native-v0903");
+        c.setRequestProperty("User-Agent", "FloodSafe-Nepal/native-v0904-river-watch");
         c.setRequestProperty("Cache-Control", "no-cache, no-store");
         c.setRequestProperty("Pragma", "no-cache");
         int code = c.getResponseCode();
@@ -205,7 +208,7 @@ final class BipadRealtimeStationFeed {
 
     private static String stationId(JSONObject row) {
         return firstString(row, "stationSeriesId", "station_series_id", "stationId", "station_id",
-                "stationIndex", "station_index", "seriesId", "series_id", "id");
+                "stationIndex", "station_index", "seriesId", "series_id");
     }
 
     private static String stationName(JSONObject row) {

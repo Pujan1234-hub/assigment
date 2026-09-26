@@ -38,14 +38,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          SDKROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          SDKMANAGER="$SDKROOT/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$SDKROOT/cmdline-tools" -type f -name sdkmanager | head -1)"
+          fi
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
           for attempt in 1 2 3 4; do
             echo "Android emulator install attempt ${attempt}/4"
-            if sdkmanager --install emulator platform-tools 'platforms;android-34'; then
-              emulator -version
+            if "$SDKMANAGER" --install emulator platform-tools 'platforms;android-34'; then
+              "$SDKROOT/emulator/emulator" -version
               exit 0
             fi
-            rm -rf "$ANDROID_SDK_ROOT/.temp" "$ANDROID_SDK_ROOT/temp" "$HOME/.android/cache" || true
+            rm -rf "$SDKROOT/.temp" "$SDKROOT/temp" "$HOME/.android/cache" || true
             sleep 15
           done
           echo 'Android emulator package failed after retries'

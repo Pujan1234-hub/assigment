@@ -41,7 +41,7 @@ replace_once('runOnUiThread(this::renderDistrictWeather);','runOnUiThread(this::
 replace_once('reverseGeocode();fetchWeather(lat,lon);renderDistrictWeather();refreshRiverUi();FloodMonitorService.startIfEnabled(this);}','reverseGeocode();fetchWeather(lat,lon);updateWeatherOverlayOnly();refreshRiverUi();FloodMonitorService.startIfEnabled(this);}','GPS map-only weather refresh')
 
 old_weather='    private void updateWeatherLayerUi(){if(weatherLayerButton!=null)weatherLayerButton.setText(weatherOverlayEnabled?t("☁ तह बन्द","☁ Layer off"):t("☁ तह खोल","☁ Layer on"));if(weatherLayerStatus!=null)weatherLayerStatus.setText((weatherOverlayEnabled?t("☁ बादल + वर्षा layer ON","☁ Cloud + rain layer ON"):t("☁ मौसम layer OFF","☁ Weather layer OFF"))+(districtWeatherAt>0?" • "+weatherAge():""));}'
-new_weather='    private void updateWeatherLayerUi(){if(weatherLayerButton!=null)weatherLayerButton.setText(weatherOverlayEnabled?t("☁ तह बन्द","☁ Layer off"):t("☁ तह खोल","☁ Layer on"));if(weatherLayerStatus!=null)weatherLayerStatus.setText((weatherOverlayEnabled?t("☀ सफा • ☁ खैरो/गाढा = बादल • 🌧 निलो = वर्षा","☀ clear • ☁ grey/dark = cloud • 🌧 blue = rain"):t("☁ मौसम तह बन्द","☁ Weather layer OFF"))+(districtWeatherAt>0?" • "+weatherAge():""));} // V0904_WEATHER_AREA_LEGEND'
+new_weather='    private void updateWeatherLayerUi(){if(weatherLayerButton!=null)weatherLayerButton.setText(weatherOverlayEnabled?t("☁ तह बन्द","☁ Layer off"):t("☁ तह खोल","☁ Layer on"));if(weatherLayerStatus!=null)weatherLayerStatus.setText((weatherOverlayEnabled?t("☀ सफा • ☁ खैरो/गाढा = बादल • 🌧 निलो = वर्षा","☀ clear • ☁ grey/dark = cloud • 🌧 blue = rain"):t("☁ मौसम तह बन्द","☁ Weather layer OFF"))+(districtWeatherAt>0?" • "+weatherAge():""));} // V0905_WEATHER_AREA_LEGEND'
 replace_once(old_weather,new_weather,'weather area legend')
 
 station_block=r'''    private void refreshRivers(){
@@ -63,18 +63,18 @@ station_block=r'''    private void refreshRivers(){
         String stationId=str(r,"stationSeriesId","station_series_id","stationId","station_id","stationIndex","station_index","seriesId","series_id","id");
         String riverName=str(r,"river_name","riverName","river","_floodsafeRiverName");String name=str(r,"station_name","stationName","title","name");if(name.isEmpty())name=!riverName.isEmpty()?riverName:"Official river station";String district=str(r,"districtName","district_name","district");
         return new RiverStation(stationId,name,riverName,district,a,o,level,warning,danger,at,fresh,stage,rank);
-    } // V0904_BIPAD_RIVER_WATCH_FEED
+    } // V0905_BIPAD_LATEST_FEED
 '''
-sub_once(r'    private void refreshRivers\(\)\{.*?    \} // V0899_STALE_CURRENT_SEMANTICS\n',station_block,'restore BIPAD River watch feed')
+sub_once(r'    private void refreshRivers\(\)\{.*?    \} // V0899_STALE_CURRENT_SEMANTICS\n',station_block,'restore BIPAD latest River watch feed')
 
 if "versionCode 18" not in g or "versionName '0.9.01-weather'" not in g: raise SystemExit('base version markers missing')
-g=g.replace('versionCode 18','versionCode 21',1)
-g=g.replace("versionName '0.9.01-weather'","versionName '0.9.04-river-watch-cloud-area'",1)
+g=g.replace('versionCode 18','versionCode 22',1)
+g=g.replace("versionName '0.9.01-weather'","versionName '0.9.05-bipad-latest-cloud-area'",1)
 
 assert 'BipadRealtimeStationFeed.fetch()' in s
-assert 'V0904_BIPAD_RIVER_WATCH_FEED' in s
-assert 'V0904_WEATHER_AREA_LEGEND' in s
+assert 'V0905_BIPAD_LATEST_FEED' in s
+assert 'V0905_WEATHER_AREA_LEGEND' in s
 assert 'content.addView(districtWeatherCard());' not in s
 assert 'android.webkit.WebView' not in s
 UI.write_text(s,encoding='utf-8');GRADLE.write_text(g,encoding='utf-8')
-print('V0904_RIVER_WATCH_CLOUD_AREA_PATCH_OK')
+print('V0905_BIPAD_LATEST_CLOUD_AREA_PATCH_OK')

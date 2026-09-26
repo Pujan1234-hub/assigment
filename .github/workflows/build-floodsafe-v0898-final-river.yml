@@ -1,0 +1,102 @@
+name: Build FloodSafe v0.8.98 Final 284 River APK
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0880-river-status ]
+    paths:
+      - '.github/workflows/build-floodsafe-v0898-final-river.yml'
+      - 'floodsafe-android-app/patch_native_v0898_proven_local_river_seed.py'
+      - 'floodsafe-android-app/validate_v0898_station_rivers.py'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Apply complete native chain through v0.8.98
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/run_patch_native_v0877.py
+          python3 floodsafe-android-app/patch_native_v0878_station_resilience.py
+          python3 floodsafe-android-app/patch_native_v0879_full_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0880b_verify_status.py
+          python3 floodsafe-android-app/patch_native_v0881_live_station_rivers.py
+          python3 floodsafe-android-app/patch_native_v0882_bipad_river_watch.py
+          python3 floodsafe-android-app/patch_native_v0883_no_anr_station_rivers.py
+          python3 floodsafe-android-app/patch_native_v0884_fixed.py
+          python3 floodsafe-android-app/patch_native_v0885_river_geometry_alert.py
+          python3 floodsafe-android-app/patch_native_v0886_realtime_bigstations_rivernetwork.py
+          python3 floodsafe-android-app/patch_native_v0887_station_online_visual.py
+          python3 floodsafe-android-app/patch_native_v0888_station_river_binding.py
+          python3 floodsafe-android-app/patch_native_v0889_freshness_truth.py
+          python3 floodsafe-android-app/patch_native_v0890_station_river_network_only.py
+          python3 floodsafe-android-app/patch_native_v0891_force_station_river_geometry.py
+          python3 floodsafe-android-app/patch_native_v0892_force_render_station_rivers.py
+          python3 floodsafe-android-app/run_patch_native_v0893.py
+          python3 floodsafe-android-app/patch_native_v0894_river_render_runtime_fix.py
+          python3 floodsafe-android-app/patch_native_v0895_station_rivers_only.py
+          python3 floodsafe-android-app/patch_native_v0896_exact_tile_canvas_rivers.py
+          python3 floodsafe-android-app/patch_native_v0897_full_catalog_map_roster.py
+          python3 floodsafe-android-app/patch_native_v0898_proven_local_river_seed.py
+      - name: Verify final renderer source
+        shell: bash
+        run: |
+          set -euo pipefail
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'V0897_FULL_CATALOG_MAP_ROSTER' "$A"
+          grep -Fq 'V0898_PROVEN_LOCAL_RIVER_SEED' "$M"
+          grep -Fq 'V0896_NATIVE_CANVAS_FLOW_GLOW_GUARANTEE' "$M"
+          grep -Fq 'canvas.drawPath(path,glow)' "$M"
+          grep -Fq 'canvas.drawPath(path,core)' "$M"
+          grep -Fq 'data/nepal-waterways-tiles/' "$M"
+          grep -Fq "versionName '0.8.98'" "$G"
+          grep -Fq 'versionCode 118' "$G"
+      - name: Bundle and rebuild exact Nepal river tiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+          python3 -m pip install --quiet shapely matplotlib
+          python3 floodsafe-android-app/preclip_nepal_waterways.py
+          python3 floodsafe-android-app/rebalance_nepal_overview_v0839.py
+          python3 floodsafe-android-app/build_regional_river_tiles_v0840.py
+          python3 floodsafe-android-app/build_national_river_network_v0841.py
+          python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
+          python3 floodsafe-android-app/build_progressive_river_names_v0863.py
+          python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
+      - name: Prove 284 of 284 stations have drawable river geometry
+        run: python3 floodsafe-android-app/validate_v0898_station_rivers.py
+      - name: Compile tests and APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/'
+          cp "$APK" FloodSafe-Nepal-v0.8.98-284-STATION-RIVER-FLOW-GLOW.apk
+          sha256sum FloodSafe-Nepal-v0.8.98-284-STATION-RIVER-FLOW-GLOW.apk | tee FloodSafe-Nepal-v0.8.98-SHA256.txt
+          stat -c '%s bytes' FloodSafe-Nepal-v0.8.98-284-STATION-RIVER-FLOW-GLOW.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0898-284-STATION-RIVER-FLOW-GLOW
+          path: |
+            FloodSafe-Nepal-v0.8.98-284-STATION-RIVER-FLOW-GLOW.apk
+            FloodSafe-Nepal-v0.8.98-SHA256.txt
+            FloodSafe-v0.8.98-river-validation.png
+            FloodSafe-v0.8.98-river-validation.txt
+          retention-days: 14

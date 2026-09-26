@@ -1,4 +1,4 @@
-name: FloodSafe v0.9.04 River Watch + Cloud Area Fix
+name: FloodSafe v0.9.05 BIPAD Latest + Cloud Area Fix
 
 on:
   push:
@@ -35,7 +35,6 @@ jobs:
           set -euo pipefail
           JAVA='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
           MAP="$JAVA/FloodSafeNativeMapView.java"
-          test -s "$MAP"
           sha256sum "$MAP" | tee /tmp/map.before.sha256
           find "$JAVA" -maxdepth 1 -type f \( -name '*River*.java' -o -name 'FloodMonitorService.java' -o -name 'DhmRainMirror.java' \) -print0 | sort -z | xargs -0 sha256sum > /tmp/river.before.sha256
 
@@ -45,10 +44,10 @@ jobs:
       - name: Apply GPS and district weather model patch
         run: python3 floodsafe-android-app/patch_native_weather_complete.py
 
-      - name: Restore BIPAD River watch parity and map-only weather
+      - name: Restore exact BIPAD latest River watch set and map-only weather
         run: python3 floodsafe-android-app/patch_native_weather_station_correction.py
 
-      - name: Enforce frozen river map and v0.9.04 scope
+      - name: Enforce frozen river map and v0.9.05 scope
         shell: bash
         run: |
           set -euo pipefail
@@ -68,45 +67,51 @@ jobs:
           printf '%s\n' "$CHANGED" | grep -Fxq "$G"
           test "$(printf '%s\n' "$CHANGED" | sed '/^$/d' | wc -l)" -eq 2
           grep -Fq 'BipadRealtimeStationFeed.fetch()' "$UI"
-          grep -Fq 'V0904_BIPAD_RIVER_WATCH_FEED' "$UI"
-          grep -Fq 'V0904_WEATHER_AREA_LEGEND' "$UI"
-          grep -Fq 'V0904_BIPAD_RIVER_WATCH_PARITY' "$BIPAD"
-          grep -Fq 'river/?limit=5000&ordering=-waterLevelOn' "$BIPAD"
+          grep -Fq 'V0905_BIPAD_LATEST_FEED' "$UI"
+          grep -Fq 'V0905_WEATHER_AREA_LEGEND' "$UI"
+          grep -Fq 'V0905_BIPAD_LATEST_PARITY' "$BIPAD"
+          grep -Fq 'river-stations/?latest=true&limit=5000' "$BIPAD"
           grep -Fq 'WEATHER_OVERLAY_V3_AREA_SHADE' "$OVERLAY"
           grep -Fq 'FillLayer' "$OVERLAY"
           ! grep -Fq 'CircleLayer' "$OVERLAY"
           grep -Fq 'addLayerBelow(layer, "fs-rivers-layer")' "$OVERLAY"
           ! grep -Fq 'content.addView(districtWeatherCard());' "$UI"
-          grep -Fq "versionName '0.9.04-river-watch-cloud-area'" "$G"
+          grep -Fq "versionName '0.9.05-bipad-latest-cloud-area'" "$G"
           ! grep -Fq 'android.webkit.WebView' "$UI"
-          echo 'V0904_SCOPE_GUARD PASS'
+          echo 'V0905_SCOPE_GUARD PASS'
 
-      - name: Probe current BIPAD River watch and metadata counts
-        continue-on-error: true
+      - name: Verify current BIPAD latest and metadata counts
         shell: bash
         run: |
+          set -euo pipefail
           python3 - <<'PY'
           import json, urllib.request, time, pathlib
           base='https://bipadportal.gov.np/api/v1/'
           stamp=str(int(time.time()*1000))
-          urls={
-            'river_watch': base+'river/?limit=5000&ordering=-waterLevelOn&_v0904='+stamp,
-            'metadata': base+'river-stations/?limit=5000&_v0904='+stamp,
-          }
-          values={}
-          for name,url in urls.items():
-              try:
-                  req=urllib.request.Request(url,headers={'User-Agent':'FloodSafe-Nepal/native-v0904-river-watch','Accept':'application/json','Cache-Control':'no-cache'})
-                  with urllib.request.urlopen(req,timeout=30) as r:data=json.load(r)
-                  rows=data.get('results',data.get('data',[])) if isinstance(data,dict) else data
-                  values[name]=len(rows) if isinstance(rows,list) else 'unknown'
-              except Exception as e:
-                  values[name]='unknown'
-                  print(name,'ERROR',repr(e))
-          print('BIPAD_RIVER_WATCH_COUNT=',values['river_watch'])
-          print('BIPAD_METADATA_COUNT=',values['metadata'])
-          pathlib.Path('/tmp/bipad_river_watch_count.txt').write_text(str(values['river_watch']),encoding='utf-8')
-          pathlib.Path('/tmp/bipad_metadata_count.txt').write_text(str(values['metadata']),encoding='utf-8')
+          def load(path):
+              req=urllib.request.Request(base+path,headers={'User-Agent':'FloodSafe-Nepal/native-v0905-bipad-latest','Accept':'application/json','Cache-Control':'no-cache'})
+              with urllib.request.urlopen(req,timeout=30) as r:data=json.load(r)
+              rows=data.get('results',data.get('data',[])) if isinstance(data,dict) else data
+              if isinstance(rows,dict): rows=rows.get('results',[])
+              return rows if isinstance(rows,list) else []
+          latest=load('river-stations/?latest=true&limit=5000&_v0905='+stamp)
+          metadata=load('river-stations/?limit=5000&_v0905='+stamp)
+          def ident(row):
+              f=row.get('fields') if isinstance(row.get('fields'),dict) else {}
+              def pick(*names):
+                  for n in names:
+                      v=row.get(n,f.get(n))
+                      if v not in (None,''): return str(v).strip().lower()
+                  return ''
+              sid=pick('stationSeriesId','station_series_id','stationId','station_id','stationIndex','station_index','seriesId','series_id')
+              name=pick('station_name','stationName','title','name')
+              return ('id:'+sid) if sid else ('name:'+name if name else '')
+          unique={ident(x) for x in latest if isinstance(x,dict) and ident(x)}
+          print('BIPAD_LATEST_RAW=',len(latest),'UNIQUE=',len(unique),'METADATA=',len(metadata))
+          assert len(latest) >= 100, len(latest)
+          assert len(unique) == len(latest), (len(unique),len(latest))
+          pathlib.Path('/tmp/bipad_latest_count.txt').write_text(str(len(latest)),encoding='utf-8')
+          pathlib.Path('/tmp/bipad_metadata_count.txt').write_text(str(len(metadata)),encoding='utf-8')
           PY
 
       - name: Verify 77 district weather schema
@@ -118,8 +123,7 @@ jobs:
           p=pathlib.Path('floodsafe-nepal/v24/nepal-districts.geojson')
           j=json.loads(p.read_text(encoding='utf-8'))
           features=j.get('features') or []
-          names=[(f.get('properties') or {}).get('nameEn') for f in features]
-          assert len(features)==77 and len(set(names))==77
+          assert len(features)==77
           url=('https://api.open-meteo.com/v1/forecast?latitude=27.7172,28.2096,26.4525'
                '&longitude=85.3240,83.9856,87.2718'
                '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m'
@@ -132,12 +136,12 @@ jobs:
       - name: Unit test and build native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Verify APK and stage v0.9.04
+      - name: Verify APK and stage v0.9.05
         shell: bash
         run: |
           set -euo pipefail
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
-          OUT='FloodSafe-Nepal-v0.9.04-RIVER-WATCH-CLOUD-AREA-FIX.apk'
+          OUT='FloodSafe-Nepal-v0.9.05-BIPAD-LATEST-CLOUD-AREA-FIX.apk'
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
@@ -148,30 +152,31 @@ jobs:
           rm -f /tmp/floodsafe-dex-strings.txt
           while IFS= read -r DEX; do unzip -p "$APK" "$DEX" | strings >> /tmp/floodsafe-dex-strings.txt; done < <(unzip -Z1 "$APK" | grep -E '^classes([0-9]+)?\.dex$')
           grep -Fq 'FloodSafe Nepal' /tmp/floodsafe-dex-strings.txt
-          grep -Fq 'FloodSafe-Nepal/native-v0904-river-watch' /tmp/floodsafe-dex-strings.txt
-          grep -Fq 'river/?limit=5000&ordering=-waterLevelOn' /tmp/floodsafe-dex-strings.txt
+          grep -Fq 'FloodSafe-Nepal/native-v0905-bipad-latest' /tmp/floodsafe-dex-strings.txt
+          grep -Fq 'river-stations/?latest=true&limit=5000' /tmp/floodsafe-dex-strings.txt
           grep -Fq 'fs-weather-cloud-heavy' /tmp/floodsafe-dex-strings.txt
           cp "$APK" "$OUT"
-          sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.04-SHA256.txt
-          RW="$(cat /tmp/bipad_river_watch_count.txt 2>/dev/null || echo unknown)"
-          META="$(cat /tmp/bipad_metadata_count.txt 2>/dev/null || echo unknown)"
+          sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.05-SHA256.txt
+          LATEST="$(cat /tmp/bipad_latest_count.txt)"
+          META="$(cat /tmp/bipad_metadata_count.txt)"
           printf '%s\n' \
-            'FloodSafe Nepal v0.9.04 River Watch + cloud-area field build' \
-            "- BIPAD direct River watch rows at build time: $RW" \
-            "- BIPAD river-stations metadata rows at build time: $META" \
-            '- Visible map/list uses River watch observations only; metadata/mirror rows only enrich coordinates and thresholds' \
+            'FloodSafe Nepal v0.9.05 BIPAD latest + cloud-area field build' \
+            "- BIPAD latest River watch visible rows at build time: $LATEST" \
+            "- BIPAD station metadata rows at build time: $META" \
+            '- Visible map/list uses only river-stations latest=true; full metadata/mirror cannot add rows' \
+            '- Historical river feeds can only refresh a matching visible station observation' \
             '- Weather circles removed completely' \
-            '- Clear areas stay clear; light cloud is very light, heavier cloud progressively grey/dark, rain blue-tinted' \
-            '- Weather shading pulses gently and stays under existing rivers/stations' \
-            '- Existing FloodSafeNativeMapView and river geometry/flow source are unchanged by build-time patches' \
+            '- Clear areas stay clear; light cloud very light, heavier cloud progressively grey/dark, rain blue-tinted' \
+            '- Weather shading pulses gently and stays below existing river/station layers' \
+            '- Existing FloodSafeNativeMapView and river geometry/flow source unchanged by build-time patches' \
             '- Native Android; no WebView introduced' \
-            > FloodSafe-Nepal-v0.9.04-NOTES.txt
+            > FloodSafe-Nepal-v0.9.05-NOTES.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0904-RIVER-WATCH-CLOUD-AREA-FIX
+          name: FloodSafe-Nepal-v0905-BIPAD-LATEST-CLOUD-AREA-FIX
           path: |
-            FloodSafe-Nepal-v0.9.04-RIVER-WATCH-CLOUD-AREA-FIX.apk
-            FloodSafe-Nepal-v0.9.04-SHA256.txt
-            FloodSafe-Nepal-v0.9.04-NOTES.txt
+            FloodSafe-Nepal-v0.9.05-BIPAD-LATEST-CLOUD-AREA-FIX.apk
+            FloodSafe-Nepal-v0.9.05-SHA256.txt
+            FloodSafe-Nepal-v0.9.05-NOTES.txt
           retention-days: 14

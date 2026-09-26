@@ -15,7 +15,8 @@ def replace_once(old, new, label):
 
 def sub_once(pattern, new, label):
     global s
-    s2, n = re.subn(pattern, new, s, count=1, flags=re.S)
+    # Use a callable replacement so Java escape sequences such as "\\n" stay literal.
+    s2, n = re.subn(pattern, lambda _m: new, s, count=1, flags=re.S)
     if n != 1:
         raise SystemExit(f"{label}: expected exactly one regex match, got {n}")
     s = s2

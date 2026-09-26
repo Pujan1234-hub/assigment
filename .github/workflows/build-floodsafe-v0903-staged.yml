@@ -52,37 +52,37 @@ jobs:
 
       - name: Step 1 language system
         run: |
-          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py language
+          python3 floodsafe-android-app/run_v0903_patch.py language
           sha256sum -c /tmp/floodsafe-map-frozen.sha256
           gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
 
       - name: Step 2 GPS local weather
         run: |
-          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py gps-weather
+          python3 floodsafe-android-app/run_v0903_patch.py gps-weather
           sha256sum -c /tmp/floodsafe-map-frozen.sha256
           gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
 
       - name: Step 3 district weather
         run: |
-          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py district-weather
+          python3 floodsafe-android-app/run_v0903_patch.py district-weather
           sha256sum -c /tmp/floodsafe-map-frozen.sha256
           gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
 
       - name: Step 4 separate weather overlay
         run: |
-          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py weather-overlay
+          python3 floodsafe-android-app/run_v0903_patch.py weather-overlay
           sha256sum -c /tmp/floodsafe-map-frozen.sha256
           gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
 
       - name: Steps 5-10 two-hour weather and rain change notifications
         run: |
-          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py weather-notifications
+          python3 floodsafe-android-app/run_v0903_patch.py weather-notifications
           sha256sum -c /tmp/floodsafe-map-frozen.sha256
           gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac :app:testDebugUnitTest -x bundleNativeAssets --no-daemon --stacktrace
 
       - name: Steps 6-8 separate Warning and Danger alarm
         run: |
-          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py flood-alerts
+          python3 floodsafe-android-app/run_v0903_patch.py flood-alerts
           sha256sum -c /tmp/floodsafe-map-frozen.sha256
           grep -Fq 'private static final double RADIUS_KM = 2d;' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
           grep -Fq 'RiverShape affected = bestMatchedRiver' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
@@ -92,7 +92,7 @@ jobs:
 
       - name: Final version and safety gates
         run: |
-          python3 floodsafe-android-app/patch_v0903_language_weather_safety.py version
+          python3 floodsafe-android-app/run_v0903_patch.py version
           sha256sum -c /tmp/floodsafe-map-frozen.sha256
           grep -Fq "versionName '0.9.03-native'" floodsafe-android-app/app/build.gradle
           grep -Fq 'versionCode 18' floodsafe-android-app/app/build.gradle

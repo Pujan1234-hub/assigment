@@ -160,10 +160,12 @@ jobs:
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
           test -n "$APKSIGNER"
           "$APKSIGNER" verify --verbose "$APK"
-          unzip -p "$APK" classes.dex | strings | grep -Fq 'FloodSafe Nepal'
-          unzip -p "$APK" classes.dex | strings | grep -Fq 'V0903_BIPAD_PORTAL_PARITY'
-          unzip -p "$APK" classes.dex | strings | grep -Fq 'river-stations/?limit=5000'
-          unzip -p "$APK" classes.dex | strings | grep -Fq 'fs-weather-cloud-heavy'
+          rm -f /tmp/floodsafe-dex-strings.txt
+          while IFS= read -r DEX; do unzip -p "$APK" "$DEX" | strings >> /tmp/floodsafe-dex-strings.txt; done < <(unzip -Z1 "$APK" | grep -E '^classes([0-9]+)?\.dex$')
+          grep -Fq 'FloodSafe Nepal' /tmp/floodsafe-dex-strings.txt
+          grep -Fq 'FloodSafe-Nepal/native-v0903' /tmp/floodsafe-dex-strings.txt
+          grep -Fq 'river-stations/?limit=5000' /tmp/floodsafe-dex-strings.txt
+          grep -Fq 'fs-weather-cloud-heavy' /tmp/floodsafe-dex-strings.txt
           cp "$APK" "$OUT"
           sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.03-SHA256.txt
           COUNT="$(cat /tmp/bipad_station_count.txt 2>/dev/null || echo unknown)"

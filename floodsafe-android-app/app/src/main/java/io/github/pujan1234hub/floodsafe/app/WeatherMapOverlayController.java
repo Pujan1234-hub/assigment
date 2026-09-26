@@ -2,14 +2,16 @@ package io.github.pujan1234hub.floodsafe.app;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.maplibre.android.maps.MapView;
 import org.maplibre.android.maps.Style;
 import org.maplibre.android.style.layers.CircleLayer;
 import org.maplibre.android.style.sources.GeoJsonSource;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +23,8 @@ import static org.maplibre.android.style.layers.PropertyFactory.circleStrokeWidt
 
 /**
  * WEATHER_OVERLAY_V1
- * Adds weather-model cloud/precipitation layers to the already-created native MapLibre style
- * without modifying FloodSafeNativeMapView or any river geometry/status logic.
+ * Adds weather-model cloud/precipitation layers to the existing native MapLibre style.
+ * FloodSafeNativeMapView and all river geometry/status logic stay byte-for-byte untouched.
  */
 final class WeatherMapOverlayController {
     static final class WeatherPoint {
@@ -48,14 +50,22 @@ final class WeatherMapOverlayController {
     private static final String LYR_HEAVY = "fs-weather-cloud-heavy-layer";
     private static final String LYR_RAIN = "fs-weather-rain-layer";
 
-    private final FloodSafeNativeMapView host;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final List<WeatherPoint> points = new ArrayList<>();
+    private final MapView mapView;
+    private Style style;
     private boolean enabled = true;
     private int retries = 0;
 
     WeatherMapOverlayController(FloodSafeNativeMapView host) {
-        this.host = host;
+        mapView = findMapView(host);
+        if (mapView != null) {
+            mapView.getMapAsync(map -> map.getStyle(s -> {
+                style = s;
+                retries = 0;
+                refresh();
+            }));
+        }
     }
 
     void setEnabled(boolean enabled) {
@@ -79,9 +89,11 @@ final class WeatherMapOverlayController {
 
     private void refresh() {
         main.post(() -> {
-            Style style = readStyle();
             if (style == null || !style.isFullyLoaded()) {
-                if (retries++ < 30) main.postDelayed(this::refresh, 400L);
+                if (mapView != null && retries++ < 30) {
+                    mapView.getMapAsync(map -> map.getStyle(s -> style = s));
+                    main.postDelayed(this::refresh, 400L);
+                }
                 return;
             }
             try {
@@ -161,15 +173,15 @@ final class WeatherMapOverlayController {
         }
     }
 
-    private Style readStyle() {
-        try {
-            Field f = FloodSafeNativeMapView.class.getDeclaredField("style");
-            f.setAccessible(true);
-            Object v = f.get(host);
-            return v instanceof Style ? (Style) v : null;
-        } catch (Exception e) {
-            android.util.Log.e("FloodSafeWeather", "native map style unavailable", e);
-            return null;
+    private static MapView findMapView(View root) {
+        if (root instanceof MapView) return (MapView) root;
+        if (root instanceof ViewGroup) {
+            ViewGroup g = (ViewGroup) root;
+            for (int i = 0; i < g.getChildCount(); i++) {
+                MapView found = findMapView(g.getChildAt(i));
+                if (found != null) return found;
+            }
         }
+        return null;
     }
 }

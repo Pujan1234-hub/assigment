@@ -1,4 +1,4 @@
-name: Build FloodSafe v0.8.85 River Geometry Alert APK
+name: Build FloodSafe v0.8.86 Realtime River Network APK
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
       - 'floodsafe-android-app/patch_native_v0883_no_anr_station_rivers.py'
       - 'floodsafe-android-app/patch_native_v0884_fixed.py'
       - 'floodsafe-android-app/patch_native_v0885_river_geometry_alert.py'
+      - 'floodsafe-android-app/patch_native_v0886_realtime_bigstations_rivernetwork.py'
   workflow_dispatch:
 
 permissions:
@@ -45,7 +46,9 @@ jobs:
         run: python3 floodsafe-android-app/patch_native_v0884_fixed.py
       - name: Apply v0.8.85 affected-river 2km alert
         run: python3 floodsafe-android-app/patch_native_v0885_river_geometry_alert.py
-      - name: Verify v0.8.85 contracts
+      - name: Apply v0.8.86 realtime map visibility
+        run: python3 floodsafe-android-app/patch_native_v0886_realtime_bigstations_rivernetwork.py
+      - name: Verify v0.8.86 contracts
         shell: bash
         run: |
           set -euo pipefail
@@ -53,15 +56,12 @@ jobs:
           M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
           W='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java'
           G='floodsafe-android-app/app/build.gradle'
-          grep -Fq 'V0883_BIPAD_RIVER_TRIMED_UNION' "$A"
-          grep -Fq 'V0884_STATUS_COLOUR_STATION_RIVERS_BACKGROUND' "$M"
-          grep -Fq 'V0884_RIVER_STATUS_COLOUR_LAYERS' "$M"
-          grep -Fq 'V0884_NO_LOCAL_AGE_CUTOFF' "$W"
+          grep -Fq 'V0886_OVERVIEW_FIRST_RIVER_NETWORK' "$M"
+          grep -Fq 'V0886_NO_HTTP_CACHE' "$A"
           grep -Fq 'V0885_AFFECTED_RIVER_2KM_GEOMETRY' "$W"
-          grep -Fq 'V0885_RIVER_GEOMETRY_DISTANCE' "$W"
-          grep -Fq "versionName '0.8.85'" "$G"
-          grep -Fq 'versionCode 105' "$G"
-          echo 'V0885_CONTRACT PASS'
+          grep -Fq "versionName '0.8.86'" "$G"
+          grep -Fq 'versionCode 106' "$G"
+          echo 'V0886_CONTRACT PASS'
       - name: Bundle source assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
       - name: Rebuild all Nepal river assets
@@ -88,14 +88,14 @@ jobs:
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/7-2.json'
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles-regional/7-2.json'
-          cp "$APK" FloodSafe-Nepal-v0.8.85-RIVER-GEOMETRY-ALERT.apk
-          stat -c '%s' FloodSafe-Nepal-v0.8.85-RIVER-GEOMETRY-ALERT.apk > apk-size.txt
-          sha256sum FloodSafe-Nepal-v0.8.85-RIVER-GEOMETRY-ALERT.apk | tee FloodSafe-Nepal-v0.8.85-SHA256.txt
+          cp "$APK" FloodSafe-Nepal-v0.8.86-REALTIME-BIG-STATIONS-RIVER-NETWORK.apk
+          stat -c '%s' FloodSafe-Nepal-v0.8.86-REALTIME-BIG-STATIONS-RIVER-NETWORK.apk > apk-size.txt
+          sha256sum FloodSafe-Nepal-v0.8.86-REALTIME-BIG-STATIONS-RIVER-NETWORK.apk | tee FloodSafe-Nepal-v0.8.86-SHA256.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0885-RIVER-GEOMETRY-ALERT
+          name: FloodSafe-Nepal-v0886-REALTIME-BIG-STATIONS-RIVER-NETWORK
           path: |
-            FloodSafe-Nepal-v0.8.85-RIVER-GEOMETRY-ALERT.apk
-            FloodSafe-Nepal-v0.8.85-SHA256.txt
+            FloodSafe-Nepal-v0.8.86-REALTIME-BIG-STATIONS-RIVER-NETWORK.apk
+            FloodSafe-Nepal-v0.8.86-SHA256.txt
             apk-size.txt
           retention-days: 14

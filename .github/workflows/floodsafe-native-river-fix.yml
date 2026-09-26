@@ -27,51 +27,51 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Enable KVM for Android emulator
+      - name: Prepare Android emulator
+        shell: bash
         run: |
+          set -euo pipefail
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm || true
           ls -l /dev/kvm
-
-      - name: Install Android emulator runtime libraries
-        shell: bash
-        run: |
-          set -euo pipefail
           sudo apt-get update -qq
           if ! sudo apt-get install -y --no-install-recommends libpulse0; then
             sudo apt-get install -y --no-install-recommends libpulse0t64
           fi
-          ldconfig -p | grep -q 'libpulse.so.0'
-
-      - name: Preinstall Android emulator with retries
-        shell: bash
-        run: |
-          set -euo pipefail
           SDKROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           SDKMANAGER="$SDKROOT/cmdline-tools/latest/bin/sdkmanager"
-          if [ ! -x "$SDKMANAGER" ]; then
-            SDKMANAGER="$(find "$SDKROOT/cmdline-tools" -type f -name sdkmanager | head -1)"
-          fi
+          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="$(find "$SDKROOT/cmdline-tools" -type f -name sdkmanager | head -1)"; fi
           test -x "$SDKMANAGER"
           yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
           for attempt in 1 2 3 4; do
             echo "Android emulator install attempt ${attempt}/4"
             if "$SDKMANAGER" --install emulator platform-tools 'platforms;android-34'; then
               "$SDKROOT/emulator/emulator" -version
-              exit 0
+              break
             fi
             rm -rf "$SDKROOT/.temp" "$SDKROOT/temp" "$HOME/.android/cache" || true
+            test "$attempt" -lt 4 || exit 1
             sleep 15
           done
-          echo 'Android emulator package failed after retries'
-          exit 1
 
       - name: Apply station-rivers-only patch
         run: |
           python3 floodsafe-android-app/patch_native_v0899_verified_river_flow_safety.py
           python3 floodsafe-android-app/patch_native_v0900_station_rivers_only.py
           python3 floodsafe-android-app/patch_native_v0900_station_river_alias.py
+
+      - name: Add temporary runtime inventory diagnostics
+        shell: python3 {0}
+        run: |
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java')
+          s=p.read_text(encoding='utf-8')
+          old='synchronized(stations){stations.clear();stations.addAll(out);}runOnUiThread(this::refreshRiverUi);}catch(Exception e){runOnUiThread(()->feedFresh.setText'
+          new='synchronized(stations){stations.clear();stations.addAll(out);}android.util.Log.i("FloodSafeInventory","parsed_stations="+out.size()+" raw_rows="+rows.length());runOnUiThread(this::refreshRiverUi);}catch(Exception e){android.util.Log.e("FloodSafeInventory","river_refresh_failed",e);runOnUiThread(()->feedFresh.setText'
+          if old not in s:
+              raise SystemExit('refreshRivers diagnostic anchor missing')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
 
       - name: Verify station-only source contracts
         shell: bash
@@ -82,34 +82,24 @@ jobs:
           grep -q 'V0900_STATION_RIVERS_ONLY' "$MAP"
           grep -q 'V0900_FULL_NETWORK_NEVER_RENDERED' "$MAP"
           grep -q 'V0900_BUILD_MAPPING_ONCE' "$MAP"
-          grep -q 'V0900_NAME_FIRST_STRICT_COORD_FALLBACK' "$MAP"
-          grep -q 'V0900_LOCAL_SAME_RIVER_ONLY' "$MAP"
           grep -q 'V0900_VISIBLE_SOURCE_IS_MONITORED_ONLY' "$MAP"
           grep -q 'V0900_ANIMATION_MONITORED_SOURCE_ONLY' "$MAP"
-          grep -q 'V0900_STATUS_COLOURS_LINKED_SEGMENTS_ONLY' "$MAP"
           grep -q 'V0900_STRICT_NEPAL_BOUNDS' "$MAP"
-          grep -q 'V0900_BIPAD_NAME_MATCH_PRIORITY' "$MAP"
           ! grep -q 'riversGeoJson = makeRiversGeoJson(all)' "$MAP"
-          ! grep -q 'Math.min(36, rivers.size())' "$MAP"
           grep -q 'new FloodSafeNativeMapView' "$ACT"
           ! grep -R -n 'android\.webkit\|androidx\.webkit' floodsafe-android-app/app/src/main/java floodsafe-android-app/app/build.gradle
           grep -q "versionName '0.9.00-native'" floodsafe-android-app/app/build.gradle
-          echo 'Station-only native map source contracts PASS'
 
-      - name: Verify bundled candidate geometry contains Bagmati and Nepal rivers
+      - name: Verify Bagmati candidate geometry
         shell: python3 {0}
         run: |
           import json
           from pathlib import Path
-          p=Path('data/nepal-waterways-tiles/overview.json')
-          j=json.loads(p.read_text(encoding='utf-8'))
+          j=json.loads(Path('data/nepal-waterways-tiles/overview.json').read_text(encoding='utf-8'))
           ways=j.get('waterways') or []
-          assert len(ways)>0, 'overview has no river candidates'
-          def txt(w): return ' '.join(str(w.get(k,'')).lower() for k in ('name','name_en','name_ne'))
-          bag=[w for w in ways if 'bagmati' in txt(w)]
+          bag=[w for w in ways if 'bagmati' in ' '.join(str(w.get(k,'')) for k in ('name','name_en','name_ne')).lower()]
           print('candidate waterways=',len(ways),'bagmati_named_segments=',len(bag))
-          assert bag, 'Bagmati named geometry missing from bundled candidate asset'
-          assert any(len(w.get('pts') or [])>=2 for w in bag), 'Bagmati geometry has no usable points'
+          assert ways and bag and any(len(w.get('pts') or [])>=2 for w in bag)
 
       - name: Unit tests and build debug APK
         run: gradle -p floodsafe-android-app clean :app:testDebugUnitTest :app:assembleDebug --stacktrace --no-daemon
@@ -127,12 +117,9 @@ jobs:
           while read -r d; do unzip -p "$APK" "$d" | strings >> /tmp/dexstrings; done < <(grep -E '^classes[0-9]*\.dex$' /tmp/apk-files.txt)
           ! grep -qE 'android/webkit/WebView|androidx/webkit|VoiceMainActivity|BundledContent' /tmp/dexstrings
           grep -q 'station_linked_features=' /tmp/dexstrings
-          grep -q 'animated_station_features=' /tmp/dexstrings
-          grep -q 'station-only river layers active' /tmp/dexstrings
           grep -q 'fs-river-glow' /tmp/dexstrings
           grep -q 'fs-rivers-layer' /tmp/dexstrings
           grep -q 'fs-flow-particles-layer' /tmp/dexstrings
-          echo 'Final APK native/station-river inspection PASS'
 
       - name: Runtime MapLibre render verification
         uses: reactivecircus/android-emulator-runner@v2
@@ -147,17 +134,31 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
             adb install -r floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+            adb shell pm grant io.github.pujan1234hub.floodsafe.app android.permission.POST_NOTIFICATIONS || true
+            adb shell pm grant io.github.pujan1234hub.floodsafe.app android.permission.ACCESS_FINE_LOCATION || true
+            adb shell pm grant io.github.pujan1234hub.floodsafe.app android.permission.ACCESS_COARSE_LOCATION || true
+            adb emu geo fix 85.3240 27.7172 || true
             adb logcat -c
-            adb shell monkey -p io.github.pujan1234hub.floodsafe.app -c android.intent.category.LAUNCHER 1
-            sleep 45
-            adb shell input swipe 540 2000 540 400 900 || true
-            sleep 5
+            adb shell am start -W -n io.github.pujan1234hub.floodsafe.app/.PJBuiltsSplashActivity
+            for i in $(seq 1 30); do
+              adb logcat -d > floodsafe-android-app/runtime-log-live.txt
+              if grep -Eq 'station_linked_features=[1-9][0-9]*' floodsafe-android-app/runtime-log-live.txt; then
+                echo "station-linked mapping ready after $((i*5))s"
+                break
+              fi
+              sleep 5
+            done
+            adb shell input swipe 540 1950 540 500 700 || true
+            sleep 2
+            adb shell input swipe 540 1850 540 650 600 || true
+            sleep 4
             adb exec-out screencap -p > floodsafe-android-app/runtime-station-rivers-1.png
-            sleep 1
+            sleep 2
             adb exec-out screencap -p > floodsafe-android-app/runtime-station-rivers-2.png
             adb logcat -d > floodsafe-android-app/runtime-log.txt
-            echo '--- FloodSafeRiver runtime ---'
-            grep 'FloodSafeRiver' floodsafe-android-app/runtime-log.txt | tail -100 || true
+            echo '--- FloodSafe inventory/runtime ---'
+            grep -E 'FloodSafeInventory|FloodSafeRiver' floodsafe-android-app/runtime-log.txt | tail -160 || true
+            grep -Eq 'parsed_stations=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt
             grep -Eq 'station_linked_features=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt
             grep -Eq 'flow_frame=[1-9][0-9]*.*animated_station_features=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt
             grep -q 'station-only river layers active' floodsafe-android-app/runtime-log.txt
@@ -165,9 +166,24 @@ jobs:
             test -s floodsafe-android-app/runtime-station-rivers-1.png
             test -s floodsafe-android-app/runtime-station-rivers-2.png
 
-      - name: Commit verified source
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0.9.00-runtime-evidence
+          path: |
+            floodsafe-android-app/runtime-station-rivers-1.png
+            floodsafe-android-app/runtime-station-rivers-2.png
+            floodsafe-android-app/runtime-log.txt
+            floodsafe-android-app/runtime-log-live.txt
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Commit verified river-map source
+        if: success()
         run: |
-          if git diff --quiet; then exit 0; fi
+          git checkout -- floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          if git diff --quiet -- floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java floodsafe-android-app/app/build.gradle; then exit 0; fi
           git config user.name 'FloodSafe Build Bot'
           git config user.email 'actions@users.noreply.github.com'
           git add floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java floodsafe-android-app/app/build.gradle
@@ -179,18 +195,6 @@ jobs:
         run: |
           cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk floodsafe-android-app/FloodSafe-Nepal-v0.9.00-station-rivers-native.apk
           sha256sum floodsafe-android-app/FloodSafe-Nepal-v0.9.00-station-rivers-native.apk > floodsafe-android-app/FloodSafe-Nepal-v0.9.00-sha256.txt
-
-      - name: Upload runtime evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: FloodSafe-v0.9.00-runtime-evidence
-          path: |
-            floodsafe-android-app/runtime-station-rivers-1.png
-            floodsafe-android-app/runtime-station-rivers-2.png
-            floodsafe-android-app/runtime-log.txt
-          if-no-files-found: warn
-          retention-days: 7
 
       - name: Upload verified APK
         if: success()

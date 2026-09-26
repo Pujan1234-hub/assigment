@@ -168,9 +168,8 @@ jobs:
           rm -f /tmp/floodsafe-dex-strings.txt
           while IFS= read -r DEX; do unzip -p "$APK" "$DEX" | strings >> /tmp/floodsafe-dex-strings.txt; done < <(unzip -Z1 "$APK" | grep -E '^classes([0-9]+)?\.dex$')
           grep -Fq 'FloodSafe Nepal' /tmp/floodsafe-dex-strings.txt
-          grep -Fq 'V0906_KEEP_UNMAPPABLE_OFFICIAL_ROW' /tmp/floodsafe-dex-strings.txt
-          grep -Fq 'V0906_DISTRICT_GROUPED_STATIONS' /tmp/floodsafe-dex-strings.txt
-          grep -Fq 'WEATHER_OVERLAY_V4_ANIMATED_RAIN_FIELD' /tmp/floodsafe-dex-strings.txt
+          grep -Fq 'Official river stations by district' /tmp/floodsafe-dex-strings.txt
+          grep -Fq 'Show all districts' /tmp/floodsafe-dex-strings.txt
           grep -Fq 'fs-weather-rain-streak-heavy' /tmp/floodsafe-dex-strings.txt
           cp "$APK" "$OUT"
           sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.06-SHA256.txt

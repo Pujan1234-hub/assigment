@@ -64,6 +64,7 @@ if bundled_path.exists(): bundled_path.unlink()
 
 s=splash_path.read_text(encoding='utf-8')
 s=s.replace('new Intent(this, VoiceMainActivity.class)','new Intent(this, NativeFullActivity.class)')
+s=s.replace('app.putExtra(VoiceMainActivity.EXTRA_LAUNCHER_REOPEN, true);','')
 s=s.replace('// Do NOT clear the task here. Clearing it destroyed the already-loaded WebView\n        // on every launcher reopen, forcing a full cold reload of map, river, news and\n        // SATHI. CLEAR_TOP + SINGLE_TOP reuses the existing VoiceMainActivity when it\n        // is alive, while still creating it normally on a genuine cold start.\n','// Reuse the native activity on launcher reopen.\n')
 splash_path.write_text(s,encoding='utf-8')
 
@@ -75,5 +76,7 @@ for p in src.glob('*.java'):
     if 'android.webkit' in t or 'androidx.webkit' in t or re.search(r'\bnew\s+WebView\s*\(',t):
         left.append(p.name)
 if left: raise SystemExit('v0897d actual WebKit source remained: '+','.join(left))
+if 'VoiceMainActivity.EXTRA_LAUNCHER_REOPEN' in splash_path.read_text(encoding='utf-8'):
+    raise SystemExit('v0897d legacy launcher extra remained')
 
 print('v0.8.97d native-only packaging + entry-point cleanup applied')

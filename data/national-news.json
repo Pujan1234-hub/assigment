@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-27T01:05:31.526653+05:45",
-  "updated_at_npt": "27 Sep 01:05 NPT",
+  "generated_at": "2026-09-27T03:46:44.792094+05:45",
+  "updated_at_npt": "27 Sep 03:46 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
@@ -9,7 +9,7 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/595148/acap-suspends-tourist-permits-for-tourist-safety",
       "published_at": "2026-09-27T00:15:00+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "हुम्लामा भारी वर्षा",
@@ -23,13 +23,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/595142/high-alert-as-seti-river-flows-increase-forming-a-lake-in-ramghat",
       "published_at": "2026-09-26T22:16:47+05:45",
-      "flash": false
-    },
-    {
-      "title": "जोगबनीमा नेपाल–भारत सीमा सुरक्षा अधिकारीबिच बैठक",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595131/meeting-between-nepal-india-border-security-officials-in-jogbani",
-      "published_at": "2026-09-26T19:52:09+05:45",
       "flash": false
     }
   ],
@@ -49,8 +42,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 4
+      "flash": 0,
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

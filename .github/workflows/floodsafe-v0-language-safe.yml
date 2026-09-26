@@ -1,0 +1,99 @@
+name: FloodSafe v0 Language Safe Build
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0-language-safe ]
+    paths:
+      - '.github/workflows/floodsafe-v0-language-safe.yml'
+      - 'floodsafe-android-app/patch_native_language_safe.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Record protected native map and river state
+        shell: bash
+        run: |
+          set -euo pipefail
+          MAP='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          test -s "$MAP"
+          sha256sum "$MAP" | tee /tmp/map.before.sha256
+          git status --porcelain
+
+      - name: Apply language-only patch
+        run: python3 floodsafe-android-app/patch_native_language_safe.py
+
+      - name: Enforce language-only source diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          UI='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          MAP='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          test -s "$UI"
+          test -s "$MAP"
+          sha256sum "$MAP" | tee /tmp/map.after.sha256
+          cmp /tmp/map.before.sha256 /tmp/map.after.sha256
+          git diff --exit-code -- "$MAP"
+          CHANGED="$(git diff --name-only)"
+          printf 'Changed files after patch:\n%s\n' "$CHANGED"
+          test "$CHANGED" = "$UI"
+          grep -Fq 'applyTtsLanguage();recreate();' "$UI"
+          grep -Fq 'english?Locale.UK:Locale.forLanguageTag("ne-NP")' "$UI"
+          grep -Fq 'ताजा: 🔴' "$UI"
+          grep -Fq 'You: ' "$UI"
+          ! grep -Fq 'android.webkit.WebView' "$UI"
+          echo 'LANGUAGE_ONLY_GUARD PASS'
+
+      - name: Unit test and build native APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK package and signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'classes.dex'
+          unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -n "$APKSIGNER"
+          "$APKSIGNER" verify --verbose "$APK"
+          unzip -p "$APK" classes.dex | strings | grep -Fq 'FloodSafe Nepal'
+          cp "$APK" FloodSafe-Nepal-v0-LANGUAGE-SAFE.apk
+          sha256sum FloodSafe-Nepal-v0-LANGUAGE-SAFE.apk | tee FloodSafe-Nepal-v0-LANGUAGE-SAFE-SHA256.txt
+          printf '%s\n' \
+            'FloodSafe Nepal language-safe native field build' \
+            '- Native Android; no WebView introduced' \
+            '- Nepali/English toggle rebuilds all t(ne,en) UI labels consistently' \
+            '- SATHI TTS and geocoding follow selected language' \
+            '- Station details, relative times, news time and risk banner localized' \
+            '- FloodSafeNativeMapView source SHA unchanged by language patch' \
+            > FloodSafe-Nepal-v0-LANGUAGE-SAFE-NOTES.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0-LANGUAGE-SAFE
+          path: |
+            FloodSafe-Nepal-v0-LANGUAGE-SAFE.apk
+            FloodSafe-Nepal-v0-LANGUAGE-SAFE-SHA256.txt
+            FloodSafe-Nepal-v0-LANGUAGE-SAFE-NOTES.txt
+          retention-days: 14

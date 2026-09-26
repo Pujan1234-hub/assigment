@@ -140,14 +140,8 @@ jobs:
             adb emu geo fix 85.3240 27.7172 || true
             adb logcat -c
             adb shell am start -W -n io.github.pujan1234hub.floodsafe.app/.PJBuiltsSplashActivity
-            for i in $(seq 1 30); do
-              adb logcat -d > floodsafe-android-app/runtime-log-live.txt
-              if grep -Eq 'station_linked_features=[1-9][0-9]*' floodsafe-android-app/runtime-log-live.txt; then
-                echo "station-linked mapping ready after $((i*5))s"
-                break
-              fi
-              sleep 5
-            done
+            sleep 100
+            adb logcat -d > floodsafe-android-app/runtime-log-live.txt
             adb shell input swipe 540 1950 540 500 700 || true
             sleep 2
             adb shell input swipe 540 1850 540 650 600 || true
@@ -156,7 +150,6 @@ jobs:
             sleep 2
             adb exec-out screencap -p > floodsafe-android-app/runtime-station-rivers-2.png
             adb logcat -d > floodsafe-android-app/runtime-log.txt
-            echo '--- FloodSafe inventory/runtime ---'
             grep -E 'FloodSafeInventory|FloodSafeRiver' floodsafe-android-app/runtime-log.txt | tail -160 || true
             grep -Eq 'parsed_stations=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt
             grep -Eq 'station_linked_features=[1-9][0-9]*' floodsafe-android-app/runtime-log.txt

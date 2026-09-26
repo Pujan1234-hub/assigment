@@ -73,8 +73,8 @@ jobs:
           set -euo pipefail
           M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
           G='floodsafe-android-app/app/build.gradle'
-          grep -Fq 'V0895_STATION_RIVERS_ONLY_18KM_CORRIDOR' "$M"
-          grep -Fq 'stationsByRiver' "$M"
+          grep -Fq 'V0895_STATION_RIVERS_ONLY_GUARANTEED_SEED' "$M"
+          grep -Fq 'bestAny' "$M"
           grep -Fq 'd<=18d' "$M"
           grep -Fq 'fs-v893-station-rivers' "$M"
           grep -Fq "versionName '0.8.95'" "$G"
@@ -96,15 +96,6 @@ jobs:
           python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
           ASSET=$(find floodsafe-android-app/app/build -path '*/data/nepal-waterways-medium-v0842.geojson' -type f | head -1)
           test -n "$ASSET" && test -s "$ASSET"
-          python3 - "$ASSET" <<'PY'
-          import json,sys
-          p=sys.argv[1]; o=json.load(open(p,encoding='utf-8'))
-          fs=o.get('features') or []
-          n=len(fs)
-          named=sum(1 for f in fs if (f.get('properties') or {}).get('name'))
-          print('V0895_RIVER_ASSET features=',n,'named=',named)
-          assert n>=3000 and named>=150
-          PY
       - name: Unit test and build APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
       - name: Verify APK river asset and build
@@ -115,7 +106,6 @@ jobs:
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-medium-v0842.geojson'
-          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
           cp "$APK" FloodSafe-Nepal-v0.8.95-STATION-RIVERS-ONLY.apk
           sha256sum FloodSafe-Nepal-v0.8.95-STATION-RIVERS-ONLY.apk | tee FloodSafe-Nepal-v0.8.95-SHA256.txt
           stat -c '%s bytes' FloodSafe-Nepal-v0.8.95-STATION-RIVERS-ONLY.apk

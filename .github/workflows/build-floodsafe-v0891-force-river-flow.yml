@@ -1,4 +1,4 @@
-name: Build FloodSafe v0.8.95 Station Rivers Only APK
+name: Build FloodSafe v0.8.96 Exact Station River Canvas APK
 
 on:
   push:
@@ -11,6 +11,7 @@ on:
       - 'floodsafe-android-app/run_patch_native_v0893.py'
       - 'floodsafe-android-app/patch_native_v0894_river_render_runtime_fix.py'
       - 'floodsafe-android-app/patch_native_v0895_station_rivers_only.py'
+      - 'floodsafe-android-app/patch_native_v0896_exact_tile_canvas_rivers.py'
   workflow_dispatch:
 
 permissions:
@@ -67,22 +68,26 @@ jobs:
         run: python3 floodsafe-android-app/patch_native_v0894_river_render_runtime_fix.py
       - name: Apply v0.8.95 station rivers only
         run: python3 floodsafe-android-app/patch_native_v0895_station_rivers_only.py
-      - name: Verify v0.8.95 source contracts
+      - name: Apply v0.8.96 exact tile + canvas river renderer
+        run: python3 floodsafe-android-app/patch_native_v0896_exact_tile_canvas_rivers.py
+      - name: Verify v0.8.96 source contracts
         shell: bash
         run: |
           set -euo pipefail
           M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
           G='floodsafe-android-app/app/build.gradle'
-          grep -Fq 'V0895_STATION_RIVERS_ONLY_GUARANTEED_SEED' "$M"
-          grep -Fq 'bestAny' "$M"
-          grep -Fq 'd<=18d' "$M"
-          grep -Fq 'fs-v893-station-rivers' "$M"
-          grep -Fq "versionName '0.8.95'" "$G"
-          grep -Fq 'versionCode 115' "$G"
-          echo 'V0895_SOURCE_CONTRACT PASS'
+          grep -Fq 'V0896_EXACT_LOCAL_TILE_STATION_RIVERS' "$M"
+          grep -Fq 'V0896_NATIVE_CANVAS_FLOW_GLOW_GUARANTEE' "$M"
+          grep -Fq 'v879ReadRiverAsset(path)' "$M"
+          grep -Fq 'canvas.drawPath(path,glow)' "$M"
+          grep -Fq 'canvas.drawPath(path,core)' "$M"
+          grep -Fq 'postInvalidateDelayed(80)' "$M"
+          grep -Fq "versionName '0.8.96'" "$G"
+          grep -Fq 'versionCode 116' "$G"
+          echo 'V0896_SOURCE_CONTRACT PASS'
       - name: Bundle source assets
         run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
-      - name: Rebuild Nepal river assets
+      - name: Rebuild and verify exact Nepal river tiles
         shell: bash
         run: |
           set -euo pipefail
@@ -94,25 +99,33 @@ jobs:
           python3 floodsafe-android-app/build_progressive_river_tiers_v0842.py
           python3 floodsafe-android-app/build_progressive_river_names_v0863.py
           python3 floodsafe-android-app/postclip_nepal_display_rivers_v0874.py
-          ASSET=$(find floodsafe-android-app/app/build -path '*/data/nepal-waterways-medium-v0842.geojson' -type f | head -1)
-          test -n "$ASSET" && test -s "$ASSET"
+          TILE=$(find floodsafe-android-app/app/build -path '*/data/nepal-waterways-tiles/7-2.json' -type f | head -1)
+          test -n "$TILE" && test -s "$TILE"
+          python3 - "$TILE" <<'PY'
+          import json,sys
+          o=json.load(open(sys.argv[1],encoding='utf-8'))
+          w=o.get('waterways') or []
+          good=sum(1 for x in w if len(x.get('pts') or [])>=2)
+          print('V0896_EXACT_TILE ways=',len(w),'drawable=',good)
+          assert good>20
+          PY
       - name: Unit test and build APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
-      - name: Verify APK river asset and build
+      - name: Verify APK exact tiles and canvas renderer
         shell: bash
         run: |
           set -euo pipefail
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
           unzip -t "$APK" >/dev/null
-          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-medium-v0842.geojson'
-          cp "$APK" FloodSafe-Nepal-v0.8.95-STATION-RIVERS-ONLY.apk
-          sha256sum FloodSafe-Nepal-v0.8.95-STATION-RIVERS-ONLY.apk | tee FloodSafe-Nepal-v0.8.95-SHA256.txt
-          stat -c '%s bytes' FloodSafe-Nepal-v0.8.95-STATION-RIVERS-ONLY.apk
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/7-2.json'
+          cp "$APK" FloodSafe-Nepal-v0.8.96-EXACT-STATION-RIVER-FLOW.apk
+          sha256sum FloodSafe-Nepal-v0.8.96-EXACT-STATION-RIVER-FLOW.apk | tee FloodSafe-Nepal-v0.8.96-SHA256.txt
+          stat -c '%s bytes' FloodSafe-Nepal-v0.8.96-EXACT-STATION-RIVER-FLOW.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0895-STATION-RIVERS-ONLY
+          name: FloodSafe-Nepal-v0896-EXACT-STATION-RIVER-FLOW
           path: |
-            FloodSafe-Nepal-v0.8.95-STATION-RIVERS-ONLY.apk
-            FloodSafe-Nepal-v0.8.95-SHA256.txt
+            FloodSafe-Nepal-v0.8.96-EXACT-STATION-RIVER-FLOW.apk
+            FloodSafe-Nepal-v0.8.96-SHA256.txt
           retention-days: 14

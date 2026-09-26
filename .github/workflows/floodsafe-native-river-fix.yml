@@ -38,7 +38,8 @@ jobs:
           s = s.replace('private NativeRiverMap map;', 'private FloodSafeNativeMapView map;', 1)
           old = 'map=new NativeRiverMap();holder.addView(map,new FrameLayout.LayoutParams(-1,dp(370)));'
           new = 'map=new FloodSafeNativeMapView(this, stationObject -> { if(stationObject instanceof RiverStation) showStation((RiverStation)stationObject); });holder.addView(map,new FrameLayout.LayoutParams(-1,dp(370)));'
-          if old in s: s = s.replace(old, new, 1)
+          if old in s:
+              s = s.replace(old, new, 1)
           s = s.replace('        loadMapBase();\n', '', 1)
           s = s.replace('case"normal":return Color.rgb(31,164,116);', 'case"normal":return Color.rgb(45,140,255);', 1)
           s = s.replace('case"normal":return"🟢";', 'case"normal":return"🔵";', 1)
@@ -59,7 +60,8 @@ jobs:
 
           for name in ('MainActivity.java', 'VoiceMainActivity.java', 'BundledContent.java'):
               p = src / name
-              if p.exists(): p.unlink()
+              if p.exists():
+                  p.unlink()
 
           g = Path('floodsafe-android-app/app/build.gradle')
           s = g.read_text(encoding='utf-8')
@@ -67,33 +69,35 @@ jobs:
               start = s.index("def bundleWeb = tasks.register('bundleFloodSafe', Copy) {")
               marker = "tasks.named('preBuild').configure { dependsOn bundleWeb }"
               end = s.index(marker, start) + len(marker)
-              native = """def bundleNativeAssets = tasks.register('bundleNativeAssets', Copy) {
-    doFirst { delete generatedFloodSafeAssets.get().asFile }
-    from(rootProject.file('../floodsafe-nepal')) {
-        into 'floodsafe-nepal'
-        include 'v24/nepal-districts.geojson'
-        include 'v24/nepal-districts.json'
-    }
-    from(rootProject.file('../data')) {
-        into 'data'
-        include '**/*.json'
-        include '**/*.geojson'
-    }
-    includeEmptyDirs = false
-    into(generatedFloodSafeAssets)
-    doLast {
-        def forbiddenExtensions = ['.html', '.js', '.mjs', '.webmanifest']
-        def forbidden = fileTree(generatedFloodSafeAssets).files.findAll { f -> forbiddenExtensions.any { ext -> f.name.toLowerCase().endsWith(ext) } }
-        if (!forbidden.isEmpty()) throw new GradleException("Web assets leaked into native package: ${forbidden}")
-        def districts = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v24/nepal-districts.geojson')
-        def overview = new File(generatedFloodSafeAssets.get().asFile, 'data/nepal-waterways-tiles/overview.json')
-        if (!districts.isFile()) throw new GradleException('Native district GeoJSON missing')
-        if (!overview.isFile()) throw new GradleException('Native river overview JSON missing')
-        println 'FloodSafe native assets PASS: JSON/GeoJSON only'
-    }
-}
-tasks.named('preBuild').configure { dependsOn bundleNativeAssets }"""
-              s = s[:start] + native + s[end:]
+              native_lines = [
+                  "def bundleNativeAssets = tasks.register('bundleNativeAssets', Copy) {",
+                  "    doFirst { delete generatedFloodSafeAssets.get().asFile }",
+                  "    from(rootProject.file('../floodsafe-nepal')) {",
+                  "        into 'floodsafe-nepal'",
+                  "        include 'v24/nepal-districts.geojson'",
+                  "        include 'v24/nepal-districts.json'",
+                  "    }",
+                  "    from(rootProject.file('../data')) {",
+                  "        into 'data'",
+                  "        include '**/*.json'",
+                  "        include '**/*.geojson'",
+                  "    }",
+                  "    includeEmptyDirs = false",
+                  "    into(generatedFloodSafeAssets)",
+                  "    doLast {",
+                  "        def forbiddenExtensions = ['.html', '.js', '.mjs', '.webmanifest']",
+                  "        def forbidden = fileTree(generatedFloodSafeAssets).files.findAll { f -> forbiddenExtensions.any { ext -> f.name.toLowerCase().endsWith(ext) } }",
+                  "        if (!forbidden.isEmpty()) throw new GradleException(\"Web assets leaked into native package: ${forbidden}\")",
+                  "        def districts = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v24/nepal-districts.geojson')",
+                  "        def overview = new File(generatedFloodSafeAssets.get().asFile, 'data/nepal-waterways-tiles/overview.json')",
+                  "        if (!districts.isFile()) throw new GradleException('Native district GeoJSON missing')",
+                  "        if (!overview.isFile()) throw new GradleException('Native river overview JSON missing')",
+                  "        println 'FloodSafe native assets PASS: JSON/GeoJSON only'",
+                  "    }",
+                  "}",
+                  "tasks.named('preBuild').configure { dependsOn bundleNativeAssets }",
+              ]
+              s = s[:start] + '\n'.join(native_lines) + s[end:]
           s = s.replace("    implementation 'androidx.webkit:webkit:1.12.1'\n", '')
           g.write_text(s, encoding='utf-8')
 
@@ -102,8 +106,14 @@ tasks.named('preBuild').configure { dependsOn bundleNativeAssets }"""
         run: |
           set -euo pipefail
           SRC=floodsafe-android-app/app/src/main/java
-          if grep -R -n 'android\.webkit\|androidx\.webkit' "$SRC" floodsafe-android-app/app/build.gradle; then echo 'Legacy WebView reference remains' >&2; exit 1; fi
-          if grep -R -n 'VoiceMainActivity\|BundledContent' "$SRC" floodsafe-android-app/app/src/main/AndroidManifest.xml; then echo 'Legacy web activity reference remains' >&2; exit 1; fi
+          if grep -R -n 'android\.webkit\|androidx\.webkit' "$SRC" floodsafe-android-app/app/build.gradle; then
+            echo 'Legacy WebView reference remains' >&2
+            exit 1
+          fi
+          if grep -R -n 'VoiceMainActivity\|BundledContent' "$SRC" floodsafe-android-app/app/src/main/AndroidManifest.xml; then
+            echo 'Legacy web activity reference remains' >&2
+            exit 1
+          fi
           grep -q 'new Intent(this, NativeFullActivity.class)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
           grep -q 'FloodSafeNativeMapView map' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
           grep -q 'new FloodSafeNativeMapView' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
@@ -125,12 +135,20 @@ tasks.named('preBuild').configure { dependsOn bundleNativeAssets }"""
           APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
           test -s "$APK"
           unzip -Z1 "$APK" > /tmp/apk-files.txt
-          if grep -Ei '\.(html|js|mjs|webmanifest)$' /tmp/apk-files.txt; then echo 'Forbidden web bundle file found in APK' >&2; exit 1; fi
+          if grep -Ei '\.(html|js|mjs|webmanifest)$' /tmp/apk-files.txt; then
+            echo 'Forbidden web bundle file found in APK' >&2
+            exit 1
+          fi
           unzip -l "$APK" | grep -q 'assets/data/nepal-waterways-tiles/overview.json'
           unzip -l "$APK" | grep -q 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
           : > /tmp/all-dex-strings.txt
-          while read -r dex; do unzip -p "$APK" "$dex" | strings >> /tmp/all-dex-strings.txt; done < <(grep -E '^classes[0-9]*\.dex$' /tmp/apk-files.txt)
-          if grep -q 'android/webkit/WebView\|androidx/webkit\|VoiceMainActivity\|BundledContent' /tmp/all-dex-strings.txt; then echo 'Legacy WebView code found in classes.dex' >&2; exit 1; fi
+          while read -r dex; do
+            unzip -p "$APK" "$dex" | strings >> /tmp/all-dex-strings.txt
+          done < <(grep -E '^classes[0-9]*\.dex$' /tmp/apk-files.txt)
+          if grep -q 'android/webkit/WebView\|androidx/webkit\|VoiceMainActivity\|BundledContent' /tmp/all-dex-strings.txt; then
+            echo 'Legacy WebView code found in classes.dex' >&2
+            exit 1
+          fi
           grep -q 'FloodSafeNativeMapView' /tmp/all-dex-strings.txt
           grep -q 'fs-river-glow' /tmp/all-dex-strings.txt
           grep -q 'fs-rivers-layer' /tmp/all-dex-strings.txt

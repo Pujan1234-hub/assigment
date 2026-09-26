@@ -1,0 +1,182 @@
+name: FloodSafe v0.9.08 FINAL VERIFIED
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0908-storm-events-compact-gauge ]
+    paths:
+      - '.github/workflows/floodsafe-v0908-final-verified.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Freeze official river data sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          sha256sum "$J/BipadRealtimeStationFeed.java" "$J/OfficialRiverData.java" "$J/DhmRainMirror.java" "$J/FloodMonitorService.java" > /tmp/river.before
+          cp "$J/FloodSafeNativeMapView.java" /tmp/map.before.java
+
+      - name: Rebuild verified v0.9.07 base
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_language_safe.py
+          python3 floodsafe-android-app/patch_native_weather_complete.py
+          python3 floodsafe-android-app/patch_native_weather_station_correction.py
+          python3 floodsafe-android-app/patch_native_v0906_district_196_rain.py
+          python3 floodsafe-android-app/patch_native_v0907_district_click.py
+          grep -Fq "versionName '0.9.07-district-click'" floodsafe-android-app/app/build.gradle
+
+      - name: STEP 1 river popup uses same gauge mapping as colour
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_v0908_step1_river_click.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          before=Path('/tmp/map.before.java').read_text(encoding='utf-8')
+          after=Path('floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java').read_text(encoding='utf-8')
+          pb=r'    private StationDot bestGaugeForRiver\(RiverWay r, double tapLat, double tapLon\) \{.*?    \} // V0899_NO_UNRELATED_NEAREST_GAUGE'
+          pa=r'    private StationDot bestGaugeForRiver\(RiverWay r, double tapLat, double tapLon\) \{.*?    \} // V0908_RIVER_TAP_REUSES_STATUS_MAPPING'
+          b,n1=re.subn(pb,'<METHOD>',before,count=1,flags=re.S)
+          a,n2=re.subn(pa,'<METHOD>',after,count=1,flags=re.S)
+          assert n1==1 and n2==1,(n1,n2)
+          assert a==b,'map changed outside bestGaugeForRiver'
+          PY
+          gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac --no-daemon
+
+      - name: STEP 2 compact district chooser
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_v0908_step2_compact_district.py
+          UI='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          grep -Fq 'V0908_COMPACT_DISTRICT_PICKER' "$UI"
+          grep -Fq 'V0908_ONE_DISTRICT_ONLY' "$UI"
+          grep -Fq 'v0908ShowDistrictPicker' "$UI"
+          gradle -p floodsafe-android-app :app:compileDebugJavaWithJavac --no-daemon
+
+      - name: STEP 3 storm animation and background event notifications
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/fix_v0908_step3_weather_refresh_anchor.py
+          python3 floodsafe-android-app/patch_native_v0908_step3_storm_notifications.py
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          UI="$J/NativeFullActivity.java"
+          MAP="$J/FloodSafeNativeMapView.java"
+          W="$J/WeatherMapOverlayController.java"
+          R="$J/RainAlertWorker.java"
+          B="$J/BipadRealtimeStationFeed.java"
+          grep -Fq 'V0908_RIVER_TAP_REUSES_STATUS_MAPPING' "$MAP"
+          grep -Fq 'V0900_STATUS_COLOURS_LINKED_SEGMENTS_ONLY' "$MAP"
+          grep -Fq 'V0900_TAP_ONLY_MONITORED_RIVERS' "$MAP"
+          grep -Fq 'V0908_COMPACT_DISTRICT_PICKER' "$UI"
+          grep -Fq 'V0908_ONE_DISTRICT_ONLY' "$UI"
+          grep -Fq 'V0908_STORM_LEGEND' "$UI"
+          grep -Fq 'private static final long RIVER_FRESH_MS=10L*60L*1000L;' "$UI"
+          test "$(grep -Fo 'main.postDelayed(weatherRefreshTick,5L*60L*1000L)' "$UI" | wc -l)" -eq 2
+          grep -Fq 'WEATHER_OVERLAY_V5_RAIN_THUNDER_FIELD' "$W"
+          grep -Fq 'fs-weather-lightning-current' "$W"
+          grep -Fq 'weatherCode < 95' "$W"
+          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 2L' "$R"
+          grep -Fq 'last_raining_state' "$R"
+          grep -Fq 'last_thunder_event_key' "$R"
+          grep -Fq 'pastTwoHourRain' "$R"
+          grep -Fq 'new PeriodicWorkRequest.Builder(RainAlertWorker.class,15,TimeUnit.MINUTES)' "$UI"
+          grep -Fq 'V0905_BIPAD_LATEST_PARITY' "$B"
+          grep -Fq 'river-stations/?latest=true&limit=5000' "$B"
+          grep -Fq "versionName '0.9.08-storm-events-compact-gauge'" floodsafe-android-app/app/build.gradle
+          ! grep -Fq 'android.webkit.WebView' "$UI"
+          sha256sum "$J/BipadRealtimeStationFeed.java" "$J/OfficialRiverData.java" "$J/DhmRainMirror.java" "$J/FloodMonitorService.java" > /tmp/river.after
+          cmp /tmp/river.before /tmp/river.after
+          set -o pipefail
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/v0908-final.log
+
+      - name: Verify live BIPAD latest set and 77 districts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,urllib.request,time,pathlib
+          req=urllib.request.Request('https://bipadportal.gov.np/api/v1/river-stations/?latest=true&limit=5000&_v='+str(int(time.time()*1000)),headers={'User-Agent':'FloodSafe-Nepal/v0908-final','Accept':'application/json','Cache-Control':'no-cache'})
+          with urllib.request.urlopen(req,timeout=30) as r: data=json.load(r)
+          rows=data.get('results',data.get('data',[])) if isinstance(data,dict) else data
+          if isinstance(rows,dict): rows=rows.get('results',[])
+          assert isinstance(rows,list) and len(rows)>=190,len(rows)
+          pathlib.Path('/tmp/bipad_count').write_text(str(len(rows)))
+          j=json.loads(pathlib.Path('floodsafe-nepal/v24/nepal-districts.geojson').read_text())
+          fs=j.get('features') or []
+          assert len(fs)==77,len(fs)
+          assert all((f.get('properties') or {}).get('nameEn') for f in fs)
+          print('BIPAD latest=',len(rows),'districts=',len(fs))
+          PY
+
+      - name: Verify signed APK and stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          OUT='FloodSafe-Nepal-v0.9.08-STORM-EVENTS-COMPACT-GAUGE.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          "$APKSIGNER" verify --verbose "$APK"
+          rm -f /tmp/dexstrings
+          while IFS= read -r DEX; do unzip -p "$APK" "$DEX" | strings >> /tmp/dexstrings; done < <(unzip -Z1 "$APK" | grep -E '^classes([0-9]+)?\.dex$')
+          grep -Fq 'FloodSafe Nepal' /tmp/dexstrings
+          grep -Fq 'Choose district' /tmp/dexstrings
+          grep -Fq 'fs-weather-lightning-current' /tmp/dexstrings
+          grep -Fq 'FloodSafe weather events' /tmp/dexstrings
+          cp "$APK" "$OUT"
+          sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.08-SHA256.txt
+          printf '%s\n' \
+            'FloodSafe Nepal v0.9.08 verified stepwise build' \
+            "- BIPAD latest rows checked at build time: $(cat /tmp/bipad_count)" \
+            '- Step 1: coloured river popup reuses the same safe station-to-river mapping as the status colour' \
+            '- Step 2: long district cards replaced by a compact district chooser; one district detail at a time' \
+            '- Step 3: WMO current thunderstorm codes 95-99 drive storm shading and flashing lightning; rain animation retained' \
+            '- Weather model foreground refresh target 5 min; background WorkManager event checks 15 min' \
+            '- Smart weather digest target about 2 hours; Android may defer background work' \
+            '- Rain-stop and thunder model events notify when detected; explicit Android Force Stop can suspend workers' \
+            '- Official BIPAD river Warning/Danger logic and critical river data sources checksum unchanged' \
+            > FloodSafe-Nepal-v0.9.08-NOTES.txt
+
+      - name: Upload final APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0908-FINAL-VERIFIED
+          path: |
+            FloodSafe-Nepal-v0.9.08-STORM-EVENTS-COMPACT-GAUGE.apk
+            FloodSafe-Nepal-v0.9.08-SHA256.txt
+            FloodSafe-Nepal-v0.9.08-NOTES.txt
+          retention-days: 14
+
+      - name: Upload log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0908-final-build-log
+          path: /tmp/v0908-final.log
+          if-no-files-found: ignore
+          retention-days: 2

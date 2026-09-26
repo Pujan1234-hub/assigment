@@ -1,0 +1,34 @@
+name: Export FloodSafe signing tools
+
+on:
+  push:
+    branches: [ feature/floodsafe-v0903-weather-language-safety ]
+    paths:
+      - '.github/workflows/export-floodsafe-signing-tools.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Locate Android build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          BT=$(find "$ANDROID_HOME/build-tools" -maxdepth 1 -mindepth 1 -type d | sort -V | tail -1)
+          echo "Using $BT"
+          mkdir -p /tmp/floodsafe-tools
+          cp "$BT/lib/apksigner.jar" /tmp/floodsafe-tools/apksigner.jar
+          cp "$BT/zipalign" /tmp/floodsafe-tools/zipalign
+          chmod +x /tmp/floodsafe-tools/zipalign
+          java -cp /tmp/floodsafe-tools/apksigner.jar com.android.apksigner.ApkSignerTool version
+          /tmp/floodsafe-tools/zipalign -h >/dev/null 2>&1 || true
+
+      - name: Upload tools
+        uses: actions/upload-artifact@v4
+        with:
+          name: floodsafe-android-signing-tools
+          path: /tmp/floodsafe-tools
+          retention-days: 3

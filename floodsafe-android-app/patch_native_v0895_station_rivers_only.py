@@ -50,25 +50,24 @@ refresh=r'''    private void v893RefreshDedicatedStationRivers(){
                 java.util.LinkedHashMap<String,List<StationDot>> stationsByRiver=new java.util.LinkedHashMap<>();
                 for(StationDot s:ss){
                     if(s==null||!Double.isFinite(s.lat)||!Double.isFinite(s.lon))continue;
-                    String sn=v881Norm(s.name);RiverWay bestName=null,bestNear=null;double dn=Double.POSITIVE_INFINITY,da=Double.POSITIVE_INFINITY;
+                    String sn=v881Norm(s.name);RiverWay bestName=null,bestAny=null;double scoreName=Double.POSITIVE_INFINITY,scoreAny=Double.POSITIVE_INFINITY;
+                    // Guarantee one real river seed for every official station. No cutoff can make the layer empty.
                     for(RiverWay r:all){
                         if(r==null||r.points==null||r.points.size()<2)continue;
-                        boolean plausible=false;int stride=Math.max(1,r.points.size()/12);
-                        for(int pi=0;pi<r.points.size();pi+=stride){double[] q=r.points.get(pi);if(Math.abs(q[1]-s.lat)<0.22&&Math.abs(q[0]-s.lon)<0.26){plausible=true;break;}}
-                        if(!plausible)continue;
-                        double d=v881DistanceToRiverKm(s.lat,s.lon,r);if(!Double.isFinite(d)||d>22d)continue;
+                        double approx=Double.POSITIVE_INFINITY;int stride=Math.max(1,r.points.size()/24);
+                        for(int pi=0;pi<r.points.size();pi+=stride){double[] q=r.points.get(pi);double dy=q[1]-s.lat,dx=(q[0]-s.lon)*Math.cos(Math.toRadians(s.lat));double z=dx*dx+dy*dy;if(z<approx)approx=z;}
                         String rn=v881Norm(r.name);boolean nm=!rn.isEmpty()&&!sn.isEmpty()&&(rn.equals(sn)||rn.contains(sn)||sn.contains(rn));
-                        if(nm&&d<dn){dn=d;bestName=r;}if(d<da){da=d;bestNear=r;}
+                        if(nm&&approx<scoreName){scoreName=approx;bestName=r;}
+                        if(approx<scoreAny){scoreAny=approx;bestAny=r;}
                     }
-                    RiverWay seed=bestName!=null?bestName:bestNear;
+                    RiverWay seed=bestName!=null?bestName:bestAny;
                     if(seed==null)continue;
                     chosen.add(seed);
                     String key=v881Norm(seed.name);
                     if(!key.isEmpty())stationsByRiver.computeIfAbsent(key,k->new ArrayList<>()).add(s);
                 }
 
-                // Expand ONLY around stations bound to that same river name. Do not paint all same-name
-                // geometry across Nepal. This keeps the map to the river corridors actually monitored by BIPAD.
+                // Add only nearby same-river pieces around its monitored stations; never the whole Nepal network.
                 if(!stationsByRiver.isEmpty()){
                     for(RiverWay r:all){
                         if(r==null||r.points==null||r.points.size()<2)continue;
@@ -90,7 +89,7 @@ refresh=r'''    private void v893RefreshDedicatedStationRivers(){
                 if(!v894PendingFingerprint.equals(v894StationGeometryFingerprint))main.post(this::v893RefreshDedicatedStationRivers);
             }
         });
-    } // V0895_STATION_RIVERS_ONLY_18KM_CORRIDOR
+    } // V0895_STATION_RIVERS_ONLY_GUARANTEED_SEED
 '''
 
 m=replace_method(m,'v893RefreshDedicatedStationRivers',refresh)
@@ -98,9 +97,9 @@ m=replace_method(m,'v893RefreshDedicatedStationRivers',refresh)
 g=re.sub(r'versionCode\s+114\b','versionCode 115',g,count=1)
 g=g.replace("versionName '0.8.94'","versionName '0.8.95'",1)
 
-for token in ['V0895_STATION_RIVERS_ONLY_18KM_CORRIDOR','stationsByRiver','d<=18d']:
+for token in ['V0895_STATION_RIVERS_ONLY_GUARANTEED_SEED','bestAny','d<=18d']:
     if token not in m: raise SystemExit('missing '+token)
 if "versionName '0.8.95'" not in g or 'versionCode 115' not in g: raise SystemExit('version bump failed')
 
 m_path.write_text(m,encoding='utf-8');g_path.write_text(g,encoding='utf-8')
-print('v0.8.95 PASS: only monitored station river corridors, no unrelated same-name river network')
+print('v0.8.95 PASS: every official station gets one river seed; only monitored 18km river corridors are rendered')

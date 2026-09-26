@@ -77,6 +77,11 @@ final class FloodSafeNativeMapView extends FrameLayout {
     private final Handler main = new Handler(Looper.getMainLooper());
     private final List<StationDot> stations = new ArrayList<>();
     private final List<RiverWay> rivers = new ArrayList<>();
+    private final List<RiverWay> monitoredRivers = new ArrayList<>(); // V0900_STATION_RIVERS_ONLY
+    private final java.util.Map<String,List<RiverWay>> monitoredByStation = new java.util.HashMap<>();
+    private volatile String stationInventoryFingerprint = "";
+    private volatile String mappedInventoryFingerprint = "";
+    private volatile int monitoredSourceFeatureCount = 0;
     private MapLibreMap map;
     private Style style;
     private boolean styleReady = false;
@@ -102,8 +107,8 @@ final class FloodSafeNativeMapView extends FrameLayout {
             map.setMaxZoomPreference(19.0);
             try {
                 LatLngBounds bounds = new LatLngBounds.Builder()
-                        .include(new LatLng(25.4, 79.2))
-                        .include(new LatLng(31.15, 89.15)).build();
+                        .include(new LatLng(NEPAL_MIN_LAT, NEPAL_MIN_LON))
+                        .include(new LatLng(NEPAL_MAX_LAT, NEPAL_MAX_LON)).build();
                 map.setLatLngBoundsForCameraTarget(bounds);
             } catch (Exception ignored) {}
             map.setStyle(new Style.Builder().fromJson(STYLE_JSON), s -> {
@@ -161,10 +166,17 @@ final class FloodSafeNativeMapView extends FrameLayout {
             stations.clear();
             stations.addAll(next);
         }
+        String inventory = stationInventoryFingerprint(next);
+        boolean inventoryChanged = !inventory.equals(stationInventoryFingerprint);
+        stationInventoryFingerprint = inventory;
+        if (inventoryChanged || !inventory.equals(mappedInventoryFingerprint)) {
+            io.execute(() -> rebuildMonitoredRiverMapping(inventory));
+        }
         refreshStationSources();
         refreshRiskRiverSources();
         refreshUserSource();
-    } // V0899_STATUS_REFRESH_RECOLOURS_MATCHED_RIVER
+    } // V0900_MAP_ON_INVENTORY_CHANGE_ONLY
+ // V0899_STATUS_REFRESH_RECOLOURS_MATCHED_RIVER
 
 
     void zoomBy(float factor) {
@@ -206,15 +218,15 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 }
                 JSONObject root = new JSONObject(raw);
                 JSONArray ways = root.optJSONArray("waterways");
+                List<RiverWay> all = new ArrayList<>();
                 if (ways != null) {
-                    List<RiverWay> all = new ArrayList<>();
                     for (int i = 0; i < ways.length(); i++) {
                         JSONObject w = ways.optJSONObject(i);
                         if (w == null) continue;
                         JSONArray pts = w.optJSONArray("pts");
                         if (pts == null || pts.length() < 2) continue;
                         RiverWay rw = new RiverWay();
-                        rw.name = firstNonEmpty(w.optString("name_ne"), w.optString("name"), w.optString("name_en"), "नदी / खोला");
+                        rw.name = firstNonEmpty(w.optString("name_en"), w.optString("name"), w.optString("name_ne"), "नदी / खोला"); // V0900_BIPAD_NAME_MATCH_PRIORITY
                         rw.type = w.optString("type", "stream");
                         for (int j = 0; j < pts.length(); j++) {
                             JSONArray p = pts.optJSONArray(j);
@@ -224,23 +236,206 @@ final class FloodSafeNativeMapView extends FrameLayout {
                         }
                         if (rw.points.size() >= 2) all.add(rw);
                     }
-                    all.sort(Comparator.comparingInt(FloodSafeNativeMapView::riverScore).reversed());
-                    if (assetPath.contains("snapshot") && all.size() > 3200) {
-                        all = new ArrayList<>(all.subList(0, 3200));
-                    }
-                    synchronized (rivers) {
-                        rivers.clear();
-                        rivers.addAll(all);
-                    }
-                    riversGeoJson = makeRiversGeoJson(all);
-                    android.util.Log.i("FloodSafeRiver", "river_features=" + all.size() + " asset=" + assetPath);
                 }
+                synchronized (rivers) {
+                    rivers.clear();
+                    rivers.addAll(all);
+                }
+                // Critical: never render the candidate/full Nepal mesh.
+                riversGeoJson = emptyFeatureCollection();
+                android.util.Log.i("FloodSafeRiver", "candidate_geometry=" + all.size() + " visible_station_rivers=0 asset=" + assetPath);
+                String inv = stationInventoryFingerprint;
+                if (!inv.isEmpty()) rebuildMonitoredRiverMapping(inv);
             } catch (Exception e) {
-                android.util.Log.e("FloodSafeRiver", "river geometry load failed", e);
+                android.util.Log.e("FloodSafeRiver", "candidate geometry load failed", e);
             }
             main.post(this::installGeoLayers);
         });
-    } // V0899_REAL_BUNDLED_RIVER_GEOMETRY
+    } // V0900_FULL_NETWORK_NEVER_RENDERED
+ // V0899_REAL_BUNDLED_RIVER_GEOMETRY
+    private static String stationInventoryFingerprint(List<StationDot> list) {
+        List<String> parts = new ArrayList<>();
+        if (list != null) for (StationDot s : list) {
+            if (s == null) continue;
+            parts.add(stationKey(s) + "|" + riverKey(!empty(s.riverName) ? s.riverName : riverFromStationTitle(s.name)));
+        }
+        Collections.sort(parts);
+        StringBuilder b = new StringBuilder();
+        for (String p : parts) b.append(p).append('\n');
+        return parts.size() + ":" + Integer.toHexString(b.toString().hashCode());
+    }
+
+    private static String stationKey(StationDot s) {
+        if (s == null) return "";
+        return riverKey(s.name) + "@" + String.format(Locale.US, "%.4f,%.4f", s.lat, s.lon);
+    }
+    private void rebuildMonitoredRiverMapping(String requestedInventory) {
+        if (requestedInventory == null || requestedInventory.isEmpty()) return;
+        if (requestedInventory.equals(mappedInventoryFingerprint) && monitoredSourceFeatureCount > 0) return;
+        final long started = android.os.SystemClock.elapsedRealtime();
+        List<StationDot> ss;
+        List<RiverWay> candidates;
+        synchronized (stations) { ss = new ArrayList<>(stations); }
+        synchronized (rivers) { candidates = new ArrayList<>(rivers); }
+        if (ss.isEmpty() || candidates.isEmpty()) {
+            android.util.Log.i("FloodSafeRiver", "mapping_wait stations=" + ss.size() + " candidates=" + candidates.size());
+            return;
+        }
+
+        java.util.Map<String,List<RiverWay>> byKey = new java.util.HashMap<>();
+        java.util.IdentityHashMap<RiverWay,double[]> bounds = new java.util.IdentityHashMap<>();
+        for (RiverWay r : candidates) {
+            String k = riverKey(r.name);
+            if (!k.isEmpty()) byKey.computeIfAbsent(k, ignored -> new ArrayList<>()).add(r);
+            bounds.put(r, riverBounds(r));
+        }
+        android.util.Log.i("FloodSafeRiver", "mapping_start stations=" + ss.size() + " candidates=" + candidates.size() + " river_keys=" + byKey.size());
+
+        java.util.LinkedHashSet<RiverWay> visible = new java.util.LinkedHashSet<>();
+        java.util.Map<String,List<RiverWay>> byStation = new java.util.HashMap<>();
+        int exact = 0, fallback = 0, unmatched = 0;
+        String sample = "";
+        for (StationDot st : ss) {
+            String wanted = riverKey(!empty(st.riverName) ? st.riverName : riverFromStationTitle(st.name));
+            List<RiverWay> family = candidateFamily(wanted, byKey);
+            RiverWay seed = seedRiverForStation(st, family, bounds, candidates);
+            if (seed == null) { unmatched++; continue; }
+            boolean named = !family.isEmpty() && family.contains(seed) && !wanted.isEmpty()
+                    && sameRiverKey(wanted, riverKey(seed.name));
+            if (named) exact++; else fallback++;
+            List<RiverWay> local = localConnectedRiverSegments(st, seed, family, named);
+            if (local.isEmpty()) local = Collections.singletonList(seed);
+            visible.addAll(local);
+            byStation.put(stationKey(st), new ArrayList<>(local));
+            String probe = ((st.name == null ? "" : st.name) + " " + (st.riverName == null ? "" : st.riverName)).toLowerCase(Locale.ROOT);
+            if (sample.isEmpty() && (probe.contains("bagmati") || probe.contains("gaurighat"))) {
+                sample = st.name + " -> " + seed.name + " segments=" + local.size();
+            }
+        }
+        if (!requestedInventory.equals(stationInventoryFingerprint)) return;
+        List<RiverWay> next = new ArrayList<>(visible);
+        String geo = makeRiversGeoJsonSafe(next);
+        synchronized (monitoredRivers) {
+            monitoredRivers.clear();
+            monitoredRivers.addAll(next);
+        }
+        synchronized (monitoredByStation) {
+            monitoredByStation.clear();
+            monitoredByStation.putAll(byStation);
+        }
+        riversGeoJson = geo;
+        monitoredSourceFeatureCount = next.size();
+        mappedInventoryFingerprint = requestedInventory;
+        long elapsed = android.os.SystemClock.elapsedRealtime() - started;
+        android.util.Log.i("FloodSafeRiver", "station_linked_features=" + next.size() + " stations=" + ss.size()
+                + " exact=" + exact + " coordinate_fallback=" + fallback + " unmatched=" + unmatched
+                + " mapping_ms=" + elapsed + (sample.isEmpty() ? "" : " sample=" + sample));
+        main.post(() -> {
+            if (styleReady && style != null) {
+                if (style.getSource("fs-rivers") == null) installGeoLayers();
+                setGeo("fs-rivers", riversGeoJson);
+                refreshRiskRiverSources();
+            }
+        });
+    } // V0901_FAST_STATION_MAPPING
+ // V0900_BUILD_MAPPING_ONCE
+    private static List<RiverWay> candidateFamily(String wanted, java.util.Map<String,List<RiverWay>> byKey) {
+        if (wanted == null || wanted.isEmpty() || byKey == null || byKey.isEmpty()) return Collections.emptyList();
+        List<RiverWay> exact = byKey.get(wanted);
+        if (exact != null && !exact.isEmpty()) return new ArrayList<>(exact);
+        java.util.LinkedHashSet<RiverWay> out = new java.util.LinkedHashSet<>();
+        for (java.util.Map.Entry<String,List<RiverWay>> e : byKey.entrySet()) {
+            if (sameRiverKey(wanted, e.getKey())) out.addAll(e.getValue());
+        }
+        return new ArrayList<>(out);
+    }
+
+    private static double[] riverBounds(RiverWay r) {
+        double minLat = Double.POSITIVE_INFINITY, maxLat = Double.NEGATIVE_INFINITY;
+        double minLon = Double.POSITIVE_INFINITY, maxLon = Double.NEGATIVE_INFINITY;
+        if (r != null) for (double[] p : r.points) {
+            if (p == null || p.length < 2) continue;
+            minLon = Math.min(minLon, p[0]); maxLon = Math.max(maxLon, p[0]);
+            minLat = Math.min(minLat, p[1]); maxLat = Math.max(maxLat, p[1]);
+        }
+        return new double[]{minLat, maxLat, minLon, maxLon};
+    }
+
+    private static boolean boundsNear(double lat, double lon, double[] b, double padKm) {
+        if (b == null || b.length < 4 || !Double.isFinite(b[0])) return false;
+        double latPad = padKm / 110.574;
+        double cos = Math.max(0.25, Math.cos(Math.toRadians(lat)));
+        double lonPad = padKm / (111.320 * cos);
+        return lat >= b[0] - latPad && lat <= b[1] + latPad
+                && lon >= b[2] - lonPad && lon <= b[3] + lonPad;
+    }
+
+    private RiverWay seedRiverForStation(StationDot st, List<RiverWay> family,
+                                          java.util.IdentityHashMap<RiverWay,double[]> bounds,
+                                          List<RiverWay> candidates) {
+        if (st == null) return null;
+        RiverWay best = null;
+        double bestD = Double.POSITIVE_INFINITY;
+        if (family != null) {
+            for (RiverWay r : family) {
+                double d = distanceToRiverKm(st.lat, st.lon, r);
+                if (Double.isFinite(d) && d < bestD) { bestD = d; best = r; }
+            }
+            if (best != null && bestD <= 10.0) return best;
+        }
+        // Strict coordinate fallback. Cheap bounds reject avoids millions of segment calculations.
+        best = null; bestD = Double.POSITIVE_INFINITY;
+        if (candidates != null) for (RiverWay r : candidates) {
+            if (!boundsNear(st.lat, st.lon, bounds.get(r), 1.15)) continue;
+            double d = distanceToRiverKm(st.lat, st.lon, r);
+            if (Double.isFinite(d) && d < bestD) { bestD = d; best = r; }
+        }
+        return bestD <= 0.85 ? best : null;
+    } // V0901_NAME_INDEX_BOUNDS_FALLBACK
+ // V0900_NAME_FIRST_STRICT_COORD_FALLBACK
+    private List<RiverWay> localConnectedRiverSegments(StationDot st, RiverWay seed, List<RiverWay> family, boolean namedMatch) {
+        java.util.LinkedHashSet<RiverWay> out = new java.util.LinkedHashSet<>();
+        out.add(seed);
+        if (!namedMatch || family == null || family.isEmpty()) return new ArrayList<>(out);
+        java.util.IdentityHashMap<RiverWay,Double> stationDistance = new java.util.IdentityHashMap<>();
+        for (RiverWay r : family) stationDistance.put(r, distanceToRiverKm(st.lat, st.lon, r));
+        for (int round = 0; round < 5; round++) {
+            boolean changed = false;
+            List<RiverWay> current = new ArrayList<>(out);
+            for (RiverWay r : family) {
+                if (out.contains(r)) continue;
+                Double stationD = stationDistance.get(r);
+                if (stationD == null || !Double.isFinite(stationD) || stationD > 35.0) continue;
+                boolean connected = stationD <= 2.0;
+                if (!connected) {
+                    for (RiverWay have : current) {
+                        if (riverGapKm(have, r) <= 1.25) { connected = true; break; }
+                    }
+                }
+                if (connected) { out.add(r); changed = true; }
+            }
+            if (!changed) break;
+        }
+        return new ArrayList<>(out);
+    } // V0901_LOCAL_FAMILY_ONLY
+ // V0900_LOCAL_SAME_RIVER_ONLY
+
+    private static double riverGapKm(RiverWay a, RiverWay b) {
+        if (a == null || b == null || a.points.isEmpty() || b.points.isEmpty()) return Double.POSITIVE_INFINITY;
+        double best = Double.POSITIVE_INFINITY;
+        double[][] ae = {a.points.get(0), a.points.get(a.points.size()-1)};
+        double[][] be = {b.points.get(0), b.points.get(b.points.size()-1)};
+        for (double[] x : ae) for (double[] y : be) best = Math.min(best, km(x[1], x[0], y[1], y[0]));
+        return best;
+    }
+
+    private List<RiverWay> stationSegments(StationDot s) {
+        if (s == null) return Collections.emptyList();
+        synchronized (monitoredByStation) {
+            List<RiverWay> found = monitoredByStation.get(stationKey(s));
+            return found == null ? Collections.emptyList() : new ArrayList<>(found);
+        }
+    }
     private void installGeoLayers() {
         if (!styleReady || style == null) return;
         try {
@@ -251,13 +446,13 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 style.addLayer(new LineLayer("fs-district-lines", "fs-districts").withProperties(
                         lineColor("#e8fbff"), lineWidth(1.05f), lineOpacity(0.74f), lineJoin(LINE_JOIN_ROUND)));
             }
-            if (riversGeoJson != null && style.getSource("fs-rivers") == null) {
-                style.addSource(new GeoJsonSource("fs-rivers", riversGeoJson));
+            if (style.getSource("fs-rivers") == null) {
+                style.addSource(new GeoJsonSource("fs-rivers", riversGeoJson == null ? emptyFeatureCollection() : riversGeoJson));
                 style.addLayer(new LineLayer("fs-river-glow", "fs-rivers").withProperties(
-                        lineColor("#007ea6"), lineWidth(5.4f), lineOpacity(0.48f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
+                        lineColor("#007ea6"), lineWidth(5.8f), lineOpacity(0.50f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
                 style.addLayer(new LineLayer("fs-rivers-layer", "fs-rivers").withProperties(
-                        lineColor("#42ddff"), lineWidth(2.15f), lineOpacity(0.98f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
-                android.util.Log.i("FloodSafeRiver", "river layers active: glow+core");
+                        lineColor("#42ddff"), lineWidth(2.35f), lineOpacity(0.99f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
+                android.util.Log.i("FloodSafeRiver", "station-only river layers active glow=5.8/0.50 core=2.35/0.99");
             }
             ensureLineSource("fs-river-alert-risk", "fs-river-alert-risk-layer", "#ffd43b", 3.4f, 0.98f);
             ensureLineSource("fs-river-warning-risk", "fs-river-warning-risk-layer", "#ff8a1f", 4.0f, 1f);
@@ -275,13 +470,15 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 style.addLayer(new CircleLayer("fs-user-layer", "fs-user").withProperties(
                         circleColor("#0b7fd0"), circleRadius(5.7f), circleStrokeColor("#ffffff"), circleStrokeWidth(1.5f)));
             }
+            if (riversGeoJson != null) setGeo("fs-rivers", riversGeoJson);
             refreshStationSources();
             refreshRiskRiverSources();
             refreshUserSource();
         } catch (Exception e) {
-            android.util.Log.e("FloodSafeRiver", "layer install failed", e);
+            android.util.Log.e("FloodSafeRiver", "station-only layer install failed", e);
         }
-    } // V0899_VISIBLE_GLOW_CORE_STATUS_LAYERS
+    } // V0900_VISIBLE_SOURCE_IS_MONITORED_ONLY
+ // V0899_VISIBLE_GLOW_CORE_STATUS_LAYERS
 
 
     private void ensurePointSource(String sourceId, String layerId, String color, float radius, float opacity) {
@@ -361,36 +558,38 @@ final class FloodSafeNativeMapView extends FrameLayout {
         return best;
     }
     private RiverWay nearestRiver(double la, double lo, double thresholdKm) {
-        RiverWay best = null;
-        double d = Double.MAX_VALUE;
-        synchronized (rivers) {
-            for (RiverWay r : rivers) {
+        RiverWay best = null; double d = Double.MAX_VALUE;
+        synchronized (monitoredRivers) {
+            for (RiverWay r : monitoredRivers) {
                 double x = distanceToRiverKm(la, lo, r);
                 if (x < d) { d = x; best = r; }
             }
         }
         return d <= thresholdKm ? best : null;
-    } // V0899_SEGMENT_BASED_RIVER_TAP
+    } // V0900_TAP_ONLY_MONITORED_RIVERS
+ // V0899_SEGMENT_BASED_RIVER_TAP
     private void refreshRiskRiverSources() {
-        if (!styleReady || style == null || rivers.isEmpty()) return;
-        List<RiverWay> alert = new ArrayList<>(), warning = new ArrayList<>(), danger = new ArrayList<>();
+        if (!styleReady || style == null) return;
+        java.util.LinkedHashSet<RiverWay> alert = new java.util.LinkedHashSet<>();
+        java.util.LinkedHashSet<RiverWay> warning = new java.util.LinkedHashSet<>();
+        java.util.LinkedHashSet<RiverWay> danger = new java.util.LinkedHashSet<>();
         List<StationDot> snapshot;
         synchronized (stations) { snapshot = new ArrayList<>(stations); }
         for (StationDot s : snapshot) {
             if (s == null || !s.fresh) continue;
             String group = normalizeStage(s.stage);
             if (!("alert".equals(group) || "warning".equals(group) || "danger".equals(group))) continue;
-            RiverWay r = matchedRiverForStation(s);
-            if (r == null) continue;
-            List<RiverWay> target = "danger".equals(group) ? danger : ("warning".equals(group) ? warning : alert);
-            if (!target.contains(r)) target.add(r);
+            List<RiverWay> linked = stationSegments(s);
+            if (linked.isEmpty()) continue;
+            if ("danger".equals(group)) danger.addAll(linked);
+            else if ("warning".equals(group)) warning.addAll(linked);
+            else alert.addAll(linked);
         }
-        setGeo("fs-river-alert-risk", makeRiversGeoJsonSafe(alert));
-        setGeo("fs-river-warning-risk", makeRiversGeoJsonSafe(warning));
-        setGeo("fs-river-danger-risk", makeRiversGeoJsonSafe(danger));
-        android.util.Log.i("FloodSafeRiver", "status_coloured_rivers=" + (alert.size() + warning.size() + danger.size())
-                + " alert=" + alert.size() + " warning=" + warning.size() + " danger=" + danger.size());
-    } // V0899_FRESH_MATCHED_RIVER_STATUS_ONLY
+        setGeo("fs-river-alert-risk", makeRiversGeoJsonSafe(new ArrayList<>(alert)));
+        setGeo("fs-river-warning-risk", makeRiversGeoJsonSafe(new ArrayList<>(warning)));
+        setGeo("fs-river-danger-risk", makeRiversGeoJsonSafe(new ArrayList<>(danger)));
+    } // V0900_STATUS_COLOURS_LINKED_SEGMENTS_ONLY
+ // V0899_FRESH_MATCHED_RIVER_STATUS_ONLY
 
     double distanceToMatchedRiverKm(Object stationObject, double la, double lo) {
         StationDot s = readStation(stationObject);
@@ -398,26 +597,12 @@ final class FloodSafeNativeMapView extends FrameLayout {
         RiverWay r = matchedRiverForStation(s);
         return r == null ? Double.NaN : distanceToRiverKm(la, lo, r);
     } // V0899_FOREGROUND_2KM_GEOMETRY_DISTANCE
-
     private RiverWay matchedRiverForStation(StationDot s) {
-        if (s == null) return null;
-        String wanted = riverKey(!empty(s.riverName) ? s.riverName : riverFromStationTitle(s.name));
-        if (wanted.isEmpty()) return null;
-        RiverWay best = null;
-        double bestDistance = Double.POSITIVE_INFINITY;
-        synchronized (rivers) {
-            for (RiverWay r : rivers) {
-                String rk = riverKey(r.name);
-                if (!sameRiverKey(wanted, rk)) continue;
-                double d = distanceToRiverKm(s.lat, s.lon, r);
-                if (Double.isFinite(d) && d <= 8.0 && d < bestDistance) {
-                    best = r;
-                    bestDistance = d;
-                }
-            }
-        }
-        return best;
-    }
+        List<RiverWay> linked = stationSegments(s);
+        if (!linked.isEmpty()) return linked.get(0);
+        return null;
+    } // V0900_REUSE_PREBUILT_STATION_MAPPING
+
 
     private StationDot bestGaugeForRiver(RiverWay r, double tapLat, double tapLon) {
         if (r == null) return null;
@@ -532,43 +717,33 @@ final class FloodSafeNativeMapView extends FrameLayout {
         @Override public void run() {
             if (!animationRunning || !styleReady || style == null) return;
             try {
+                List<RiverWay> visible;
+                synchronized (monitoredRivers) { visible = new ArrayList<>(monitoredRivers); }
                 JSONArray features = new JSONArray();
-                List<RiverWay> snapshot;
-                synchronized (rivers) { snapshot = new ArrayList<>(rivers); }
-                int n = Math.min(90, snapshot.size());
-                double phase = ((System.currentTimeMillis() - particleStart) % 7000L) / 7000.0;
+                int n = visible.size();
+                double phase = ((System.currentTimeMillis() - particleStart) % 5600L) / 5600.0;
                 for (int i = 0; i < n; i++) {
-                    int ri = n <= 1 ? 0 : (int)Math.floor(i * (snapshot.size() - 1.0) / (n - 1.0));
-                    RiverWay r = snapshot.get(Math.max(0, Math.min(snapshot.size() - 1, ri)));
+                    RiverWay r = visible.get(i);
                     if (r.points.size() < 2) continue;
-                    for (int p = 0; p < 3; p++) {
-                        double localPhase = (phase + p / 3.0 + i * 0.071) % 1.0;
-                        double v = localPhase * (r.points.size() - 1);
-                        int ix = Math.min(r.points.size() - 2, (int)Math.floor(v));
-                        double f = v - ix;
-                        double[] aa = r.points.get(ix), bb = r.points.get(ix + 1);
-                        double x = aa[0] + (bb[0] - aa[0]) * f;
-                        double y = aa[1] + (bb[1] - aa[1]) * f;
-                        features.put(pointFeature(x, y, "flow"));
-                    }
+                    double v = ((phase + i * 0.137) % 1.0) * (r.points.size() - 1);
+                    int ix = Math.min(r.points.size() - 2, (int)Math.floor(v));
+                    double f = v - ix;
+                    double[] a = r.points.get(ix), b = r.points.get(ix + 1);
+                    double lo = a[0] + (b[0] - a[0]) * f, la = a[1] + (b[1] - a[1]) * f;
+                    features.put(pointFeature(lo, la, "flow"));
                 }
-                setGeo("fs-flow-particles", new JSONObject().put("type", "FeatureCollection").put("features", features).toString());
-                double wave = 0.5 + 0.5 * Math.sin(System.currentTimeMillis() / 520.0);
-                LineLayer glow = style.getLayerAs("fs-river-glow");
-                if (glow != null) glow.setProperties(lineOpacity((float)(0.40 + 0.15 * wave)), lineWidth((float)(5.0 + 0.9 * wave)));
-                LineLayer core = style.getLayerAs("fs-rivers-layer");
-                if (core != null) core.setProperties(lineOpacity((float)(0.92 + 0.07 * wave)), lineWidth((float)(2.0 + 0.28 * wave)));
+                JSONObject fc = new JSONObject().put("type", "FeatureCollection").put("features", features);
+                setGeo("fs-flow-particles", fc.toString());
                 animationFrameCount++;
-                if (animationFrameCount % 60L == 0L) {
-                    android.util.Log.i("FloodSafeRiver", "flow_animation_frames=" + animationFrameCount
-                            + " moving_particles=" + features.length() + " active_flow_layer=fs-flow-particles-layer");
+                if (animationFrameCount == 1 || animationFrameCount % 30L == 0L) {
+                    android.util.Log.i("FloodSafeRiver", "flow_frame=" + animationFrameCount + " animated_station_features=" + n
+                            + " source_features=" + monitoredSourceFeatureCount);
                 }
-            } catch (Exception e) {
-                android.util.Log.w("FloodSafeRiver", "flow animation frame failed", e);
-            }
-            main.postDelayed(this, 220L);
+            } catch (Exception ignored) {}
+            main.postDelayed(this, 180L);
         }
-    }; // V0899_VISIBLE_MOVING_FLOW_ON_REAL_RIVERS
+    }; // V0900_ANIMATION_MONITORED_SOURCE_ONLY
+
     private StationDot readStation(Object o) {
         if (o == null) return null;
         try {
@@ -661,7 +836,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
     private static int riverScore(RiverWay r) {
         int n = r.points.size(); return ("river".equalsIgnoreCase(r.type) ? 160 : 0) + Math.min(90, n * 2) + (r.name == null ? 0 : 70);
     }
-    private static boolean isNepalish(double la, double lo) { return la >= 25.4 && la <= 31.15 && lo >= 79.2 && lo <= 89.15; }
+    private static boolean isNepalish(double la, double lo) { return la >= NEPAL_MIN_LAT && la <= NEPAL_MAX_LAT && lo >= NEPAL_MIN_LON && lo <= NEPAL_MAX_LON; } // V0900_STRICT_NEPAL_BOUNDS
     private static double km(double a, double b, double c, double d) {
         double R = 6371.0, p1=Math.toRadians(a), p2=Math.toRadians(c), dp=Math.toRadians(c-a), dl=Math.toRadians(d-b);
         double q=Math.sin(dp/2)*Math.sin(dp/2)+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)*Math.sin(dl/2);

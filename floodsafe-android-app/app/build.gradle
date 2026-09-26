@@ -8,10 +8,10 @@ def releaseStorePassword = System.getenv('FLOODSAFE_KEYSTORE_PASSWORD')
 def releaseKeyAlias = System.getenv('FLOODSAFE_KEY_ALIAS')
 def releaseKeyPassword = System.getenv('FLOODSAFE_KEY_PASSWORD')
 def hasReleaseSigning = [
-    releaseKeystorePath,
-    releaseStorePassword,
-    releaseKeyAlias,
-    releaseKeyPassword
+        releaseKeystorePath,
+        releaseStorePassword,
+        releaseKeyAlias,
+        releaseKeyPassword
 ].every { it != null && !it.trim().isEmpty() }
 
 android {
@@ -22,8 +22,8 @@ android {
         applicationId 'io.github.pujan1234hub.floodsafe.app'
         minSdk 26
         targetSdk 36
-        versionCode 14
-        versionName '0.7.0'
+        versionCode 15
+        versionName '0.8.98-native'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
@@ -39,10 +39,15 @@ android {
     }
 
     buildTypes {
-        debug { minifyEnabled false }
-        release {
-            minifyEnabled false
+        debug {
+            minifyEnabled true
             shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (hasReleaseSigning) signingConfig signingConfigs.release
         }
     }
@@ -51,128 +56,57 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
     sourceSets.main.assets.srcDir(layout.buildDirectory.dir('generated/floodsafe-assets'))
     lint { abortOnError = true }
 }
 
 def generatedFloodSafeAssets = layout.buildDirectory.dir('generated/floodsafe-assets')
 
-def bundleWeb = tasks.register('bundleFloodSafe', Copy) {
+def bundleNativeAssets = tasks.register('bundleNativeAssets', Copy) {
     doFirst { delete generatedFloodSafeAssets.get().asFile }
+
     from(rootProject.file('../floodsafe-nepal')) {
         into 'floodsafe-nepal'
-        exclude 'v25/rain-push-v1.js'
-        exclude 'v25/human-bootstrap.js'
-        exclude 'v25/human-current-guard.js'
-        exclude 'v25/human-final.js'
-        exclude 'v25/human-final-v2.js'
-        exclude 'v25/people.html'
-        exclude 'v25/impact-live-v1.js'
-        exclude 'v25/disaster-monitor-v2.js'
-        exclude 'v24/v24-people-status.js'
+        include 'v24/nepal-districts.geojson'
+        include 'v24/nepal-districts.json'
     }
+
     from(rootProject.file('../data')) {
         into 'data'
-        exclude 'floodsafe-people-status.json'
+        include '**/*.json'
+        include '**/*.geojson'
     }
-    from(rootProject.file('android-web')) { into 'floodsafe-nepal/v25' }
+
     includeEmptyDirs = false
     into(generatedFloodSafeAssets)
+
     doLast {
-        def entry = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/index.html')
-        if (!entry.isFile()) throw new GradleException('Missing packaged FloodSafe v25 index.html')
-        def text = entry.getText('UTF-8')
-        text = text.replaceFirst('(?s)<section class="card" id="impact"[^>]*>.*?</section>', '')
-        text = text.replaceFirst('<script src="\\./impact-live-v1\\.js\\?v=\\d+" defer></script>', '')
-        text = text.replaceFirst('(?s)<section class="card" id="disasterStatus"[^>]*>.*?</section>', '')
-        text = text.replaceFirst('<script src="\\./disaster-monitor-v2\\.js\\?v=\\d+" defer></script>', '')
-
-        // Keep official river requests simple in Android WebView.
-        def riverMarker = '<script src="./trusted-river-runtime-v3.js'
-        if (!text.contains(riverMarker)) throw new GradleException('Trusted river runtime marker missing from Android entry')
-        if (!text.contains('android-cors-fetch-fix.js')) {
-            text = text.replace(riverMarker,
-                    '<script src="./android-cors-fetch-fix.js?v=1"></script>' + riverMarker)
+        def forbiddenExtensions = ['.html', '.js', '.mjs', '.webmanifest']
+        def forbidden = fileTree(generatedFloodSafeAssets).files.findAll { f ->
+            forbiddenExtensions.any { ext -> f.name.toLowerCase().endsWith(ext) }
+        }
+        if (!forbidden.isEmpty()) {
+            throw new GradleException("Web assets leaked into native package: ${forbidden}")
         }
 
-        // Restore the proven latest-official display behavior. Native push/worker
-        // safety remains strict (fresh verified warning/danger + 2 km); this only
-        // controls what the river map/card displays.
-        text = text.replaceFirst('<script src="\\./official-stale-safety-v1\\.js\\?v=\\d+" defer></script>', '')
-        def rainMarker = '<script src="./trusted-rain-runtime-v1.js'
-        if (!text.contains(rainMarker)) throw new GradleException('Trusted rain runtime marker missing from Android entry')
-        if (!text.contains('latest-official-display-policy-v1.js')) {
-            text = text.replace(rainMarker,
-                    '<script src="./latest-official-display-policy-v1.js?v=1" defer></script>' + rainMarker)
-        }
-
-        // If the user previously chose Current Location, do not briefly render
-        // saved Nepal weather while fresh GPS is still resolving. Also restore
-        // the last valid GPS/weather card for up to 30 minutes while refreshing.
-        def rainTimingMarker = '<script type="module" src="./rain-timing-v4.js'
-        if (!text.contains(rainTimingMarker)) throw new GradleException('Rain timing marker missing from Android entry')
-        if (!text.contains('weather-startup-guard-v1.js')) {
-            text = text.replace(rainTimingMarker,
-                    '<script src="./weather-startup-guard-v1.js?v=1" defer></script>' + rainTimingMarker)
-        }
-        if (!text.contains('startup-cache-30m-v1.js')) {
-            text = text.replace(rainTimingMarker,
-                    '<script src="./startup-cache-30m-v1.js?v=1" defer></script>' + rainTimingMarker)
-        }
-
-        // River panel colors must communicate status, not imply safety: normal blue,
-        // watch yellow, warning orange, danger red, stale/unknown non-green.
-        if (!text.contains('river-status-color-fix-v1.js')) {
-            text = text.replace('</body>',
-                    '<script src="./river-status-color-fix-v1.js?v=1" defer></script></body>')
-        }
-
-        entry.write(text, 'UTF-8')
-        if (!text.contains('android-cors-fetch-fix.js?v=1')) throw new GradleException('Android river CORS guard missing from packaged entry')
-        if (text.indexOf('android-cors-fetch-fix.js?v=1') > text.indexOf('trusted-river-runtime-v3.js')) throw new GradleException('Android river CORS guard loaded after river runtime')
-        if (!text.contains('latest-official-display-policy-v1.js?v=1')) throw new GradleException('Latest official river display policy missing from packaged entry')
-        if (text.contains('official-stale-safety-v1.js')) throw new GradleException('Strict display-only stale guard still packaged')
-        if (!text.contains('weather-startup-guard-v1.js?v=1')) throw new GradleException('GPS weather startup guard missing from packaged entry')
-        if (!text.contains('startup-cache-30m-v1.js?v=1')) throw new GradleException('30-minute GPS/weather startup cache missing from packaged entry')
-        if (!text.contains('river-status-color-fix-v1.js?v=1')) throw new GradleException('River status color fix missing from packaged entry')
-        if (!text.contains('rain-timing-v4.js')) throw new GradleException('Rain timing runtime missing from packaged entry')
-        def corsGuard = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/android-cors-fetch-fix.js')
-        if (!corsGuard.isFile() || corsGuard.length() == 0) throw new GradleException('Android river CORS guard asset missing')
-        def riverDisplay = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/latest-official-display-policy-v1.js')
-        if (!riverDisplay.isFile() || riverDisplay.length() == 0) throw new GradleException('Latest river display policy asset missing')
-        def weatherGuard = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/weather-startup-guard-v1.js')
-        if (!weatherGuard.isFile() || weatherGuard.length() == 0) throw new GradleException('Weather startup guard asset missing')
-        def startupCache = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/startup-cache-30m-v1.js')
-        if (!startupCache.isFile() || startupCache.length() == 0) throw new GradleException('30-minute startup cache asset missing')
-        def riverColors = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/river-status-color-fix-v1.js')
-        if (!riverColors.isFile() || riverColors.length() == 0) throw new GradleException('River status color fix asset missing')
-        if (text.contains('android-river-reading-recovery.js')) throw new GradleException('Obsolete direct river recovery still loaded')
-        if (text.contains('id="impact"') || text.contains('impact-live-v1.js') || text.contains('बाढीको मानवीय असर')) throw new GradleException('Legacy Human Status UI remained in packaged v25 index')
-        if (text.contains('id="disasterStatus"') || text.contains('disaster-monitor-v2.js')) throw new GradleException('Duplicate disaster/news card remained in packaged v25 index')
-        if (!text.contains('id="humanStatus"') || !text.contains('human-status-v1.js?v=1')) throw new GradleException('Dynamic 10-day Human Status missing from Android bundle')
-        if (!text.contains('id="bulletin"') || !text.contains('news-live-v5.js?v=17')) throw new GradleException('Primary Nepal news bulletin was removed unexpectedly')
-        if (!text.contains('href="./privacy.html"')) throw new GradleException('In-app privacy policy link missing from packaged v25 index')
-        def privacy = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/privacy.html')
-        if (!privacy.isFile() || privacy.length() == 0) throw new GradleException('Privacy policy missing from Android bundle')
-        if (!text.contains('sathi-flood-ai/advanced-server-v1.js?v=1')) throw new GradleException('Grounded SATHI AI bridge missing from packaged v25 index')
-        def advancedAi = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/sathi-flood-ai/advanced-server-v1.js')
-        if (!advancedAi.isFile() || advancedAi.length() == 0) throw new GradleException('Grounded SATHI AI bridge asset missing from Android bundle')
-        def humanStatus = new File(generatedFloodSafeAssets.get().asFile, 'floodsafe-nepal/v25/human-status-v1.js')
-        if (!humanStatus.isFile() || humanStatus.length() == 0) throw new GradleException('Dynamic Human Status asset missing from Android bundle')
-        def forbidden = ['floodsafe-nepal/v25/human-bootstrap.js','floodsafe-nepal/v25/human-current-guard.js','floodsafe-nepal/v25/human-final.js','floodsafe-nepal/v25/human-final-v2.js','floodsafe-nepal/v25/people.html','floodsafe-nepal/v25/impact-live-v1.js','floodsafe-nepal/v25/disaster-monitor-v2.js','floodsafe-nepal/v24/v24-people-status.js','data/floodsafe-people-status.json']
-        forbidden.each { relative -> if (new File(generatedFloodSafeAssets.get().asFile, relative).exists()) throw new GradleException("Forbidden legacy/duplicate asset was packaged: ${relative}") }
-        println 'Android FloodSafe bundle PASS: working river display + strict native alert safety + 30m GPS weather startup cache + corrected river colors'
+        def districts = new File(generatedFloodSafeAssets.get().asFile,
+                'floodsafe-nepal/v24/nepal-districts.geojson')
+        def overview = new File(generatedFloodSafeAssets.get().asFile,
+                'data/nepal-waterways-tiles/overview.json')
+        if (!districts.isFile()) throw new GradleException('Native district GeoJSON missing')
+        if (!overview.isFile()) throw new GradleException('Native river overview JSON missing')
+        println 'FloodSafe native assets PASS: JSON/GeoJSON only'
     }
 }
-tasks.named('preBuild').configure { dependsOn bundleWeb }
+
+tasks.named('preBuild').configure { dependsOn bundleNativeAssets }
 
 dependencies {
-    implementation 'androidx.webkit:webkit:1.12.1'
     implementation 'com.google.firebase:firebase-messaging:24.1.1'
     implementation 'androidx.work:work-runtime:2.9.1'
-    // Native map view already imports org.maplibre.android.*. Keep OpenGL for the
-    // widest Android/emulator compatibility; Maven Central publishes this official SDK.
     implementation 'org.maplibre.gl:android-sdk-opengl:13.6.1'
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'

@@ -1,4 +1,4 @@
-name: FloodSafe v0 Weather + Station Corrected Build
+name: FloodSafe v0.9.03 BIPAD + Cloud Area Fix
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
       - 'floodsafe-android-app/patch_native_weather_complete.py'
       - 'floodsafe-android-app/patch_native_weather_station_correction.py'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/WeatherMapOverlayController.java'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/BipadRealtimeStationFeed.java'
   workflow_dispatch:
 
 permissions:
@@ -30,7 +31,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Freeze map and river implementation hashes
+      - name: Freeze existing map and river implementation hashes
         shell: bash
         run: |
           set -euo pipefail
@@ -45,13 +46,13 @@ jobs:
       - name: Apply proven language patch
         run: python3 floodsafe-android-app/patch_native_language_safe.py
 
-      - name: Apply GPS district weather model and map overlay patch
+      - name: Apply GPS weather model patch
         run: python3 floodsafe-android-app/patch_native_weather_complete.py
 
-      - name: Correct weather placement and restore official station truth chain
+      - name: Restore v0 BIPAD station catch and map-only weather
         run: python3 floodsafe-android-app/patch_native_weather_station_correction.py
 
-      - name: Enforce map river freeze and corrected scope
+      - name: Enforce frozen map and v0.9.03 correction scope
         shell: bash
         run: |
           set -euo pipefail
@@ -59,31 +60,58 @@ jobs:
           UI="$JAVA/NativeFullActivity.java"
           MAP="$JAVA/FloodSafeNativeMapView.java"
           OVERLAY="$JAVA/WeatherMapOverlayController.java"
+          BIPAD="$JAVA/BipadRealtimeStationFeed.java"
           G='floodsafe-android-app/app/build.gradle'
+
           sha256sum "$MAP" | tee /tmp/map.after.sha256
           cmp /tmp/map.before.sha256 /tmp/map.after.sha256
           find "$JAVA" -maxdepth 1 -type f \( -name '*River*.java' -o -name 'FloodMonitorService.java' -o -name 'DhmRainMirror.java' \) -print0 \
             | sort -z | xargs -0 sha256sum > /tmp/river.after.sha256
           cmp /tmp/river.before.sha256 /tmp/river.after.sha256
           git diff --exit-code -- "$MAP"
+
           CHANGED="$(git diff --name-only)"
           printf 'Runtime-patched files:\n%s\n' "$CHANGED"
           printf '%s\n' "$CHANGED" | grep -Fxq "$UI"
           printf '%s\n' "$CHANGED" | grep -Fxq "$G"
           test "$(printf '%s\n' "$CHANGED" | sed '/^$/d' | wc -l)" -eq 2
-          grep -Fq 'WeatherMapOverlayController weatherOverlay' "$UI"
-          grep -Fq 'refreshDistrictWeather()' "$UI"
-          grep -Fq 'updateWeatherOverlayOnly()' "$UI"
-          grep -Fq 'OfficialRiverData.fetch()' "$UI"
-          grep -Fq 'V0902_DIRECT_BIPAD_TRUTH_CHAIN' "$UI"
-          ! grep -Fq 'content.addView(districtWeatherCard());' "$UI"
-          grep -Fq 'WEATHER_OVERLAY_V2_MAP_ONLY_ANIMATED' "$OVERLAY"
-          grep -Fq 'addLayerBelow(layer, "fs-rivers-layer")' "$OVERLAY"
-          grep -Fq "versionName '0.9.02-map-weather-station-fix'" "$G"
-          ! grep -Fq 'android.webkit.WebView' "$UI"
-          echo 'CORRECTED_SCOPE_GUARD PASS'
 
-      - name: Verify 77 district asset and Open-Meteo multi-location schema
+          grep -Fq 'BipadRealtimeStationFeed.fetch()' "$UI"
+          grep -Fq 'V0903_BIPAD_PORTAL_PARITY_FEED' "$UI"
+          grep -Fq 'V0903_WEATHER_AREA_LEGEND' "$UI"
+          grep -Fq 'V0903_BIPAD_PORTAL_PARITY' "$BIPAD"
+          grep -Fq 'river-stations/?limit=5000' "$BIPAD"
+          grep -Fq 'WEATHER_OVERLAY_V3_AREA_SHADE' "$OVERLAY"
+          grep -Fq 'FillLayer' "$OVERLAY"
+          ! grep -Fq 'CircleLayer' "$OVERLAY"
+          grep -Fq 'addLayerBelow(layer, "fs-rivers-layer")' "$OVERLAY"
+          ! grep -Fq 'content.addView(districtWeatherCard());' "$UI"
+          grep -Fq "versionName '0.9.03-bipad-cloud-area'" "$G"
+          ! grep -Fq 'android.webkit.WebView' "$UI"
+          echo 'V0903_SCOPE_GUARD PASS'
+
+      - name: Probe current BIPAD River watch catalogue
+        continue-on-error: true
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request, time, pathlib
+          url='https://bipadportal.gov.np/api/v1/river-stations/?limit=5000&_v0903='+str(int(time.time()*1000))
+          count='unknown'
+          try:
+              req=urllib.request.Request(url,headers={'User-Agent':'FloodSafe-Nepal/native-v0903','Accept':'application/json','Cache-Control':'no-cache'})
+              with urllib.request.urlopen(req,timeout=30) as r:data=json.load(r)
+              rows=data.get('results',data.get('data',[])) if isinstance(data,dict) else data
+              count=len(rows) if isinstance(rows,list) else 'unknown'
+              print('BIPAD_DIRECT_RIVER_STATION_COUNT=',count)
+              if isinstance(count,int) and count < 100:
+                  raise SystemExit('BIPAD river station catalogue unexpectedly small')
+          except Exception as e:
+              print('BIPAD_PROBE_ERROR',repr(e))
+          pathlib.Path('/tmp/bipad_station_count.txt').write_text(str(count),encoding='utf-8')
+          PY
+
+      - name: Verify 77 district weather schema
         shell: bash
         run: |
           set -euo pipefail
@@ -101,8 +129,7 @@ jobs:
                '&timezone=Asia%2FKathmandu&forecast_days=1')
           for attempt in range(3):
               try:
-                  with urllib.request.urlopen(url, timeout=20) as r:
-                      data=json.loads(r.read().decode('utf-8'))
+                  with urllib.request.urlopen(url, timeout=20) as r:data=json.loads(r.read().decode('utf-8'))
                   assert isinstance(data,list) and len(data)==3
                   for row in data:
                       cur=row.get('current') or {}
@@ -118,11 +145,12 @@ jobs:
       - name: Unit test and build native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Verify APK package assets signature and corrected markers
+      - name: Verify APK and stage v0.9.03
         shell: bash
         run: |
           set -euo pipefail
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          OUT='FloodSafe-Nepal-v0.9.03-BIPAD-CLOUD-AREA-FIX.apk'
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Fq 'classes.dex'
@@ -133,27 +161,29 @@ jobs:
           test -n "$APKSIGNER"
           "$APKSIGNER" verify --verbose "$APK"
           unzip -p "$APK" classes.dex | strings | grep -Fq 'FloodSafe Nepal'
+          unzip -p "$APK" classes.dex | strings | grep -Fq 'V0903_BIPAD_PORTAL_PARITY'
+          unzip -p "$APK" classes.dex | strings | grep -Fq 'river-stations/?limit=5000'
           unzip -p "$APK" classes.dex | strings | grep -Fq 'fs-weather-cloud-heavy'
-          unzip -p "$APK" classes.dex | strings | grep -Fq 'api.open-meteo.com/v1/forecast'
-          unzip -p "$APK" classes.dex | strings | grep -Fq 'bipadportal.gov.np/api/v1/river/'
-          cp "$APK" FloodSafe-Nepal-v0.9.02-MAP-WEATHER-STATION-FIX.apk
-          sha256sum FloodSafe-Nepal-v0.9.02-MAP-WEATHER-STATION-FIX.apk | tee FloodSafe-Nepal-v0.9.02-SHA256.txt
+          cp "$APK" "$OUT"
+          sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.03-SHA256.txt
+          COUNT="$(cat /tmp/bipad_station_count.txt 2>/dev/null || echo unknown)"
           printf '%s\n' \
-            'FloodSafe Nepal v0.9.02 corrected field build' \
-            '- Removed the long 77-district weather list from the home screen' \
-            '- District weather now feeds only the native MapLibre cloud/rain overlay' \
-            '- Animated cloud/rain model overlay stays below river/station layers' \
-            '- Station readings use existing OfficialRiverData truth chain: direct BIPAD latest + mirror inventory/fallback' \
-            '- Stale/historical observations do not receive live status colours' \
-            '- Existing FloodSafeNativeMapView and river worker/service source hashes unchanged' \
+            'FloodSafe Nepal v0.9.03 BIPAD + cloud-area field build' \
+            "- BIPAD direct River watch catalogue count at build time: $COUNT" \
+            '- Visible station count follows BIPAD river-stations catalogue; mirror-only stations are not unioned into the map/list' \
+            '- Multiple BIPAD live endpoints refresh readings/status for the direct catalogue' \
+            '- Weather circles removed' \
+            '- Clear districts remain visually clear; cloudier districts use progressively darker translucent area shading; rain uses blue tint' \
+            '- Weather area layers remain below existing river/station layers' \
+            '- Existing FloodSafeNativeMapView and river geometry/flow source are unchanged by build-time patches' \
             '- Native Android; no WebView introduced' \
-            > FloodSafe-Nepal-v0.9.02-NOTES.txt
+            > FloodSafe-Nepal-v0.9.03-NOTES.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0902-MAP-WEATHER-STATION-FIX
+          name: FloodSafe-Nepal-v0903-BIPAD-CLOUD-AREA-FIX
           path: |
-            FloodSafe-Nepal-v0.9.02-MAP-WEATHER-STATION-FIX.apk
-            FloodSafe-Nepal-v0.9.02-SHA256.txt
-            FloodSafe-Nepal-v0.9.02-NOTES.txt
+            FloodSafe-Nepal-v0.9.03-BIPAD-CLOUD-AREA-FIX.apk
+            FloodSafe-Nepal-v0.9.03-SHA256.txt
+            FloodSafe-Nepal-v0.9.03-NOTES.txt
           retention-days: 14

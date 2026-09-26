@@ -1,63 +1,105 @@
 {
-  "generated_at": "2026-09-26T12:54:58.954914+05:45",
-  "updated_at_npt": "26 Sep 12:54 NPT",
+  "generated_at": "2026-09-26T17:59:45.125609+05:45",
+  "updated_at_npt": "26 Sep 17:59 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "‘टिकट लिने बेला गगनलाई नेता भन्नेहरूले अहिले गाली गर्ने?’",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595112/will-those-who-called-gagan-a-leader-now-insult-him-when-buying-tickets",
+      "published_at": "2026-09-26T17:23:04+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढी र पहिरोका कारण गुल्मीमा ११ परिवार विस्थापित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595106/11-families-displaced-in-gulmi-due-to-floods-and-landslides",
+      "published_at": "2026-09-26T17:10:11+05:45",
+      "flash": true
+    },
+    {
+      "title": "भोटेकोशी बाढीपीडितलाई ग्यास चुल्हो र सिलिन्डर वितरण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595104/gas-stoves-and-cylinders-distributed-to-bhotekoshi-flood-victims",
+      "published_at": "2026-09-26T17:03:50+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाँकेमा अविरल वर्षाका कारण पाकेको धानबाली ढलेर क्षति, किसान चिन्तित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595103/farmers-worried-as-incessant-rains-damage-ripe-rice-crop-in-banke",
+      "published_at": "2026-09-26T17:01:39+05:45",
+      "flash": true
+    },
+    {
+      "title": "नारायणी नदीमा बाढी: गण्डक ब्यारेजका सबै ३६ ढोका खोलिए",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595100/flooding-in-narayani-river-all-36-gates-of-gandak-barrage-opened",
+      "published_at": "2026-09-26T16:55:04+05:45",
+      "flash": false
+    },
+    {
+      "title": "पहिरोका कारण सोलुखुम्बु-काठमाडौँ आवागमन बन्द",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595099/solukhumbu-kathmandu-traffic-closed-due-to-landslide",
+      "published_at": "2026-09-26T16:54:43+05:45",
+      "flash": false
+    },
+    {
+      "title": "चितवन राष्ट्रिय निकुञ्ज र मध्यवर्ती क्षेत्रमा सतर्कता अपनाउन आग्रह",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595097/urge-to-be-vigilant-in-chitwan-national-park-and-buffer-zone",
+      "published_at": "2026-09-26T16:50:29+05:45",
+      "flash": false
+    },
+    {
+      "title": "कर्णालीका १० वटै जिल्लाका प्रशासन विपद् व्यवस्थापनमा सतर्क, जनशक्ति र साधनस्रोत तयार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595096/administrations-in-all-10-districts-of-karnali-are-alert-in-disaster-management-manpower-and-resources-are-ready",
+      "published_at": "2026-09-26T16:50:02+05:45",
+      "flash": false
+    },
+    {
+      "title": "खोलाले बगाएर महिलाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595095/woman-dies-after-being-swept-away-by-river",
+      "published_at": "2026-09-26T16:45:40+05:45",
+      "flash": false
+    },
+    {
+      "title": "पहिरोसँग खसेको ढुङ्गा लागेर डोल्पामा एकको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595091/one-killed-in-dolpa-after-being-hit-by-falling-rocks",
+      "published_at": "2026-09-26T16:36:05+05:45",
+      "flash": false
+    },
+    {
+      "title": "सडक भासिएपछि मूलपानी-बोडे पुल बन्द (तस्बिर)",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595090/mulpani-bode-bridge-closed-after-road-washed-away-photo",
+      "published_at": "2026-09-26T16:34:06+05:45",
+      "flash": false
+    },
+    {
+      "title": "सुस्ता बस्ती डुबानमा : २९ जना नागरिकको सकुशल उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595043/susta-settlement-flooded-29-citizens-rescued-safely",
+      "published_at": "2026-09-26T13:17:33+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाँकेको किरण नालामा बाढीको जोखिम, बेलुकासम्म सतर्क रहन आग्रह",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595042/risk-of-flooding-in-bankes-kiran-nala-urges-to-remain-vigilant-until-evening",
+      "published_at": "2026-09-26T13:14:18+05:45",
+      "flash": false
+    },
     {
       "title": "बाढी र पहिरोले गण्डकीका १६ मुख्य सडक पूर्ण अवरुद्ध",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/595030/floods-and-landslides-completely-block-16-main-roads-in-gandaki",
       "published_at": "2026-09-26T12:23:18+05:45",
-      "flash": true
-    },
-    {
-      "title": "भारी वर्षाको पूर्वानुमानपछि सुदूरपश्चिमका ७ जिल्लामा यातायात बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595024/traffic-closed-in-7-districts-of-the-far-west-after-heavy-rain-forecast",
-      "published_at": "2026-09-26T12:09:49+05:45",
-      "flash": true
-    },
-    {
-      "title": "डाँफे खोलाले बगाउँदा एक जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595022/one-person-dies-after-being-swept-away-by-danfe-river",
-      "published_at": "2026-09-26T12:04:50+05:45",
-      "flash": true
-    },
-    {
-      "title": "पारी सुस्तामा बाढी पसेपछि स्थानीयवासी आश्रयस्थलमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595016/locals-at-shelter-after-flood-in-pari-susta",
-      "published_at": "2026-09-26T11:44:38+05:45",
-      "flash": false
-    },
-    {
-      "title": "लगातारको वर्षाले गुल्मीको जनजीवन प्रभावित, सडक अवरुद्ध, विद्यालय बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595003/continuous-rains-affect-normal-life-in-gulmi-roads-blocked-schools-closed",
-      "published_at": "2026-09-26T09:32:14+05:45",
-      "flash": false
-    },
-    {
-      "title": "ट्रकको ठक्करबाट स्कुटर चालकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594995/scooter-driver-dies-after-being-hit-by-truck",
-      "published_at": "2026-09-26T08:24:14+05:45",
-      "flash": false
-    },
-    {
-      "title": "अविरल वर्षाले सङ्खुवासभाको जनजीवन प्रभावित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594994/incessant-rains-affect-normal-life-in-sankhuwasabha",
-      "published_at": "2026-09-26T08:15:59+05:45",
-      "flash": false
-    },
-    {
-      "title": "भारी वर्षाको पूर्वानुमानपछि सुदूरपश्चिमका दुई जिल्लामा यातायात सेवा बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/594993/transport-services-suspended-in-two-districts-of-the-far-west-after-heavy-rains-forecast",
-      "published_at": "2026-09-26T08:12:22+05:45",
       "flash": false
     }
   ],
@@ -77,8 +119,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 8
+      "flash": 4,
+      "recent": 14
     },
     "Kathmandu Post": {
       "ok": true,
@@ -88,7 +130,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     }

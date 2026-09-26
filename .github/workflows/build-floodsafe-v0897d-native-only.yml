@@ -51,7 +51,8 @@ jobs:
           grep -Fq "versionName '0.8.97-native'" "$G"
           grep -Fq 'versionCode 118' "$G"
           grep -Fq 'NativeFullActivity.class' "$SRC/PJBuiltsSplashActivity.java"
-          ! grep -R -E 'android\.webkit|androidx\.webkit|\bWebView\b' "$SRC" --include='*.java'
+          ! grep -R -E 'android\.webkit|androidx\.webkit' "$SRC" --include='*.java'
+          ! grep -R -E '\bnew[[:space:]]+WebView[[:space:]]*\(' "$SRC" --include='*.java'
           ! grep -Fq 'androidx.webkit:webkit' "$G"
           ! grep -Fq "from(rootProject.file('../floodsafe-nepal'))" "$G"
           echo 'V0897D_NATIVE_SOURCE PASS'

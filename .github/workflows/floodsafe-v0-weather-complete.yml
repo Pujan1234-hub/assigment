@@ -1,4 +1,4 @@
-name: FloodSafe v0 Weather Complete Build
+name: FloodSafe v0 Weather + Station Corrected Build
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - '.github/workflows/floodsafe-v0-weather-complete.yml'
       - 'floodsafe-android-app/patch_native_language_safe.py'
       - 'floodsafe-android-app/patch_native_weather_complete.py'
+      - 'floodsafe-android-app/patch_native_weather_station_correction.py'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/WeatherMapOverlayController.java'
   workflow_dispatch:
 
@@ -44,10 +45,13 @@ jobs:
       - name: Apply proven language patch
         run: python3 floodsafe-android-app/patch_native_language_safe.py
 
-      - name: Apply GPS district weather and map overlay patch
+      - name: Apply GPS district weather model and map overlay patch
         run: python3 floodsafe-android-app/patch_native_weather_complete.py
 
-      - name: Enforce map river freeze and weather-only patch scope
+      - name: Correct weather placement and restore official station truth chain
+        run: python3 floodsafe-android-app/patch_native_weather_station_correction.py
+
+      - name: Enforce map river freeze and corrected scope
         shell: bash
         run: |
           set -euo pipefail
@@ -69,12 +73,15 @@ jobs:
           test "$(printf '%s\n' "$CHANGED" | sed '/^$/d' | wc -l)" -eq 2
           grep -Fq 'WeatherMapOverlayController weatherOverlay' "$UI"
           grep -Fq 'refreshDistrictWeather()' "$UI"
-          grep -Fq 'weather_code,cloud_cover' "$UI"
-          grep -Fq 'WEATHER_OVERLAY_V1' "$OVERLAY"
+          grep -Fq 'updateWeatherOverlayOnly()' "$UI"
+          grep -Fq 'OfficialRiverData.fetch()' "$UI"
+          grep -Fq 'V0902_DIRECT_BIPAD_TRUTH_CHAIN' "$UI"
+          ! grep -Fq 'content.addView(districtWeatherCard());' "$UI"
+          grep -Fq 'WEATHER_OVERLAY_V2_MAP_ONLY_ANIMATED' "$OVERLAY"
           grep -Fq 'addLayerBelow(layer, "fs-rivers-layer")' "$OVERLAY"
-          grep -Fq "versionName '0.9.01-weather'" "$G"
+          grep -Fq "versionName '0.9.02-map-weather-station-fix'" "$G"
           ! grep -Fq 'android.webkit.WebView' "$UI"
-          echo 'WEATHER_SCOPE_GUARD PASS'
+          echo 'CORRECTED_SCOPE_GUARD PASS'
 
       - name: Verify 77 district asset and Open-Meteo multi-location schema
         shell: bash
@@ -92,7 +99,6 @@ jobs:
                '&longitude=85.3240,83.9856,87.2718'
                '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m'
                '&timezone=Asia%2FKathmandu&forecast_days=1')
-          last=None
           for attempt in range(3):
               try:
                   with urllib.request.urlopen(url, timeout=20) as r:
@@ -104,8 +110,7 @@ jobs:
                           assert k in cur, k
                   print('WEATHER_API_SCHEMA PASS locations=',len(data),'districts=',len(features))
                   break
-              except Exception as e:
-                  last=e
+              except Exception:
                   if attempt==2: raise
                   time.sleep(2)
           PY
@@ -113,7 +118,7 @@ jobs:
       - name: Unit test and build native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Verify APK package assets signature and weather markers
+      - name: Verify APK package assets signature and corrected markers
         shell: bash
         run: |
           set -euo pipefail
@@ -130,23 +135,25 @@ jobs:
           unzip -p "$APK" classes.dex | strings | grep -Fq 'FloodSafe Nepal'
           unzip -p "$APK" classes.dex | strings | grep -Fq 'fs-weather-cloud-heavy'
           unzip -p "$APK" classes.dex | strings | grep -Fq 'api.open-meteo.com/v1/forecast'
-          cp "$APK" FloodSafe-Nepal-v0.9.01-GPS-DISTRICT-CLOUD-WEATHER.apk
-          sha256sum FloodSafe-Nepal-v0.9.01-GPS-DISTRICT-CLOUD-WEATHER.apk | tee FloodSafe-Nepal-v0.9.01-SHA256.txt
+          unzip -p "$APK" classes.dex | strings | grep -Fq 'bipadportal.gov.np/api/v1/river/'
+          cp "$APK" FloodSafe-Nepal-v0.9.02-MAP-WEATHER-STATION-FIX.apk
+          sha256sum FloodSafe-Nepal-v0.9.02-MAP-WEATHER-STATION-FIX.apk | tee FloodSafe-Nepal-v0.9.02-SHA256.txt
           printf '%s\n' \
-            'FloodSafe Nepal v0.9.01 weather field build' \
-            '- GPS current weather: temperature, feels-like, humidity, rain, wind, cloud cover and WMO condition' \
-            '- 77 district current weather via one Open-Meteo multi-location request' \
-            '- Native MapLibre cloud-cover and precipitation overlay, toggleable, map-synchronised' \
-            '- Weather refresh every 10 minutes while the Activity is alive' \
+            'FloodSafe Nepal v0.9.02 corrected field build' \
+            '- Removed the long 77-district weather list from the home screen' \
+            '- District weather now feeds only the native MapLibre cloud/rain overlay' \
+            '- Animated cloud/rain model overlay stays below river/station layers' \
+            '- Station readings use existing OfficialRiverData truth chain: direct BIPAD latest + mirror inventory/fallback' \
+            '- Stale/historical observations do not receive live status colours' \
             '- Existing FloodSafeNativeMapView and river worker/service source hashes unchanged' \
             '- Native Android; no WebView introduced' \
-            > FloodSafe-Nepal-v0.9.01-WEATHER-NOTES.txt
+            > FloodSafe-Nepal-v0.9.02-NOTES.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0901-GPS-DISTRICT-CLOUD-WEATHER
+          name: FloodSafe-Nepal-v0902-MAP-WEATHER-STATION-FIX
           path: |
-            FloodSafe-Nepal-v0.9.01-GPS-DISTRICT-CLOUD-WEATHER.apk
-            FloodSafe-Nepal-v0.9.01-SHA256.txt
-            FloodSafe-Nepal-v0.9.01-WEATHER-NOTES.txt
+            FloodSafe-Nepal-v0.9.02-MAP-WEATHER-STATION-FIX.apk
+            FloodSafe-Nepal-v0.9.02-SHA256.txt
+            FloodSafe-Nepal-v0.9.02-NOTES.txt
           retention-days: 14

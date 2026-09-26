@@ -75,7 +75,7 @@ accordion = r'''    private void renderDistrictStationGroups(List<RiverStation> 
     private String districtLabel(RiverStation st){
         if(st==null)return t("जिल्ला नखुलेको","District unavailable");
         String raw=st.district==null?"":st.district.trim();
-        if(!raw.isEmpty()&&!"null".equalsIgnoreCase(raw)&&!raw.matches("\\d+"))return raw;
+        if(!raw.isEmpty()&&!"null".equalsIgnoreCase(raw)&&!raw.matches("[0-9]+"))return raw;
         String cacheKey=(st.stationId==null?"":st.stationId)+"@"+String.format(Locale.US,"%.5f,%.5f",st.lat,st.lon);
         String cached=v0907DistrictNameCache.get(cacheKey);if(cached!=null)return cached;
         String resolved=v0907DistrictNameAt(st.lat,st.lon);

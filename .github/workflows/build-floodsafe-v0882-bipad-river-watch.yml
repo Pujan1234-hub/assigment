@@ -7,7 +7,7 @@ on:
       - '.github/workflows/build-floodsafe-v0882-bipad-river-watch.yml'
       - 'floodsafe-android-app/patch_native_v0882_bipad_river_watch.py'
       - 'floodsafe-android-app/patch_native_v0883_no_anr_station_rivers.py'
-      - 'floodsafe-android-app/patch_native_v0884_latest_source_river_status.py'
+      - 'floodsafe-android-app/patch_native_v0884_fixed.py'
   workflow_dispatch:
 
 permissions:
@@ -41,7 +41,7 @@ jobs:
       - name: Apply v0.8.83 no-ANR station river flow
         run: python3 floodsafe-android-app/patch_native_v0883_no_anr_station_rivers.py
       - name: Apply v0.8.84 latest-source status rivers
-        run: python3 floodsafe-android-app/patch_native_v0884_latest_source_river_status.py
+        run: python3 floodsafe-android-app/patch_native_v0884_fixed.py
       - name: Verify v0.8.84 contracts
         shell: bash
         run: |

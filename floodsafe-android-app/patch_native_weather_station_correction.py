@@ -23,29 +23,23 @@ def sub_once(pattern: str, new: str, label: str) -> None:
     s = s2
 
 
-# CORRECTION 1: district weather remains a data model for the map overlay only.
-# Remove the long 77-district card from the home screen.
+# Keep district weather as a map data model only: no long 77-district list on Home.
 replace_once(
     '        content.addView(districtWeatherCard());\n',
     '',
     'remove district list card'
 )
-
-# The labels belonged only to the removed card. Keep language refresh safe when those views are not created.
 replace_once(
     'districtWeatherTitle.setText(t("🌦️ ७७ जिल्ला मौसम","🌦️ Weather across 77 districts"));districtWeatherSub.setText(t("Open-Meteo current model • GPS नजिकको जिल्ला highlight हुन्छ","Open-Meteo current model • nearest district to GPS is highlighted"));',
     '',
     'remove district list language labels'
 )
-
-# If any residual path asks the old renderer to run, feed the weather layer instead of returning early.
 replace_once(
     'if(districtWeatherList==null)return;List<DistrictWeather> copy;',
     'if(districtWeatherList==null){updateWeatherOverlayOnly();return;}List<DistrictWeather> copy;',
     'redirect hidden district renderer'
 )
 
-# Add a dedicated map-only updater. This never changes river/station/map implementation code.
 anchor = '    private void showDistrictWeather(DistrictWeather d){'
 if anchor not in s:
     raise SystemExit('weather overlay insertion anchor missing')
@@ -65,8 +59,6 @@ map_only = r'''    private void updateWeatherOverlayOnly(){
 
 '''
 s = s.replace(anchor, map_only + anchor, 1)
-
-# Successful 77-district fetch updates the map layer directly. No district rows are rendered.
 replace_once(
     'runOnUiThread(this::renderDistrictWeather);',
     'runOnUiThread(this::updateWeatherOverlayOnly);',
@@ -78,13 +70,18 @@ replace_once(
     'GPS map-only weather refresh'
 )
 
-# CORRECTION 2: restore the intended official station truth chain already present in the project.
-# BIPAD direct latest observations are primary; the existing mirror remains the station inventory/fallback.
+# Make the map legend explain the area shading instead of the old dot-style layer wording.
+old_weather_ui = '    private void updateWeatherLayerUi(){if(weatherLayerButton!=null)weatherLayerButton.setText(weatherOverlayEnabled?t("☁ तह बन्द","☁ Layer off"):t("☁ तह खोल","☁ Layer on"));if(weatherLayerStatus!=null)weatherLayerStatus.setText((weatherOverlayEnabled?t("☁ बादल + वर्षा layer ON","☁ Cloud + rain layer ON"):t("☁ मौसम layer OFF","☁ Weather layer OFF"))+(districtWeatherAt>0?" • "+weatherAge():""));}'
+new_weather_ui = '    private void updateWeatherLayerUi(){if(weatherLayerButton!=null)weatherLayerButton.setText(weatherOverlayEnabled?t("☁ तह बन्द","☁ Layer off"):t("☁ तह खोल","☁ Layer on"));if(weatherLayerStatus!=null)weatherLayerStatus.setText((weatherOverlayEnabled?t("☀ सफा • ☁ खैरो/गाढा = बादल • 🌧 निलो = वर्षा","☀ clear • ☁ grey/dark = cloud • 🌧 blue = rain"):t("☁ मौसम तह बन्द","☁ Weather layer OFF"))+(districtWeatherAt>0?" • "+weatherAge():""));} // V0903_WEATHER_AREA_LEGEND'
+replace_once(old_weather_ui, new_weather_ui, 'weather area legend')
+
+# Restore the v0-style BIPAD station catch. BIPAD river-stations determines the visible
+# catalogue/count; live endpoints update only those rows. Mirror-only rows never inflate
+# the visible count (mirror is metadata/fallback only).
 station_block = r'''    private void refreshRivers(){
-        feedFresh.setText(t("Official नदी अवस्था refresh हुँदैछ…","Refreshing official river status…"));
+        feedFresh.setText(t("BIPAD realtime नदी स्टेशन refresh हुँदैछ…","Refreshing BIPAD realtime river stations…"));
         io.execute(()->{try{
-            OfficialRiverData.Snapshot snapshot=OfficialRiverData.fetch();
-            JSONArray rows=snapshot.rows;
+            JSONArray rows=BipadRealtimeStationFeed.fetch();
             List<RiverStation> out=new ArrayList<>();
             long now=System.currentTimeMillis();
             for(int i=0;i<rows.length();i++){
@@ -95,7 +92,7 @@ station_block = r'''    private void refreshRivers(){
             synchronized(stations){stations.clear();stations.addAll(out);}
             runOnUiThread(this::refreshRiverUi);
         }catch(Exception e){
-            runOnUiThread(()->feedFresh.setText(t("Official river refresh हुन सकेन • पुरानो data लाई live मानिएको छैन","Official river refresh failed • stale data is not treated as live")));
+            runOnUiThread(()->feedFresh.setText(t("BIPAD station refresh हुन सकेन • पुरानो data लाई live मानिएको छैन","BIPAD station refresh failed • stale data is not treated as live")));
         }});
     }
 
@@ -111,28 +108,28 @@ station_block = r'''    private void refreshRivers(){
         String stage=OfficialRiverData.stage(r,fresh);
         int rank=OfficialRiverData.rank(stage);
         String stationId=str(r,"stationSeriesId","station_series_id","stationId","station_id","stationIndex","station_index","seriesId","series_id","id");
-        String riverName=str(r,"river_name","riverName","river");
+        String riverName=str(r,"river_name","riverName","river","_floodsafeRiverName");
         String name=str(r,"station_name","stationName","title","name");
         if(name.isEmpty())name=!riverName.isEmpty()?riverName:"Official river station";
         String district=str(r,"districtName","district_name","district");
         return new RiverStation(stationId,name,riverName,district,a,o,level,warning,danger,at,fresh,stage,rank);
-    } // V0902_DIRECT_BIPAD_TRUTH_CHAIN
+    } // V0903_BIPAD_PORTAL_PARITY_FEED
 '''
 sub_once(
     r'    private void refreshRivers\(\)\{.*?    \} // V0899_STALE_CURRENT_SEMANTICS\n',
     station_block,
-    'restore official river truth chain'
+    'restore BIPAD portal parity station feed'
 )
 
-# Distinguish this corrected field build from the rejected list-based weather build.
+# New field build version.
 if "versionCode 18" not in g or "versionName '0.9.01-weather'" not in g:
     raise SystemExit('expected v0.9.01 weather version markers missing')
-g = g.replace('versionCode 18', 'versionCode 19', 1)
-g = g.replace("versionName '0.9.01-weather'", "versionName '0.9.02-map-weather-station-fix'", 1)
+g = g.replace('versionCode 18', 'versionCode 20', 1)
+g = g.replace("versionName '0.9.01-weather'", "versionName '0.9.03-bipad-cloud-area'", 1)
 
-# Build-time invariants.
-assert 'OfficialRiverData.fetch()' in s
-assert 'V0902_DIRECT_BIPAD_TRUTH_CHAIN' in s
+assert 'BipadRealtimeStationFeed.fetch()' in s
+assert 'V0903_BIPAD_PORTAL_PARITY_FEED' in s
+assert 'V0903_WEATHER_AREA_LEGEND' in s
 assert 'content.addView(districtWeatherCard());' not in s
 assert 'updateWeatherOverlayOnly()' in s
 assert 'WeatherMapOverlayController weatherOverlay' in s
@@ -140,4 +137,4 @@ assert 'android.webkit.WebView' not in s
 
 UI.write_text(s, encoding='utf-8')
 GRADLE.write_text(g, encoding='utf-8')
-print('CORRECTED_MAP_WEATHER_AND_STATION_TRUTH_PATCH_OK')
+print('V0903_BIPAD_CLOUD_AREA_PATCH_OK')

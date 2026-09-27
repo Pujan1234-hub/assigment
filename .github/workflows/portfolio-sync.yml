@@ -13,6 +13,7 @@ on:
       - 'floodsafe-nepal/**'
       - 'floodsafe-android-app/**'
       - 'floodsafe-backend/**'
+      - 'data/floodsafe-web-version.txt'
       - 'lifeos-ai/**'
       - 'sathi-ai/**'
       - 'index.html'
@@ -64,17 +65,24 @@ jobs:
                   return None
 
           version = None
-          gradle = Path('floodsafe-android-app/app/build.gradle')
-          if gradle.exists():
-              m = re.search(r'versionName\s+[\"\']([^\"\']+)', gradle.read_text(errors='ignore'))
-              if m:
-                  version = m.group(1)
+          web_version = Path('data/floodsafe-web-version.txt')
+          if web_version.exists():
+              value = web_version.read_text(errors='ignore').strip()
+              if value:
+                  version = value
+
+          if not version:
+              gradle = Path('floodsafe-android-app/app/build.gradle')
+              if gradle.exists():
+                  m = re.search(r'versionName\s+[\"\']([^\"\']+)', gradle.read_text(errors='ignore'))
+                  if m:
+                      version = m.group(1)
 
           projects = {
               'teamtracker': {'updatedAt': last_update('team-tracker'), 'source': 'GitHub source'},
               'fixcheck': {'updatedAt': last_update('fixcheck','fixcheck-app'), 'source': 'GitHub source'},
               'datemate': {'updatedAt': last_update('datemate-build','datemate-camera-v2','datemate-playstore'), 'source': 'GitHub source'},
-              'floodsafe': {'updatedAt': last_update('floodsafe-nepal','floodsafe-android-app','floodsafe-backend'), 'source': 'GitHub source'},
+              'floodsafe': {'updatedAt': last_update('floodsafe-nepal','floodsafe-android-app','floodsafe-backend','data/floodsafe-web-version.txt'), 'source': 'PJBUILTS web mirror'},
               'lifeos': {'updatedAt': last_update('lifeos-ai'), 'source': 'GitHub source'},
               'sathi': {'updatedAt': last_update('sathi-ai'), 'source': 'GitHub source'},
           }

@@ -78,17 +78,14 @@ jobs:
           J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
           W="$J/WeatherMapOverlayController.java"
           U="$J/NativeFullActivity.java"
-          grep -Fq 'V0912_WEB_NATIVE_RAIN_PARITY' "$W"
-          grep -Fq 'V0912_RAIN_SIGNAL_USES_PRECIP_AND_WMO_CODE' "$W"
+          grep -Fq 'V0912_WEB_NATIVE_RAIN_PARITY_ANY_POSITIVE_PRECIP' "$W"
           grep -Fq 'p.precipitation > 0.0d' "$W"
-          grep -Fq '(c >= 51 && c <= 57)' "$W"
-          grep -Fq '(c >= 61 && c <= 67)' "$W"
-          grep -Fq '(c >= 80 && c <= 82)' "$W"
-          grep -Fq '(c >= 95 && c <= 99)' "$W"
-          grep -Fq 'if (rainOnly) use = isRainSignal(p);' "$W"
-          grep -Fq 'new WeatherMapOverlayController.WeatherPoint(d.name,d.lat,d.lon,d.cloud,d.precip,d.temp,d.code)' "$U"
+          grep -Fq 'p.precipitation <= 0.0d' "$W"
           ! grep -Fq 'p.precipitation >= 0.10d' "$W"
           ! grep -Fq 'p.precipitation < 0.10d' "$W"
+          grep -Fq 'V0912_RAIN_WMO_CODE_FALLBACK_FOR_NATIVE_MAP' "$U"
+          grep -Fq '(c>=51&&c<=57)||(c>=61&&c<=67)||(c>=80&&c<=82)||(c>=95&&c<=99)' "$U"
+          grep -Fq 'nativeRainSignalMm(d)' "$U"
           grep -Fq "versionCode 29" floodsafe-android-app/app/build.gradle
           grep -Fq "versionName '0.9.12-native-rain-parity'" floodsafe-android-app/app/build.gradle
 
@@ -146,9 +143,10 @@ jobs:
           sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.12-SHA256.txt
           printf '%s\n' \
             'FloodSafe Nepal v0.9.12 native rain parity build' \
-            '- Native weather map now treats any positive current precipitation as rain' \
-            '- Native weather map also uses Open-Meteo WMO drizzle/rain/showers/thunderstorm codes when precipitation rounds to 0.0 mm' \
-            '- Existing river geometry, BIPAD station feed, DHM mirror, station markers, affected-river 2 km alerts and river status logic are unchanged from verified v0.9.11' \
+            '- Native weather map now treats any positive current precipitation as rain instead of hiding values below 0.10 mm' \
+            '- Native weather map also uses Open-Meteo WMO drizzle/rain/showers/thunderstorm codes as a map-only rain signal when current precipitation is rounded to 0.0 mm' \
+            '- Displayed precipitation remains the real Open-Meteo value' \
+            '- Existing river geometry, BIPAD station feed, DHM mirror, station markers, affected-river 2 km alerts and river status logic are byte-for-byte unchanged from verified v0.9.11' \
             > FloodSafe-Nepal-v0.9.12-NOTES.txt
 
       - name: Upload APK

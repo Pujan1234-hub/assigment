@@ -16,12 +16,10 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
@@ -43,9 +41,10 @@ jobs:
           python3 floodsafe-android-app/fix_v0909_district_lambda_compile.py
           python3 floodsafe-android-app/patch_native_v0910_step1_sathi_chat.py
           python3 floodsafe-android-app/patch_native_v0910_step2_map_labels.py
+          grep -Fq "versionCode 27" floodsafe-android-app/app/build.gradle
           grep -Fq "versionName '0.9.10-sathi-chat-map-labels'" floodsafe-android-app/app/build.gradle
 
-      - name: Freeze everything outside requested v0.9.11 scope
+      - name: Freeze untouched map and official source files
         shell: bash
         run: |
           set -euo pipefail
@@ -57,7 +56,6 @@ jobs:
             "$J/FloodMonitorService.java" \
             "$J/FloodSafeNativeMapView.java" \
             "$J/WeatherMapOverlayController.java" \
-            "$J/RiverAlertWorker.java" \
             > /tmp/v0911-protected.before
 
       - name: Apply only requested v0.9.11 fixes
@@ -65,6 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 floodsafe-android-app/run_v0911_patch_fixed.py
+          python3 floodsafe-android-app/fix_v0911_threshold_order.py
 
       - name: Verify affected-river 2 km alarm rule
         shell: bash
@@ -77,7 +76,21 @@ jobs:
           ! grep -Fq 'haversineKm(homeLat,homeLon,la,lo)' "$J/FloodLiveGaugeMonitor.java"
           grep -Fq 'no unrelated nearest-river fallback' "$J/AffectedRiverAlertMatcher.java"
 
-      - name: Verify 2-hour and rain start-stop events
+      - name: Verify Ninda malformed-threshold safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          U="$J/NativeFullActivity.java"
+          grep -Fq 'V0911_THRESHOLD_ORDER_GUARD' "$U"
+          grep -Fq 'V0911_INVERTED_THRESHOLDS_NOT_TRUSTED' "$U"
+          grep -Fq 'V0911_INVERTED_THRESHOLD_HIDDEN' "$U"
+          grep -Fq 'official thresholds inconsistent' "$U"
+          grep -Fq 'V0911_FAST_OFFICIAL_STATUS_FIRST' "$J/FloodLiveGaugeMonitor.java"
+          grep -Fq 'V0911_FALLBACK_OFFICIAL_STATUS_FIRST' "$J/RiverAlertWorker.java"
+          grep -Fq 'danger<warning' "$U"
+
+      - name: Verify 2-hour and rain event notifications
         shell: bash
         run: |
           set -euo pipefail
@@ -88,7 +101,7 @@ jobs:
           grep -Fq '🌤️ वर्षा रोकिएको देखिन्छ' "$R"
           grep -Fq 'V0911_NO_DUPLICATE_RAIN_START' "$R"
 
-      - name: Verify language and Ninda threshold display
+      - name: Verify persistent fast language switch
         shell: bash
         run: |
           set -euo pipefail
@@ -96,13 +109,12 @@ jobs:
           grep -Fq 'V0911_ALWAYS_VISIBLE_LANGUAGE' "$U"
           grep -Fq 'V0911_LANGUAGE_BUTTON_PERSISTENT' "$U"
           grep -Fq 'quickLang.setOnClickListener(v->langBtn.performClick())' "$U"
-          grep -Fq 'V0911_NINDA_THRESHOLD_SAFE_DISPLAY' "$U"
-          grep -Fq 'last measurement was above the danger level' "$U"
-          grep -Fq 'boolean aboveDanger=' "$U"
+          grep -Fq 'V0909_FAST_LANGUAGE_NO_RECREATE' "$U"
           ! grep -Fq 'recreate();' "$U"
+          grep -Fq "versionCode 28" floodsafe-android-app/app/build.gradle
           grep -Fq "versionName '0.9.11-river2km-events-language-ninda'" floodsafe-android-app/app/build.gradle
 
-      - name: Verify protected map, data and fallback alert files unchanged
+      - name: Verify untouched map and official sources unchanged
         shell: bash
         run: |
           set -euo pipefail
@@ -114,7 +126,6 @@ jobs:
             "$J/FloodMonitorService.java" \
             "$J/FloodSafeNativeMapView.java" \
             "$J/WeatherMapOverlayController.java" \
-            "$J/RiverAlertWorker.java" \
             > /tmp/v0911-protected.after
           cmp /tmp/v0911-protected.before /tmp/v0911-protected.after
 
@@ -156,12 +167,12 @@ jobs:
           sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.11-SHA256.txt
           printf '%s\n' \
             'FloodSafe Nepal v0.9.11 final verified build' \
-            '- Fast Warning/Danger emergency path measures user distance to safely matched affected river geometry, not station marker' \
-            '- No unrelated nearest-river fallback; unsafe river match means no emergency push' \
-            '- Weather digest interval remains 2 hours; explicit rain-start and rain-stop event notifications are enabled' \
-            '- Always-visible EN/Nepali control reuses the no-recreate language switch, preserving map/location state' \
-            '- Station dialog never labels a stale threshold-crossing reading Normal; Ninda-style values are shown as stale historical threshold crossing unless fresh' \
-            '- BIPAD feed, DHM mirror, official river source, map/river geometry, weather overlay, FloodMonitorService and safe fallback RiverAlertWorker are byte-for-byte unchanged from v0.9.10' \
+            '- Warning/Danger emergency eligibility is user distance <=2 km from the safely matched affected river geometry, not the station marker' \
+            '- No unrelated nearest-river fallback; unsafe same-river match means no emergency alarm' \
+            '- Ninda-style inverted warning/danger thresholds are never trusted numerically; official status is used and the inconsistent danger threshold is clearly hidden in station details' \
+            '- Weather digest target remains 2 hours; explicit rain-start and rain-stop event notifications are enabled' \
+            '- Always-visible EN/Nepali control reuses the no-recreate language switch and keeps map/location state' \
+            '- Existing BIPAD feed, DHM mirror, official river source, river/map geometry, weather overlay and FloodMonitorService are unchanged' \
             > FloodSafe-Nepal-v0.9.11-NOTES.txt
 
       - name: Upload final APK

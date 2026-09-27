@@ -10,94 +10,52 @@ s = OVERLAY.read_text(encoding="utf-8")
 u = UI.read_text(encoding="utf-8")
 g = GRADLE.read_text(encoding="utf-8")
 
-
-def repl(text: str, old: str, new: str, label: str) -> str:
-    count = text.count(old)
-    if count != 1:
-        raise SystemExit(f"{label}: expected exactly one match, got {count}")
-    return text.replace(old, new, 1)
-
 # WEATHER ONLY. Do not touch river/station/map geometry or official feeds.
-s = repl(
-    s,
-    '        final double lat, lon, cloud, precipitation, temperature;\n        WeatherPoint(String district, double lat, double lon, double cloud, double precipitation, double temperature) {',
-    '        final double lat, lon, cloud, precipitation, temperature;\n        final int weatherCode; // V0912_WEB_NATIVE_RAIN_PARITY\n        WeatherPoint(String district, double lat, double lon, double cloud, double precipitation, double temperature, int weatherCode) {',
-    "WeatherPoint signature",
-)
-s = repl(
-    s,
-    '            this.temperature = temperature;\n        }',
-    '            this.temperature = temperature;\n            this.weatherCode = weatherCode;\n        }',
-    "WeatherPoint weather code assignment",
-)
+# The old native overlay hid light rain below 0.10 mm. Use any positive current
+# precipitation instead, matching the web behaviour much more closely.
+old_ge = "p.precipitation >= 0.10d"
+count_ge = s.count(old_ge)
+if count_ge < 1:
+    raise SystemExit(f"rain >=0.10 rule not found (count={count_ge})")
+s = s.replace(old_ge, "p.precipitation > 0.0d")
 
-# Open-Meteo rain-family WMO codes: drizzle 51-57, rain 61-67,
-# showers 80-82, thunderstorm 95-99. A positive current precipitation value
-# also counts, so light rain below the old 0.10 mm cutoff is no longer hidden.
-marker = '    private void updateRainFrames() {'
-helper = '''    // V0912_RAIN_SIGNAL_USES_PRECIP_AND_WMO_CODE\n    private static boolean isRainSignal(WeatherPoint p) {\n        if (p == null) return false;\n        if (Double.isFinite(p.precipitation) && p.precipitation > 0.0d) return true;\n        int c = p.weatherCode;\n        return (c >= 51 && c <= 57) || (c >= 61 && c <= 67) ||\n               (c >= 80 && c <= 82) || (c >= 95 && c <= 99);\n    }\n\n'''
-if helper.strip() not in s:
-    if marker not in s:
-        raise SystemExit("updateRainFrames anchor missing")
-    s = s.replace(marker, helper + marker, 1)
+old_lt = "p.precipitation < 0.10d"
+count_lt = s.count(old_lt)
+if count_lt < 1:
+    raise SystemExit(f"rain <0.10 rule not found (count={count_lt})")
+s = s.replace(old_lt, "p.precipitation <= 0.0d")
 
-s = repl(
-    s,
-    '                if (p != null && Double.isFinite(p.precipitation) && p.precipitation >= 0.10d) { any = true; break; }',
-    '                if (isRainSignal(p)) { any = true; break; }',
-    "rain any-signal rule",
-)
+anchor = "    private void updateRainFrames() {"
+if anchor not in s:
+    raise SystemExit("updateRainFrames anchor missing")
+s = s.replace(anchor, "    // V0912_WEB_NATIVE_RAIN_PARITY_ANY_POSITIVE_PRECIP\n" + anchor, 1)
 
-s = repl(
-    s,
-    '                if (p == null || !Double.isFinite(p.lat) || !Double.isFinite(p.lon) || !Double.isFinite(p.precipitation)) continue;\n                boolean isHeavy = p.precipitation >= 2.0d;\n                if (p.precipitation < 0.10d || isHeavy != heavy) continue;',
-    '                if (p == null || !Double.isFinite(p.lat) || !Double.isFinite(p.lon) || !isRainSignal(p)) continue;\n                double mm = Double.isFinite(p.precipitation) ? Math.max(0.0d, p.precipitation) : 0.0d;\n                boolean isHeavy = mm >= 2.0d || (p.weatherCode >= 95 && p.weatherCode <= 99);\n                if (isHeavy != heavy) continue;',
-    "rain streak eligibility",
-)
-s = repl(
-    s,
-    '                int count = heavy ? Math.min(18, 8 + (int)Math.round(Math.min(10d, p.precipitation) * 1.2d))\n                                  : Math.min(10, 4 + (int)Math.round(Math.min(2d, p.precipitation) * 2.0d));',
-    '                int count = heavy ? Math.min(18, 8 + (int)Math.round(Math.min(10d, mm) * 1.2d))\n                                  : Math.min(10, 4 + (int)Math.round(Math.min(2d, mm) * 2.0d));',
-    "rain streak count",
-)
-s = repl(
-    s,
-    '                    JSONObject props = new JSONObject().put("district", p.district).put("precipitation", p.precipitation);',
-    '                    JSONObject props = new JSONObject().put("district", p.district).put("precipitation", p.precipitation).put("weather_code", p.weatherCode);',
-    "rain props",
-)
-s = repl(
-    s,
-    '                    if (rainOnly) use = Double.isFinite(p.precipitation) && p.precipitation >= 0.10d;',
-    '                    if (rainOnly) use = isRainSignal(p);',
-    "rain polygon eligibility",
-)
-s = repl(
-    s,
-    '                    cp.put("temperature", p.temperature);',
-    '                    cp.put("temperature", p.temperature);\n                    cp.put("weather_code", p.weatherCode);',
-    "polygon weather code",
-)
+# If Open-Meteo reports a rain-family WMO weather code while the rounded current
+# precipitation value is 0.0, pass a tiny non-zero map-only signal. The displayed
+# weather value remains the real Open-Meteo precipitation; only the animation
+# eligibility uses this fallback signal.
+ui_anchor = "    private String weatherCodeText(int code,double precipitation){"
+if ui_anchor not in u:
+    raise SystemExit("weatherCodeText anchor missing")
+helper = '''    // V0912_RAIN_WMO_CODE_FALLBACK_FOR_NATIVE_MAP\n    private static double nativeRainSignalMm(DistrictWeather d){\n        if(d==null)return 0.0d;\n        if(Double.isFinite(d.precip)&&d.precip>0.0d)return d.precip;\n        int c=d.code;\n        boolean rain=(c>=51&&c<=57)||(c>=61&&c<=67)||(c>=80&&c<=82)||(c>=95&&c<=99);\n        return rain?0.01d:0.0d;\n    }\n'''
+u = u.replace(ui_anchor, helper + ui_anchor, 1)
 
-# District weather already receives Open-Meteo weather_code; pass it into the native map overlay.
-u = repl(
-    u,
-    'new WeatherMapOverlayController.WeatherPoint(d.name,d.lat,d.lon,d.cloud,d.precip,d.temp)',
-    'new WeatherMapOverlayController.WeatherPoint(d.name,d.lat,d.lon,d.cloud,d.precip,d.temp,d.code)',
-    "NativeFullActivity overlay weather code",
-)
+old_ctor = "new WeatherMapOverlayController.WeatherPoint(d.name,d.lat,d.lon,d.cloud,d.precip,d.temp)"
+ctor_count = u.count(old_ctor)
+if ctor_count < 1:
+    raise SystemExit(f"WeatherPoint constructor call not found (count={ctor_count})")
+u = u.replace(old_ctor, "new WeatherMapOverlayController.WeatherPoint(d.name,d.lat,d.lon,d.cloud,nativeRainSignalMm(d),d.temp)")
 
 # Version only after the verified v0.9.11 patch chain has completed.
-g = repl(g, 'versionCode 28', 'versionCode 29', "versionCode")
-g = repl(
-    g,
-    "versionName '0.9.11-river2km-events-language-ninda'",
-    "versionName '0.9.12-native-rain-parity'",
-    "versionName",
-)
+if g.count("versionCode 28") != 1:
+    raise SystemExit("versionCode 28 missing")
+g = g.replace("versionCode 28", "versionCode 29", 1)
+if g.count("versionName '0.9.11-river2km-events-language-ninda'") != 1:
+    raise SystemExit("v0.9.11 versionName missing")
+g = g.replace("versionName '0.9.11-river2km-events-language-ninda'", "versionName '0.9.12-native-rain-parity'", 1)
 
 OVERLAY.write_text(s, encoding="utf-8")
 UI.write_text(u, encoding="utf-8")
 GRADLE.write_text(g, encoding="utf-8")
 
-print("V0912_NATIVE_RAIN_PARITY_PATCHED")
+print(f"V0912_NATIVE_RAIN_PARITY_PATCHED thresholds={count_ge}/{count_lt} constructors={ctor_count}")

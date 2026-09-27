@@ -1,0 +1,36 @@
+name: Validate SATHI v0.9.18 branch
+
+on:
+  push:
+    branches:
+      - fix/v0-9-18-sathi-next-level
+    paths:
+      - 'floodsafe-android-app/**'
+      - 'floodsafe-nepal/v25/sathi-flood-ai/**'
+      - 'floodsafe-nepal/v25/index.html'
+      - '.github/workflows/validate-sathi-v0918.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Check web SATHI JavaScript syntax
+        run: node --check floodsafe-nepal/v25/sathi-flood-ai/voice-human-v0918.js
+      - name: Compile native SATHI and assemble debug APK
+        run: gradle -p floodsafe-android-app :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+      - name: Verify SATHI native class packaged
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
+          echo 'SATHI v0.9.18 validation PASS'

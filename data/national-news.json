@@ -1,28 +1,56 @@
 {
-  "generated_at": "2026-09-27T06:14:21.373577+05:45",
-  "updated_at_npt": "27 Sep 06:14 NPT",
+  "generated_at": "2026-09-27T11:23:55.527393+05:45",
+  "updated_at_npt": "27 Sep 11:23 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "मर्स्याङ्दीको बाढीले तालगाउँ घेरियो, पालिका अध्यक्ष भन्छन्– गाउँ नै नाकाबन्दीको अवस्थामा छ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595208/talgaun-surrounded-by-marsyangdi-floods-municipality-chairman-says-the-village-is-under-blockade",
+      "published_at": "2026-09-27T11:16:20+05:45",
+      "flash": true
+    },
+    {
+      "title": "बागलुङको तमानखोलामा पनि पहिरो, मानवीय क्षतिको आशङ्का",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595207/landslide-in-tamankhola-baglung-human-casualties-suspected",
+      "published_at": "2026-09-27T11:05:50+05:45",
+      "flash": true
+    },
+    {
+      "title": "कालीगण्डकीले पोखरे बगरको पुल बगायो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595205/kaligandaki-washes-away-pokhre-bagar-bridge",
+      "published_at": "2026-09-27T10:58:06+05:45",
+      "flash": true
+    },
+    {
+      "title": "हिम्लुङ हिमाल आधार शिविरमा हिमपहिरो, १० जना सम्पर्कविहीन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595198/avalanche-at-himlung-himal-base-camp-10-people-missing",
+      "published_at": "2026-09-27T10:34:22+05:45",
+      "flash": true
+    },
+    {
+      "title": "पाल्पामा पहिरोले घर पुरिँदा तीन जना बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595184/three-people-missing-after-landslide-buries-house-in-palpa",
+      "published_at": "2026-09-27T09:32:45+05:45",
+      "flash": false
+    },
+    {
+      "title": "नारायणीमा जलसतह खतराको तहभन्दा माथि, बस्तीमा पस्न थाल्यो बाढी (तस्बिरहरू)",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595182/water-level-in-narayani-rises-above-danger-level-floods-begin-to-enter-settlements-photos",
+      "published_at": "2026-09-27T09:17:49+05:45",
+      "flash": false
+    },
     {
       "title": "बर्दियामा वर्षाले तीन घरमा क्षति",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/595155/rain-damages-three-houses-in-bardiya",
       "published_at": "2026-09-27T05:36:01+05:45",
-      "flash": true
-    },
-    {
-      "title": "बाढी र झरीको असर पर्यटन व्यवसायमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595149/impact-of-floods-and-rain-on-tourism-business",
-      "published_at": "2026-09-27T05:12:24+05:45",
-      "flash": false
-    },
-    {
-      "title": "पर्यटक सुरक्षाका लागि एक्यापद्वारा पर्यटक परमिट बन्द",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595148/acap-suspends-tourist-permits-for-tourist-safety",
-      "published_at": "2026-09-27T00:15:00+05:45",
       "flash": false
     }
   ],
@@ -42,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 3
+      "flash": 4,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,

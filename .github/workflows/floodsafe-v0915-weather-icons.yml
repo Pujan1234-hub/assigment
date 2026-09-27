@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/floodsafe-v0915-weather-icons.yml'
       - 'floodsafe-android-app/patch_native_v0915_weather_icons.py'
+      - 'floodsafe-android-app/fix_v0915_weather_icon_patch_script.py'
   workflow_dispatch:
 
 permissions:
@@ -71,6 +72,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 floodsafe-android-app/fix_v0915_weather_icon_patch_script.py
           python3 floodsafe-android-app/patch_native_v0915_weather_icons.py
 
       - name: Verify web-style current weather icons

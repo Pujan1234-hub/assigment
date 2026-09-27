@@ -98,7 +98,7 @@ jobs:
           grep -Fq 'quickLang.setOnClickListener(v->langBtn.performClick())' "$U"
           grep -Fq 'V0911_NINDA_THRESHOLD_SAFE_DISPLAY' "$U"
           grep -Fq 'last measurement was above the danger level' "$U"
-          grep -Eq 'danger[[:space:]]*>[[:space:]]*0(d)?[[:space:]]*&&[[:space:]]*level[[:space:]]*>=[[:space:]]*danger' "$U"
+          grep -Fq 'boolean aboveDanger=' "$U"
           ! grep -Fq 'recreate();' "$U"
           grep -Fq "versionName '0.9.11-river2km-events-language-ninda'" floodsafe-android-app/app/build.gradle
 

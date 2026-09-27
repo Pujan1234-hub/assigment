@@ -14,13 +14,11 @@ def repl(text: str, old: str, new: str, label: str) -> str:
         raise SystemExit(f"{label}: expected exactly one match, got {n}")
     return text.replace(old, new, 1)
 
-# v0.9.14 must already be present in the rebuilt chain.
 if 'V0914_CURRENT_RAIN_ONLY' not in s:
     raise SystemExit('v0.9.14 current-rain-only overlay missing')
 if 'final int weatherCode;' not in s:
     raise SystemExit('weatherCode support missing')
 
-# Add MapLibre SymbolLayer import.
 s = repl(
     s,
     'import org.maplibre.android.style.layers.LineLayer;\nimport org.maplibre.android.style.sources.GeoJsonSource;',
@@ -28,7 +26,6 @@ s = repl(
     'SymbolLayer import',
 )
 
-# Add current-weather icon sources/layers/images.
 s = repl(
     s,
     '    private static final String SRC_DHM_RAIN_HEAVY = "fs-dhm-rain-streak-heavy";',
@@ -54,7 +51,6 @@ s = repl(
     'weather icon layers/images',
 )
 
-# Install icon layers after weather rain layers.
 s = repl(
     s,
     '                ensureRainLine(style, SRC_DHM_RAIN_HEAVY, LYR_DHM_RAIN_HEAVY, "#e8fbff", 2.45f, 0.90f);',
@@ -66,20 +62,19 @@ s = repl(
     'install weather icons',
 )
 
-# Populate icon sources on each weather refresh.
+# Insert immediately before refresh's applyPulse/updateRainFrames pair. This is stable
+# across the v0.9.13/v0.9.14 generated overlay even when rain-source population changes.
 s = repl(
     s,
-    '                setGeo(style, SRC_RAIN, polygonBucket(snapshot, 0d, 101d, true));\n                applyPulse();',
-    '                setGeo(style, SRC_RAIN, polygonBucket(snapshot, 0d, 101d, true));\n'
+    '                applyPulse();\n                updateRainFrames();',
     '                setGeo(style, SRC_ICON_CLEAR, weatherIconPoints(snapshot, "clear"));\n'
     '                setGeo(style, SRC_ICON_CLOUD, weatherIconPoints(snapshot, "cloud"));\n'
     '                setGeo(style, SRC_ICON_RAIN, weatherIconPoints(snapshot, "rain"));\n'
     '                setGeo(style, SRC_ICON_THUNDER, weatherIconPoints(snapshot, "thunder"));\n'
-    '                applyPulse();',
+    '                applyPulse();\n                updateRainFrames();',
     'populate weather icons',
 )
 
-# Clear icons when weather layer is disabled.
 s = repl(
     s,
     '        setGeo(style, SRC_DHM_RAIN_HEAVY, EMPTY);',
@@ -91,7 +86,6 @@ s = repl(
     'clear weather icons',
 )
 
-# Add icon layer + emoji bitmap helper before setGeo().
 anchor = '    private static void setGeo(Style style, String sourceId, String json) {'
 if anchor not in s:
     raise SystemExit('setGeo anchor missing')
@@ -109,7 +103,6 @@ helpers = r'''    // V0915_WEB_STYLE_WEATHER_ICONS
                     org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap(false),
                     org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement(false)
             );
-            // Keep weather symbols under official rivers/stations so safety data stays readable.
             if (style.getLayer("fs-rivers-layer") != null) style.addLayerBelow(layer, "fs-rivers-layer");
             else style.addLayer(layer);
         }
@@ -135,7 +128,6 @@ helpers = r'''    // V0915_WEB_STYLE_WEATHER_ICONS
 '''
 s = s.replace(anchor, helpers + anchor, 1)
 
-# Add current condition classifier + point GeoJSON. Thunder wins over rain; rain wins over cloud.
 anchor2 = '    private String polygonBucket(List<WeatherPoint> weather, double minCloud, double maxCloud, boolean rainOnly) {'
 if anchor2 not in s:
     raise SystemExit('polygonBucket anchor missing')
@@ -177,7 +169,6 @@ icon_methods = r'''    private static String currentWeatherKind(WeatherPoint p) 
 '''
 s = s.replace(anchor2, icon_methods + anchor2, 1)
 
-# Version bump after v0.9.14 patch chain.
 g = repl(g, 'versionCode 31', 'versionCode 32', 'versionCode')
 g = repl(g, "versionName '0.9.14-current-rain-only'", "versionName '0.9.15-current-weather-icons'", 'versionName')
 

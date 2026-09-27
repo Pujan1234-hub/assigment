@@ -1,0 +1,166 @@
+name: FloodSafe v0.9.18 STABILITY PERFORMANCE
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0908-storm-events-compact-gauge ]
+    paths:
+      - '.github/workflows/floodsafe-v0918-stability-performance.yml'
+      - 'floodsafe-android-app/patch_native_v0918_stability_performance.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Rebuild verified v0.9.17 native base
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_language_safe.py
+          python3 floodsafe-android-app/patch_native_weather_complete.py
+          python3 floodsafe-android-app/patch_native_weather_station_correction.py
+          python3 floodsafe-android-app/patch_native_v0906_district_196_rain.py
+          python3 floodsafe-android-app/patch_native_v0907_district_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step1_river_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step2_compact_district.py
+          python3 floodsafe-android-app/fix_v0908_step3_weather_refresh_anchor.py
+          python3 floodsafe-android-app/patch_native_v0908_step3_storm_notifications.py
+          python3 floodsafe-android-app/patch_native_v0909_sync_sathi_language.py
+          python3 floodsafe-android-app/fix_v0909_district_lambda_compile.py
+          python3 floodsafe-android-app/patch_native_v0910_step1_sathi_chat.py
+          python3 floodsafe-android-app/patch_native_v0910_step2_map_labels.py
+          python3 floodsafe-android-app/run_v0911_patch_fixed.py
+          python3 floodsafe-android-app/fix_v0911_threshold_order.py
+          python3 floodsafe-android-app/patch_native_v0912_weather_rain_parity.py
+          python3 floodsafe-android-app/patch_native_v0913_dhm_rain_overlay.py
+          python3 floodsafe-android-app/patch_native_v0914_current_rain_only.py
+          python3 floodsafe-android-app/fix_v0915_weather_icon_patch_script.py
+          python3 floodsafe-android-app/patch_native_v0915_weather_icons.py
+          python3 floodsafe-android-app/fix_v0916_patch_script.py
+          python3 floodsafe-android-app/fix_v0916_patch_script_v2.py
+          python3 floodsafe-android-app/fix_v0916_patch_script_v3.py
+          python3 floodsafe-android-app/patch_native_v0916_sathi_knowledge.py
+          python3 floodsafe-android-app/fix_v0917_marker_comments.py
+          python3 floodsafe-android-app/patch_native_v0917_weather_runtime.py
+          grep -Fq "versionCode 34" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.9.17-native-weather-runtime'" floodsafe-android-app/app/build.gradle
+
+      - name: Freeze systems outside intended UI and background scheduler repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          sha256sum \
+            "$J/BipadRealtimeStationFeed.java" \
+            "$J/OfficialRiverData.java" \
+            "$J/FloodMonitorService.java" \
+            "$J/FloodSafeNativeMapView.java" \
+            "$J/AffectedRiverAlertMatcher.java" \
+            "$J/RiverAlertWorker.java" \
+            "$J/RainAlertWorker.java" \
+            "$J/WeatherMapOverlayController.java" \
+            "$J/DhmCurrentRainVerifier.java" > /tmp/v0918-protected.before
+
+      - name: Apply v0.9.18 stability and performance repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_v0918_stability_performance.py
+
+      - name: Verify no unrelated regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          U="$J/NativeFullActivity.java"
+          M="$J/FloodLiveGaugeMonitor.java"
+          sha256sum \
+            "$J/BipadRealtimeStationFeed.java" \
+            "$J/OfficialRiverData.java" \
+            "$J/FloodMonitorService.java" \
+            "$J/FloodSafeNativeMapView.java" \
+            "$J/AffectedRiverAlertMatcher.java" \
+            "$J/RiverAlertWorker.java" \
+            "$J/RainAlertWorker.java" \
+            "$J/WeatherMapOverlayController.java" \
+            "$J/DhmCurrentRainVerifier.java" > /tmp/v0918-protected.after
+          cmp /tmp/v0918-protected.before /tmp/v0918-protected.after
+          grep -Fq 'V0918_ATOMIC_LANGUAGE_SWITCH' "$U"
+          grep -Fq 'V0918_WEATHER_HEADLINE_ONLY' "$U"
+          grep -Fq 'V0918_LOCAL_DEVICE_CLOCK' "$U"
+          grep -Fq 'V0917_NATIVE_WEATHER_PROXY' "$U"
+          grep -Fq 'V0917_SATHI_WEATHER_PROXY' "$U"
+          grep -Fq 'V0916_KNOWLEDGE_FALLBACK' "$U"
+          grep -Fq 'V0918_LOW_POWER_SOURCE_SCHEDULE' "$M"
+          grep -Fq 'RIVER_POLL_MS=15_000L' "$M"
+          grep -Fq 'RAIN_POLL_MS=60_000L' "$M"
+          grep -Fq 'HYDRO_POLL_MS=60_000L' "$M"
+          grep -Fq 'RADIUS_KM=2d' "$M"
+          grep -Fq 'WARNING_REPEAT_MS=90L*60L*1000L' "$M"
+          grep -Fq 'DANGER_REPEAT_MS=30L*60L*1000L' "$M"
+          ! grep -Fq 'handler.postDelayed(this,1_000L)' "$M"
+          grep -Fq "versionCode 35" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.9.18-stability-performance'" floodsafe-android-app/app/build.gradle
+
+      - name: Test and assemble native APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/v0918.log
+
+      - name: Verify and stage APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          OUT='FloodSafe-Nepal-v0.9.18-STABLE-LOW-POWER.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          "$APKSIGNER" verify --verbose "$APK"
+          cp "$APK" "$OUT"
+          sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.18-SHA256.txt
+          printf '%s\n' \
+            'FloodSafe Nepal v0.9.18 stable / low-power native build' \
+            '- fixes partial language switching by rebuilding all native labels atomically' \
+            '- weather hero shows condition only; SATHI keeps rich weather detail' \
+            '- hero clock follows device local time; official river times stay Nepal official time' \
+            '- background network polling reduced from one-second multi-endpoint loop to staggered source polling' \
+            '- river source 15s; rain/hydrology 60s; 2 km Warning/Danger semantics unchanged' \
+            '- BIPAD river/station/map/weather overlay code unchanged from v0.9.17' \
+            > FloodSafe-Nepal-v0.9.18-NOTES.txt
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0918-STABLE-LOW-POWER
+          path: |
+            FloodSafe-Nepal-v0.9.18-STABLE-LOW-POWER.apk
+            FloodSafe-Nepal-v0.9.18-SHA256.txt
+            FloodSafe-Nepal-v0.9.18-NOTES.txt
+          retention-days: 14
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0918-build-log
+          path: /tmp/v0918.log
+          if-no-files-found: ignore
+          retention-days: 2

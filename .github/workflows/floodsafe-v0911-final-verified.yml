@@ -1,0 +1,184 @@
+name: FloodSafe v0.9.11 FINAL VERIFIED
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0908-storm-events-compact-gauge ]
+    paths:
+      - '.github/workflows/floodsafe-v0911-final-verified.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Rebuild verified v0.9.10 base
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_language_safe.py
+          python3 floodsafe-android-app/patch_native_weather_complete.py
+          python3 floodsafe-android-app/patch_native_weather_station_correction.py
+          python3 floodsafe-android-app/patch_native_v0906_district_196_rain.py
+          python3 floodsafe-android-app/patch_native_v0907_district_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step1_river_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step2_compact_district.py
+          python3 floodsafe-android-app/fix_v0908_step3_weather_refresh_anchor.py
+          python3 floodsafe-android-app/patch_native_v0908_step3_storm_notifications.py
+          python3 floodsafe-android-app/patch_native_v0909_sync_sathi_language.py
+          python3 floodsafe-android-app/fix_v0909_district_lambda_compile.py
+          python3 floodsafe-android-app/patch_native_v0910_step1_sathi_chat.py
+          python3 floodsafe-android-app/patch_native_v0910_step2_map_labels.py
+          grep -Fq "versionName '0.9.10-sathi-chat-map-labels'" floodsafe-android-app/app/build.gradle
+
+      - name: Freeze everything outside requested v0.9.11 scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          sha256sum \
+            "$J/BipadRealtimeStationFeed.java" \
+            "$J/OfficialRiverData.java" \
+            "$J/DhmRainMirror.java" \
+            "$J/FloodMonitorService.java" \
+            "$J/FloodSafeNativeMapView.java" \
+            "$J/WeatherMapOverlayController.java" \
+            "$J/RiverAlertWorker.java" \
+            > /tmp/v0911-protected.before
+
+      - name: Apply only requested v0.9.11 fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_v0911_river2km_events_language_ninda.py
+
+      - name: Verify affected-river 2 km alarm rule
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          grep -Fq 'V0911_AFFECTED_RIVER_2KM_MATCHER' "$J/AffectedRiverAlertMatcher.java"
+          grep -Fq 'distanceToAffectedRiverKm(app,riverName,stationName,la,lo,homeLat,homeLon)' "$J/FloodLiveGaugeMonitor.java"
+          grep -Fq 'V0911_FAST_ALERT_USES_AFFECTED_RIVER_GEOMETRY' "$J/FloodLiveGaugeMonitor.java"
+          ! grep -Fq 'haversineKm(homeLat,homeLon,la,lo)' "$J/FloodLiveGaugeMonitor.java"
+          grep -Fq 'no unrelated nearest-river fallback' "$J/AffectedRiverAlertMatcher.java"
+
+      - name: Verify 2-hour and rain start-stop events
+        shell: bash
+        run: |
+          set -euo pipefail
+          R='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java'
+          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 2L * 60L * 60L * 1000L' "$R"
+          grep -Fq 'V0911_RAIN_START_STOP_EVENTS' "$R"
+          grep -Fq '🌧️ वर्षा सुरु भएको देखिन्छ' "$R"
+          grep -Fq '🌤️ वर्षा रोकिएको देखिन्छ' "$R"
+          grep -Fq 'V0911_NO_DUPLICATE_RAIN_START' "$R"
+
+      - name: Verify language and Ninda threshold display
+        shell: bash
+        run: |
+          set -euo pipefail
+          U='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          grep -Fq 'V0911_ALWAYS_VISIBLE_LANGUAGE' "$U"
+          grep -Fq 'V0911_LANGUAGE_BUTTON_PERSISTENT' "$U"
+          grep -Fq 'quickLang.setOnClickListener(v->langBtn.performClick())' "$U"
+          grep -Fq 'V0911_NINDA_THRESHOLD_SAFE_DISPLAY' "$U"
+          grep -Fq 'last measurement was above the danger level' "$U"
+          grep -Fq 'danger>0&&level>=danger' "$U"
+          ! grep -Fq 'recreate();' "$U"
+          grep -Fq "versionName '0.9.11-river2km-events-language-ninda'" floodsafe-android-app/app/build.gradle
+
+      - name: Verify protected map, data and fallback alert files unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          sha256sum \
+            "$J/BipadRealtimeStationFeed.java" \
+            "$J/OfficialRiverData.java" \
+            "$J/DhmRainMirror.java" \
+            "$J/FloodMonitorService.java" \
+            "$J/FloodSafeNativeMapView.java" \
+            "$J/WeatherMapOverlayController.java" \
+            "$J/RiverAlertWorker.java" \
+            > /tmp/v0911-protected.after
+          cmp /tmp/v0911-protected.before /tmp/v0911-protected.after
+
+      - name: Verify complete Nepal district source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          fs=json.loads(pathlib.Path('floodsafe-nepal/v24/nepal-districts.geojson').read_text()).get('features') or []
+          names=[(f.get('properties') or {}).get('nameEn','').strip() for f in fs]
+          assert len(fs)==77, len(fs)
+          assert len(set(names))==77, len(set(names))
+          assert all(names)
+          print('DISTRICTS=77')
+          PY
+
+      - name: Test and assemble APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -o pipefail
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/v0911.log
+
+      - name: Verify APK and stage files
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          OUT='FloodSafe-Nepal-v0.9.11-RIVER2KM-EVENTS-LANGUAGE-NINDA.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          "$APKSIGNER" verify --verbose "$APK"
+          cp "$APK" "$OUT"
+          sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.11-SHA256.txt
+          printf '%s\n' \
+            'FloodSafe Nepal v0.9.11 final verified build' \
+            '- Fast Warning/Danger emergency path measures user distance to safely matched affected river geometry, not station marker' \
+            '- No unrelated nearest-river fallback; unsafe river match means no emergency push' \
+            '- Weather digest interval remains 2 hours; explicit rain-start and rain-stop event notifications are enabled' \
+            '- Always-visible EN/Nepali control reuses the no-recreate language switch, preserving map/location state' \
+            '- Station dialog never labels a stale threshold-crossing reading Normal; Ninda-style values are shown as stale historical threshold crossing unless fresh' \
+            '- BIPAD feed, DHM mirror, official river source, map/river geometry, weather overlay, FloodMonitorService and safe fallback RiverAlertWorker are byte-for-byte unchanged from v0.9.10' \
+            > FloodSafe-Nepal-v0.9.11-NOTES.txt
+
+      - name: Upload final APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0911-FINAL-VERIFIED
+          path: |
+            FloodSafe-Nepal-v0.9.11-RIVER2KM-EVENTS-LANGUAGE-NINDA.apk
+            FloodSafe-Nepal-v0.9.11-SHA256.txt
+            FloodSafe-Nepal-v0.9.11-NOTES.txt
+          retention-days: 14
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0911-build-log
+          path: /tmp/v0911.log
+          if-no-files-found: ignore
+          retention-days: 2

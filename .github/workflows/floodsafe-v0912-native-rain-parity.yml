@@ -1,0 +1,171 @@
+name: FloodSafe v0.9.12 NATIVE RAIN PARITY
+
+on:
+  push:
+    branches: [ fix/floodsafe-v0908-storm-events-compact-gauge ]
+    paths:
+      - '.github/workflows/floodsafe-v0912-native-rain-parity.yml'
+      - 'floodsafe-android-app/patch_native_v0912_weather_rain_parity.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Rebuild verified v0.9.11 native base
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_language_safe.py
+          python3 floodsafe-android-app/patch_native_weather_complete.py
+          python3 floodsafe-android-app/patch_native_weather_station_correction.py
+          python3 floodsafe-android-app/patch_native_v0906_district_196_rain.py
+          python3 floodsafe-android-app/patch_native_v0907_district_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step1_river_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step2_compact_district.py
+          python3 floodsafe-android-app/fix_v0908_step3_weather_refresh_anchor.py
+          python3 floodsafe-android-app/patch_native_v0908_step3_storm_notifications.py
+          python3 floodsafe-android-app/patch_native_v0909_sync_sathi_language.py
+          python3 floodsafe-android-app/fix_v0909_district_lambda_compile.py
+          python3 floodsafe-android-app/patch_native_v0910_step1_sathi_chat.py
+          python3 floodsafe-android-app/patch_native_v0910_step2_map_labels.py
+          python3 floodsafe-android-app/run_v0911_patch_fixed.py
+          python3 floodsafe-android-app/fix_v0911_threshold_order.py
+          grep -Fq "versionCode 28" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.9.11-river2km-events-language-ninda'" floodsafe-android-app/app/build.gradle
+
+      - name: Freeze river station and official data system
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          sha256sum \
+            "$J/BipadRealtimeStationFeed.java" \
+            "$J/OfficialRiverData.java" \
+            "$J/DhmRainMirror.java" \
+            "$J/FloodMonitorService.java" \
+            "$J/FloodSafeNativeMapView.java" \
+            "$J/AffectedRiverAlertMatcher.java" \
+            "$J/FloodLiveGaugeMonitor.java" \
+            "$J/RiverAlertWorker.java" \
+            > /tmp/v0912-protected.before
+
+      - name: Apply native weather rain parity only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_v0912_weather_rain_parity.py
+
+      - name: Verify web-native rain parity logic
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          W="$J/WeatherMapOverlayController.java"
+          U="$J/NativeFullActivity.java"
+          grep -Fq 'V0912_WEB_NATIVE_RAIN_PARITY' "$W"
+          grep -Fq 'V0912_RAIN_SIGNAL_USES_PRECIP_AND_WMO_CODE' "$W"
+          grep -Fq 'p.precipitation > 0.0d' "$W"
+          grep -Fq '(c >= 51 && c <= 57)' "$W"
+          grep -Fq '(c >= 61 && c <= 67)' "$W"
+          grep -Fq '(c >= 80 && c <= 82)' "$W"
+          grep -Fq '(c >= 95 && c <= 99)' "$W"
+          grep -Fq 'if (rainOnly) use = isRainSignal(p);' "$W"
+          grep -Fq 'new WeatherMapOverlayController.WeatherPoint(d.name,d.lat,d.lon,d.cloud,d.precip,d.temp,d.code)' "$U"
+          ! grep -Fq 'p.precipitation >= 0.10d' "$W"
+          ! grep -Fq 'p.precipitation < 0.10d' "$W"
+          grep -Fq "versionCode 29" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.9.12-native-rain-parity'" floodsafe-android-app/app/build.gradle
+
+      - name: Verify v0.9.11 safety features remain
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          U="$J/NativeFullActivity.java"
+          grep -Fq 'V0911_THRESHOLD_ORDER_GUARD' "$U"
+          grep -Fq 'V0911_INVERTED_THRESHOLDS_NOT_TRUSTED' "$U"
+          grep -Fq 'V0911_ALWAYS_VISIBLE_LANGUAGE' "$U"
+          grep -Fq 'V0911_AFFECTED_RIVER_2KM_MATCHER' "$J/AffectedRiverAlertMatcher.java"
+          grep -Fq 'V0911_FAST_ALERT_USES_AFFECTED_RIVER_GEOMETRY' "$J/FloodLiveGaugeMonitor.java"
+          grep -Fq 'V0911_RAIN_START_STOP_EVENTS' "$J/RainAlertWorker.java"
+
+      - name: Verify river and official data files are byte-for-byte unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          sha256sum \
+            "$J/BipadRealtimeStationFeed.java" \
+            "$J/OfficialRiverData.java" \
+            "$J/DhmRainMirror.java" \
+            "$J/FloodMonitorService.java" \
+            "$J/FloodSafeNativeMapView.java" \
+            "$J/AffectedRiverAlertMatcher.java" \
+            "$J/FloodLiveGaugeMonitor.java" \
+            "$J/RiverAlertWorker.java" \
+            > /tmp/v0912-protected.after
+          cmp /tmp/v0912-protected.before /tmp/v0912-protected.after
+
+      - name: Test and assemble native APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -o pipefail
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/v0912.log
+
+      - name: Verify APK and stage artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          OUT='FloodSafe-Nepal-v0.9.12-NATIVE-RAIN-PARITY.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          "$APKSIGNER" verify --verbose "$APK"
+          cp "$APK" "$OUT"
+          sha256sum "$OUT" | tee FloodSafe-Nepal-v0.9.12-SHA256.txt
+          printf '%s\n' \
+            'FloodSafe Nepal v0.9.12 native rain parity build' \
+            '- Native weather map now treats any positive current precipitation as rain' \
+            '- Native weather map also uses Open-Meteo WMO drizzle/rain/showers/thunderstorm codes when precipitation rounds to 0.0 mm' \
+            '- Existing river geometry, BIPAD station feed, DHM mirror, station markers, affected-river 2 km alerts and river status logic are unchanged from verified v0.9.11' \
+            > FloodSafe-Nepal-v0.9.12-NOTES.txt
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0912-NATIVE-RAIN-PARITY
+          path: |
+            FloodSafe-Nepal-v0.9.12-NATIVE-RAIN-PARITY.apk
+            FloodSafe-Nepal-v0.9.12-SHA256.txt
+            FloodSafe-Nepal-v0.9.12-NOTES.txt
+          retention-days: 14
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0912-build-log
+          path: /tmp/v0912.log
+          if-no-files-found: ignore
+          retention-days: 2

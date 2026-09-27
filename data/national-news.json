@@ -1,15 +1,22 @@
 {
-  "generated_at": "2026-09-28T00:52:32.823560+05:45",
-  "updated_at_npt": "28 Sep 00:52 NPT",
+  "generated_at": "2026-09-28T03:53:36.653724+05:45",
+  "updated_at_npt": "28 Sep 03:53 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "सडक अवरुद्ध भएपछि भैरहवामा दर्जनौँ बस रोकिए",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595388/dozens-of-buses-stopped-in-bhairahawa-after-road-blockage",
+      "published_at": "2026-09-28T01:15:03+05:45",
+      "flash": false
+    },
     {
       "title": "बागलुङमा पहिरोमा १० जनाको मृत्यु, एक बेपत्ता",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/595386/10-dead-one-missing-in-landslide-in-baglung",
       "published_at": "2026-09-28T00:37:28+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "जडीबुटी सङ्कलन गर्न आएका मुगुका एकको मृत्यु, दुई बेपत्ता",
@@ -26,52 +33,10 @@
       "flash": false
     },
     {
-      "title": "ताइजमा साउदी हवाई आक्रमण, ७ जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595380/saudi-airstrike-in-taiz-7-killed",
-      "published_at": "2026-09-27T22:31:24+05:45",
-      "flash": false
-    },
-    {
       "title": "मुख्य सडक अवरुद्ध भएपछि पुनः त्रिभुवन राजपथ वैकल्पिक मार्ग बन्दै",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/595377/tribhuvan-highway-becomes-alternative-route-again-after-main-road-blocked",
       "published_at": "2026-09-27T22:11:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "सप्तरीमा बाढीबाट पाँच सय परिवार विस्थापित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595371/five-hundred-families-displaced-by-floods-in-saptari",
-      "published_at": "2026-09-27T21:52:36+05:45",
-      "flash": false
-    },
-    {
-      "title": "लागुऔषध कारोबारी पक्राउ गर्न धनुषा प्रहरीले गर्‍यो हवाई फायर",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595370/dhanusha-police-fire-in-the-air-to-arrest-drug-trafficker",
-      "published_at": "2026-09-27T21:46:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपहिरोले क्षतिग्रस्त डुम्रे–बेँसीसहर–चामे सडकमा मर्मत तीव्र",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595364/repairs-are-underway-on-the-flood-damaged-dumre-besisahar-chame-road-efforts-are-underway-to-open-the-road-in-risky-areas",
-      "published_at": "2026-09-27T21:25:53+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपहिरोले गुल्मीका २३१ घर उच्च जोखिममा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595345/231-houses-in-gulmi-at-high-risk-due-to-floods-and-landslides",
-      "published_at": "2026-09-27T19:56:53+05:45",
-      "flash": false
-    },
-    {
-      "title": "२. तस्बिरमा हेर्नुहाेस् गाडी रिजर्भ गरेरै बाढी हेर्न पुग्नेकाे भिड",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595341/see-the-photo-of-the-crowd-of-people-who-reserved-cars-to-see-the-flood",
-      "published_at": "2026-09-27T19:34:45+05:45",
       "flash": false
     }
   ],
@@ -91,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 10
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

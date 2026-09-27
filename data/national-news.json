@@ -1,56 +1,77 @@
 {
-  "generated_at": "2026-09-27T11:23:55.527393+05:45",
-  "updated_at_npt": "27 Sep 11:23 NPT",
+  "generated_at": "2026-09-27T16:31:01.434355+05:45",
+  "updated_at_npt": "27 Sep 16:31 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "मर्स्याङ्दीको बाढीले तालगाउँ घेरियो, पालिका अध्यक्ष भन्छन्– गाउँ नै नाकाबन्दीको अवस्थामा छ",
+      "title": "पूर्वप्रधानन्यायाधीश जबरालाई ‘जेनजीबाट सुरक्षा थ्रेट’ भनिएको भन्दै अभियन्ता सोडारीको आपत्ति",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595208/talgaun-surrounded-by-marsyangdi-floods-municipality-chairman-says-the-village-is-under-blockade",
-      "published_at": "2026-09-27T11:16:20+05:45",
+      "url": "https://www.ratopati.com/story/595292/activist-sodari-objects-to-former-chief-justice-jabra-being-called-a-security-threat-from-genji",
+      "published_at": "2026-09-27T16:24:31+05:45",
       "flash": true
     },
     {
-      "title": "बागलुङको तमानखोलामा पनि पहिरो, मानवीय क्षतिको आशङ्का",
+      "title": "कालीगण्डकीको बाढीले बेनीमा कटान गर्न थाल्यो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595207/landslide-in-tamankhola-baglung-human-casualties-suspected",
-      "published_at": "2026-09-27T11:05:50+05:45",
+      "url": "https://www.ratopati.com/story/595289/kaligandaki-floods-begin-to-erode-beni",
+      "published_at": "2026-09-27T16:12:19+05:45",
       "flash": true
     },
     {
-      "title": "कालीगण्डकीले पोखरे बगरको पुल बगायो",
+      "title": "पहिरोले घर बगायो, दुई घर जोखिममा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595205/kaligandaki-washes-away-pokhre-bagar-bridge",
-      "published_at": "2026-09-27T10:58:06+05:45",
+      "url": "https://www.ratopati.com/story/595283/landslide-sweeps-away-house-two-homes-at-risk",
+      "published_at": "2026-09-27T16:05:03+05:45",
       "flash": true
     },
     {
-      "title": "हिम्लुङ हिमाल आधार शिविरमा हिमपहिरो, १० जना सम्पर्कविहीन",
+      "title": "पाल्पामा पहिरोमा पुरिएर ५ जनाको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595198/avalanche-at-himlung-himal-base-camp-10-people-missing",
-      "published_at": "2026-09-27T10:34:22+05:45",
+      "url": "https://www.ratopati.com/story/595282/5-people-killed-in-landslide-in-palpa",
+      "published_at": "2026-09-27T16:03:28+05:45",
       "flash": true
     },
     {
-      "title": "पाल्पामा पहिरोले घर पुरिँदा तीन जना बेपत्ता",
+      "title": "अर्घाखाँचीको रङसिङ खोलामा बनेको पक्की पुलको उद्घाटन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595184/three-people-missing-after-landslide-buries-house-in-palpa",
-      "published_at": "2026-09-27T09:32:45+05:45",
+      "url": "https://www.ratopati.com/story/595281/inauguration-of-a-concrete-bridge-built-over-the-rangsing-river-in-arghakhanchi",
+      "published_at": "2026-09-27T15:57:44+05:45",
+      "flash": true
+    },
+    {
+      "title": "तिनाउ बाढीबाट प्रभावित परिवार भन्छन्– नदी किनारमा बस्नु बाध्यता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595276/families-affected-by-tinau-floods-say-they-are-forced-to-live-on-the-riverbank",
+      "published_at": "2026-09-27T15:39:52+05:45",
+      "flash": true
+    },
+    {
+      "title": "कुलेखानीमा जल सतह बढ्दा सिस्नेरी सडक बन्द",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595273/sisneri-road-closed-as-water-level-rises-in-kulekhani",
+      "published_at": "2026-09-27T15:29:40+05:45",
       "flash": false
     },
     {
-      "title": "नारायणीमा जलसतह खतराको तहभन्दा माथि, बस्तीमा पस्न थाल्यो बाढी (तस्बिरहरू)",
+      "title": "म्याग्दीको गिवाङमा पहिरो : दुई जनाको शव भेटियो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595182/water-level-in-narayani-rises-above-danger-level-floods-begin-to-enter-settlements-photos",
-      "published_at": "2026-09-27T09:17:49+05:45",
+      "url": "https://www.ratopati.com/story/595270/landslide-in-giwang-myagdi-two-bodies-found",
+      "published_at": "2026-09-27T15:13:25+05:45",
       "flash": false
     },
     {
-      "title": "बर्दियामा वर्षाले तीन घरमा क्षति",
+      "title": "पहिरोमा पुरिएका तीन जनाको शव फेला",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595155/rain-damages-three-houses-in-bardiya",
-      "published_at": "2026-09-27T05:36:01+05:45",
+      "url": "https://www.ratopati.com/story/595264/bodies-of-three-people-buried-in-landslide-found",
+      "published_at": "2026-09-27T14:49:46+05:45",
+      "flash": false
+    },
+    {
+      "title": "धनुषामा पहिरोले घर पुरिँदा एक महिलाको मृत्यु, चार जनाको उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595234/one-woman-dies-four-rescued-after-house-buried-by-landslide-in-dhanusha",
+      "published_at": "2026-09-27T13:11:01+05:45",
       "flash": false
     }
   ],
@@ -70,8 +91,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 7
+      "flash": 6,
+      "recent": 10
     },
     "Kathmandu Post": {
       "ok": true,
@@ -81,7 +102,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     }

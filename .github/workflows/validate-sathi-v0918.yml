@@ -29,7 +29,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          gradle -p floodsafe-android-app :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace 2>&1 | tee sathi-v0918-build.log
+          gradle -p floodsafe-android-app :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee sathi-v0918-build.log
           status=${PIPESTATUS[0]}
           echo "gradle_status=$status" >> "$GITHUB_OUTPUT"
           exit 0

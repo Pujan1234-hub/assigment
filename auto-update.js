@@ -69,7 +69,7 @@
     if(!card||!data) return;
     const status=card.querySelector('.status');
     if(id==='floodsafe' && status && data.version){
-      status.innerHTML='<i></i> Android v'+data.version+' · field test';
+      status.innerHTML='<i></i> Web v'+data.version+' · latest mirror';
     }
     let note=card.querySelector('.project-sync');
     if(!note){

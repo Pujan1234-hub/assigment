@@ -18,8 +18,8 @@ def once(text,old,new,label):
 
 # 1) Language switch: rebuild the native view from persisted language so every static
 # label changes together (bottom nav, weather stat labels, cards) instead of partial mutation.
-old_lang='langBtn.setOnClickListener(v->{english=!english;getSharedPreferences(PREFS,MODE_PRIVATE).edit().putBoolean(KEY_LANG,english).apply();applyLanguage();refreshRiverUi();});'
-new_lang='langBtn.setOnClickListener(v->{english=!english;getSharedPreferences(PREFS,MODE_PRIVATE).edit().putBoolean(KEY_LANG,english).apply();recreate();}); /* V0918_ATOMIC_LANGUAGE_SWITCH */'
+old_lang='langBtn.setOnClickListener(v->{english=!english;getSharedPreferences(PREFS,MODE_PRIVATE).edit().putBoolean(KEY_LANG,english).apply();applyTtsLanguage();v0909SkipMapUpdateOnce=true;applyLanguage();v0909TranslateStaticTree(root);refreshRiverUi();updateWeatherLayerUi();}); // V0909_FAST_LANGUAGE_NO_RECREATE'
+new_lang='langBtn.setOnClickListener(v->{english=!english;getSharedPreferences(PREFS,MODE_PRIVATE).edit().putBoolean(KEY_LANG,english).apply();applyTtsLanguage();recreate();}); /* V0918_ATOMIC_LANGUAGE_SWITCH */'
 u=once(u,old_lang,new_lang,'atomic language switch')
 
 # 2) Weather hero: keep rich detail for SATHI, but show only the condition headline in hero.

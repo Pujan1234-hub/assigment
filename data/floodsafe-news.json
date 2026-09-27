@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-27T10:48:11.772670Z",
+  "generated_at": "2026-09-27T15:23:45.953467Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "बाढी प्रभावित क्षेत्रहरूमा नेपाली सेनाको उद्धार कार्य जारी",
-      "url": "https://radionepalonline.com/2026/09/27/738535.html",
-      "published_at": "2026-09-27T10:30:36Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

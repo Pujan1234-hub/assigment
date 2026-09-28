@@ -40,10 +40,11 @@ jobs:
       - name: Android real-launcher reopen and crash smoke test
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 34
           arch: x86_64
           profile: pixel_2
-          disable-animations: true
+          disable-animations: false
+          emulator-boot-timeout: 900
           script: bash floodsafe-android-app/ci_reopen_smoke.sh
 
       - name: Upload crash diagnostics on failure

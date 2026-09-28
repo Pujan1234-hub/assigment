@@ -29,7 +29,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Load the exact historical v0.9.18 native build base
+      - name: Load exact historical v0.9.18 native base
         shell: bash
         run: |
           set -euo pipefail
@@ -39,7 +39,6 @@ jobs:
           cp "$J/MonitoringSafetyProvider.java" /tmp/current-v0918-overlay/
           cp "$J/SathiNextLevelV0918.java" /tmp/current-v0918-overlay/
           cp floodsafe-android-app/ci_reopen_smoke.sh /tmp/current-v0918-overlay/
-          cp floodsafe-android-app/app/build.gradle /tmp/current-v0918-overlay/build.gradle
           cp floodsafe-android-app/app/src/main/AndroidManifest.xml /tmp/current-v0918-overlay/AndroidManifest.xml
           git fetch --no-tags --depth=1 origin 00eab9a3d2a5256bcb353a24b39b549182367696
           git checkout 00eab9a3d2a5256bcb353a24b39b549182367696 -- floodsafe-android-app
@@ -50,9 +49,6 @@ jobs:
           cp /tmp/current-v0918-overlay/SathiNextLevelV0918.java "$J/SathiNextLevelV0918.java"
           cp /tmp/current-v0918-overlay/ci_reopen_smoke.sh floodsafe-android-app/ci_reopen_smoke.sh
           chmod +x floodsafe-android-app/ci_reopen_smoke.sh
-          test -s floodsafe-android-app/patch_native_language_safe.py
-          test -s floodsafe-android-app/patch_native_v0918_stability_performance.py
-          echo 'historical v0.9.18 base + corrected v0.9.18 patch loaded; current native launcher/SATHI packaging saved'
 
       - name: Rebuild exact verified v0.9.18 native chain
         shell: bash
@@ -86,7 +82,7 @@ jobs:
           python3 floodsafe-android-app/patch_native_v0917_weather_runtime.py
           python3 floodsafe-android-app/patch_native_v0918_stability_performance.py
 
-      - name: Verify restored native UI lineage and protected systems
+      - name: Verify restored native lineage and protected river systems
         shell: bash
         run: |
           set -euo pipefail
@@ -118,29 +114,33 @@ jobs:
           test -s "$J/AffectedRiverAlertMatcher.java"
           test -s "$J/RiverAlertWorker.java"
           test -s "$J/RainAlertWorker.java"
-          test -s "$J/SathiNextLevelV0918.java"
           grep -Fq 'SathiNextLevelV0918.install(app)' "$J/MonitoringSafetyProvider.java"
           grep -Fq 'new Intent(this, NativeFullActivity.class)' "$J/PJBuiltsSplashActivity.java"
-          echo 'verified native v0.9.16 -> v0.9.17 -> v0.9.18 lineage restored'
+          echo 'verified v0.9.16 -> v0.9.17 -> v0.9.18 native chain'
 
-      - name: Restore current native packaging without changing restored UI
+      - name: Keep historical native asset bundling and current launcher compatibility
         shell: bash
         run: |
           set -euo pipefail
-          cp /tmp/current-v0918-overlay/build.gradle floodsafe-android-app/app/build.gradle
           cp /tmp/current-v0918-overlay/AndroidManifest.xml floodsafe-android-app/app/src/main/AndroidManifest.xml
           python3 - <<'PY'
           from pathlib import Path
           p=Path('floodsafe-android-app/app/build.gradle')
           s=p.read_text()
-          s=s.replace("versionName '0.8.90-native'", "versionName '0.9.18-restored-native'")
+          s=s.replace("versionCode 35", "versionCode 111")
+          s=s.replace("versionName '0.9.18-stability-performance'", "versionName '0.9.18-restored-native'")
+          needle="dependencies {\n"
+          if "androidx.webkit:webkit:1.12.1" not in s:
+              s=s.replace(needle, needle+"    implementation 'androidx.webkit:webkit:1.12.1'\n")
           p.write_text(s)
           PY
+          grep -Fq "sourceSets.main.assets.srcDir" floodsafe-android-app/app/build.gradle
+          grep -Fq "bundleNativeAssets" floodsafe-android-app/app/build.gradle
           grep -Fq "implementation 'androidx.webkit:webkit:1.12.1'" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionCode 111" floodsafe-android-app/app/build.gradle
           grep -Fq "versionName '0.9.18-restored-native'" floodsafe-android-app/app/build.gradle
           grep -Fq '<activity android:name=".PJBuiltsSplashActivity" android:exported="true"' floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -Fq 'android.intent.category.LAUNCHER' floodsafe-android-app/app/src/main/AndroidManifest.xml
-          echo 'current package dependencies restored; launcher remains PJBUILTS splash -> NativeFullActivity'
 
       - name: Build restored native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
@@ -152,13 +152,18 @@ jobs:
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
           unzip -t "$APK" >/dev/null
-          unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
-          unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
-          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
-          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          unzip -l "$APK" > /tmp/floodsafe-apk-list.txt
+          grep -Eq 'classes[0-9]*\.dex' /tmp/floodsafe-apk-list.txt
+          grep -Fq 'AndroidManifest.xml' /tmp/floodsafe-apk-list.txt
+          grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson' /tmp/floodsafe-apk-list.txt
+          grep -Fq 'assets/data/nepal-waterways-tiles/overview.json' /tmp/floodsafe-apk-list.txt
+          if grep -Eq 'assets/.*\.(html|js|mjs|webmanifest)$' /tmp/floodsafe-apk-list.txt; then
+            echo 'web asset leaked into native APK'
+            exit 1
+          fi
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
           "$APKSIGNER" verify --verbose "$APK"
-          echo 'native package + river/map assets PASS'
+          echo 'native package + protected river/map assets PASS'
 
       - name: Android real-launcher reopen and crash smoke test
         uses: reactivecircus/android-emulator-runner@v2
@@ -178,6 +183,7 @@ jobs:
           path: |
             /tmp/reopen-test.txt
             /tmp/floodsafe-logcat.txt
+            /tmp/floodsafe-apk-list.txt
           if-no-files-found: warn
           retention-days: 3
 

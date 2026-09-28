@@ -1,9 +1,37 @@
 {
-  "generated_at": "2026-09-28T03:53:36.653724+05:45",
-  "updated_at_npt": "28 Sep 03:53 NPT",
+  "generated_at": "2026-09-28T06:30:23.334383+05:45",
+  "updated_at_npt": "28 Sep 06:30 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "बिनासूचना गैरहाजिर रहेका नौ जना प्रहरी कर्मचारीलाई हाजिर हुन सात दिने अल्टिमेटम",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595408/seven-day-ultimatum-to-nine-police-officers-who-were-absent-without-notice",
+      "published_at": "2026-09-28T06:23:49+05:45",
+      "flash": true
+    },
+    {
+      "title": "पश्चिमी र मनसुनी वायुको दोहोरो प्रभाव : यी क्षेत्रमा हिमपात र वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595403/dual-influence-of-westerly-and-monsoon-winds-chance-of-snowfall-and-rain-in-these-areas",
+      "published_at": "2026-09-28T05:46:20+05:45",
+      "flash": true
+    },
+    {
+      "title": "६ वर्षमा दुई पटक आगलागी, दोभानवासीको फेरि बिचल्ली",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595402/fires-twice-in-6-years-dobhan-residents-in-trouble-again",
+      "published_at": "2026-09-28T05:40:15+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढी पहिरोले धवलागिरि क्षेत्रमा सडक सञ्जाल विच्छेद",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595400/floods-and-landslides-disrupt-road-network-in-dhaulagiri-region",
+      "published_at": "2026-09-28T05:25:02+05:45",
+      "flash": false
+    },
     {
       "title": "सडक अवरुद्ध भएपछि भैरहवामा दर्जनौँ बस रोकिए",
       "source": "Ratopati",
@@ -16,27 +44,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/595386/10-dead-one-missing-in-landslide-in-baglung",
       "published_at": "2026-09-28T00:37:28+05:45",
-      "flash": false
-    },
-    {
-      "title": "जडीबुटी सङ्कलन गर्न आएका मुगुका एकको मृत्यु, दुई बेपत्ता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595383/one-person-from-mugu-who-came-to-collect-herbs-dies-two-go-missing",
-      "published_at": "2026-09-27T23:31:57+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीले उजाडियो पर्वतको फर्से बजार",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595381/floods-destroy-parbats-flea-market",
-      "published_at": "2026-09-27T22:46:45+05:45",
-      "flash": false
-    },
-    {
-      "title": "मुख्य सडक अवरुद्ध भएपछि पुनः त्रिभुवन राजपथ वैकल्पिक मार्ग बन्दै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595377/tribhuvan-highway-becomes-alternative-route-again-after-main-road-blocked",
-      "published_at": "2026-09-27T22:11:21+05:45",
       "flash": false
     }
   ],
@@ -56,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 5
+      "flash": 3,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,

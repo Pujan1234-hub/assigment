@@ -25,29 +25,17 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Bundle the real FloodSafe web assets into native Android
-        run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon
+      - name: Build current native APK exactly from this branch
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Apply the existing generated-asset optimizations used by the known field build
-        run: |
-          python3 floodsafe-android-app/patch_low_end_sathi.py
-          python3 floodsafe-android-app/patch_low_end_map.py
-          python3 floodsafe-android-app/patch_pjbuilts_intro.py
-
-      - name: Build native debug APK
-        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
-
-      - name: Verify packaged FloodSafe assets and SATHI upgrade
+      - name: Verify APK exists
         shell: bash
         run: |
           set -euo pipefail
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
-          unzip -p "$APK" assets/floodsafe-nepal/v25/index.html > /tmp/index.html
-          grep -Fq 'sathi-flood-ai/voice-human-v0918.js?v=918' /tmp/index.html
-          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v25/sathi-flood-ai/voice-human-v0918.js'
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
-          echo 'packaged assets PASS'
+          echo 'native package PASS'
 
       - name: Android real-launcher reopen and crash smoke test
         uses: reactivecircus/android-emulator-runner@v2

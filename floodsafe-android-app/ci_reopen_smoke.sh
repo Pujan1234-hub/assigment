@@ -8,7 +8,7 @@ TEST_APK='floodsafe-android-app/app/build/outputs/apk/androidTest/debug/app-debu
 LAUNCHER="$PKG/.PJBuiltsSplashActivity"
 
 # Build the instrumentation APK in the same shell so paths and status checks are reliable.
-gradle -p floodsafe-android-app :app:assembleDebugAndroidTest -x bundleFloodSafe --no-daemon
+gradle -p floodsafe-android-app :app:assembleDebugAndroidTest --no-daemon
 
 test -s "$APK"
 test -s "$TEST_APK"

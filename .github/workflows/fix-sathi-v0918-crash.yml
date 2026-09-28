@@ -1,4 +1,4 @@
-name: Fix SATHI v0.9.18 crash and build tested APK
+name: Restore verified v0.9.18 native UI and build tested APK
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
       - 'floodsafe-android-app/**'
       - 'floodsafe-nepal/**'
       - '.github/workflows/fix-sathi-v0918-crash.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,6 +16,7 @@ permissions:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -25,17 +27,92 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Build current native APK exactly from this branch
+      - name: Rebuild exact verified v0.9.18 native chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_language_safe.py
+          python3 floodsafe-android-app/patch_native_weather_complete.py
+          python3 floodsafe-android-app/patch_native_weather_station_correction.py
+          python3 floodsafe-android-app/patch_native_v0906_district_196_rain.py
+          python3 floodsafe-android-app/patch_native_v0907_district_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step1_river_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step2_compact_district.py
+          python3 floodsafe-android-app/fix_v0908_step3_weather_refresh_anchor.py
+          python3 floodsafe-android-app/patch_native_v0908_step3_storm_notifications.py
+          python3 floodsafe-android-app/patch_native_v0909_sync_sathi_language.py
+          python3 floodsafe-android-app/fix_v0909_district_lambda_compile.py
+          python3 floodsafe-android-app/patch_native_v0910_step1_sathi_chat.py
+          python3 floodsafe-android-app/patch_native_v0910_step2_map_labels.py
+          python3 floodsafe-android-app/run_v0911_patch_fixed.py
+          python3 floodsafe-android-app/fix_v0911_threshold_order.py
+          python3 floodsafe-android-app/patch_native_v0912_weather_rain_parity.py
+          python3 floodsafe-android-app/patch_native_v0913_dhm_rain_overlay.py
+          python3 floodsafe-android-app/patch_native_v0914_current_rain_only.py
+          python3 floodsafe-android-app/fix_v0915_weather_icon_patch_script.py
+          python3 floodsafe-android-app/patch_native_v0915_weather_icons.py
+          python3 floodsafe-android-app/fix_v0916_patch_script.py
+          python3 floodsafe-android-app/fix_v0916_patch_script_v2.py
+          python3 floodsafe-android-app/fix_v0916_patch_script_v3.py
+          python3 floodsafe-android-app/patch_native_v0916_sathi_knowledge.py
+          python3 floodsafe-android-app/fix_v0917_marker_comments.py
+          python3 floodsafe-android-app/patch_native_v0917_weather_runtime.py
+          python3 floodsafe-android-app/patch_native_v0918_stability_performance.py
+
+      - name: Verify restored native UI lineage and protected map/data system
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          U="$J/NativeFullActivity.java"
+          W="$J/WeatherMapOverlayController.java"
+          V="$J/DhmCurrentRainVerifier.java"
+          M="$J/FloodLiveGaugeMonitor.java"
+          test -s "$U"
+          grep -Fq 'No WebView is used' "$U"
+          grep -Fq 'V0918_ATOMIC_LANGUAGE_SWITCH' "$U"
+          grep -Fq 'V0918_WEATHER_HEADLINE_ONLY' "$U"
+          grep -Fq 'V0918_LOCAL_DEVICE_CLOCK' "$U"
+          grep -Fq 'V0917_NATIVE_WEATHER_PROXY' "$U"
+          grep -Fq 'V0917_SATHI_WEATHER_PROXY' "$U"
+          grep -Fq 'V0916_KNOWLEDGE_FALLBACK' "$U"
+          grep -Fq 'V0917_NATIVE_DRAWN_WEATHER_ICONS' "$W"
+          grep -Fq 'iconAllowOverlap(true)' "$W"
+          grep -Fq 'V0917_CURRENT_RAIN_PROXY' "$V"
+          grep -Fq 'V0918_LOW_POWER_SOURCE_SCHEDULE' "$M"
+          grep -Fq 'RIVER_POLL_MS=15_000L' "$M"
+          grep -Fq 'RAIN_POLL_MS=60_000L' "$M"
+          grep -Fq 'HYDRO_POLL_MS=60_000L' "$M"
+          grep -Fq 'RADIUS_KM=2d' "$M"
+          grep -Fq "versionCode 35" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.9.18-stability-performance'" floodsafe-android-app/app/build.gradle
+          test -s "$J/BipadRealtimeStationFeed.java"
+          test -s "$J/OfficialRiverData.java"
+          test -s "$J/FloodSafeNativeMapView.java"
+          test -s "$J/AffectedRiverAlertMatcher.java"
+          test -s "$J/RiverAlertWorker.java"
+          test -s "$J/RainAlertWorker.java"
+          test -s "$J/SathiNextLevelV0918.java"
+          grep -Fq 'new Intent(this, NativeFullActivity.class)' "$J/PJBuiltsSplashActivity.java"
+          echo 'verified v0.9.18 native lineage restored; protected river files present'
+
+      - name: Build restored native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Verify APK exists
+      - name: Verify APK integrity and native assets
         shell: bash
         run: |
           set -euo pipefail
           APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
           test -s "$APK"
+          unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
-          echo 'native package PASS'
+          unzip -l "$APK" | grep -Fq 'AndroidManifest.xml'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          "$APKSIGNER" verify --verbose "$APK"
+          echo 'native package + map assets PASS'
 
       - name: Android real-launcher reopen and crash smoke test
         uses: reactivecircus/android-emulator-runner@v2
@@ -51,18 +128,28 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: SATHI-v0918-crash-diagnostics
+          name: FloodSafe-v0918-restored-native-diagnostics
           path: |
             /tmp/reopen-test.txt
             /tmp/floodsafe-logcat.txt
           if-no-files-found: warn
           retention-days: 3
 
-      - name: Upload tested APK
+      - name: Stage restored APK
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.9.18-RESTORED-NATIVE.apk
+          sha256sum FloodSafe-Nepal-v0.9.18-RESTORED-NATIVE.apk > FloodSafe-Nepal-v0.9.18-RESTORED-NATIVE-SHA256.txt
+
+      - name: Upload tested restored APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-SATHI-v0.9.18-CRASHFIX-APK
-          path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          name: FloodSafe-Nepal-v0.9.18-RESTORED-NATIVE-APK
+          path: |
+            FloodSafe-Nepal-v0.9.18-RESTORED-NATIVE.apk
+            FloodSafe-Nepal-v0.9.18-RESTORED-NATIVE-SHA256.txt
           if-no-files-found: error
           retention-days: 14

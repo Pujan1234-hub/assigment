@@ -1,49 +1,84 @@
 {
-  "generated_at": "2026-09-28T06:30:23.334383+05:45",
-  "updated_at_npt": "28 Sep 06:30 NPT",
+  "generated_at": "2026-09-28T11:42:14.601309+05:45",
+  "updated_at_npt": "28 Sep 11:42 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बिनासूचना गैरहाजिर रहेका नौ जना प्रहरी कर्मचारीलाई हाजिर हुन सात दिने अल्टिमेटम",
+      "title": "मुस्ताङमा सडक, बिजुली र इन्टरनेट अवरुद्ध, खुलाउन प्रयास जारी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595408/seven-day-ultimatum-to-nine-police-officers-who-were-absent-without-notice",
-      "published_at": "2026-09-28T06:23:49+05:45",
-      "flash": true
-    },
-    {
-      "title": "पश्चिमी र मनसुनी वायुको दोहोरो प्रभाव : यी क्षेत्रमा हिमपात र वर्षाको सम्भावना",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595403/dual-influence-of-westerly-and-monsoon-winds-chance-of-snowfall-and-rain-in-these-areas",
-      "published_at": "2026-09-28T05:46:20+05:45",
-      "flash": true
-    },
-    {
-      "title": "६ वर्षमा दुई पटक आगलागी, दोभानवासीको फेरि बिचल्ली",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595402/fires-twice-in-6-years-dobhan-residents-in-trouble-again",
-      "published_at": "2026-09-28T05:40:15+05:45",
-      "flash": true
-    },
-    {
-      "title": "बाढी पहिरोले धवलागिरि क्षेत्रमा सडक सञ्जाल विच्छेद",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595400/floods-and-landslides-disrupt-road-network-in-dhaulagiri-region",
-      "published_at": "2026-09-28T05:25:02+05:45",
+      "url": "https://www.ratopati.com/story/595449/roads-electricity-and-internet-blocked-in-mustang-efforts-underway-to-resolve-the-issue",
+      "published_at": "2026-09-28T09:44:38+05:45",
       "flash": false
     },
     {
-      "title": "सडक अवरुद्ध भएपछि भैरहवामा दर्जनौँ बस रोकिए",
+      "title": "मौसममा सुधार आएसँगै जनजीवन सामान्यतर्फ",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595388/dozens-of-buses-stopped-in-bhairahawa-after-road-blockage",
-      "published_at": "2026-09-28T01:15:03+05:45",
+      "url": "https://www.ratopati.com/story/595444/life-returns-to-normal-as-weather-improves",
+      "published_at": "2026-09-28T09:28:37+05:45",
       "flash": false
     },
     {
-      "title": "बागलुङमा पहिरोमा १० जनाको मृत्यु, एक बेपत्ता",
+      "title": "नारायणी नदीमा बगेर पुलमा अड्किएको ‘राइनो क्रुज’ निकाल्ने काम सुरु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595386/10-dead-one-missing-in-landslide-in-baglung",
-      "published_at": "2026-09-28T00:37:28+05:45",
+      "url": "https://www.ratopati.com/story/595441/work-begins-to-remove-rhino-cruise-stuck-on-bridge-after-being-swept-away-by-narayani-river",
+      "published_at": "2026-09-28T09:19:12+05:45",
+      "flash": false
+    },
+    {
+      "title": "पहिरोले बैतडीको ढोल्यामोड–पुर्चौंडी हाट सडक अवरुद्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595439/landslide-blocks-dholyamod-purchaudi-hat-road-in-baitadi",
+      "published_at": "2026-09-28T09:16:11+05:45",
+      "flash": false
+    },
+    {
+      "title": "अविरल वर्षापछि अवरुद्ध बेनी–दरवाङ सडक मर्मत सुरु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595437/repairs-begin-on-beni-darwang-road-blocked-by-incessant-rains",
+      "published_at": "2026-09-28T09:05:10+05:45",
+      "flash": false
+    },
+    {
+      "title": "सामुदायिक वनबाट तीन नाल बेवारिसे भरुवा बन्दुक बरामद",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595436/three-abandoned-loaded-guns-recovered-from-community-forest",
+      "published_at": "2026-09-28T09:03:21+05:45",
+      "flash": false
+    },
+    {
+      "title": "निरन्तर वर्षा र हिमपातले हुम्लाको जनजीवन प्रभावित, फोन र इन्टरनेट सेवा ठप्प",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595435/continuous-rain-and-snowfall-affect-normal-life-in-humla-disrupt-phone-and-internet-services",
+      "published_at": "2026-09-28T08:59:48+05:45",
+      "flash": false
+    },
+    {
+      "title": "लालबकैया नदीले तटबन्ध कटान गरेपछि उच्च सुरक्षा अधिकारीसहित मधेसका गृहमन्त्रीद्वारा स्थलगत निरीक्षण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595427/madhesh-home-minister-along-with-top-security-officials-conducts-on-site-inspection-after-lal-bakaiya-river-breached-the-embankment",
+      "published_at": "2026-09-28T08:08:43+05:45",
+      "flash": false
+    },
+    {
+      "title": "कालीगण्डकीको कटान हेर्ने क्रममा लडेर एक जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595416/one-person-dies-after-falling-while-watching-the-erosion-of-kaligandaki",
+      "published_at": "2026-09-28T07:15:12+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढी र विपद् व्यवस्थापनमा तटीय क्षेत्रका बासिन्दाको सहारा बने स्थानीय स्वयंसेवक",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595414/local-volunteers-become-a-support-for-coastal-residents-in-flood-and-disaster-management",
+      "published_at": "2026-09-28T07:08:50+05:45",
+      "flash": false
+    },
+    {
+      "title": "त्रिभुवन अन्तर्राष्ट्रिय विमानस्थलबाट ४२२.५ ग्राम सुनसहित भारतीय नागरिक पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595411/indian-national-arrested-with-4225-grams-of-gold-at-tribhuvan-international-airport",
+      "published_at": "2026-09-28T06:43:22+05:45",
       "flash": false
     }
   ],
@@ -63,8 +98,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 6
+      "flash": 0,
+      "recent": 11
     },
     "Kathmandu Post": {
       "ok": true,
@@ -74,7 +109,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     }

@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -128,7 +128,7 @@ jobs:
           cp "$APK" FloodSafe-Nepal-v0.9.18-NATIVE-MOVING-CLOUDS.apk
           sha256sum FloodSafe-Nepal-v0.9.18-NATIVE-MOVING-CLOUDS.apk > FloodSafe-Nepal-v0.9.18-NATIVE-MOVING-CLOUDS-SHA256.txt
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-v0.9.18-NATIVE-MOVING-CLOUDS-APK
@@ -137,3 +137,18 @@ jobs:
             FloodSafe-Nepal-v0.9.18-NATIVE-MOVING-CLOUDS-SHA256.txt
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish test prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='floodsafe-v0918-moving-clouds-build'
+          gh release delete "$TAG" -y --cleanup-tag || true
+          gh release create "$TAG" \
+            FloodSafe-Nepal-v0.9.18-NATIVE-MOVING-CLOUDS.apk \
+            FloodSafe-Nepal-v0.9.18-NATIVE-MOVING-CLOUDS-SHA256.txt \
+            --prerelease \
+            --title 'FloodSafe Nepal v0.9.18 Native Moving Clouds Test' \
+            --notes 'Native-only weather-layer test: web-style moving cloud sprites plus existing animated rain. River/station/BIPAD/DHM/risk/SATHI/navigation logic unchanged.'

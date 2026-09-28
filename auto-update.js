@@ -18,9 +18,14 @@
       .project-sync{display:flex;align-items:center;gap:7px;width:max-content;max-width:100%;margin-top:10px;color:#718096;font:750 .66rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.045em}
       .project-sync:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px color-mix(in srgb,var(--accent) 65%,transparent);flex:0 0 auto}
       .project-sync strong{color:#aeb9c8;font-weight:850}
+      .floodsafe-android-test{margin-top:16px;padding:14px 15px;border:1px solid rgba(70,231,255,.22);border-radius:15px;background:linear-gradient(135deg,rgba(70,231,255,.075),rgba(110,140,255,.055));color:#9eacbd;font-size:.78rem;line-height:1.5}
+      .floodsafe-android-test strong{display:block;color:#eafcff;font-size:.8rem;margin-bottom:3px}
+      .floodsafe-android-test .android-only{display:inline-flex;align-items:center;margin-right:7px;color:#8ff4d0;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+      .floodsafe-android-test a{display:inline-flex;align-items:center;justify-content:center;margin-top:10px;padding:10px 13px;border-radius:12px;background:linear-gradient(135deg,#33dffb,#6e8cff);color:#071019;font-weight:900;text-decoration:none;transition:transform .2s,filter .2s}
+      .floodsafe-android-test a:hover{transform:translateY(-2px);filter:brightness(1.06)}
       .nav.scrolled{box-shadow:0 12px 36px rgba(0,0,0,.18)}
       @media(min-width:1051px){.project{content-visibility:auto;contain-intrinsic-size:580px}}
-      @media(max-width:700px){.project-sync{font-size:.61rem}.project-copy>p{line-height:1.62}}
+      @media(max-width:700px){.project-sync{font-size:.61rem}.project-copy>p{line-height:1.62}.floodsafe-android-test{font-size:.74rem}.floodsafe-android-test a{width:100%}}
       @media(prefers-reduced-motion:reduce){.project{transition:none!important}}
     `;
     document.head.appendChild(style);
@@ -39,6 +44,17 @@
       }),{rootMargin:'180px 0px'});
       document.querySelectorAll('.project').forEach(el=>obs.observe(el));
     }
+  }
+
+  function addFloodSafeAndroidTest(){
+    const card=document.getElementById('floodsafe');
+    if(!card||card.querySelector('.floodsafe-android-test')) return;
+    const links=card.querySelector('.project-links');
+    if(!links) return;
+    const box=document.createElement('div');
+    box.className='floodsafe-android-test';
+    box.innerHTML='<strong><span class="android-only">Android only · Test build</span> FloodSafe Nepal native app</strong>Try the latest FloodSafe Nepal Android build on your device and help test the current version. The web app remains available above.<br><a href="https://github.com/Pujan1234-hub/assigment/releases/download/floodsafe-v0.9.18-android-test/FloodSafe-Nepal-v0.9.18-ANIMATED-CLOUD-MARKER.apk" target="_blank" rel="noopener noreferrer" download>Download Android APK ↓</a>';
+    links.insertAdjacentElement('afterend',box);
   }
 
   async function getText(url){
@@ -120,6 +136,7 @@
   }
 
   addPolish();
+  addFloodSafeAndroidTest();
   load('./portfolio-netsathi.js?v=20260920-netsathi-v2','pjio-netsathi-v2');
   load('./assets/portfolio/netsathi-photo-fix.js?v=20260921-real-photos-v1','pjio-netsathi-photo-fix-v1');
   load('./assets/portfolio/netsathi-real-gallery-compact.js?v=20260922-compact-v1','pjio-netsathi-compact-v1');

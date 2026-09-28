@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T14:06:36.438107Z",
+  "generated_at": "2026-09-28T20:32:38.797615Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "खाद्य प्रविधि तथा गुण नियन्त्रण विभागका अधिकृतसहित चार जनाविरुद्ध भ्रष्टाचार मुद्दा",
-      "url": "https://radionepalonline.com/2026/09/28/738941.html",
-      "published_at": "2026-09-28T13:55:08Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

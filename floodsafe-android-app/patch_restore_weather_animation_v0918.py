@@ -26,16 +26,13 @@ if 'weatherAnimation=new WeatherAnimationOverlayV0918(this)' not in s:
         raise SystemExit('map holder anchor missing')
     s = s.replace(holder_old, holder_new, 1)
 
-# v0.8.18 keeps the earlier compact GPS weather method. Replace only that method,
-# preserving every river/station/map method byte-for-byte.
-pat = re.compile(r'    private void fetchWeather\(double a,double o\)\{io\.execute\(\(\)->\{try\{String u=String\.format\(Locale\.US,"https://api\.open-meteo\.com/v1/forecast\?latitude=%\.6f&longitude=%\.6f&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&hourly=precipitation_probability,precipitation&forecast_hours=6&timezone=auto",a,o\);JSONObject j=getJson\(u\);JSONObject c=j\.getJSONObject\("current"\);double te=c\.optDouble\("temperature_2m",Double\.NaN\),pr=c\.optDouble\("precipitation",0\),hu=c\.optDouble\("relative_humidity_2m",Double\.NaN\),wi=c\.optDouble\("wind_speed_10m",Double\.NaN\);String ws=pr>=\.5\?t\("अहिले वर्षा भइरहेको छ","Rain now"\):t\("अहिले वर्षा छैन","No rain now"\);String timing=rainTiming\(j\);currentWeather=ws;runOnUiThread\(\(\)->\{temp\.setText\(Double\.isFinite\(te\)\?Math\.round\(te\)\+"°":"—°"\);weatherText\.setText\(ws\);rain\.setText\(String\.format\(Locale\.US,"%\.1f mm",pr\)\);humidity\.setText\(Double\.isFinite\(hu\)\?Math\.round\(hu\)\+"%":"—"\);wind\.setText\(Double\.isFinite\(wi\)\?Math\.round\(wi\)\+" km/h":"—"\);rainTiming\.setText\(timing\);\}\);\}catch\(Exception e\)\{runOnUiThread\(\(\)->weatherText\.setText\(t\("मौसम refresh हुन सकेन","Weather refresh failed"\)\)\);\}\}\);\}')
-
 replacement = '''    private void fetchWeather(double a,double o){io.execute(()->{try{String u=String.format(Locale.US,"https://api.open-meteo.com/v1/forecast?latitude=%.6f&longitude=%.6f&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m&hourly=precipitation_probability,precipitation&forecast_hours=6&timezone=auto",a,o);JSONObject j=getJson(u);JSONObject c=j.getJSONObject("current");double te=c.optDouble("temperature_2m",Double.NaN),pr=c.optDouble("precipitation",0),hu=c.optDouble("relative_humidity_2m",Double.NaN),wi=c.optDouble("wind_speed_10m",Double.NaN);int code=c.optInt("weather_code",-1),cloud=c.optInt("cloud_cover",0);currentWeatherCode=code;currentCloudCover=cloud;currentPrecipitation=Math.max(0d,pr);String ws=pr>=.5?t("अहिले वर्षा भइरहेको छ","Rain now"):t("अहिले वर्षा छैन","No rain now");String timing=rainTiming(j);currentWeather=ws;runOnUiThread(()->{temp.setText(Double.isFinite(te)?Math.round(te)+"°":"—°");weatherText.setText(ws);rain.setText(String.format(Locale.US,"%.1f mm",pr));humidity.setText(Double.isFinite(hu)?Math.round(hu)+"%":"—");wind.setText(Double.isFinite(wi)?Math.round(wi)+" km/h":"—");rainTiming.setText(timing);if(weatherAnimation!=null)weatherAnimation.updateWeather(code,pr,cloud);});}catch(Exception e){runOnUiThread(()->weatherText.setText(t("मौसम refresh हुन सकेन","Weather refresh failed")));}});}'''
 
 if 'current=temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m' not in s:
-    s2, n = pat.subn(replacement, s, count=1)
+    pat = re.compile(r'    private void fetchWeather\(double a,double o\)\{.*?(?=    private String rainTiming)', re.S)
+    s2, n = pat.subn(replacement + '\n', s, count=1)
     if n != 1:
-        raise SystemExit('fetchWeather v0.8.18 anchor missing')
+        raise SystemExit('fetchWeather v0.8.18 method missing')
     s = s2
 
 ACT.write_text(s, encoding='utf-8')

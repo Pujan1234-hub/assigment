@@ -1,0 +1,67 @@
+name: Build FloodSafe v0.9.18 map-frozen SATHI APK
+
+on:
+  push:
+    branches:
+      - fix/v0918-sathi-map-frozen
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Hard gate - v0.9.18 map must be byte-for-byte unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=50a2f51b1dd1427c1f5ed0e78cdc5f6272c791f4
+          MAP_ACTIVITY='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          MAP_VIEW='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          git cat-file -e "$BASE^{commit}"
+          git diff --exit-code "$BASE" HEAD -- "$MAP_ACTIVITY" "$MAP_VIEW"
+          grep -q 'private FloodSafeNativeMapView map;' "$MAP_ACTIVITY"
+          grep -q 'map=new FloodSafeNativeMapView' "$MAP_ACTIVITY"
+          if grep -q 'private NativeRiverMap map;' "$MAP_ACTIVITY"; then
+            echo 'ERROR: wrong replacement map detected'
+            exit 1
+          fi
+          echo 'MAP FROZEN PASS'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Unit tests and APK build
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Verify packaged APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
+          unzip -l "$APK" | grep -q 'assets/data/nepal-waterways-tiles/overview.json'
+          echo "APK size: $(du -h "$APK" | cut -f1)"
+          sha256sum "$APK" | tee /tmp/floodsafe-v0918-sha256.txt
+
+      - name: Upload map-frozen APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.18-MAP-FROZEN-SATHI-APK
+          path: |
+            floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+            /tmp/floodsafe-v0918-sha256.txt
+          if-no-files-found: error
+          retention-days: 14

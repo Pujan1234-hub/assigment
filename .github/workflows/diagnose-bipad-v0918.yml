@@ -1,0 +1,107 @@
+name: Diagnose FloodSafe v0.9.18 BIPAD river feed
+on:
+  push:
+    branches: ["fix/v0918-realtime-visible-flow"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch official BIPAD and mirror samples
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, urllib.request, ssl, datetime, os
+          urls={
+            'bipad':'https://bipadportal.gov.np/api/v1/river-stations/?format=json&limit=5000',
+            'mirror':'https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers'
+          }
+          ctx=ssl.create_default_context()
+          def fetch(url):
+            req=urllib.request.Request(url,headers={'User-Agent':'FloodSafe-Nepal/0.9.18','Accept':'application/json','Cache-Control':'no-cache'})
+            with urllib.request.urlopen(req,timeout=35,context=ctx) as r:
+              return r.status, r.read().decode('utf-8','replace')
+          def rows(root):
+            if isinstance(root,list): return root
+            if not isinstance(root,dict): return []
+            for k in ('results','data','items','stations'):
+              v=root.get(k)
+              if isinstance(v,list): return v
+            return []
+          def flat_keys(o):
+            ks=set(o.keys()) if isinstance(o,dict) else set()
+            f=o.get('fields') if isinstance(o,dict) else None
+            if isinstance(f,dict): ks |= {'fields.'+str(k) for k in f.keys()}
+            return sorted(ks)
+          def pick(o,*keys):
+            if not isinstance(o,dict): return None
+            f=o.get('fields') if isinstance(o.get('fields'),dict) else {}
+            for k in keys:
+              if k in o and o[k] not in (None,''): return o[k]
+              if k in f and f[k] not in (None,''): return f[k]
+            return None
+          def parse_time(v):
+            if v is None:return None
+            if isinstance(v,(int,float)):
+              x=float(v); return datetime.datetime.fromtimestamp(x/1000 if x>1e11 else x,datetime.timezone.utc)
+            s=str(v).strip()
+            if not s:return None
+            if s.isdigit():
+              x=float(s); return datetime.datetime.fromtimestamp(x/1000 if x>1e11 else x,datetime.timezone.utc)
+            try:
+              return datetime.datetime.fromisoformat(s.replace('Z','+00:00')).astimezone(datetime.timezone.utc)
+            except: return None
+          report={}
+          now=datetime.datetime.now(datetime.timezone.utc)
+          for name,url in urls.items():
+            try:
+              status,text=fetch(url)
+              root=json.loads(text)
+              rr=rows(root)
+              dist={'<=5m':0,'<=10m':0,'<=30m':0,'<=24h':0,'older':0,'no_time':0}
+              time_fields={}
+              for o in rr:
+                if not isinstance(o,dict): continue
+                candidates=('waterLevelOn','water_level_on','eventOn','event_on','measuredOn','measured_on','measurementTime','measurement_time','observationTime','observation_time','observedAt','observed_at','datetime','timestamp','modifiedOn','modified_on','updated_at')
+                found=None
+                for k in candidates:
+                  v=pick(o,k)
+                  if v not in (None,''):
+                    found=(k,v);break
+                if found:
+                  time_fields[found[0]]=time_fields.get(found[0],0)+1
+                  dt=parse_time(found[1])
+                  if dt:
+                    age=(now-dt).total_seconds()
+                    if age<=300:dist['<=5m']+=1
+                    if age<=600:dist['<=10m']+=1
+                    if age<=1800:dist['<=30m']+=1
+                    if age<=86400:dist['<=24h']+=1
+                    else:dist['older']+=1
+                  else:dist['no_time']+=1
+                else:dist['no_time']+=1
+              report[name]={
+                'http':status,
+                'top_type':type(root).__name__,
+                'top_keys':sorted(root.keys()) if isinstance(root,dict) else [],
+                'rows':len(rr),
+                'sample_keys':flat_keys(rr[0]) if rr else [],
+                'sample':rr[0] if rr else None,
+                'time_fields':time_fields,
+                'age_distribution':dist,
+              }
+            except Exception as e:
+              report[name]={'error':repr(e)}
+          with open('bipad-v0918-diagnostic.json','w',encoding='utf-8') as f:json.dump(report,f,ensure_ascii=False,indent=2,default=str)
+          print(json.dumps(report,ensure_ascii=False,indent=2,default=str)[:30000])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bipad-v0918-diagnostic
+          path: bipad-v0918-diagnostic.json
+          retention-days: 3

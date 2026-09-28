@@ -14,7 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-/** Network-independent PJBUILTS launch intro. Launches the native Android UI only. */
+/** Network-independent PJBUILTS launch intro. Launches the existing full native Android UI only. */
 public final class PJBuiltsSplashActivity extends Activity {
     private boolean launched;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -65,7 +65,7 @@ public final class PJBuiltsSplashActivity extends Activity {
         launched = true;
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
-        Intent app = new Intent(this, FloodSafeNativeActivity.class);
+        Intent app = new Intent(this, NativeFullActivity.class);
         app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (source != null) {
             app.setData(source.getData());

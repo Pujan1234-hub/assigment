@@ -39,6 +39,8 @@ jobs:
           cp "$J/MonitoringSafetyProvider.java" /tmp/current-v0918-overlay/
           cp "$J/SathiNextLevelV0918.java" /tmp/current-v0918-overlay/
           cp floodsafe-android-app/ci_reopen_smoke.sh /tmp/current-v0918-overlay/
+          cp floodsafe-android-app/app/build.gradle /tmp/current-v0918-overlay/build.gradle
+          cp floodsafe-android-app/app/src/main/AndroidManifest.xml /tmp/current-v0918-overlay/AndroidManifest.xml
           git fetch --no-tags --depth=1 origin 00eab9a3d2a5256bcb353a24b39b549182367696
           git checkout 00eab9a3d2a5256bcb353a24b39b549182367696 -- floodsafe-android-app
           git fetch --no-tags --depth=1 origin 50a2f51b1dd1427c1f5ed0e78cdc5f6272c791f4
@@ -50,7 +52,7 @@ jobs:
           chmod +x floodsafe-android-app/ci_reopen_smoke.sh
           test -s floodsafe-android-app/patch_native_language_safe.py
           test -s floodsafe-android-app/patch_native_v0918_stability_performance.py
-          echo 'historical v0.9.18 base + corrected v0.9.18 patch loaded; current SATHI/splash overlay preserved'
+          echo 'historical v0.9.18 base + corrected v0.9.18 patch loaded; current native launcher/SATHI packaging saved'
 
       - name: Rebuild exact verified v0.9.18 native chain
         shell: bash
@@ -120,6 +122,25 @@ jobs:
           grep -Fq 'SathiNextLevelV0918.install(app)' "$J/MonitoringSafetyProvider.java"
           grep -Fq 'new Intent(this, NativeFullActivity.class)' "$J/PJBuiltsSplashActivity.java"
           echo 'verified native v0.9.16 -> v0.9.17 -> v0.9.18 lineage restored'
+
+      - name: Restore current native packaging without changing restored UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/current-v0918-overlay/build.gradle floodsafe-android-app/app/build.gradle
+          cp /tmp/current-v0918-overlay/AndroidManifest.xml floodsafe-android-app/app/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/build.gradle')
+          s=p.read_text()
+          s=s.replace("versionName '0.8.90-native'", "versionName '0.9.18-restored-native'")
+          p.write_text(s)
+          PY
+          grep -Fq "implementation 'androidx.webkit:webkit:1.12.1'" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.9.18-restored-native'" floodsafe-android-app/app/build.gradle
+          grep -Fq '<activity android:name=".PJBuiltsSplashActivity" android:exported="true"' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'android.intent.category.LAUNCHER' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          echo 'current package dependencies restored; launcher remains PJBUILTS splash -> NativeFullActivity'
 
       - name: Build restored native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace

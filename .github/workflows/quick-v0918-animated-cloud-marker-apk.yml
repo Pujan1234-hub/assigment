@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -144,3 +144,13 @@ jobs:
             FloodSafe-Nepal-v0.9.18-ANIMATED-CLOUD-MARKER-SHA256.txt
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish Android test APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: floodsafe-v0.9.18-android-test
+          name: FloodSafe Nepal Android Test v0.9.18
+          prerelease: true
+          files: |
+            FloodSafe-Nepal-v0.9.18-ANIMATED-CLOUD-MARKER.apk
+            FloodSafe-Nepal-v0.9.18-ANIMATED-CLOUD-MARKER-SHA256.txt

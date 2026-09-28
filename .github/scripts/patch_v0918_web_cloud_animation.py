@@ -1,62 +1,97 @@
 from pathlib import Path
+import re
 
 P = Path('floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/WeatherMapOverlayController.java')
 s = P.read_text(encoding='utf-8')
 
-def once(old, new, label):
+if 'V0918_WEB_STYLE_CLOUDS' in s:
+    print('V0918_WEB_STYLE_MOVING_CLOUDS_ALREADY_PATCHED')
+    raise SystemExit(0)
+
+def sub_once(pattern, repl, label, flags=0):
     global s
-    n = s.count(old)
+    s2, n = re.subn(pattern, repl, s, count=1, flags=flags)
     if n != 1:
         raise SystemExit(f'{label}: expected 1 match, got {n}')
-    s = s.replace(old, new, 1)
+    s = s2
 
-once(
-'''    private static final String SRC_RAIN_STREAK_HEAVY = "fs-weather-rain-streak-heavy";\n    private static final String LYR_LIGHT = "fs-weather-cloud-light-layer";''',
-'''    private static final String SRC_RAIN_STREAK_HEAVY = "fs-weather-rain-streak-heavy";\n    // V0918_WEB_STYLE_CLOUDS — visual-only moving cloud sprites driven by current cloud cover.\n    private static final String SRC_CLOUD_SPRITES = "fs-weather-cloud-sprites";\n    private static final String IMG_CLOUD = "fs-weather-cloud-image";\n    private static final String LYR_CLOUD_SPRITES = "fs-weather-cloud-sprites-layer";\n    private static final String LYR_LIGHT = "fs-weather-cloud-light-layer";''',
-'cloud ids')
+# Constants are inserted before the timing constants so this stays compatible with
+# the final v0.9.18 overlay even when earlier patch steps rename weather sources.
+sub_once(
+    r'(?m)^(\s*private static final long PULSE_MS\s*=.*)$',
+    '    // V0918_WEB_STYLE_CLOUDS — visual-only moving cloud sprites driven by current cloud cover.\n'
+    '    private static final String SRC_CLOUD_SPRITES = "fs-weather-cloud-sprites";\n'
+    '    private static final String IMG_CLOUD = "fs-weather-cloud-image";\n'
+    '    private static final String LYR_CLOUD_SPRITES = "fs-weather-cloud-sprites-layer";\n'
+    r'\1',
+    'timing anchor')
 
-once(
-'''    private static final long PULSE_MS = 1900L;\n    private static final long RAIN_FRAME_MS = 240L;''',
-'''    private static final long PULSE_MS = 1900L;\n    private static final long RAIN_FRAME_MS = 240L;\n    private static final long CLOUD_FRAME_MS = 420L;''',
-'cloud frame constant')
+sub_once(
+    r'(?m)^(\s*private static final long RAIN_FRAME_MS\s*=\s*[^;]+;)$',
+    r'\1\n    private static final long CLOUD_FRAME_MS = 420L;',
+    'rain frame anchor')
 
-once(
-'''    private long rainStartedAt = System.currentTimeMillis();\n    private JSONObject districtGeometry;''',
-'''    private long rainStartedAt = System.currentTimeMillis();\n    private long cloudStartedAt = System.currentTimeMillis();\n    private JSONObject districtGeometry;''',
-'cloud start field')
+sub_once(
+    r'(?m)^(\s*private long rainStartedAt\s*=\s*System\.currentTimeMillis\(\);)$',
+    r'\1\n    private long cloudStartedAt = System.currentTimeMillis();',
+    'rain start anchor')
 
-once(
-'''        main.removeCallbacks(pulseTick);\n        main.removeCallbacks(rainTick);\n        main.postDelayed(pulseTick, PULSE_MS);\n        main.post(rainTick);''',
-'''        main.removeCallbacks(pulseTick);\n        main.removeCallbacks(rainTick);\n        main.removeCallbacks(cloudTick);\n        main.postDelayed(pulseTick, PULSE_MS);\n        main.post(rainTick);\n        main.post(cloudTick);''',
-'start cloud animation')
+# Wire cloud animation into the existing animation lifecycle.
+sub_once(
+    r'(\s*main\.removeCallbacks\(rainTick\);)',
+    r'\1\n        main.removeCallbacks(cloudTick);',
+    'remove callback anchor')
+sub_once(
+    r'(\s*main\.post\(rainTick\);)',
+    r'\1\n        main.post(cloudTick);',
+    'post callback anchor')
 
-once(
-'''    private final Runnable rainTick = new Runnable() {\n        @Override public void run() {\n            if (destroyed) return;\n            if (enabled) updateRainFrames();\n            main.postDelayed(this, RAIN_FRAME_MS);\n        }\n    };''',
-'''    private final Runnable rainTick = new Runnable() {\n        @Override public void run() {\n            if (destroyed) return;\n            if (enabled) updateRainFrames();\n            main.postDelayed(this, RAIN_FRAME_MS);\n        }\n    };\n\n    // Smooth native cloud drift. This does not alter river/station geometry or risk logic.\n    private final Runnable cloudTick = new Runnable() {\n        @Override public void run() {\n            if (destroyed) return;\n            if (enabled) updateCloudFrames();\n            main.postDelayed(this, CLOUD_FRAME_MS);\n        }\n    };''',
-'cloud runnable')
+rain_block = re.compile(
+    r'(\n\s*private final Runnable rainTick = new Runnable\(\) \{.*?\n\s*\};)',
+    re.S)
+m = rain_block.search(s)
+if not m:
+    raise SystemExit('rain runnable anchor missing')
+cloud_runnable = r'''
 
-once(
-'''                ensureRainLine(style, SRC_RAIN_STREAK_LIGHT, LYR_RAIN_STREAK_LIGHT, "#8fd3ff", 1.25f, 0.48f);\n                ensureRainLine(style, SRC_RAIN_STREAK_HEAVY, LYR_RAIN_STREAK_HEAVY, "#d8f3ff", 2.05f, 0.72f);''',
-'''                ensureRainLine(style, SRC_RAIN_STREAK_LIGHT, LYR_RAIN_STREAK_LIGHT, "#8fd3ff", 1.25f, 0.48f);\n                ensureRainLine(style, SRC_RAIN_STREAK_HEAVY, LYR_RAIN_STREAK_HEAVY, "#d8f3ff", 2.05f, 0.72f);\n                ensureCloudSprites(style);''',
-'ensure cloud layer')
+    // Smooth native cloud drift. This does not alter river/station geometry or risk logic.
+    private final Runnable cloudTick = new Runnable() {
+        @Override public void run() {
+            if (destroyed) return;
+            if (enabled) updateCloudFrames();
+            main.postDelayed(this, CLOUD_FRAME_MS);
+        }
+    };'''
+s = s[:m.end()] + cloud_runnable + s[m.end():]
 
-once(
-'''                applyPulse();\n                updateRainFrames();''',
-'''                applyPulse();\n                updateRainFrames();\n                updateCloudFrames();''',
-'refresh cloud frame')
+# Ensure layer once during the normal refresh setup. Anchor on the last rain-line
+# setup if present; otherwise insert immediately before the district enabled check.
+needle = 'if (!enabled || districtGeometry == null)'
+idx = s.find(needle)
+if idx < 0:
+    raise SystemExit('refresh enabled anchor missing')
+line_start = s.rfind('\n', 0, idx) + 1
+indent = s[line_start:idx]
+s = s[:line_start] + indent + 'ensureCloudSprites(style);\n' + s[line_start:]
 
-once(
-'''        setGeo(style, SRC_RAIN_STREAK_LIGHT, EMPTY);\n        setGeo(style, SRC_RAIN_STREAK_HEAVY, EMPTY);''',
-'''        setGeo(style, SRC_RAIN_STREAK_LIGHT, EMPTY);\n        setGeo(style, SRC_RAIN_STREAK_HEAVY, EMPTY);\n        setGeo(style, SRC_CLOUD_SPRITES, EMPTY);''',
-'clear clouds')
+# Clear the moving cloud source when the weather layer is switched off.
+clear_marker = 'private void clearAll()'
+ci = s.find(clear_marker)
+if ci < 0:
+    raise SystemExit('clearAll missing')
+ci_end = s.find('\n    }', ci)
+if ci_end < 0:
+    raise SystemExit('clearAll end missing')
+s = s[:ci_end] + '\n        setGeo(style, SRC_CLOUD_SPRITES, EMPTY);' + s[ci_end:]
 
-anchor = '''    private static void ensureFill(Style style, String sourceId, String layerId, String color, float opacity) {'''
+anchor = '    private static void ensureFill(Style style, String sourceId, String layerId, String color, float opacity) {'
 if anchor not in s:
     raise SystemExit('ensureFill anchor missing')
+
 cloud_methods = r'''    private void updateCloudFrames() {
         if (!enabled || style == null || !style.isFullyLoaded()) return;
         try {
-            ensureCloudSprites(style);
+            if (style.getSource(SRC_CLOUD_SPRITES) == null || style.getLayer(LYR_CLOUD_SPRITES) == null) return;
             double phase = ((System.currentTimeMillis() - cloudStartedAt) % 18000L) / 18000.0d;
             setGeo(style, SRC_CLOUD_SPRITES, cloudSprites(snapshot(), phase));
         } catch (Exception ignored) {}
@@ -66,10 +101,8 @@ cloud_methods = r'''    private void updateCloudFrames() {
         if (style.getSource(SRC_CLOUD_SPRITES) == null) {
             style.addSource(new GeoJsonSource(SRC_CLOUD_SPRITES, EMPTY));
         }
-        if (style.getImage(IMG_CLOUD) == null) {
-            style.addImage(IMG_CLOUD, cloudBitmap());
-        }
         if (style.getLayer(LYR_CLOUD_SPRITES) == null) {
+            try { style.addImage(IMG_CLOUD, cloudBitmap()); } catch (Exception ignored) {}
             org.maplibre.android.style.layers.SymbolLayer layer =
                     new org.maplibre.android.style.layers.SymbolLayer(LYR_CLOUD_SPRITES, SRC_CLOUD_SPRITES)
                     .withProperties(
@@ -79,7 +112,7 @@ cloud_methods = r'''    private void updateCloudFrames() {
                             org.maplibre.android.style.layers.PropertyFactory.iconOpacity(0.78f),
                             org.maplibre.android.style.layers.PropertyFactory.iconSize(0.68f)
                     );
-            // Keep official river/station layers readable above weather visuals.
+            // Weather visuals stay under official rivers/stations.
             if (style.getLayer("fs-rivers-layer") != null) style.addLayerBelow(layer, "fs-rivers-layer");
             else style.addLayer(layer);
         }
@@ -90,7 +123,7 @@ cloud_methods = r'''    private void updateCloudFrames() {
         android.graphics.Bitmap b = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888);
         android.graphics.Canvas c = new android.graphics.Canvas(b);
         android.graphics.Paint p = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
-        // Layered translucent lobes make this look like a soft cloud instead of an emoji/icon.
+        // Several translucent lobes create a soft cloud instead of an emoji/icon.
         for (int halo = 7; halo >= 1; halo--) {
             int a = 9 + (8 - halo) * 5;
             p.setColor(android.graphics.Color.argb(a, 255, 255, 255));
@@ -116,6 +149,7 @@ cloud_methods = r'''    private void updateCloudFrames() {
             for (WeatherPoint p : weather) {
                 if (p == null || !Double.isFinite(p.lat) || !Double.isFinite(p.lon) || !Double.isFinite(p.cloud)) continue;
                 if (p.cloud < 25d) continue;
+                // More current cloud cover = more cloud sprites, while remaining lightweight.
                 int count = 1 + (int)Math.floor(Math.min(100d, p.cloud) / 24d);
                 count = Math.max(1, Math.min(5, count));
                 for (int i = 0; i < count; i++) {
@@ -125,7 +159,7 @@ cloud_methods = r'''    private void updateCloudFrames() {
                     double ry = ((h2 & 0x7fffffffL) % 1000L) / 999.0d;
                     double offset = (((h1 >>> 11) & 2047L) / 2047.0d);
                     double drift = (phase + offset) % 1.0d;
-                    // Slow west-to-east drift with a tiny northward component for a web-like living layer.
+                    // Slow west-to-east visual drift. Weather values themselves remain untouched.
                     double lo = p.lon + (rx - 0.5d) * 0.72d + (drift - 0.5d) * 0.42d;
                     double la = p.lat + (ry - 0.5d) * 0.46d + (drift - 0.5d) * 0.055d;
                     JSONObject geom = new JSONObject()

@@ -34,6 +34,7 @@ public final class MonitoringSafetyProvider extends ContentProvider {
         app = context.getApplicationContext();
         sanitize();
         SathiNextLevelV0918.install(app);
+        NativeRealtimeCleanV0918.install(app);
         main.postDelayed(guard, 60_000L);
         return true;
     }

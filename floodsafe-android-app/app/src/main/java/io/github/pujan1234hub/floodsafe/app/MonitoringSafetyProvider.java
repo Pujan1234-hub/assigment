@@ -33,6 +33,7 @@ public final class MonitoringSafetyProvider extends ContentProvider {
         if (context == null) return false;
         app = context.getApplicationContext();
         sanitize();
+        SathiNextLevelV0918.install(app);
         main.postDelayed(guard, 60_000L);
         return true;
     }

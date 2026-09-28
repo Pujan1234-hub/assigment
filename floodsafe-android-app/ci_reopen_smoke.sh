@@ -2,86 +2,73 @@
 set -euo pipefail
 
 PKG='io.github.pujan1234hub.floodsafe.app'
-TEST_PKG='io.github.pujan1234hub.floodsafe.app.test'
 APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
-TEST_APK='floodsafe-android-app/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk'
 LAUNCHER="$PKG/.PJBuiltsSplashActivity"
-
-# Build the instrumentation APK in the same shell so paths and status checks are reliable.
-gradle -p floodsafe-android-app :app:assembleDebugAndroidTest -x bundleFloodSafe --no-daemon
+TARGET='NativeFullActivity'
 
 test -s "$APK"
-test -s "$TEST_APK"
 adb install -r "$APK"
-adb install -r "$TEST_APK"
-
 adb shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS || true
 adb shell pm grant "$PKG" android.permission.ACCESS_COARSE_LOCATION || true
 adb shell pm grant "$PKG" android.permission.ACCESS_FINE_LOCATION || true
-adb shell pm grant "$PKG" android.permission.ACCESS_BACKGROUND_LOCATION || true
 adb shell input keyevent 82 || true
 adb logcat -c
 
-wait_voice() {
+wait_target() {
   local label="$1"
-  for _ in $(seq 1 30); do
-    if adb shell dumpsys activity activities 2>/dev/null | grep -q 'VoiceMainActivity'; then
+  for _ in $(seq 1 35); do
+    if adb shell dumpsys activity activities 2>/dev/null | grep -q "$TARGET"; then
       return 0
     fi
     sleep 1
   done
-  echo "VoiceMainActivity did not become active: $label"
-  adb shell dumpsys activity activities | tail -n 140 || true
+  echo "$TARGET did not become active: $label"
+  adb shell dumpsys activity activities | tail -n 160 || true
   return 1
 }
 
-# Actual launcher path: cold open -> Home -> reopen -> Home -> reopen -> force-stop -> cold open.
+check_fatal() {
+  adb logcat -d -v brief > /tmp/floodsafe-logcat.txt || true
+  if grep -q "ANR in $PKG" /tmp/floodsafe-logcat.txt; then
+    echo 'FloodSafe ANR detected'; return 1
+  fi
+  if grep -A14 'FATAL EXCEPTION' /tmp/floodsafe-logcat.txt | grep -q "$PKG"; then
+    echo 'FloodSafe fatal exception detected';
+    grep -A25 'FATAL EXCEPTION' /tmp/floodsafe-logcat.txt | tail -n 80 || true
+    return 1
+  fi
+}
+
+# Cold launch into the exact full-native screen used by the v0.9.18 UI.
 adb shell am force-stop "$PKG"
 adb shell am start -W -n "$LAUNCHER"
-wait_voice 'cold-1'
+wait_target 'cold-1'
+sleep 3
+check_fatal
 
-adb shell input keyevent KEYCODE_HOME
-sleep 2
-adb shell am start -W -n "$LAUNCHER"
-wait_voice 'warm-1'
+# Confirm the rendered native UI contains both the app and SATHI controls.
+adb shell uiautomator dump /sdcard/floodsafe-window.xml >/dev/null 2>&1 || true
+adb shell cat /sdcard/floodsafe-window.xml > /tmp/floodsafe-window.xml 2>/dev/null || true
+grep -q 'FloodSafe Nepal' /tmp/floodsafe-window.xml
+grep -q 'SATHI' /tmp/floodsafe-window.xml
 
-adb shell input keyevent KEYCODE_HOME
-sleep 2
-adb shell am start -W -n "$LAUNCHER"
-wait_voice 'warm-2'
+# Warm reopen twice.
+for label in warm-1 warm-2; do
+  adb shell input keyevent KEYCODE_HOME
+  sleep 2
+  adb shell am start -W -n "$LAUNCHER"
+  wait_target "$label"
+  sleep 2
+  check_fatal
+done
 
+# Force-stop and cold launch again to catch startup/provider crashes.
 adb shell am force-stop "$PKG"
 sleep 1
+adb logcat -c
 adb shell am start -W -n "$LAUNCHER"
-wait_voice 'cold-2'
+wait_target 'cold-2'
+sleep 4
+check_fatal
 
-# WebView responsiveness regression test: checks document, map host and river runtime
-# across cold/warm activity reopens, including JavaScript callback responsiveness.
-set +e
-adb shell am instrument -w \
-  -e class io.github.pujan1234hub.floodsafe.app.ReopenSmokeTest \
-  "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner" | tee /tmp/reopen-test.txt
-INSTRUMENT_STATUS=${PIPESTATUS[0]}
-set -e
-
-adb logcat -d -v brief > /tmp/floodsafe-logcat.txt || true
-
-if [ "$INSTRUMENT_STATUS" -ne 0 ]; then
-  echo "Instrumentation command failed: $INSTRUMENT_STATUS"
-  exit 1
-fi
-if ! grep -Eq 'OK \(1 test\)' /tmp/reopen-test.txt; then
-  echo 'Reopen regression test did not pass'
-  cat /tmp/reopen-test.txt
-  exit 1
-fi
-if grep -q "ANR in $PKG" /tmp/floodsafe-logcat.txt; then
-  echo 'FloodSafe ANR detected'
-  exit 1
-fi
-if grep -A10 'FATAL EXCEPTION' /tmp/floodsafe-logcat.txt | grep -q "$PKG"; then
-  echo 'FloodSafe fatal exception detected'
-  exit 1
-fi
-
-echo 'FloodSafe launcher cold/warm reopen + WebView responsiveness smoke PASS'
+echo 'FloodSafe NativeFullActivity cold/warm launcher + SATHI crash smoke PASS'

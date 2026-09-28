@@ -1,0 +1,44 @@
+name: Publish FloodSafe v0.9.18 test APK
+
+on:
+  push:
+    branches:
+      - fix/v0-9-18-sathi-next-level
+    paths:
+      - '.github/workflows/publish-floodsafe-v0918-test-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified APK artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p apk
+          gh api /repos/${{ github.repository }}/actions/artifacts/10982410640/zip > artifact.zip
+          unzip -q artifact.zip -d apk
+          APK=$(find apk -maxdepth 2 -type f -name '*.apk' | head -1)
+          test -n "$APK"
+          cp "$APK" FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk > FloodSafe-Nepal-v0.9.18-ANDROID-TEST-SHA256.txt
+
+      - name: Create or update public test release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='floodsafe-v0.9.18-android-test'
+          TITLE='FloodSafe Nepal v0.9.18 Android Test'
+          NOTES='Android-only test build of FloodSafe Nepal v0.9.18. Please install on Android and test notifications, river alerts, weather events, rain start/stop alerts, SATHI AI and the native river map. This is a testing build, not a Play Store release.'
+          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release upload "$TAG" FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk FloodSafe-Nepal-v0.9.18-ANDROID-TEST-SHA256.txt --clobber --repo "${{ github.repository }}"
+          else
+            gh release create "$TAG" FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk FloodSafe-Nepal-v0.9.18-ANDROID-TEST-SHA256.txt --repo "${{ github.repository }}" --target '${{ github.ref_name }}' --title "$TITLE" --notes "$NOTES"
+          fi

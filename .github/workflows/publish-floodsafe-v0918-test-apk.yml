@@ -37,8 +37,8 @@ jobs:
           TAG='floodsafe-v0.9.18-android-test'
           TITLE='FloodSafe Nepal v0.9.18 Android Test'
           NOTES='Android-only test build of FloodSafe Nepal v0.9.18. Please install on Android and test notifications, river alerts, weather events, rain start/stop alerts, SATHI AI and the native river map. This is a testing build, not a Play Store release.'
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk FloodSafe-Nepal-v0.9.18-ANDROID-TEST-SHA256.txt --clobber
+          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release upload "$TAG" FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk FloodSafe-Nepal-v0.9.18-ANDROID-TEST-SHA256.txt --clobber --repo "${{ github.repository }}"
           else
-            gh release create "$TAG" FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk FloodSafe-Nepal-v0.9.18-ANDROID-TEST-SHA256.txt --target '${{ github.ref_name }}' --title "$TITLE" --notes "$NOTES"
+            gh release create "$TAG" FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk FloodSafe-Nepal-v0.9.18-ANDROID-TEST-SHA256.txt --repo "${{ github.repository }}" --target '${{ github.ref_name }}' --title "$TITLE" --notes "$NOTES"
           fi

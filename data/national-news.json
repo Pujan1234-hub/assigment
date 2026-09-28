@@ -1,91 +1,91 @@
 {
-  "generated_at": "2026-09-28T11:42:14.601309+05:45",
-  "updated_at_npt": "28 Sep 11:42 NPT",
+  "generated_at": "2026-09-28T19:23:03.233728+05:45",
+  "updated_at_npt": "28 Sep 19:23 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "मुस्ताङमा सडक, बिजुली र इन्टरनेट अवरुद्ध, खुलाउन प्रयास जारी",
+      "title": "कालीगण्डकी पुल भत्किँदा घट्यो बागलुङ बजारमा चहलपहल, तस्बिरहरू",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595449/roads-electricity-and-internet-blocked-in-mustang-efforts-underway-to-resolve-the-issue",
-      "published_at": "2026-09-28T09:44:38+05:45",
+      "url": "https://www.ratopati.com/story/595617/the-collapse-of-the-kaligandaki-bridge-reduced-the-traffic-in-baglung-bazaar",
+      "published_at": "2026-09-28T19:20:22+05:45",
+      "flash": true
+    },
+    {
+      "title": "कोशी प्रदेश मन्त्रिपरिषद् बैठक : सचिवहरूको जिम्मेवारी हेरफेर",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595610/koshi-province-council-of-ministers-meeting-secretaries-responsibilities-changed",
+      "published_at": "2026-09-28T18:36:52+05:45",
+      "flash": true
+    },
+    {
+      "title": "हिमलुङ हिमपहिरोमा परी गोरखाका दुई जना बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595603/two-gorkha-residents-missing-in-himlung-avalanche",
+      "published_at": "2026-09-28T18:08:58+05:45",
       "flash": false
     },
     {
-      "title": "मौसममा सुधार आएसँगै जनजीवन सामान्यतर्फ",
+      "title": "दाहसंस्कार गर्न गएका वृद्ध खोलामा डुबेर बेपत्ता",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595444/life-returns-to-normal-as-weather-improves",
-      "published_at": "2026-09-28T09:28:37+05:45",
+      "url": "https://www.ratopati.com/story/595601/elderly-man-goes-missing-after-drowning-in-river-while-going-for-cremation",
+      "published_at": "2026-09-28T18:04:32+05:45",
       "flash": false
     },
     {
-      "title": "नारायणी नदीमा बगेर पुलमा अड्किएको ‘राइनो क्रुज’ निकाल्ने काम सुरु",
+      "title": "गण्डकीमा बाढीपहिरो : २१ जनाको मृत्यु, अवरुद्ध सडक खुलाउन प्रयास गरिँदै",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595441/work-begins-to-remove-rhino-cruise-stuck-on-bridge-after-being-swept-away-by-narayani-river",
-      "published_at": "2026-09-28T09:19:12+05:45",
+      "url": "https://www.ratopati.com/story/595599/floods-and-landslides-in-gandaki-21-people-dead-efforts-underway-to-clear-blocked-roads",
+      "published_at": "2026-09-28T17:40:34+05:45",
       "flash": false
     },
     {
-      "title": "पहिरोले बैतडीको ढोल्यामोड–पुर्चौंडी हाट सडक अवरुद्ध",
+      "title": "लुम्बिनीमा चार दिनमा ७८ विपद्का घटना, ६ जनाको मृत्यु, १,२८० जना विस्थापित",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595439/landslide-blocks-dholyamod-purchaudi-hat-road-in-baitadi",
-      "published_at": "2026-09-28T09:16:11+05:45",
+      "url": "https://www.ratopati.com/story/595594/78-disaster-incidents-in-lumbini-in-four-days-6-dead-1280-displaced",
+      "published_at": "2026-09-28T17:29:37+05:45",
       "flash": false
     },
     {
-      "title": "अविरल वर्षापछि अवरुद्ध बेनी–दरवाङ सडक मर्मत सुरु",
+      "title": "कानेपोखरीको राहत शिक्षक परीक्षामा विवाद",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595437/repairs-begin-on-beni-darwang-road-blocked-by-incessant-rains",
-      "published_at": "2026-09-28T09:05:10+05:45",
+      "url": "https://www.ratopati.com/story/595591/controversy-over-kanepokhari-relief-teacher-exam",
+      "published_at": "2026-09-28T17:24:56+05:45",
       "flash": false
     },
     {
-      "title": "सामुदायिक वनबाट तीन नाल बेवारिसे भरुवा बन्दुक बरामद",
+      "title": "बाढी पहिरोले गुल्मीका ग्रामीण सडक अवरुद्ध",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595436/three-abandoned-loaded-guns-recovered-from-community-forest",
-      "published_at": "2026-09-28T09:03:21+05:45",
+      "url": "https://www.ratopati.com/story/595572/floods-and-landslides-block-rural-roads-in-gulmi",
+      "published_at": "2026-09-28T16:20:36+05:45",
       "flash": false
     },
     {
-      "title": "निरन्तर वर्षा र हिमपातले हुम्लाको जनजीवन प्रभावित, फोन र इन्टरनेट सेवा ठप्प",
+      "title": "मनाङ हिमपहिरो : थप २ शव फेला, मृतकको संख्या ४ पुग्यो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595435/continuous-rain-and-snowfall-affect-normal-life-in-humla-disrupt-phone-and-internet-services",
-      "published_at": "2026-09-28T08:59:48+05:45",
+      "url": "https://www.ratopati.com/story/595555/manang-avalanche-2-more-bodies-found-death-toll-reaches-4",
+      "published_at": "2026-09-28T15:04:12+05:45",
       "flash": false
     },
     {
-      "title": "लालबकैया नदीले तटबन्ध कटान गरेपछि उच्च सुरक्षा अधिकारीसहित मधेसका गृहमन्त्रीद्वारा स्थलगत निरीक्षण",
+      "title": "गुल्मीमा खोलाले बगाएर एक महिला बेपत्ता",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595427/madhesh-home-minister-along-with-top-security-officials-conducts-on-site-inspection-after-lal-bakaiya-river-breached-the-embankment",
-      "published_at": "2026-09-28T08:08:43+05:45",
+      "url": "https://www.ratopati.com/story/595529/a-woman-has-gone-missing-after-being-swept-away-by-a-river-in-gulmi",
+      "published_at": "2026-09-28T13:56:33+05:45",
       "flash": false
     },
     {
-      "title": "कालीगण्डकीको कटान हेर्ने क्रममा लडेर एक जनाको मृत्यु",
+      "title": "बागलुङका पहिरोपीडितलाई हेलिकप्टरमार्फत राहत सामग्री पठाइयो, तस्बिरहरू",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595416/one-person-dies-after-falling-while-watching-the-erosion-of-kaligandaki",
-      "published_at": "2026-09-28T07:15:12+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी र विपद् व्यवस्थापनमा तटीय क्षेत्रका बासिन्दाको सहारा बने स्थानीय स्वयंसेवक",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595414/local-volunteers-become-a-support-for-coastal-residents-in-flood-and-disaster-management",
-      "published_at": "2026-09-28T07:08:50+05:45",
-      "flash": false
-    },
-    {
-      "title": "त्रिभुवन अन्तर्राष्ट्रिय विमानस्थलबाट ४२२.५ ग्राम सुनसहित भारतीय नागरिक पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595411/indian-national-arrested-with-4225-grams-of-gold-at-tribhuvan-international-airport",
-      "published_at": "2026-09-28T06:43:22+05:45",
+      "url": "https://www.ratopati.com/story/595517/relief-materials-sent-by-helicopter-to-baglung-landslide-victims-photos",
+      "published_at": "2026-09-28T13:32:05+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     },
@@ -98,7 +98,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
+      "flash": 2,
       "recent": 11
     },
     "Kathmandu Post": {
@@ -109,7 +109,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     }

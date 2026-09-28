@@ -1,84 +1,49 @@
 {
-  "generated_at": "2026-09-28T19:23:03.233728+05:45",
-  "updated_at_npt": "28 Sep 19:23 NPT",
+  "generated_at": "2026-09-29T01:58:54.065499+05:45",
+  "updated_at_npt": "29 Sep 01:58 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "कालीगण्डकी पुल भत्किँदा घट्यो बागलुङ बजारमा चहलपहल, तस्बिरहरू",
+      "title": "कालीगण्डकी बाढीले उजाडियो तिल्केनी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595617/the-collapse-of-the-kaligandaki-bridge-reduced-the-traffic-in-baglung-bazaar",
-      "published_at": "2026-09-28T19:20:22+05:45",
+      "url": "https://www.ratopati.com/story/595656/tilkeni-devastated-by-kaligandaki-floods",
+      "published_at": "2026-09-29T01:48:53+05:45",
       "flash": true
     },
     {
-      "title": "कोशी प्रदेश मन्त्रिपरिषद् बैठक : सचिवहरूको जिम्मेवारी हेरफेर",
+      "title": "मृतकका परिवारलाई रु एक लाख राहत",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595610/koshi-province-council-of-ministers-meeting-secretaries-responsibilities-changed",
-      "published_at": "2026-09-28T18:36:52+05:45",
-      "flash": true
-    },
-    {
-      "title": "हिमलुङ हिमपहिरोमा परी गोरखाका दुई जना बेपत्ता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595603/two-gorkha-residents-missing-in-himlung-avalanche",
-      "published_at": "2026-09-28T18:08:58+05:45",
+      "url": "https://www.ratopati.com/story/595654/rs-1-lakh-relief-to-the-family-of-the-deceased",
+      "published_at": "2026-09-29T00:30:00+05:45",
       "flash": false
     },
     {
-      "title": "दाहसंस्कार गर्न गएका वृद्ध खोलामा डुबेर बेपत्ता",
+      "title": "एक सातादेखि सम्पर्कविहीन हुम्लाका १० जना जडीबुटी सङ्कलक सम्पर्कमा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595601/elderly-man-goes-missing-after-drowning-in-river-while-going-for-cremation",
-      "published_at": "2026-09-28T18:04:32+05:45",
+      "url": "https://www.ratopati.com/story/595650/10-herb-collectors-from-humla-who-were-out-of-contact-for-a-week-are-in-touch",
+      "published_at": "2026-09-28T22:41:26+05:45",
       "flash": false
     },
     {
-      "title": "गण्डकीमा बाढीपहिरो : २१ जनाको मृत्यु, अवरुद्ध सडक खुलाउन प्रयास गरिँदै",
+      "title": "बाढी पहिरोबाट म्याग्दीका २०० परिवार विस्थापित",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595599/floods-and-landslides-in-gandaki-21-people-dead-efforts-underway-to-clear-blocked-roads",
-      "published_at": "2026-09-28T17:40:34+05:45",
+      "url": "https://www.ratopati.com/story/595649/200-families-displaced-in-myagdi-due-to-floods-and-landslides",
+      "published_at": "2026-09-28T22:41:18+05:45",
       "flash": false
     },
     {
-      "title": "लुम्बिनीमा चार दिनमा ७८ विपद्का घटना, ६ जनाको मृत्यु, १,२८० जना विस्थापित",
+      "title": "पहिरोले सडक अवरुद्ध : स्वास्थ्यचौकी लैजाने क्रममा बाटोमै शिशुको जन्म",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595594/78-disaster-incidents-in-lumbini-in-four-days-6-dead-1280-displaced",
-      "published_at": "2026-09-28T17:29:37+05:45",
+      "url": "https://www.ratopati.com/story/595643/landslide-blocks-road-baby-born-on-way-to-health-post",
+      "published_at": "2026-09-28T22:09:11+05:45",
       "flash": false
     },
     {
-      "title": "कानेपोखरीको राहत शिक्षक परीक्षामा विवाद",
+      "title": "बाढीले पुरेको घरबाट भेटिएको १५ तोला सुन र ४ लाख नगद घरधनीलाई फिर्ता",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595591/controversy-over-kanepokhari-relief-teacher-exam",
-      "published_at": "2026-09-28T17:24:56+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी पहिरोले गुल्मीका ग्रामीण सडक अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595572/floods-and-landslides-block-rural-roads-in-gulmi",
-      "published_at": "2026-09-28T16:20:36+05:45",
-      "flash": false
-    },
-    {
-      "title": "मनाङ हिमपहिरो : थप २ शव फेला, मृतकको संख्या ४ पुग्यो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595555/manang-avalanche-2-more-bodies-found-death-toll-reaches-4",
-      "published_at": "2026-09-28T15:04:12+05:45",
-      "flash": false
-    },
-    {
-      "title": "गुल्मीमा खोलाले बगाएर एक महिला बेपत्ता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595529/a-woman-has-gone-missing-after-being-swept-away-by-a-river-in-gulmi",
-      "published_at": "2026-09-28T13:56:33+05:45",
-      "flash": false
-    },
-    {
-      "title": "बागलुङका पहिरोपीडितलाई हेलिकप्टरमार्फत राहत सामग्री पठाइयो, तस्बिरहरू",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595517/relief-materials-sent-by-helicopter-to-baglung-landslide-victims-photos",
-      "published_at": "2026-09-28T13:32:05+05:45",
+      "url": "https://www.ratopati.com/story/595636/15-tolas-of-gold-and-400000-cash-found-in-flooded-house-returned-to-homeowner",
+      "published_at": "2026-09-28T21:31:49+05:45",
       "flash": false
     }
   ],
@@ -98,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 11
+      "flash": 1,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,

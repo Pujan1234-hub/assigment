@@ -1,0 +1,51 @@
+name: Build FloodSafe v0.9.18 realtime visible flow APK
+on:
+  push:
+    branches: ["fix/v0918-realtime-visible-flow"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Hard gate - keep the v0.9.18 map implementation unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin fix/v0918-sathi-map-frozen:refs/remotes/origin/fix/v0918-sathi-map-frozen
+          git diff --exit-code origin/fix/v0918-sathi-map-frozen -- \
+            floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java \
+            floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          grep -q 'RiverRealtimeV0918.install(app);' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MonitoringSafetyProvider.java
+          grep -q 'main.postDelayed(this, 10_000L);' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverRealtimeV0918.java
+          grep -q 'main.postDelayed(this, 80L);' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverRealtimeV0918.java
+          echo 'PASS: original v0.9.18 map files are byte-for-byte unchanged; realtime/flow is overlay-only.'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Unit tests and build debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+      - name: Verify APK package
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -l "$APK" | grep -q 'classes.dex'
+          cp "$APK" FloodSafe-Nepal-v0.9.18-REALTIME-FLOW-FIX.apk
+          sha256sum FloodSafe-Nepal-v0.9.18-REALTIME-FLOW-FIX.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.18-REALTIME-FLOW-FIX-APK
+          path: FloodSafe-Nepal-v0.9.18-REALTIME-FLOW-FIX.apk
+          retention-days: 14

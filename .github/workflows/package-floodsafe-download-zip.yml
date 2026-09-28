@@ -1,0 +1,41 @@
+name: Package FloodSafe APK as smaller ZIP
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/package-floodsafe-download-zip.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download current test APK from release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p pkg
+          gh release download floodsafe-v0.9.18-android-test \
+            --repo "${{ github.repository }}" \
+            --pattern 'FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk' \
+            --dir pkg
+
+      - name: Create compressed tester ZIP
+        run: |
+          cd pkg
+          sha256sum FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk > FloodSafe-Nepal-v0.9.18-ANDROID-TEST.sha256
+          zip -9 FloodSafe-Nepal-v0.9.18-ANDROID-TEST.zip FloodSafe-Nepal-v0.9.18-ANDROID-TEST.apk FloodSafe-Nepal-v0.9.18-ANDROID-TEST.sha256
+          ls -lh FloodSafe-Nepal-v0.9.18-ANDROID-TEST.*
+
+      - name: Upload ZIP to existing test release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload floodsafe-v0.9.18-android-test \
+            pkg/FloodSafe-Nepal-v0.9.18-ANDROID-TEST.zip \
+            --repo "${{ github.repository }}" \
+            --clobber

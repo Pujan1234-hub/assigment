@@ -17,6 +17,7 @@ import android.widget.TextView;
 /** Network-independent PJBUILTS launch intro. Launches the existing full native Android UI only. */
 public final class PJBuiltsSplashActivity extends Activity {
     private boolean launched;
+    private boolean resumed;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable launchTask = this::openApp;
 
@@ -27,7 +28,21 @@ public final class PJBuiltsSplashActivity extends Activity {
         window.setNavigationBarColor(Color.rgb(2, 7, 18));
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         setContentView(buildSplash());
-        handler.postDelayed(launchTask, 1450L);
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        resumed = true;
+        if (!launched) {
+            handler.removeCallbacks(launchTask);
+            handler.postDelayed(launchTask, 1450L);
+        }
+    }
+
+    @Override protected void onPause() {
+        resumed = false;
+        handler.removeCallbacks(launchTask);
+        super.onPause();
     }
 
     private View buildSplash() {
@@ -61,7 +76,7 @@ public final class PJBuiltsSplashActivity extends Activity {
     }
 
     private void openApp() {
-        if (launched || isFinishing() || isDestroyed()) return;
+        if (launched || !resumed || isFinishing() || isDestroyed()) return;
         launched = true;
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
@@ -77,6 +92,7 @@ public final class PJBuiltsSplashActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        resumed = false;
         handler.removeCallbacks(launchTask);
         super.onDestroy();
     }

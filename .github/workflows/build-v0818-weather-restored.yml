@@ -1,0 +1,134 @@
+name: Build FloodSafe v0.8.18 Weather Restored
+
+on:
+  push:
+    branches: ["fix/v0818-restore-weather-animation"]
+    paths:
+      - 'floodsafe-android-app/**'
+      - '.github/workflows/build-v0818-weather-restored.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Apply exact original v0.8.18 chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_webview_crash.py
+          python3 floodsafe-android-app/patch_launcher_reopen_hard_reset.py
+          python3 floodsafe-android-app/patch_auto_alerts.py
+          python3 floodsafe-android-app/patch_river_waterlevel.py
+          python3 floodsafe-android-app/patch_two_hour_weather.py
+          python3 floodsafe-android-app/patch_cold_start_blank.py
+          python3 floodsafe-android-app/patch_cross_device_navigation.py
+          python3 floodsafe-android-app/patch_native_compat_fallback.py
+          python3 floodsafe-android-app/patch_map_smooth_v075.py
+          python3 floodsafe-android-app/patch_full_native_v080.py
+          python3 floodsafe-android-app/patch_native_v081_polish.py
+          python3 floodsafe-android-app/patch_native_v081_escape_fix.py
+          python3 floodsafe-android-app/patch_native_maplibre_v082.py
+          python3 floodsafe-android-app/patch_native_map_detail_v083.py
+          python3 floodsafe-android-app/patch_native_v084_sathi_map.py
+          python3 floodsafe-android-app/patch_native_v085_flow_sathi.py
+          python3 floodsafe-android-app/patch_native_v086_full_waterways.py
+          python3 floodsafe-android-app/patch_native_v087_runtime_rivers.py
+          python3 floodsafe-android-app/patch_native_v088_restore_web_rivers.py
+          python3 floodsafe-android-app/patch_native_v089_realtime_gauges.py
+          python3 floodsafe-android-app/patch_native_v0810_live_source_colours.py
+          python3 floodsafe-android-app/patch_native_v0810_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0811_map_anr_fix.py
+          python3 floodsafe-android-app/patch_native_v0812_trusted_latest_flow.py
+          python3 floodsafe-android-app/patch_native_v0813_prep_truth_ui.py
+          python3 floodsafe-android-app/patch_native_v0813_nepal_truth_map.py
+          python3 floodsafe-android-app/patch_native_v0814_prep_runtime_counts.py
+          python3 floodsafe-android-app/patch_native_v0814_source_exact_smooth.py
+          python3 floodsafe-android-app/patch_native_v0814_compile_fix.py
+          python3 floodsafe-android-app/patch_native_v0815_single_source_truth.py
+          python3 floodsafe-android-app/patch_native_v0816_current_only_map.py
+          python3 floodsafe-android-app/patch_native_v0817_clean_web_map.py
+          python3 floodsafe-android-app/patch_native_v0817_compile_rain_fix.py
+          python3 floodsafe-android-app/patch_native_v0818_direct_river_clean_flow.py
+
+      - name: Freeze original map then restore only weather animation
+        shell: bash
+        run: |
+          set -euo pipefail
+          MAP='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          sha256sum "$MAP" > /tmp/original-v0818-map.sha256
+          python3 floodsafe-android-app/patch_restore_weather_animation_v0918.py
+          sha256sum -c /tmp/original-v0818-map.sha256
+          A='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+          grep -Fq 'WeatherAnimationOverlayV0918 weatherAnimation' "$A"
+          grep -Fq 'weather_code,cloud_cover' "$A"
+          grep -Fq 'weatherAnimation.updateWeather(code,pr,cloud)' "$A"
+          grep -Fq 'weatherCode == 95 || weatherCode == 96 || weatherCode == 99' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/WeatherAnimationOverlayV0918.java
+          echo 'PASS: original v0.8.18 map unchanged; weather animation restored additively.'
+
+      - name: Verify original v0.8.18 map gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          M='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java'
+          G='floodsafe-android-app/app/build.gradle'
+          grep -Fq 'sameRiverGaugeFor' "$M"
+          grep -Fq 'return a.equals(b);' "$M"
+          grep -Fq 'Math.min(180,overviewRivers.size())' "$M"
+          grep -Fq 'Math.min(48,candidates.size())' "$M"
+          grep -Fq 'showRainMarkers=zoom>=8.0' "$M"
+          grep -Fq 'Math.min(24,visibleSnapshot.size())' "$M"
+          grep -Fq 'main.postDelayed(this,220L)' "$M"
+          grep -Fq "versionName '0.8.18'" "$G"
+
+      - name: Bundle verified Android assets
+        run: gradle -p floodsafe-android-app clean :app:bundleFloodSafe --no-daemon
+
+      - name: Optimize retained web assets
+        run: |
+          python3 floodsafe-android-app/patch_low_end_sathi.py
+          python3 floodsafe-android-app/patch_low_end_map.py
+
+      - name: Unit test and build APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug -x bundleFloodSafe --no-daemon --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-snapshot.json'
+          unzip -l "$APK" | grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson'
+          rm -rf /tmp/fsdex && mkdir -p /tmp/fsdex
+          unzip -q "$APK" 'classes*.dex' -d /tmp/fsdex
+          strings /tmp/fsdex/classes*.dex > /tmp/dexstrings.txt
+          grep -Fq 'WeatherAnimationOverlayV0918' /tmp/dexstrings.txt
+          cp "$APK" FloodSafe-Nepal-WEATHER-ANIMATION-RESTORED.apk
+          sha256sum FloodSafe-Nepal-WEATHER-ANIMATION-RESTORED.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-WEATHER-ANIMATION-RESTORED-APK
+          path: FloodSafe-Nepal-WEATHER-ANIMATION-RESTORED.apk
+          if-no-files-found: error
+          retention-days: 14

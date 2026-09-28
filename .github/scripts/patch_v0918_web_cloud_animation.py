@@ -77,14 +77,7 @@ cloud_methods = r'''    private void updateCloudFrames() {
                             org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap(true),
                             org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement(true),
                             org.maplibre.android.style.layers.PropertyFactory.iconOpacity(0.78f),
-                            org.maplibre.android.style.layers.PropertyFactory.iconSize(
-                                    org.maplibre.android.style.expressions.Expression.interpolate(
-                                            org.maplibre.android.style.expressions.Expression.linear(),
-                                            org.maplibre.android.style.expressions.Expression.get("cloud"),
-                                            org.maplibre.android.style.expressions.Expression.stop(25, 0.48f),
-                                            org.maplibre.android.style.expressions.Expression.stop(60, 0.68f),
-                                            org.maplibre.android.style.expressions.Expression.stop(100, 0.88f)
-                                    ))
+                            org.maplibre.android.style.layers.PropertyFactory.iconSize(0.68f)
                     );
             // Keep official river/station layers readable above weather visuals.
             if (style.getLayer("fs-rivers-layer") != null) style.addLayerBelow(layer, "fs-rivers-layer");

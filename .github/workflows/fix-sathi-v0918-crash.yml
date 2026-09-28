@@ -41,6 +41,8 @@ jobs:
           cp floodsafe-android-app/ci_reopen_smoke.sh /tmp/current-v0918-overlay/
           git fetch --no-tags --depth=1 origin 00eab9a3d2a5256bcb353a24b39b549182367696
           git checkout 00eab9a3d2a5256bcb353a24b39b549182367696 -- floodsafe-android-app
+          git fetch --no-tags --depth=1 origin 50a2f51b1dd1427c1f5ed0e78cdc5f6272c791f4
+          git checkout 50a2f51b1dd1427c1f5ed0e78cdc5f6272c791f4 -- floodsafe-android-app/patch_native_v0918_stability_performance.py
           cp /tmp/current-v0918-overlay/PJBuiltsSplashActivity.java "$J/PJBuiltsSplashActivity.java"
           cp /tmp/current-v0918-overlay/MonitoringSafetyProvider.java "$J/MonitoringSafetyProvider.java"
           cp /tmp/current-v0918-overlay/SathiNextLevelV0918.java "$J/SathiNextLevelV0918.java"
@@ -48,7 +50,7 @@ jobs:
           chmod +x floodsafe-android-app/ci_reopen_smoke.sh
           test -s floodsafe-android-app/patch_native_language_safe.py
           test -s floodsafe-android-app/patch_native_v0918_stability_performance.py
-          echo 'historical v0.9.18 build base loaded; current SATHI/splash overlay preserved'
+          echo 'historical v0.9.18 base + corrected v0.9.18 patch loaded; current SATHI/splash overlay preserved'
 
       - name: Rebuild exact verified v0.9.18 native chain
         shell: bash

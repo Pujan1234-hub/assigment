@@ -1,0 +1,61 @@
+name: Build FloodSafe v0.9.18 native clean realtime APK
+on:
+  push:
+    branches: ["fix/v0918-native-clean-realtime"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Hard gate - restore original v0.9.18 native screen and map
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin fix/v0918-sathi-map-frozen:refs/remotes/origin/fix/v0918-sathi-map-frozen
+          git diff --exit-code origin/fix/v0918-sathi-map-frozen -- \
+            floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java \
+            floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          test ! -e floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverRealtimeV0918.java
+          grep -q 'NativeRealtimeCleanV0918.install(app);' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MonitoringSafetyProvider.java
+          grep -q 'RIVER_POLL_MS = 15_000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeRealtimeCleanV0918.java
+          grep -q 'fs-flow-particles-layer' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeRealtimeCleanV0918.java
+          if grep -q 'GeoJsonSource' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeRealtimeCleanV0918.java; then
+            echo 'Clean hook must not create new map sources' >&2
+            exit 1
+          fi
+          echo 'PASS: v0.9.18 NativeFullActivity + FloodSafeNativeMapView unchanged; no duplicate realtime overlay.'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Unit tests and build debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+      - name: Verify APK contains clean realtime hook
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          rm -rf /tmp/fsdex && mkdir -p /tmp/fsdex
+          unzip -q "$APK" 'classes*.dex' -d /tmp/fsdex
+          strings /tmp/fsdex/classes*.dex > /tmp/dexstrings.txt
+          grep -q 'NativeRealtimeCleanV0918' /tmp/dexstrings.txt
+          grep -q 'refreshRivers' /tmp/dexstrings.txt
+          grep -q 'fs-flow-particles-layer' /tmp/dexstrings.txt
+          cp "$APK" FloodSafe-Nepal-v0.9.18-NATIVE-CLEAN-REALTIME.apk
+          sha256sum FloodSafe-Nepal-v0.9.18-NATIVE-CLEAN-REALTIME.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.18-NATIVE-CLEAN-REALTIME-APK
+          path: FloodSafe-Nepal-v0.9.18-NATIVE-CLEAN-REALTIME.apk
+          retention-days: 14

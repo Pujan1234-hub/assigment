@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -101,7 +101,6 @@ jobs:
           p.write_text(s)
           PY
 
-          # Exact approved UI/map/cloud invariants BEFORE notification patch.
           grep -Fq 'V0918_ANIMATED_CLOUD_MARKER_ONLY' "$J/WeatherMapOverlayController.java"
           grep -Fq 'cloudMarkerTick' "$J/WeatherMapOverlayController.java"
           grep -Fq 'applyCloudMarkerAnimation' "$J/WeatherMapOverlayController.java"
@@ -171,3 +170,13 @@ jobs:
             FloodSafe-Nepal-v0.9.18-NOTIFICATIONS-ONLY-PRESERVE-CLOUD-SHA256.txt
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish same verified APK to public test release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: floodsafe-v0.9.18-android-test
+          name: FloodSafe Nepal Android Test v0.9.18
+          prerelease: true
+          files: |
+            FloodSafe-Nepal-v0.9.18-NOTIFICATIONS-ONLY-PRESERVE-CLOUD.apk
+            FloodSafe-Nepal-v0.9.18-NOTIFICATIONS-ONLY-PRESERVE-CLOUD-SHA256.txt

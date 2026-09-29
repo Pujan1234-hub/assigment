@@ -1,56 +1,35 @@
 {
-  "generated_at": "2026-09-29T01:58:54.065499+05:45",
-  "updated_at_npt": "29 Sep 01:58 NPT",
+  "generated_at": "2026-09-29T06:09:04.774789+05:45",
+  "updated_at_npt": "29 Sep 06:09 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "कालीगण्डकी बाढीले उजाडियो तिल्केनी",
+      "title": "कमजोर बन्दै मनसुनी र पश्चिमी वायु, आज कहाँ-कहाँ छ वर्षाको सम्भावना ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595656/tilkeni-devastated-by-kaligandaki-floods",
-      "published_at": "2026-09-29T01:48:53+05:45",
+      "url": "https://www.ratopati.com/story/595670/monsoon-and-westerly-winds-are-weakening-where-will-it-rain-today",
+      "published_at": "2026-09-29T06:07:15+05:45",
       "flash": true
     },
     {
-      "title": "मृतकका परिवारलाई रु एक लाख राहत",
+      "title": "बाढीले पाइपलाइन बगाउँदा बागलुङ बजारमा खानेपानी समस्या",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595654/rs-1-lakh-relief-to-the-family-of-the-deceased",
-      "published_at": "2026-09-29T00:30:00+05:45",
-      "flash": false
+      "url": "https://www.ratopati.com/story/595669/water-supply-problem-in-baglung-bazaar-as-flood-washes-away-pipeline",
+      "published_at": "2026-09-29T05:09:48+05:45",
+      "flash": true
     },
     {
-      "title": "एक सातादेखि सम्पर्कविहीन हुम्लाका १० जना जडीबुटी सङ्कलक सम्पर्कमा",
+      "title": "विद्युत् महसुल तिर्न काउन्टर धाउनुपर्ने बाध्यता हट्दै",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595650/10-herb-collectors-from-humla-who-were-out-of-contact-for-a-week-are-in-touch",
-      "published_at": "2026-09-28T22:41:26+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी पहिरोबाट म्याग्दीका २०० परिवार विस्थापित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595649/200-families-displaced-in-myagdi-due-to-floods-and-landslides",
-      "published_at": "2026-09-28T22:41:18+05:45",
-      "flash": false
-    },
-    {
-      "title": "पहिरोले सडक अवरुद्ध : स्वास्थ्यचौकी लैजाने क्रममा बाटोमै शिशुको जन्म",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595643/landslide-blocks-road-baby-born-on-way-to-health-post",
-      "published_at": "2026-09-28T22:09:11+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीले पुरेको घरबाट भेटिएको १५ तोला सुन र ४ लाख नगद घरधनीलाई फिर्ता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595636/15-tolas-of-gold-and-400000-cash-found-in-flooded-house-returned-to-homeowner",
-      "published_at": "2026-09-28T21:31:49+05:45",
+      "url": "https://www.ratopati.com/story/595663/the-obligation-to-visit-the-counter-to-pay-electricity-bills-is-being-eliminated",
+      "published_at": "2026-09-29T04:50:30+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     },
@@ -63,8 +42,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 6
+      "flash": 2,
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

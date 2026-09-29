@@ -1,0 +1,31 @@
+name: Publish friendly FloodSafe beta APK name
+
+on:
+  push:
+    branches:
+      - fix/v0918-notifications-only-exact-ui
+    paths:
+      - '.github/workflows/publish-friendly-beta-apk-name.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Re-publish exact verified APK with tester-friendly filename
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG='floodsafe-v0.9.18-android-test'
+          SRC='FloodSafe-Nepal-v0.9.18-NOTIFICATIONS-ONLY-PRESERVE-CLOUD.apk'
+          OUT='FloodSafe-Nepal-Beta-Test.apk'
+          gh release download "$TAG" --pattern "$SRC" --dir /tmp/floodsafe
+          cp "/tmp/floodsafe/$SRC" "$OUT"
+          gh release upload "$TAG" "$OUT" --clobber
+          sha256sum "/tmp/floodsafe/$SRC" "$OUT"

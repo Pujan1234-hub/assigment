@@ -1,18 +1,28 @@
 (()=>{
   const VERSION_URL='./build-version.txt';
   const STATUS_URL='./data/portfolio-status.json';
+  const FLOODSAFE_BETA_APK='https://github.com/Pujan1234-hub/assigment/releases/download/floodsafe-v0.9.18-android-test/FloodSafe-Nepal-Beta-Test.apk';
   let current=null;
   let reloading=false;
 
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  function applyRequestedFixes(){
+    const heroLine=document.querySelector('h1 .thin');
+    if(heroLine) heroLine.textContent='I build practical software for everyday needs — web, Android, AI and real-time products.';
+    document.querySelectorAll('.project').forEach(project=>{project.style.contentVisibility='visible';});
+    const betaLink=document.querySelector('#floodsafe .floodsafe-android-test a');
+    if(betaLink) betaLink.href=FLOODSAFE_BETA_APK;
+  }
+
   function addPolish(){
+    applyRequestedFixes();
     if(document.getElementById('portfolio-polish')) return;
     const style=document.createElement('style');
     style.id='portfolio-polish';
     style.textContent=`
       :focus-visible{outline:2px solid var(--cyan);outline-offset:4px;border-radius:8px}
-      .project{transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,box-shadow .35s}
+      .project{transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s,box-shadow .35s;content-visibility:visible!important}
       .project:hover{border-color:color-mix(in srgb,var(--accent) 32%,rgba(255,255,255,.10));box-shadow:0 34px 100px rgba(0,0,0,.30)}
       .project-copy>p{max-width:62ch}
       .project-sync{display:flex;align-items:center;gap:7px;width:max-content;max-width:100%;margin-top:10px;color:#718096;font:750 .66rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.045em}
@@ -24,7 +34,6 @@
       .floodsafe-android-test a{display:inline-flex;align-items:center;justify-content:center;margin-top:10px;padding:10px 13px;border-radius:12px;background:linear-gradient(135deg,#33dffb,#6e8cff);color:#071019;font-weight:900;text-decoration:none;transition:transform .2s,filter .2s}
       .floodsafe-android-test a:hover{transform:translateY(-2px);filter:brightness(1.06)}
       .nav.scrolled{box-shadow:0 12px 36px rgba(0,0,0,.18)}
-      @media(min-width:1051px){.project{content-visibility:auto;contain-intrinsic-size:580px}}
       @media(max-width:700px){.project-sync{font-size:.61rem}.project-copy>p{line-height:1.62}.floodsafe-android-test{font-size:.74rem}.floodsafe-android-test a{width:100%}}
       @media(prefers-reduced-motion:reduce){.project{transition:none!important}}
     `;
@@ -48,12 +57,18 @@
 
   function addFloodSafeAndroidTest(){
     const card=document.getElementById('floodsafe');
-    if(!card||card.querySelector('.floodsafe-android-test')) return;
+    if(!card) return;
+    const existing=card.querySelector('.floodsafe-android-test');
+    if(existing){
+      const a=existing.querySelector('a');
+      if(a) a.href=FLOODSAFE_BETA_APK;
+      return;
+    }
     const links=card.querySelector('.project-links');
     if(!links) return;
     const box=document.createElement('div');
     box.className='floodsafe-android-test';
-    box.innerHTML='<strong><span class="android-only">Android only · Test build</span> FloodSafe Nepal native app</strong>Try the latest FloodSafe Nepal Android build on your device and help test the current version. The web app remains available above.<br><a href="https://github.com/Pujan1234-hub/assigment/releases/download/floodsafe-v0.9.18-android-test/FloodSafe-Nepal-v0.9.18-ANIMATED-CLOUD-MARKER.apk" target="_blank" rel="noopener noreferrer" download>Download Android APK ↓</a>';
+    box.innerHTML='<strong><span class="android-only">Android only · Test build</span> FloodSafe Nepal native app</strong>Try the latest FloodSafe Nepal Android build on your device and help test the current version. The web app remains available above.<br><a href="'+FLOODSAFE_BETA_APK+'" target="_blank" rel="noopener noreferrer" download>Download Android APK ↓</a>';
     links.insertAdjacentElement('afterend',box);
   }
 
@@ -103,6 +118,8 @@
     const data=await getStatus();
     if(!data||!data.projects) return;
     Object.entries(data.projects).forEach(([id,value])=>upsertProjectSync(id,value));
+    applyRequestedFixes();
+    addFloodSafeAndroidTest();
   }
 
   async function check(){
@@ -141,6 +158,7 @@
   load('./assets/portfolio/netsathi-photo-fix.js?v=20260921-real-photos-v1','pjio-netsathi-photo-fix-v1');
   load('./assets/portfolio/netsathi-real-gallery-compact.js?v=20260922-compact-v1','pjio-netsathi-compact-v1');
   refreshProjectStatus();
+  setTimeout(()=>{applyRequestedFixes();addFloodSafeAndroidTest();},1200);
   window.addEventListener('focus',check);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden) check();});
   window.addEventListener('online',check);

@@ -1,0 +1,176 @@
+name: FloodSafe v0.9.18 lock-screen notifications v2
+
+on:
+  push:
+    branches:
+      - fix/v0-9-18-lockscreen-notifications
+    paths:
+      - 'floodsafe-android-app/patch_v0918_lockscreen_notifications.py'
+      - 'floodsafe-android-app/fix_v0918_notification_location_policy.py'
+      - '.github/workflows/fix-v0918-lockscreen-notifications-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Load exact verified v0.9.18 native base
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          mkdir -p /tmp/v0918-overlay
+          cp "$J/PJBuiltsSplashActivity.java" /tmp/v0918-overlay/
+          cp "$J/MonitoringSafetyProvider.java" /tmp/v0918-overlay/
+          cp "$J/SathiNextLevelV0918.java" /tmp/v0918-overlay/
+          cp floodsafe-android-app/ci_reopen_smoke.sh /tmp/v0918-overlay/
+          cp floodsafe-android-app/app/src/main/AndroidManifest.xml /tmp/v0918-overlay/AndroidManifest.xml
+          cp floodsafe-android-app/patch_v0918_lockscreen_notifications.py /tmp/v0918-overlay/
+          cp floodsafe-android-app/fix_v0918_notification_location_policy.py /tmp/v0918-overlay/
+          git fetch --no-tags --depth=1 origin 00eab9a3d2a5256bcb353a24b39b549182367696
+          git checkout 00eab9a3d2a5256bcb353a24b39b549182367696 -- floodsafe-android-app
+          git fetch --no-tags --depth=1 origin 50a2f51b1dd1427c1f5ed0e78cdc5f6272c791f4
+          git checkout 50a2f51b1dd1427c1f5ed0e78cdc5f6272c791f4 -- floodsafe-android-app/patch_native_v0918_stability_performance.py
+          cp /tmp/v0918-overlay/PJBuiltsSplashActivity.java "$J/PJBuiltsSplashActivity.java"
+          cp /tmp/v0918-overlay/MonitoringSafetyProvider.java "$J/MonitoringSafetyProvider.java"
+          cp /tmp/v0918-overlay/SathiNextLevelV0918.java "$J/SathiNextLevelV0918.java"
+          cp /tmp/v0918-overlay/ci_reopen_smoke.sh floodsafe-android-app/ci_reopen_smoke.sh
+          cp /tmp/v0918-overlay/patch_v0918_lockscreen_notifications.py floodsafe-android-app/
+          cp /tmp/v0918-overlay/fix_v0918_notification_location_policy.py floodsafe-android-app/
+          chmod +x floodsafe-android-app/ci_reopen_smoke.sh
+
+      - name: Rebuild unchanged v0.9.18 native feature chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 floodsafe-android-app/patch_native_language_safe.py
+          python3 floodsafe-android-app/patch_native_weather_complete.py
+          python3 floodsafe-android-app/patch_native_weather_station_correction.py
+          python3 floodsafe-android-app/patch_native_v0906_district_196_rain.py
+          python3 floodsafe-android-app/patch_native_v0907_district_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step1_river_click.py
+          python3 floodsafe-android-app/patch_native_v0908_step2_compact_district.py
+          python3 floodsafe-android-app/fix_v0908_step3_weather_refresh_anchor.py
+          python3 floodsafe-android-app/patch_native_v0908_step3_storm_notifications.py
+          python3 floodsafe-android-app/patch_native_v0909_sync_sathi_language.py
+          python3 floodsafe-android-app/fix_v0909_district_lambda_compile.py
+          python3 floodsafe-android-app/patch_native_v0910_step1_sathi_chat.py
+          python3 floodsafe-android-app/patch_native_v0910_step2_map_labels.py
+          python3 floodsafe-android-app/run_v0911_patch_fixed.py
+          python3 floodsafe-android-app/fix_v0911_threshold_order.py
+          python3 floodsafe-android-app/patch_native_v0912_weather_rain_parity.py
+          python3 floodsafe-android-app/patch_native_v0913_dhm_rain_overlay.py
+          python3 floodsafe-android-app/patch_native_v0914_current_rain_only.py
+          python3 floodsafe-android-app/fix_v0915_weather_icon_patch_script.py
+          python3 floodsafe-android-app/patch_native_v0915_weather_icons.py
+          python3 floodsafe-android-app/fix_v0916_patch_script.py
+          python3 floodsafe-android-app/fix_v0916_patch_script_v2.py
+          python3 floodsafe-android-app/fix_v0916_patch_script_v3.py
+          python3 floodsafe-android-app/patch_native_v0916_sathi_knowledge.py
+          python3 floodsafe-android-app/fix_v0917_marker_comments.py
+          python3 floodsafe-android-app/patch_native_v0917_weather_runtime.py
+          python3 floodsafe-android-app/patch_native_v0918_stability_performance.py
+
+      - name: Restore launcher compatibility and version
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/v0918-overlay/AndroidManifest.xml floodsafe-android-app/app/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/build.gradle')
+          s=p.read_text()
+          s=s.replace("versionCode 35", "versionCode 112")
+          s=s.replace("versionName '0.9.18-stability-performance'", "versionName '0.9.18-lockscreen-notifications'")
+          needle="dependencies {\n"
+          if "androidx.webkit:webkit:1.12.1" not in s:
+              s=s.replace(needle, needle+"    implementation 'androidx.webkit:webkit:1.12.1'\n")
+          p.write_text(s)
+          PY
+
+      - name: Apply notification-only lock-screen reliability fix
+        run: |
+          python3 floodsafe-android-app/patch_v0918_lockscreen_notifications.py
+          python3 floodsafe-android-app/fix_v0918_notification_location_policy.py
+
+      - name: Verify protected systems and notification-only changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          J='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app'
+          U="$J/NativeFullActivity.java"
+          W="$J/WeatherMapOverlayController.java"
+          M="$J/FloodLiveGaugeMonitor.java"
+          P="$J/MonitoringLocationPolicy.java"
+          grep -Fq 'No WebView is used' "$U"
+          grep -Fq 'V0918_ATOMIC_LANGUAGE_SWITCH' "$U"
+          grep -Fq 'V0917_NATIVE_DRAWN_WEATHER_ICONS' "$W"
+          grep -Fq 'V0918_LOW_POWER_SOURCE_SCHEDULE' "$M"
+          grep -Fq 'RIVER_POLL_MS=15_000L' "$M"
+          grep -Fq 'RAIN_POLL_MS=60_000L' "$M"
+          grep -Fq 'HYDRO_POLL_MS=60_000L' "$M"
+          grep -Fq 'RADIUS_KM=2d' "$M"
+          grep -Fq 'MAX_FOLLOW_DEVICE_AGE_MS = 5L * 60L * 1000L' "$P"
+          grep -Fq 'freshWeatherLockLocation' "$P"
+          grep -Fq 'V0918_LOCK_NOTIFICATION_MONITOR_START' "$J/FloodMonitorService.java"
+          grep -Fq 'V0918_LOCK_BATTERY_RELIABILITY' "$U"
+          grep -Fq 'V0918_LOCK_FRESH_RIVER_GUARD' "$M"
+          test -s "$J/LockedNotificationMonitor.java"
+          test -s "$J/NotificationReliability.java"
+          grep -Fq 'android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq 'android.permission.WAKE_LOCK' floodsafe-android-app/app/src/main/AndroidManifest.xml
+          grep -Fq "versionCode 112" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionName '0.9.18-lockscreen-notifications'" floodsafe-android-app/app/build.gradle
+          grep -Fq 'new Intent(this, NativeFullActivity.class)' "$J/PJBuiltsSplashActivity.java"
+          echo 'notification-only protected-system verification PASS'
+
+      - name: Build and unit test APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK='floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk'
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          unzip -l "$APK" > /tmp/apk-list.txt
+          grep -Eq 'classes[0-9]*\.dex' /tmp/apk-list.txt
+          grep -Fq 'AndroidManifest.xml' /tmp/apk-list.txt
+          grep -Fq 'assets/floodsafe-nepal/v24/nepal-districts.geojson' /tmp/apk-list.txt
+          grep -Fq 'assets/data/nepal-waterways-tiles/overview.json' /tmp/apk-list.txt
+          if grep -Eq 'assets/.*\.(html|js|mjs|webmanifest)$' /tmp/apk-list.txt; then echo 'web asset leaked into native APK'; exit 1; fi
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          "$APKSIGNER" verify --verbose "$APK"
+          echo 'APK integrity PASS'
+
+      - name: Stage APK
+        shell: bash
+        run: |
+          cp floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk FloodSafe-Nepal-v0.9.18-LOCKSCREEN-NOTIFICATIONS.apk
+          sha256sum FloodSafe-Nepal-v0.9.18-LOCKSCREEN-NOTIFICATIONS.apk > FloodSafe-Nepal-v0.9.18-LOCKSCREEN-NOTIFICATIONS-SHA256.txt
+
+      - name: Upload tested APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.18-LOCKSCREEN-NOTIFICATIONS-APK
+          path: |
+            FloodSafe-Nepal-v0.9.18-LOCKSCREEN-NOTIFICATIONS.apk
+            FloodSafe-Nepal-v0.9.18-LOCKSCREEN-NOTIFICATIONS-SHA256.txt
+          if-no-files-found: error
+          retention-days: 14

@@ -167,3 +167,13 @@
 })();
 
 // Portfolio runtime sync enabled and published.
+
+/* PJBUILTS contact form restore */
+(()=>{
+  if(document.getElementById('pjbuilts-contact-v3')) return;
+  const el=document.createElement('script');
+  el.id='pjbuilts-contact-v3';
+  el.src='./portfolio-contact.js?v=20260929-contact-v3';
+  el.defer=true;
+  document.head.appendChild(el);
+})();

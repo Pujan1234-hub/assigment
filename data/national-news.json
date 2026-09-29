@@ -1,63 +1,77 @@
 {
-  "generated_at": "2026-09-29T11:44:17.402239+05:45",
-  "updated_at_npt": "29 Sep 11:44 NPT",
+  "generated_at": "2026-09-29T18:25:08.058574+05:45",
+  "updated_at_npt": "29 Sep 18:25 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "पृथ्वी राजमार्ग एकतर्फी सञ्चालनमा आएसँगै काठमाडौँमा अड्किएका गाडीहरू बाहिरिन थालेका (तस्बिरहरू)",
+      "title": "दसैँको मुखमा मौसम : ठुलो वर्षाको हल्ला भ्रामक, विज्ञ भन्छन्, ‘हल्का झरी र चिसो बढ्छ’",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595736/vehicles-stuck-in-kathmandu-begin-to-clear-as-prithvi-highway-reopens-to-one-way-traffic-photos",
-      "published_at": "2026-09-29T11:40:58+05:45",
+      "url": "https://www.ratopati.com/story/595868/weather-ahead-of-dashain-rumors-of-heavy-rain-are-misleading-experts-say-light-rain-and-cold-will-increase",
+      "published_at": "2026-09-29T18:17:35+05:45",
       "flash": true
     },
     {
-      "title": "सडक माथिबाट खसेको ढुंगाले बसमा सवार ४ जना घाइते, सशस्त्रले गर्‍यो उद्धार",
+      "title": "नारायणगढ–मुग्लिन सडकखण्डको ४३ ठाउँमा पहिरोको जोखिम पहिचान, तर रोकथाममा दिइएन ध्यान",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595723/4-people-on-a-bus-injured-by-a-stone-falling-from-the-road-rescued-by-the-armed-forces",
-      "published_at": "2026-09-29T11:01:34+05:45",
+      "url": "https://www.ratopati.com/story/595864/landslide-risk-identified-at-43-places-on-narayangadh-muglin-road-section-but-no-attention-given-to-prevention",
+      "published_at": "2026-09-29T17:43:09+05:45",
       "flash": true
     },
     {
-      "title": "दाना–खुर्कोट प्रसारण लाइनको टावर बाढीबाट क्षति",
+      "title": "बाढीपहिरोबाट अवरुद्ध एनटीसीको सेवा शीघ्र सञ्चालनमा ल्याउन सञ्चारमन्त्रीको निर्देशन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595708/tower-of-dana-khurkot-transmission-line-damaged-by-flood",
-      "published_at": "2026-09-29T10:13:58+05:45",
+      "url": "https://www.ratopati.com/story/595859/communications-minister-dr-timilsina-directs-to-quickly-restore-ntc-services-disrupted-by-floods-and-landslides",
+      "published_at": "2026-09-29T17:22:58+05:45",
       "flash": false
     },
     {
-      "title": "गौरमा मोटरसाइकलको ठक्करबाट वृद्धको मृत्यु, चालक फरार",
+      "title": "पहिरोले लामाबगरका चार घर र दुई गोठ पुरिए, एक जना घाइते",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595706/elderly-man-dies-after-being-hit-by-motorcycle-in-gaur-driver-absconding",
-      "published_at": "2026-09-29T10:10:25+05:45",
+      "url": "https://www.ratopati.com/story/595856/landslide-buries-four-houses-and-two-barns-in-lamabagar-one-injured",
+      "published_at": "2026-09-29T17:08:50+05:45",
       "flash": false
     },
     {
-      "title": "भोटेकोशी बाढी : कास्कीबाट पौने तीन करोड बढी सहयोग",
+      "title": "२. यस्ता छन् मंगलबार बसेको मन्त्रिपरिषद् बैठकका निर्णय",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595695/bhotekoshi-flood-kaski-provides-over-rs-30-million-in-assistance",
-      "published_at": "2026-09-29T09:44:20+05:45",
+      "url": "https://www.ratopati.com/story/595848/these-are-the-decisions-of-the-council-of-ministers-meeting-held-on-tuesday",
+      "published_at": "2026-09-29T16:46:55+05:45",
       "flash": false
     },
     {
-      "title": "डडेलधुरामा एक प्रहरी जवान मृत फेला",
+      "title": "तस्बिरमा हेर्नुहोस् निसीखोला बाढीले क्षतिग्रस्त कानाबगर बजार",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595693/policeman-found-dead-in-dadeldhura",
-      "published_at": "2026-09-29T09:14:06+05:45",
+      "url": "https://www.ratopati.com/story/595838/see-the-photo-of-kanabagar-bazaar-damaged-by-the-nisikhola-flood",
+      "published_at": "2026-09-29T16:11:54+05:45",
       "flash": false
     },
     {
-      "title": "पहिरोले घर पुरिँदा च्यापिएका एक जनाको सकुशल उद्धार",
+      "title": "भोटेकोशी बाढी प्रभावितका लागि ६ प्रदेशसँग सहयोगको आह्वान",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595683/one-person-trapped-after-landslide-buries-house-rescued-safely",
-      "published_at": "2026-09-29T08:10:57+05:45",
+      "url": "https://www.ratopati.com/story/595815/appeal-for-assistance-from-6-provinces-for-those-affected-by-bhotekoshi-floods",
+      "published_at": "2026-09-29T15:32:39+05:45",
       "flash": false
     },
     {
-      "title": "बागलुङ पहिरो अपडेट : मृतकको सङ्ख्या १२ पुग्यो",
+      "title": "बाढीले बगाएको गैँडा कसरा ल्याइने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595681/baglung-landslide-update-death-toll-reaches-12",
-      "published_at": "2026-09-29T07:47:06+05:45",
+      "url": "https://www.ratopati.com/story/595814/rhinos-washed-away-by-floods-to-be-brought-back-to-kasara",
+      "published_at": "2026-09-29T15:30:46+05:45",
+      "flash": false
+    },
+    {
+      "title": "टिपरको ठक्करबाट बालिकाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595809/girl-dies-after-being-hit-by-tipper-truck",
+      "published_at": "2026-09-29T15:21:48+05:45",
+      "flash": false
+    },
+    {
+      "title": "पार्टी, जनता र देशको सेवामा समर्पित हुन्छु : पूर्वराष्ट्रपति भण्डारी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595804/i-am-dedicated-to-serving-the-party-people-and-country-former-president-bhandari",
+      "published_at": "2026-09-29T15:01:05+05:45",
       "flash": false
     }
   ],
@@ -78,7 +92,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 2,
-      "recent": 8
+      "recent": 10
     },
     "Kathmandu Post": {
       "ok": true,
@@ -88,7 +102,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     }

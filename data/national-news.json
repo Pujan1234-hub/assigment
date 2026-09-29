@@ -1,35 +1,70 @@
 {
-  "generated_at": "2026-09-29T06:09:04.774789+05:45",
-  "updated_at_npt": "29 Sep 06:09 NPT",
+  "generated_at": "2026-09-29T11:44:17.402239+05:45",
+  "updated_at_npt": "29 Sep 11:44 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "कमजोर बन्दै मनसुनी र पश्चिमी वायु, आज कहाँ-कहाँ छ वर्षाको सम्भावना ?",
+      "title": "पृथ्वी राजमार्ग एकतर्फी सञ्चालनमा आएसँगै काठमाडौँमा अड्किएका गाडीहरू बाहिरिन थालेका (तस्बिरहरू)",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595670/monsoon-and-westerly-winds-are-weakening-where-will-it-rain-today",
-      "published_at": "2026-09-29T06:07:15+05:45",
+      "url": "https://www.ratopati.com/story/595736/vehicles-stuck-in-kathmandu-begin-to-clear-as-prithvi-highway-reopens-to-one-way-traffic-photos",
+      "published_at": "2026-09-29T11:40:58+05:45",
       "flash": true
     },
     {
-      "title": "बाढीले पाइपलाइन बगाउँदा बागलुङ बजारमा खानेपानी समस्या",
+      "title": "सडक माथिबाट खसेको ढुंगाले बसमा सवार ४ जना घाइते, सशस्त्रले गर्‍यो उद्धार",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595669/water-supply-problem-in-baglung-bazaar-as-flood-washes-away-pipeline",
-      "published_at": "2026-09-29T05:09:48+05:45",
+      "url": "https://www.ratopati.com/story/595723/4-people-on-a-bus-injured-by-a-stone-falling-from-the-road-rescued-by-the-armed-forces",
+      "published_at": "2026-09-29T11:01:34+05:45",
       "flash": true
     },
     {
-      "title": "विद्युत् महसुल तिर्न काउन्टर धाउनुपर्ने बाध्यता हट्दै",
+      "title": "दाना–खुर्कोट प्रसारण लाइनको टावर बाढीबाट क्षति",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595663/the-obligation-to-visit-the-counter-to-pay-electricity-bills-is-being-eliminated",
-      "published_at": "2026-09-29T04:50:30+05:45",
+      "url": "https://www.ratopati.com/story/595708/tower-of-dana-khurkot-transmission-line-damaged-by-flood",
+      "published_at": "2026-09-29T10:13:58+05:45",
+      "flash": false
+    },
+    {
+      "title": "गौरमा मोटरसाइकलको ठक्करबाट वृद्धको मृत्यु, चालक फरार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595706/elderly-man-dies-after-being-hit-by-motorcycle-in-gaur-driver-absconding",
+      "published_at": "2026-09-29T10:10:25+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढी : कास्कीबाट पौने तीन करोड बढी सहयोग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595695/bhotekoshi-flood-kaski-provides-over-rs-30-million-in-assistance",
+      "published_at": "2026-09-29T09:44:20+05:45",
+      "flash": false
+    },
+    {
+      "title": "डडेलधुरामा एक प्रहरी जवान मृत फेला",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595693/policeman-found-dead-in-dadeldhura",
+      "published_at": "2026-09-29T09:14:06+05:45",
+      "flash": false
+    },
+    {
+      "title": "पहिरोले घर पुरिँदा च्यापिएका एक जनाको सकुशल उद्धार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595683/one-person-trapped-after-landslide-buries-house-rescued-safely",
+      "published_at": "2026-09-29T08:10:57+05:45",
+      "flash": false
+    },
+    {
+      "title": "बागलुङ पहिरो अपडेट : मृतकको सङ्ख्या १२ पुग्यो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595681/baglung-landslide-update-death-toll-reaches-12",
+      "published_at": "2026-09-29T07:47:06+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     },
@@ -43,7 +78,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 2,
-      "recent": 3
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -53,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     }

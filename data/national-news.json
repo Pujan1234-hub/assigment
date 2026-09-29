@@ -1,56 +1,42 @@
 {
-  "generated_at": "2026-09-30T00:01:53.637191+05:45",
-  "updated_at_npt": "30 Sep 00:01 NPT",
+  "generated_at": "2026-09-30T04:09:16.955950+05:45",
+  "updated_at_npt": "30 Sep 04:09 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "मालढुङ्गा पुलको मर्मत थालियो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595924/maldhunga-bridge-repairs-begin",
+      "published_at": "2026-09-30T01:45:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "भोटेकोशी बाढीपछि खोज, उद्धार र राहतमा समन्वय तीव्र",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595922/coordination-intensifies-in-search-rescue-and-relief-after-bhotekoshi-flood",
+      "published_at": "2026-09-30T00:45:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "ढालियो इन्द्रजात्राको लिङ्गो, राष्ट्रपतिद्वारा कुमारीसँग टीका प्रसाद ग्रहण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595920/indra-jatra-festival-lingo-unveiled-president-receives-tika-prasad-from-kumari",
+      "published_at": "2026-09-30T00:25:56+05:45",
+      "flash": false
+    },
+    {
+      "title": "विपद्बाट ३५ जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595918/35-people-died-in-the-disaster",
+      "published_at": "2026-09-30T00:21:28+05:45",
+      "flash": false
+    },
     {
       "title": "१२ बजे १२ समाचार :स्वास्थ्य मन्त्रीको ‘बिर्सिनलायक’ ६ महिने कार्यकाल, सुदूरपश्चिमको पूर्वाधारमा बढ्यो दबाब",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/595916/12-oclock-12-news-health-ministers-forgettable-6-month-tenure-increased-pressure-on-infrastructure-in-the-far-west",
       "published_at": "2026-09-30T00:00:00+05:45",
-      "flash": true
-    },
-    {
-      "title": "रुसको सुदूर पूर्वी क्षेत्रमा सैन्य विमान दुर्घटना, छ जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595912/military-plane-crashes-in-russias-far-east-six-dead",
-      "published_at": "2026-09-29T22:48:55+05:45",
-      "flash": false
-    },
-    {
-      "title": "चुनावअघि ब्राजिलमा बेरोजगारी दर न्यून",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595910/brazils-unemployment-rate-drops-ahead-of-election",
-      "published_at": "2026-09-29T22:33:19+05:45",
-      "flash": false
-    },
-    {
-      "title": "वर्षाले पाल्पाका सडक क्षतिग्रस्त, पुलसमेत जोखिममा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595886/rain-damages-roads-in-palpa-even-bridges-at-risk",
-      "published_at": "2026-09-29T20:07:24+05:45",
-      "flash": false
-    },
-    {
-      "title": "मुख्यमन्त्री पाण्डेद्वारा बाढी प्रभावित क्षेत्रको निरीक्षण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595882/chief-minister-pandey-inspects-flood-affected-areas",
-      "published_at": "2026-09-29T19:48:10+05:45",
-      "flash": false
-    },
-    {
-      "title": "विराटनगरका तीन औषधि पसलमा सिलबन्दी, ६ वर्षदेखि नवीकरण बिनै सञ्चालन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595877/three-drug-stores-in-biratnagar-sealed-operating-without-renewal-for-6-years",
-      "published_at": "2026-09-29T19:17:09+05:45",
-      "flash": false
-    },
-    {
-      "title": "कांग्रेस क्षेत्रीय अधिवेशन : दैलेख-२ मा कचिङ्गल, निर्वाचन अधिकृत भागेको भन्दै तालाबन्दी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595873/congress-regional-convention-lockdown-in-dailekh-2-after-election-officer-flees",
-      "published_at": "2026-09-29T18:49:01+05:45",
       "flash": false
     }
   ],
@@ -70,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 7
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

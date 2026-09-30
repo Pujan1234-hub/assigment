@@ -1,42 +1,70 @@
 {
-  "generated_at": "2026-09-30T07:09:52.416311+05:45",
-  "updated_at_npt": "30 Sep 07:09 NPT",
+  "generated_at": "2026-09-30T12:53:45.808627+05:45",
+  "updated_at_npt": "30 Sep 12:53 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "विपद्का कारण देशका मुख्य राजमार्गहरू प्रभावित, कुनको अवस्था के छ ? (सूचीसहित)",
+      "title": "सडक भासिँदा रेसुङ्गा विमानस्थल जाने सडक अवरुद्ध",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595941/major-highways-of-the-country-affected-due-to-disasters-what-is-the-status-of-which-with-list",
-      "published_at": "2026-09-30T07:02:07+05:45",
+      "url": "https://www.ratopati.com/story/596019/road-leading-to-resunga-airport-blocked-due-to-landslide",
+      "published_at": "2026-09-30T12:37:55+05:45",
       "flash": true
     },
     {
-      "title": "आज चार संसदीय समितिको बैठक बस्दै",
+      "title": "महाकालीदेखि कालीगण्डकी करिडोरसम्मका झोलुङ्गे पुलहरूमा क्षति",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595940/four-parliamentary-committees-are-meeting-today",
-      "published_at": "2026-09-30T06:55:19+05:45",
+      "url": "https://www.ratopati.com/story/596013/damage-to-suspension-bridges-along-the-mahakali-to-kaligandaki-corridor",
+      "published_at": "2026-09-30T12:21:35+05:45",
       "flash": true
     },
     {
-      "title": "देशभर मनसुनी र पश्चिमी वायुको आंशिक प्रभाव, आज यी ६ प्रदेशमा वर्षाको सम्भावना",
+      "title": "गर्मी र वर्षाले बढ्यो सर्पको बिगबिगी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595938/partial-effect-of-monsoon-and-westerly-winds-across-the-country-possibility-of-rain-in-these-6-provinces-today",
-      "published_at": "2026-09-30T06:11:03+05:45",
-      "flash": true
+      "url": "https://www.ratopati.com/story/596002/snakes-problems-have-increased-due-to-heat-and-rain",
+      "published_at": "2026-09-30T11:28:38+05:45",
+      "flash": false
     },
     {
-      "title": "दुई जिल्ला जोड्ने सुनकोशी पुल छ वर्षदेखि अलपत्र",
+      "title": "नेकपाको संगठन भद्रगोल : महाधिवेशनबारे निर्णय गर्ने भनिएको सचिवालय गठनमै अलमल",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595935/sunkoshi-bridge-connecting-two-districts-has-been-abandoned-for-six-years",
-      "published_at": "2026-09-30T05:45:00+05:45",
+      "url": "https://www.ratopati.com/story/596000/ncps-organization-bhadragol-confusion-over-formation-of-secretariat-that-is-supposed-to-decide-on-general-convention",
+      "published_at": "2026-09-30T11:25:06+05:45",
+      "flash": false
+    },
+    {
+      "title": "वर्षैपिच्छे मन्त्रालयको ‘ओएन्डएम’ गर्दै बागमती सरकार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595967/bagmati-government-conducts-om-of-ministry-every-year",
+      "published_at": "2026-09-30T10:16:07+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाजुराका बाढीपहिरो प्रभावितलाई राहत सामग्री वितरण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595959/relief-materials-distributed-to-flood-and-landslide-victims-in-bajura",
+      "published_at": "2026-09-30T09:36:08+05:45",
+      "flash": false
+    },
+    {
+      "title": "बागलुङमा बाढी-पहिरो : ६१ घर गोठ बगे, ५१ घरमा आंशिक क्षति",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595948/floods-and-landslides-in-baglung-61-houses-washed-away-51-houses-partially-damaged",
+      "published_at": "2026-09-30T08:05:37+05:45",
+      "flash": false
+    },
+    {
+      "title": "गौतम बुद्ध विमानस्थल अन्तर्राष्ट्रिय उडानको प्रतीक्षामा, निजी क्षेत्रको आशा नयाँ सरकारतिर",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/595943/gautam-buddha-airport-awaits-international-flights-private-sector-hopes-for-new-government",
+      "published_at": "2026-09-30T07:32:12+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -49,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 5
+      "flash": 2,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,

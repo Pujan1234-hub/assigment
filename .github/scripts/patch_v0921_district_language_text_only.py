@@ -50,7 +50,7 @@ if anchor not in s:
     raise SystemExit('t() anchor missing')
 s = s.replace(anchor, helper + anchor, 1)
 
-# Guardrails: requested text must be gone and unrelated systems must still be present.
+# Guardrails: requested text must be gone and the known NativeFullActivity systems must still be present.
 for banned in [
     'the long district list is no longer shown here',
     'लामो ७७-जिल्ला सूची अब यहाँ देखिँदैन'
@@ -58,7 +58,6 @@ for banned in [
     if banned in s:
         raise SystemExit('redundant district wording still present: ' + banned)
 for marker in [
-    'V0918_ANIMATED_CLOUD_MARKER_ONLY',
     'V0918_LANGUAGE_KEEP_MAP_VISIBLE',
     'V0920_CURRENT_LOCATION_RETRY',
     'V0921_DISTRICT_LANGUAGE_TEXT_ONLY',

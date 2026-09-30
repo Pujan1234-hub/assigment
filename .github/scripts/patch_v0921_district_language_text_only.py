@@ -18,12 +18,23 @@ if hint_old not in s:
     raise SystemExit('district hint exact anchor missing')
 s = s.replace(hint_old, hint_new, 1)
 
-# Remove the redundant "no longer shown here" message entirely.
+# Remove the redundant empty-state sentence from the visible UI.
 empty_old = '            nationalList.addView(empty(t("माथिको जिल्ला बटन थिच्नुहोस् — लामो ७७-जिल्ला सूची अब यहाँ देखिँदैन।","Tap the district button above — the long district list is no longer shown here.")));\n            return;\n'
 empty_new = '            return; // V0921_REMOVE_REDUNDANT_DISTRICT_MESSAGE\n'
 if empty_old not in s:
     raise SystemExit('redundant district message anchor missing')
 s = s.replace(empty_old, empty_new, 1)
+
+# v0.9.09 generated an in-place translation table containing the old sentence too.
+# Replace those old literals everywhere so that wording cannot reappear after a language toggle.
+s = s.replace(
+    'माथिको जिल्ला बटन थिच्नुहोस् — लामो ७७-जिल्ला सूची अब यहाँ देखिँदैन।',
+    'माथिबाट जिल्ला छान्नुहोस्।'
+)
+s = s.replace(
+    'Tap the district button above — the long district list is no longer shown here.',
+    'Choose a district above.'
+)
 
 # The existing fast language switch does not recreate the Activity, so explicitly refresh this
 # newly tracked district hint in-place when English/Nepali changes.

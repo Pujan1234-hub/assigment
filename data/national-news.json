@@ -1,28 +1,28 @@
 {
-  "generated_at": "2026-10-01T00:21:28.307612+05:45",
-  "updated_at_npt": "01 Oct 00:21 NPT",
+  "generated_at": "2026-10-01T04:21:37.063202+05:45",
+  "updated_at_npt": "01 Oct 04:21 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "कर्णाली स्वास्थ्य विज्ञान प्रतिष्ठानमा टेलिमेडिसिन सेवा सुरु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/596222/telemedicine-service-launched-at-karnali-institute-of-health-sciences",
+      "published_at": "2026-10-01T01:00:00+05:45",
+      "flash": false
+    },
     {
       "title": "१२ बजे १२ समाचार : ऊर्जा क्षेत्रमा बाढीको बज्रपात, एक महिनापछि बेत्रावतीमा जोडियो सडक",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/596218/12-oclock-12-news-lightning-strikes-in-the-energy-sector-road-connected-to-betravati-after-a-month",
       "published_at": "2026-10-01T00:00:00+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "पूर्वप्रधानमन्त्रीद्वयसँग वीरगन्जका उद्योगी–व्यवसायीको छलफल",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/596216/birgunj-industrialists-and-businessmen-hold-discussions-with-former-prime-ministers",
       "published_at": "2026-09-30T23:26:31+05:45",
-      "flash": true
-    },
-    {
-      "title": "आकाशमै आतङ्क : यात्रुहरूको साहसले टर्‍यो ठुलो दुर्घटना",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596214/terror-in-the-sky-passengers-courage-averts-major-accident",
-      "published_at": "2026-09-30T22:55:27+05:45",
       "flash": false
     },
     {
@@ -30,20 +30,6 @@
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/596212/new-revelation-in-the-finel-case-plan-to-introduce-finel-formed-after-the-lockdown",
       "published_at": "2026-09-30T22:41:57+05:45",
-      "flash": false
-    },
-    {
-      "title": "हिमलुङ हिमपहिरोमा थप तीन जनाको शव भेटियो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596190/three-more-bodies-found-in-himlung-avalanche",
-      "published_at": "2026-09-30T20:25:07+05:45",
-      "flash": false
-    },
-    {
-      "title": "बुटवल रारा मसला उद्योग बन्द नगर्न उच्च अदालतको आदेश",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596189/high-court-orders-not-to-close-butwal-rara-spice-industry",
-      "published_at": "2026-09-30T20:24:39+05:45",
       "flash": false
     }
   ],
@@ -63,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 6
+      "flash": 0,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

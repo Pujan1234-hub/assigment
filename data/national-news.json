@@ -1,98 +1,56 @@
 {
-  "generated_at": "2026-09-30T19:27:26.573763+05:45",
-  "updated_at_npt": "30 Sep 19:27 NPT",
+  "generated_at": "2026-10-01T00:21:28.307612+05:45",
+  "updated_at_npt": "01 Oct 00:21 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "विद्युत् प्राधिकरणले वर्षायाममा भारतलाई ८६ मेगावाट बिजुली बेच्ने",
+      "title": "१२ बजे १२ समाचार : ऊर्जा क्षेत्रमा बाढीको बज्रपात, एक महिनापछि बेत्रावतीमा जोडियो सडक",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596178/nepal-electricity-authority-to-sell-86-mw-of-electricity-to-india-during-the-rainy-season",
-      "published_at": "2026-09-30T19:22:49+05:45",
+      "url": "https://www.ratopati.com/story/596218/12-oclock-12-news-lightning-strikes-in-the-energy-sector-road-connected-to-betravati-after-a-month",
+      "published_at": "2026-10-01T00:00:00+05:45",
       "flash": true
     },
     {
-      "title": "पावर प्लान्टको विकल्प बन्दै घरघरका ब्याट्री, अमेरिकाको भर्मोन्टमा नयाँ ऊर्जा प्रयोग",
+      "title": "पूर्वप्रधानमन्त्रीद्वयसँग वीरगन्जका उद्योगी–व्यवसायीको छलफल",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596175/home-batteries-are-becoming-an-alternative-to-power-plants-new-energy-use-in-vermont-usa",
-      "published_at": "2026-09-30T19:02:35+05:45",
+      "url": "https://www.ratopati.com/story/596216/birgunj-industrialists-and-businessmen-hold-discussions-with-former-prime-ministers",
+      "published_at": "2026-09-30T23:26:31+05:45",
       "flash": true
     },
     {
-      "title": "प्रिमियम जोगाउँदा खर्बौँको नोक्सानी : बाढीले प्राधिकरणलाई सिकायो महँगो पाठ",
+      "title": "आकाशमै आतङ्क : यात्रुहरूको साहसले टर्‍यो ठुलो दुर्घटना",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596171/trillions-of-rupees-lost-while-saving-premiums-floods-teach-nea-a-costly-lesson",
-      "published_at": "2026-09-30T18:30:24+05:45",
-      "flash": true
-    },
-    {
-      "title": "सीप मेलामा ‘जस’ लिने होड : प्रधानमन्त्रीको भिजन भएको मन्त्रीको दाबी, सभामुखले लिए आफ्नै जस",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596170/competition-to-win-jas-at-the-skill-fair-minister-claims-to-have-the-prime-ministers-vision-speaker-takes-his-own-jas",
-      "published_at": "2026-09-30T18:23:54+05:45",
+      "url": "https://www.ratopati.com/story/596214/terror-in-the-sky-passengers-courage-averts-major-accident",
+      "published_at": "2026-09-30T22:55:27+05:45",
       "flash": false
     },
     {
-      "title": "बाढी प्रभावित बेनीमा खानेपानी अभाव",
+      "title": "फिनेल प्रकरणमा नयाँ खुलासा : तालाबन्दीपछि बन्यो ‘फिनेल’ ल्याउने योजना",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596165/water-shortage-in-flood-affected-beni",
-      "published_at": "2026-09-30T18:01:38+05:45",
+      "url": "https://www.ratopati.com/story/596212/new-revelation-in-the-finel-case-plan-to-introduce-finel-formed-after-the-lockdown",
+      "published_at": "2026-09-30T22:41:57+05:45",
       "flash": false
     },
     {
-      "title": "मदन भण्डारी कप अन्तर्राष्ट्रिय भलिबलमा पुलिसको लगातार दोस्रो जित",
+      "title": "हिमलुङ हिमपहिरोमा थप तीन जनाको शव भेटियो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596163/police-win-second-consecutive-time-in-madan-bhandari-cup-international-volleyball",
-      "published_at": "2026-09-30T17:55:06+05:45",
+      "url": "https://www.ratopati.com/story/596190/three-more-bodies-found-in-himlung-avalanche",
+      "published_at": "2026-09-30T20:25:07+05:45",
       "flash": false
     },
     {
-      "title": "ट्याक्टरको ठक्करबाट बालकको मृत्यु",
+      "title": "बुटवल रारा मसला उद्योग बन्द नगर्न उच्च अदालतको आदेश",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596156/6-year-old-boy-dies-after-being-hit-by-tractor-in-rautahat",
-      "published_at": "2026-09-30T17:35:23+05:45",
-      "flash": false
-    },
-    {
-      "title": "बेनीको शिरमा रहेको पाखो चर्किएर पहिरो खस्न थाल्यो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596155/the-rock-on-benis-head-cracked-and-a-landslide-began-to-fall",
-      "published_at": "2026-09-30T17:34:50+05:45",
-      "flash": false
-    },
-    {
-      "title": "तस्बिरमा हेर्नुहाेस् महाकालीमा लत्रिएको झोलुंगे पुल",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596153/see-the-photo-of-the-collapsed-suspension-bridge-on-the-mahakali-river",
-      "published_at": "2026-09-30T17:31:03+05:45",
-      "flash": false
-    },
-    {
-      "title": "१. कांग्रेसको विशेष महाधिवेशनमा बन्द सत्रको अध्यक्षता गर्ने खड्का महाधिवेशन प्रतिनिधिमा पराजित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596131/khadka-who-chaired-the-closed-session-at-the-special-general-convention-of-the-nepali-congress-was-defeated-as-a-general-convention-delegate",
-      "published_at": "2026-09-30T16:38:27+05:45",
-      "flash": false
-    },
-    {
-      "title": "३. विज्ञताको आधारमा प्रधानमन्त्रीले सांसदलाई गरे तीन तहमा वर्गीकरण",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596094/the-prime-minister-classified-mps-into-three-levels-based-on-expertise",
-      "published_at": "2026-09-30T15:24:43+05:45",
-      "flash": false
-    },
-    {
-      "title": "दोधारा–चाँदनी झोलुङ्गे पुलको पिल्लर भत्किएपछि प्राविधिक टोलीद्वारा अध्ययन सुरु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596077/technical-team-begins-study-after-pillar-of-dodhara-chandani-suspension-bridge-collapses",
-      "published_at": "2026-09-30T14:51:38+05:45",
+      "url": "https://www.ratopati.com/story/596189/high-court-orders-not-to-close-butwal-rara-spice-industry",
+      "published_at": "2026-09-30T20:24:39+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     },
@@ -105,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 12
+      "flash": 2,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,
@@ -116,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 6,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     }

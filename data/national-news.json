@@ -1,42 +1,35 @@
 {
-  "generated_at": "2026-09-30T04:09:16.955950+05:45",
-  "updated_at_npt": "30 Sep 04:09 NPT",
+  "generated_at": "2026-09-30T07:09:52.416311+05:45",
+  "updated_at_npt": "30 Sep 07:09 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "मालढुङ्गा पुलको मर्मत थालियो",
+      "title": "विपद्का कारण देशका मुख्य राजमार्गहरू प्रभावित, कुनको अवस्था के छ ? (सूचीसहित)",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595924/maldhunga-bridge-repairs-begin",
-      "published_at": "2026-09-30T01:45:00+05:45",
-      "flash": false
+      "url": "https://www.ratopati.com/story/595941/major-highways-of-the-country-affected-due-to-disasters-what-is-the-status-of-which-with-list",
+      "published_at": "2026-09-30T07:02:07+05:45",
+      "flash": true
     },
     {
-      "title": "भोटेकोशी बाढीपछि खोज, उद्धार र राहतमा समन्वय तीव्र",
+      "title": "आज चार संसदीय समितिको बैठक बस्दै",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595922/coordination-intensifies-in-search-rescue-and-relief-after-bhotekoshi-flood",
-      "published_at": "2026-09-30T00:45:00+05:45",
-      "flash": false
+      "url": "https://www.ratopati.com/story/595940/four-parliamentary-committees-are-meeting-today",
+      "published_at": "2026-09-30T06:55:19+05:45",
+      "flash": true
     },
     {
-      "title": "ढालियो इन्द्रजात्राको लिङ्गो, राष्ट्रपतिद्वारा कुमारीसँग टीका प्रसाद ग्रहण",
+      "title": "देशभर मनसुनी र पश्चिमी वायुको आंशिक प्रभाव, आज यी ६ प्रदेशमा वर्षाको सम्भावना",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595920/indra-jatra-festival-lingo-unveiled-president-receives-tika-prasad-from-kumari",
-      "published_at": "2026-09-30T00:25:56+05:45",
-      "flash": false
+      "url": "https://www.ratopati.com/story/595938/partial-effect-of-monsoon-and-westerly-winds-across-the-country-possibility-of-rain-in-these-6-provinces-today",
+      "published_at": "2026-09-30T06:11:03+05:45",
+      "flash": true
     },
     {
-      "title": "विपद्बाट ३५ जनाको मृत्यु",
+      "title": "दुई जिल्ला जोड्ने सुनकोशी पुल छ वर्षदेखि अलपत्र",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595918/35-people-died-in-the-disaster",
-      "published_at": "2026-09-30T00:21:28+05:45",
-      "flash": false
-    },
-    {
-      "title": "१२ बजे १२ समाचार :स्वास्थ्य मन्त्रीको ‘बिर्सिनलायक’ ६ महिने कार्यकाल, सुदूरपश्चिमको पूर्वाधारमा बढ्यो दबाब",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595916/12-oclock-12-news-health-ministers-forgettable-6-month-tenure-increased-pressure-on-infrastructure-in-the-far-west",
-      "published_at": "2026-09-30T00:00:00+05:45",
+      "url": "https://www.ratopati.com/story/595935/sunkoshi-bridge-connecting-two-districts-has-been-abandoned-for-six-years",
+      "published_at": "2026-09-30T05:45:00+05:45",
       "flash": false
     }
   ],
@@ -56,7 +49,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
+      "flash": 4,
       "recent": 5
     },
     "Kathmandu Post": {
@@ -67,7 +60,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     }

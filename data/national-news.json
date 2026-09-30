@@ -1,70 +1,98 @@
 {
-  "generated_at": "2026-09-30T12:53:45.808627+05:45",
-  "updated_at_npt": "30 Sep 12:53 NPT",
+  "generated_at": "2026-09-30T19:27:26.573763+05:45",
+  "updated_at_npt": "30 Sep 19:27 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "सडक भासिँदा रेसुङ्गा विमानस्थल जाने सडक अवरुद्ध",
+      "title": "विद्युत् प्राधिकरणले वर्षायाममा भारतलाई ८६ मेगावाट बिजुली बेच्ने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596019/road-leading-to-resunga-airport-blocked-due-to-landslide",
-      "published_at": "2026-09-30T12:37:55+05:45",
+      "url": "https://www.ratopati.com/story/596178/nepal-electricity-authority-to-sell-86-mw-of-electricity-to-india-during-the-rainy-season",
+      "published_at": "2026-09-30T19:22:49+05:45",
       "flash": true
     },
     {
-      "title": "महाकालीदेखि कालीगण्डकी करिडोरसम्मका झोलुङ्गे पुलहरूमा क्षति",
+      "title": "पावर प्लान्टको विकल्प बन्दै घरघरका ब्याट्री, अमेरिकाको भर्मोन्टमा नयाँ ऊर्जा प्रयोग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596013/damage-to-suspension-bridges-along-the-mahakali-to-kaligandaki-corridor",
-      "published_at": "2026-09-30T12:21:35+05:45",
+      "url": "https://www.ratopati.com/story/596175/home-batteries-are-becoming-an-alternative-to-power-plants-new-energy-use-in-vermont-usa",
+      "published_at": "2026-09-30T19:02:35+05:45",
       "flash": true
     },
     {
-      "title": "गर्मी र वर्षाले बढ्यो सर्पको बिगबिगी",
+      "title": "प्रिमियम जोगाउँदा खर्बौँको नोक्सानी : बाढीले प्राधिकरणलाई सिकायो महँगो पाठ",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596002/snakes-problems-have-increased-due-to-heat-and-rain",
-      "published_at": "2026-09-30T11:28:38+05:45",
+      "url": "https://www.ratopati.com/story/596171/trillions-of-rupees-lost-while-saving-premiums-floods-teach-nea-a-costly-lesson",
+      "published_at": "2026-09-30T18:30:24+05:45",
+      "flash": true
+    },
+    {
+      "title": "सीप मेलामा ‘जस’ लिने होड : प्रधानमन्त्रीको भिजन भएको मन्त्रीको दाबी, सभामुखले लिए आफ्नै जस",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/596170/competition-to-win-jas-at-the-skill-fair-minister-claims-to-have-the-prime-ministers-vision-speaker-takes-his-own-jas",
+      "published_at": "2026-09-30T18:23:54+05:45",
       "flash": false
     },
     {
-      "title": "नेकपाको संगठन भद्रगोल : महाधिवेशनबारे निर्णय गर्ने भनिएको सचिवालय गठनमै अलमल",
+      "title": "बाढी प्रभावित बेनीमा खानेपानी अभाव",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596000/ncps-organization-bhadragol-confusion-over-formation-of-secretariat-that-is-supposed-to-decide-on-general-convention",
-      "published_at": "2026-09-30T11:25:06+05:45",
+      "url": "https://www.ratopati.com/story/596165/water-shortage-in-flood-affected-beni",
+      "published_at": "2026-09-30T18:01:38+05:45",
       "flash": false
     },
     {
-      "title": "वर्षैपिच्छे मन्त्रालयको ‘ओएन्डएम’ गर्दै बागमती सरकार",
+      "title": "मदन भण्डारी कप अन्तर्राष्ट्रिय भलिबलमा पुलिसको लगातार दोस्रो जित",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595967/bagmati-government-conducts-om-of-ministry-every-year",
-      "published_at": "2026-09-30T10:16:07+05:45",
+      "url": "https://www.ratopati.com/story/596163/police-win-second-consecutive-time-in-madan-bhandari-cup-international-volleyball",
+      "published_at": "2026-09-30T17:55:06+05:45",
       "flash": false
     },
     {
-      "title": "बाजुराका बाढीपहिरो प्रभावितलाई राहत सामग्री वितरण",
+      "title": "ट्याक्टरको ठक्करबाट बालकको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595959/relief-materials-distributed-to-flood-and-landslide-victims-in-bajura",
-      "published_at": "2026-09-30T09:36:08+05:45",
+      "url": "https://www.ratopati.com/story/596156/6-year-old-boy-dies-after-being-hit-by-tractor-in-rautahat",
+      "published_at": "2026-09-30T17:35:23+05:45",
       "flash": false
     },
     {
-      "title": "बागलुङमा बाढी-पहिरो : ६१ घर गोठ बगे, ५१ घरमा आंशिक क्षति",
+      "title": "बेनीको शिरमा रहेको पाखो चर्किएर पहिरो खस्न थाल्यो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595948/floods-and-landslides-in-baglung-61-houses-washed-away-51-houses-partially-damaged",
-      "published_at": "2026-09-30T08:05:37+05:45",
+      "url": "https://www.ratopati.com/story/596155/the-rock-on-benis-head-cracked-and-a-landslide-began-to-fall",
+      "published_at": "2026-09-30T17:34:50+05:45",
       "flash": false
     },
     {
-      "title": "गौतम बुद्ध विमानस्थल अन्तर्राष्ट्रिय उडानको प्रतीक्षामा, निजी क्षेत्रको आशा नयाँ सरकारतिर",
+      "title": "तस्बिरमा हेर्नुहाेस् महाकालीमा लत्रिएको झोलुंगे पुल",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/595943/gautam-buddha-airport-awaits-international-flights-private-sector-hopes-for-new-government",
-      "published_at": "2026-09-30T07:32:12+05:45",
+      "url": "https://www.ratopati.com/story/596153/see-the-photo-of-the-collapsed-suspension-bridge-on-the-mahakali-river",
+      "published_at": "2026-09-30T17:31:03+05:45",
+      "flash": false
+    },
+    {
+      "title": "१. कांग्रेसको विशेष महाधिवेशनमा बन्द सत्रको अध्यक्षता गर्ने खड्का महाधिवेशन प्रतिनिधिमा पराजित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/596131/khadka-who-chaired-the-closed-session-at-the-special-general-convention-of-the-nepali-congress-was-defeated-as-a-general-convention-delegate",
+      "published_at": "2026-09-30T16:38:27+05:45",
+      "flash": false
+    },
+    {
+      "title": "३. विज्ञताको आधारमा प्रधानमन्त्रीले सांसदलाई गरे तीन तहमा वर्गीकरण",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/596094/the-prime-minister-classified-mps-into-three-levels-based-on-expertise",
+      "published_at": "2026-09-30T15:24:43+05:45",
+      "flash": false
+    },
+    {
+      "title": "दोधारा–चाँदनी झोलुङ्गे पुलको पिल्लर भत्किएपछि प्राविधिक टोलीद्वारा अध्ययन सुरु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/596077/technical-team-begins-study-after-pillar-of-dodhara-chandani-suspension-bridge-collapses",
+      "published_at": "2026-09-30T14:51:38+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     },
@@ -77,8 +105,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 8
+      "flash": 3,
+      "recent": 12
     },
     "Kathmandu Post": {
       "ok": true,
@@ -88,7 +116,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 6,
       "flash": 0,
       "recent": 0
     }

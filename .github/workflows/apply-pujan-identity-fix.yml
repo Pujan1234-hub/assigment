@@ -44,11 +44,7 @@ jobs:
           elif new_schema_desc not in s:
               raise SystemExit('Expected schema description not found; refusing broad edit')
 
-          birthplace_block = '''    "birthPlace": {
-      "@type": "Place",
-      "name": "Jhapa, Nepal"
-    },
-'''
+          birthplace_block = '    "birthPlace": {\n      "@type": "Place",\n      "name": "Jhapa, Nepal"\n    },\n'
           if birthplace_block in s:
               s = s.replace(birthplace_block, '', 1)
 

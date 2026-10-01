@@ -1,0 +1,47 @@
+name: Apply PJBUILTS favicon
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-pjbuilts-favicon.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ github.token }}
+      - name: Add favicon metadata to portfolio head
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          tag = '<link rel="icon" type="image/svg+xml" href="./favicon.svg?v=20261001">'
+          shortcut = '<link rel="shortcut icon" href="./favicon.svg?v=20261001">'
+          if tag not in s:
+              anchor = '<meta name="theme-color" content="#070a10">'
+              if anchor not in s:
+                  raise SystemExit('theme-color anchor not found; refusing broad edit')
+              s = s.replace(anchor, anchor + '\n' + tag + '\n' + shortcut, 1)
+              p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit only the favicon head change
+        shell: bash
+        run: |
+          if git diff --quiet -- index.html; then
+            echo 'Favicon metadata already present.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Use PJBUILTS logo as site favicon'
+          git push

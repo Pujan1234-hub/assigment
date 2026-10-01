@@ -10,6 +10,12 @@
   function applyRequestedFixes(){
     const heroLine=document.querySelector('h1 .thin');
     if(heroLine) heroLine.textContent='I build practical software for everyday needs — web, Android, AI and real-time products.';
+    const about=document.querySelector('#about .about-card');
+    if(about){
+      const paragraphs=[...about.querySelectorAll('p:not(.big)')];
+      if(paragraphs[0]) paragraphs[0].innerHTML="I'm <strong>Pujan Chapagain</strong>, an independent software developer from <strong>Jhapa, Nepal</strong>. I studied <strong>Computer Science at Hrit Academy</strong> and completed a <strong>Bachelor's degree in Computer Science</strong> at the <strong>University of Wolverhampton</strong>.";
+      if(paragraphs[1]) paragraphs[1].innerHTML="<strong>PJBUILTS</strong> is my personal developer brand and portfolio. I independently build, test and maintain web, Android, AI and real-time software products, including FloodSafe Nepal.";
+    }
     document.querySelectorAll('.project').forEach(project=>{project.style.contentVisibility='visible';});
     const betaLink=document.querySelector('#floodsafe .floodsafe-android-test a');
     if(betaLink) betaLink.href=FLOODSAFE_BETA_APK;

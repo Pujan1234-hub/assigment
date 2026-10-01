@@ -1,0 +1,81 @@
+name: Publish FloodSafe Public Beta
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-floodsafe-public-beta.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: publish-floodsafe-public-beta
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      ARTIFACT_ID: '11123751682'
+      SOURCE_SHA: 'e6e161a01196dea68d3ce68dcd928665c61f0a83'
+      EXPECTED_APK_SHA256: 'e961d22180f1898de215a5258bac33e36176484281b785516b10b0b6e24ecdea'
+      RELEASE_TAG: 'floodsafe-public-beta-2026-10-01'
+      RELEASE_TITLE: 'FloodSafe Nepal — Android Beta Test'
+      PUBLIC_APK_NAME: 'FloodSafe-Nepal-Android-Beta.apk'
+    steps:
+      - name: Download approved tested APK artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" > /tmp/floodsafe-beta.zip
+          mkdir -p /tmp/floodsafe-beta
+          unzip -q /tmp/floodsafe-beta.zip -d /tmp/floodsafe-beta
+          APK="$(find /tmp/floodsafe-beta -type f -name '*.apk' | head -1)"
+          test -n "$APK" && test -s "$APK"
+          ACTUAL="$(sha256sum "$APK" | awk '{print $1}')"
+          echo "APK SHA256: $ACTUAL"
+          test "$ACTUAL" = "$EXPECTED_APK_SHA256"
+          cp "$APK" "$PUBLIC_APK_NAME"
+          printf '%s  %s\n' "$ACTUAL" "$PUBLIC_APK_NAME" > FloodSafe-Nepal-Android-Beta-SHA256.txt
+
+      - name: Publish as a separate friendly beta release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cat > /tmp/release-notes.md <<'EOF'
+          FloodSafe Nepal Android public beta test build.
+
+          This is the approved tested native Android build prepared for public testing. The public file name intentionally uses a simple beta name rather than an internal version number.
+
+          Existing river map, official station data, animated weather/cloud layer, SATHI, location monitoring and notification reliability are preserved.
+          EOF
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$PUBLIC_APK_NAME" FloodSafe-Nepal-Android-Beta-SHA256.txt --clobber
+          else
+            gh release create "$RELEASE_TAG" \
+              "$PUBLIC_APK_NAME" \
+              FloodSafe-Nepal-Android-Beta-SHA256.txt \
+              --target "$SOURCE_SHA" \
+              --title "$RELEASE_TITLE" \
+              --notes-file /tmp/release-notes.md \
+              --prerelease
+          fi
+
+      - name: Verify public asset exists
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/${PUBLIC_APK_NAME}"
+          curl -fL --range 0-31 "$URL" -o /tmp/public-apk-head
+          test -s /tmp/public-apk-head
+          echo "Public beta asset verified: $URL"

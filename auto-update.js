@@ -1,7 +1,7 @@
 (()=>{
   const VERSION_URL='./build-version.txt';
   const STATUS_URL='./data/portfolio-status.json';
-  const FLOODSAFE_BETA_APK='https://github.com/Pujan1234-hub/assigment/releases/download/floodsafe-v0.9.18-android-test/FloodSafe-Nepal-Beta-Test.apk';
+  const FLOODSAFE_BETA_APK='https://github.com/Pujan1234-hub/assigment/releases/download/floodsafe-public-beta-2026-10-01/FloodSafe-Nepal-Android-Beta.apk';
   let current=null;
   let reloading=false;
 

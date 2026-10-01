@@ -26,6 +26,10 @@ jobs:
       RELEASE_TITLE: 'FloodSafe Nepal — Android Beta Test'
       PUBLIC_APK_NAME: 'FloodSafe-Nepal-Android-Beta.apk'
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
       - name: Download approved tested APK artifact
         shell: bash
         env:
@@ -78,3 +82,30 @@ jobs:
           curl -fL --range 0-31 "$URL" -o /tmp/public-apk-head
           test -s /tmp/public-apk-head
           echo "Public beta asset verified: $URL"
+
+      - name: Point PJBUILTS portfolio to public beta without changing UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/${PUBLIC_APK_NAME}"
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, os
+          p=Path('auto-update.js')
+          s=p.read_text()
+          url=f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/{os.environ['RELEASE_TAG']}/{os.environ['PUBLIC_APK_NAME']}"
+          ns,n=re.subn(r"const FLOODSAFE_BETA_APK='[^']*';", f"const FLOODSAFE_BETA_APK='{url}';", s, count=1)
+          if n != 1:
+              raise SystemExit('FloodSafe beta link anchor not found exactly once')
+          p.write_text(ns)
+          Path('build-version.txt').write_text('20261001-floodsafe-public-beta\n')
+          PY
+          if git diff --quiet -- auto-update.js build-version.txt; then
+            echo 'Portfolio download already points to public beta.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add auto-update.js build-version.txt
+          git commit -m 'Point portfolio download to FloodSafe public beta'
+          git push origin HEAD:main

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="PJBUILTS logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d4a39"/>
+      <stop offset="1" stop-color="#071c18"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#e8ebe9"/>
+      <stop offset="1" stop-color="#8a918f"/>
+    </linearGradient>
+    <filter id="s" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <rect x="2" y="2" width="92" height="92" rx="23" fill="url(#bg)"/>
+  <rect x="2.5" y="2.5" width="91" height="91" rx="22.5" fill="none" stroke="#2d735f" stroke-opacity=".45"/>
+  <g filter="url(#s)">
+    <path d="M22 28h40l13 12v17H63V45l-6-5H39v11H27V39L17 29z" fill="url(#metal)"/>
+    <path d="M27 49h28v13H40v13L27 82z" fill="#f4f6f4"/>
+    <path d="M55 49h20v20c0 8-7 15-15 15-7 0-13-5-15-11l11-7c1 3 3 5 6 5 3 0 5-2 5-5V59H55z" fill="url(#metal)"/>
+  </g>
+</svg>

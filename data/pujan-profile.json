@@ -1,0 +1,20 @@
+{
+  "name": "Pujan Chapagain",
+  "canonical_profile": "https://pjbuilts.com/",
+  "developer_brand": "PJBUILTS",
+  "role": "Independent software developer",
+  "birth_place": "Jhapa, Nepal",
+  "education": [
+    {
+      "institution": "Hrit Academy",
+      "subject": "Computer Science",
+      "status": "Studied"
+    },
+    {
+      "institution": "University of Wolverhampton",
+      "subject": "Computer Science",
+      "qualification": "Bachelor's degree",
+      "status": "Completed"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-01T15:45:11.812389Z",
+  "generated_at": "2026-10-01T20:35:20.239247Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "नेपाल टेलिकमले ल्यायो भर्चुअल सेट–टप बक्स",
-      "url": "https://radionepalonline.com/2026/10/01/739716.html",
-      "published_at": "2026-10-01T15:18:42Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

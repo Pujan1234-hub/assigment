@@ -1,70 +1,13 @@
 {
-  "generated_at": "2026-10-01T13:30:38.421743+05:45",
-  "updated_at_npt": "01 Oct 13:30 NPT",
+  "generated_at": "2026-10-01T20:34:23.594840+05:45",
+  "updated_at_npt": "01 Oct 20:34 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
-  "items": [
-    {
-      "title": "सिरियामा बसमा बन्दुकधारीको आक्रमण, सात जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596329/gunmen-attack-bus-in-syria-killing-seven",
-      "published_at": "2026-10-01T13:22:11+05:45",
-      "flash": true
-    },
-    {
-      "title": "बझाङमा जिप दुर्घटना, चालकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596327/jeep-accident-in-bajhang-driver-dies",
-      "published_at": "2026-10-01T13:20:04+05:45",
-      "flash": true
-    },
-    {
-      "title": "ट्राफिक प्रहरीको व्यवहार बदल्न माग, महेन्द्र चोकमा चालकको कोणसभा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596306/drivers-corner-rally-at-mahendra-chowk-demanding-change-in-traffic-police-behavior",
-      "published_at": "2026-10-01T12:21:25+05:45",
-      "flash": false
-    },
-    {
-      "title": "धनुषामा क्रसर उद्योगमा टिपर पल्टियाे, एक जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596285/one-person-dies-driver-injured-as-tipper-overturns-at-crusher-factory-in-dhanusha",
-      "published_at": "2026-10-01T11:30:37+05:45",
-      "flash": false
-    },
-    {
-      "title": "खोलामा पुल बन्यो, जाने बाटो छैन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596277/a-bridge-has-been-built-across-the-river-but-there-is-no-way-to-get-there",
-      "published_at": "2026-10-01T10:39:48+05:45",
-      "flash": false
-    },
-    {
-      "title": "सशस्त्र प्रहरीद्वारा सिराहाबाट ११ सय किलो गाँजा बरामद",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596256/armed-police-seize-1100-kg-of-marijuana-from-siraha",
-      "published_at": "2026-10-01T08:46:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढीपहिरोले क्षति पुर्याएको बेनी–जोमसोम सडक मर्मत सुरु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596255/repairs-begin-on-beni-jomsom-road-damaged-by-floods-and-landslides",
-      "published_at": "2026-10-01T08:37:16+05:45",
-      "flash": false
-    },
-    {
-      "title": "अविरल वर्षाले हुम्लाका ग्रामीण सडक अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596254/incessant-rains-block-rural-roads-in-humla",
-      "published_at": "2026-10-01T08:35:27+05:45",
-      "flash": false
-    }
-  ],
+  "items": [],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     },
@@ -77,8 +20,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 8
+      "flash": 0,
+      "recent": 0
     },
     "Kathmandu Post": {
       "ok": true,
@@ -88,7 +31,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 14,
       "flash": 0,
       "recent": 0
     }

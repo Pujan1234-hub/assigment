@@ -1,0 +1,106 @@
+name: Apply Pujan identity facts
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-pujan-identity-fix.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Patch only verified Pujan identity details
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old_meta = '<meta name="description" content="Pujan Chapagain — software developer portfolio featuring Team Tracker, FixCheck, DateMate, FloodSafe Nepal, LifeOS AI and Sathi AI.">'
+          new_meta = '<meta name="description" content="Pujan Chapagain is an independent software developer from Jhapa, Nepal. He studied Computer Science at Hrit Academy and completed a Bachelor\'s degree in Computer Science at the University of Wolverhampton. PJBUILTS is his personal developer brand and portfolio.">'
+          if old_meta not in s and new_meta not in s:
+              raise SystemExit('Expected meta description not found; refusing broad edit')
+          s = s.replace(old_meta, new_meta, 1)
+
+          old_about = '<p>My work spans web applications, Android prototypes, real-time systems and hands-on product ideas. I stay close to the whole loop: product direction, interface decisions, implementation, testing and iteration.</p>'
+          new_about = '<p><strong>Pujan Chapagain</strong> is an independent software developer born in <strong>Jhapa, Nepal</strong>. He studied <strong>Computer Science at Hrit Academy</strong> and completed a <strong>Bachelor\'s degree in Computer Science</strong> at the <strong>University of Wolverhampton</strong>.</p><p><strong>PJBUILTS</strong> is his personal developer brand and portfolio. He independently builds, tests and maintains web, Android, AI and real-time software products, including FloodSafe Nepal.</p>'
+          if old_about not in s and new_about not in s:
+              raise SystemExit('Expected About paragraph not found; refusing broad edit')
+          s = s.replace(old_about, new_about, 1)
+
+          schema = '''<script type="application/ld+json" id="pujan-profile-schema">
+          {
+            "@context": "https://schema.org",
+            "@type": "ProfilePage",
+            "url": "https://pjbuilts.com/",
+            "name": "PJBUILTS | Pujan Chapagain",
+            "mainEntity": {
+              "@type": "Person",
+              "@id": "https://pjbuilts.com/#pujan-chapagain",
+              "name": "Pujan Chapagain",
+              "url": "https://pjbuilts.com/",
+              "jobTitle": "Software Developer",
+              "description": "Independent software developer born in Jhapa, Nepal. Studied Computer Science at Hrit Academy and completed a Bachelor's degree in Computer Science at the University of Wolverhampton. PJBUILTS is his personal developer brand and portfolio.",
+              "birthPlace": {
+                "@type": "Place",
+                "name": "Jhapa, Nepal"
+              },
+              "alumniOf": [
+                {
+                  "@type": "EducationalOrganization",
+                  "name": "Hrit Academy",
+                  "description": "Studied Computer Science"
+                },
+                {
+                  "@type": "CollegeOrUniversity",
+                  "name": "University of Wolverhampton",
+                  "description": "Completed a Bachelor's degree in Computer Science"
+                }
+              ],
+              "knowsAbout": ["Computer Science", "Android development", "Web development", "Realtime systems", "Software product development"]
+            }
+          }
+          </script>'''
+
+          if 'id="pujan-profile-schema"' not in s:
+              marker = '</head>'
+              if marker not in s:
+                  raise SystemExit('Head closing tag missing; refusing edit')
+              s = s.replace(marker, schema + '\n' + marker, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+          git diff --check
+          grep -q 'born in <strong>Jhapa, Nepal</strong>' index.html
+          grep -q 'Hrit Academy' index.html
+          grep -q 'University of Wolverhampton' index.html
+          grep -q 'pujan-profile-schema' index.html
+
+      - name: Commit targeted identity correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- index.html; then
+            echo 'No change needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Correct Pujan Chapagain identity and education details'
+          git push origin main

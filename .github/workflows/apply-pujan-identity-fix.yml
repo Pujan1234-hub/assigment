@@ -36,7 +36,7 @@ jobs:
               raise SystemExit('Expected meta description not found; refusing broad edit')
           s = s.replace(old_meta, new_meta, 1)
 
-          old_about = '<p>My work spans web applications, Android prototypes, real-time systems and hands-on product ideas. I stay close to the whole loop: product direction, interface decisions, implementation, testing and iteration.</p>'
+          old_about = '<p>My work spans web applications, Android prototypes, real-time systems and AI-assisted product ideas. I stay close to the whole loop: product direction, interface decisions, implementation, testing and iteration.</p>'
           new_about = '<p><strong>Pujan Chapagain</strong> is an independent software developer born in <strong>Jhapa, Nepal</strong>. He studied <strong>Computer Science at Hrit Academy</strong> and completed a <strong>Bachelor\'s degree in Computer Science</strong> at the <strong>University of Wolverhampton</strong>.</p><p><strong>PJBUILTS</strong> is his personal developer brand and portfolio. He independently builds, tests and maintains web, Android, AI and real-time software products, including FloodSafe Nepal.</p>'
           if old_about not in s and new_about not in s:
               raise SystemExit('Expected About paragraph not found; refusing broad edit')

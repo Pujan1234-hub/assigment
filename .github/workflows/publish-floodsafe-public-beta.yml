@@ -57,12 +57,13 @@ jobs:
           Existing river map, official station data, animated weather/cloud layer, SATHI, location monitoring and notification reliability are preserved.
           EOF
 
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" "$PUBLIC_APK_NAME" FloodSafe-Nepal-Android-Beta-SHA256.txt --clobber
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$PUBLIC_APK_NAME" FloodSafe-Nepal-Android-Beta-SHA256.txt --clobber --repo "$GITHUB_REPOSITORY"
           else
             gh release create "$RELEASE_TAG" \
               "$PUBLIC_APK_NAME" \
               FloodSafe-Nepal-Android-Beta-SHA256.txt \
+              --repo "$GITHUB_REPOSITORY" \
               --target "$SOURCE_SHA" \
               --title "$RELEASE_TITLE" \
               --notes-file /tmp/release-notes.md \
@@ -71,8 +72,6 @@ jobs:
 
       - name: Verify public asset exists
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/${PUBLIC_APK_NAME}"

@@ -1,42 +1,70 @@
 {
-  "generated_at": "2026-10-01T04:21:37.063202+05:45",
-  "updated_at_npt": "01 Oct 04:21 NPT",
+  "generated_at": "2026-10-01T07:18:44.845040+05:45",
+  "updated_at_npt": "01 Oct 07:18 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "कर्णाली स्वास्थ्य विज्ञान प्रतिष्ठानमा टेलिमेडिसिन सेवा सुरु",
+      "title": "बाढी पहिरोले देशका विभिन्न राजमार्ग प्रभावित, कुनको अवस्था के छ ? (सूचीसहित)",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596222/telemedicine-service-launched-at-karnali-institute-of-health-sciences",
-      "published_at": "2026-10-01T01:00:00+05:45",
+      "url": "https://www.ratopati.com/story/596242/floods-and-landslides-have-affected-various-highways-in-the-country-what-is-the-status-of-which-with-list",
+      "published_at": "2026-10-01T07:03:56+05:45",
+      "flash": true
+    },
+    {
+      "title": "पहिरोले अवरुद्ध चेपाङ मार्ग आंशिक सञ्चालन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/596241/chepang-road-partially-operational-due-to-landslide",
+      "published_at": "2026-10-01T06:55:58+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीले घर डुबायो, आनन्दबगरवासीलाई थातथलो छाड्ने चिन्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/596237/floods-submerge-homes-residents-of-anandabagar-worry-about-leaving-their-homes",
+      "published_at": "2026-10-01T05:45:03+05:45",
       "flash": false
     },
     {
-      "title": "१२ बजे १२ समाचार : ऊर्जा क्षेत्रमा बाढीको बज्रपात, एक महिनापछि बेत्रावतीमा जोडियो सडक",
+      "title": "नौ महिना अगावै तयार भयो तिल्चाखोला पुल",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596218/12-oclock-12-news-lightning-strikes-in-the-energy-sector-road-connected-to-betravati-after-a-month",
-      "published_at": "2026-10-01T00:00:00+05:45",
+      "url": "https://www.ratopati.com/story/596233/tilchakhola-bridge-completed-nine-months-ahead-of-schedule",
+      "published_at": "2026-10-01T05:15:03+05:45",
       "flash": false
     },
     {
-      "title": "पूर्वप्रधानमन्त्रीद्वयसँग वीरगन्जका उद्योगी–व्यवसायीको छलफल",
+      "title": "बन्दीपुर अस्पताल: अतिरिक्त समयमा ओपिडी सेवा लिने बढी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596216/birgunj-industrialists-and-businessmen-hold-discussions-with-former-prime-ministers",
-      "published_at": "2026-09-30T23:26:31+05:45",
+      "url": "https://www.ratopati.com/story/596231/bandipur-hospital-more-people-take-opd-services-during-extra-hours",
+      "published_at": "2026-10-01T05:07:01+05:45",
       "flash": false
     },
     {
-      "title": "फिनेल प्रकरणमा नयाँ खुलासा : तालाबन्दीपछि बन्यो ‘फिनेल’ ल्याउने योजना",
+      "title": "मापदण्ड विपरीत सञ्चालित अस्पतालमा सिलबन्दी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/596212/new-revelation-in-the-finel-case-plan-to-introduce-finel-formed-after-the-lockdown",
-      "published_at": "2026-09-30T22:41:57+05:45",
+      "url": "https://www.ratopati.com/story/596230/hospitals-operating-against-standards-sealed",
+      "published_at": "2026-10-01T04:59:10+05:45",
+      "flash": false
+    },
+    {
+      "title": "सुदूरपश्चिममा वन्यजन्तु अपराध नियन्त्रण प्रभावकारी बन्दै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/596227/wildlife-crime-control-becoming-effective-in-the-far-west",
+      "published_at": "2026-10-01T04:42:36+05:45",
+      "flash": false
+    },
+    {
+      "title": "घिरिङमा बाढी पहिरोले सात झोलुङ्गे पुल र बेलिब्रिजमा क्षति",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/596226/floods-and-landslides-in-ghiring-damage-seven-suspension-bridges-and-a-bailey-bridge",
+      "published_at": "2026-10-01T04:28:21+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -49,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 4
+      "flash": 2,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -60,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     }

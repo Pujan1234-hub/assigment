@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T11:24:08.097802Z",
+  "generated_at": "2026-10-02T16:45:54.915496Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,7 +16,7 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 2
+      "items": 1
     },
     "News24 Nepal": {
       "ok": true,
@@ -25,15 +25,9 @@
   },
   "items": [
     {
-      "title": "राष्ट्रपति पौडेलसँग सभामुख अर्यालको शिष्टाचार भेट",
-      "url": "https://radionepalonline.com/2026/10/02/739930.html",
-      "published_at": "2026-10-02T11:05:33Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "विकास र लगानीको वातावरण बनाउन कानुनी सुधारमा सरकार केन्द्रित : मन्त्री लम्साल",
-      "url": "https://radionepalonline.com/2026/10/02/739927.html",
-      "published_at": "2026-10-02T10:58:35Z",
+      "title": "प्रकृति संरक्षणको सन्देशसहित जनकपुरधामबाट ५२ दिने अन्तर्राष्ट्रिय साइकल यात्रा सुरु",
+      "url": "https://radionepalonline.com/2026/10/02/740032.html",
+      "published_at": "2026-10-02T16:45:47Z",
       "source": "Radio Nepal"
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T16:45:54.915496Z",
+  "generated_at": "2026-10-02T21:03:27.614604Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "प्रकृति संरक्षणको सन्देशसहित जनकपुरधामबाट ५२ दिने अन्तर्राष्ट्रिय साइकल यात्रा सुरु",
-      "url": "https://radionepalonline.com/2026/10/02/740032.html",
-      "published_at": "2026-10-02T16:45:47Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

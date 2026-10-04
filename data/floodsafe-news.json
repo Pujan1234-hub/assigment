@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-04T00:08:24.958677Z",
+  "generated_at": "2026-10-04T05:52:07.446767Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,16 +12,29 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 0
+      "items": 1
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 0
+      "items": 1
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": []
+  "items": [
+    {
+      "title": "सुनचाँदीको मूल्य घट्यो",
+      "url": "https://www.ronbpost.com/2026/10/20561/",
+      "published_at": "2026-10-04T05:49:28Z",
+      "source": "RONB Post"
+    },
+    {
+      "title": "सुनचाँदीको मूल्य घट्यो",
+      "url": "https://radionepalonline.com/2026/10/04/740365.html",
+      "published_at": "2026-10-04T05:47:14Z",
+      "source": "Radio Nepal"
+    }
+  ]
 }

@@ -43,3 +43,12 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
   setTimeout(mount,400);setTimeout(mount,1400);
 })();
+
+(()=>{
+  if(document.getElementById('pjbuilts-scamlens-live')) return;
+  const s=document.createElement('script');
+  s.id='pjbuilts-scamlens-live';
+  s.src='./portfolio-scamlens.js?v=20261004-live1';
+  s.defer=true;
+  document.head.appendChild(s);
+})();

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-04T11:43:00.553018Z",
+  "generated_at": "2026-10-04T15:59:50.569789Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "नियन्त्रित लोकतन्त्र नेपाली जनताको नियति हुन सक्दैन : नेता भण्डारी",
-      "url": "https://radionepalonline.com/2026/10/04/740458.html",
-      "published_at": "2026-10-04T11:22:26Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-04T05:52:07.446767Z",
+  "generated_at": "2026-10-04T11:43:00.553018Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,7 +12,7 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
@@ -25,15 +25,9 @@
   },
   "items": [
     {
-      "title": "सुनचाँदीको मूल्य घट्यो",
-      "url": "https://www.ronbpost.com/2026/10/20561/",
-      "published_at": "2026-10-04T05:49:28Z",
-      "source": "RONB Post"
-    },
-    {
-      "title": "सुनचाँदीको मूल्य घट्यो",
-      "url": "https://radionepalonline.com/2026/10/04/740365.html",
-      "published_at": "2026-10-04T05:47:14Z",
+      "title": "नियन्त्रित लोकतन्त्र नेपाली जनताको नियति हुन सक्दैन : नेता भण्डारी",
+      "url": "https://radionepalonline.com/2026/10/04/740458.html",
+      "published_at": "2026-10-04T11:22:26Z",
       "source": "Radio Nepal"
     }
   ]

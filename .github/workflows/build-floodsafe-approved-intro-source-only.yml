@@ -5,7 +5,8 @@ on:
     branches:
       - intro/floodsafe-approved-pjbuilts-20261006
     paths:
-      - '.github/workflows/build-floodsafe-approved-intro-source-only.yml'\n      - '.github/intro/PJBuiltsSplashActivity-approved.java'
+      - '.github/workflows/build-floodsafe-approved-intro-source-only.yml'
+      - '.github/intro/PJBuiltsSplashActivity-approved.java'
       - '.github/scripts/patch_v0919_notifications_reliable.py'
       - '.github/scripts/patch_v0920_current_location_reliable.py'
       - '.github/scripts/patch_v0921_district_language_text_only.py'

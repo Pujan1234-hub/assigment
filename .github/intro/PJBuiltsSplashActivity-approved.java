@@ -10,13 +10,15 @@ import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
 /**
  * PJBUILTS approved cream + gold launch intro.
- * Intro-only replacement: it hands off to the same FloodSafeNativeActivity as the approved build.
+ * Intro-only replacement: it hands off to the same NativeFullActivity as the approved build.
  */
 public final class PJBuiltsSplashActivity extends Activity {
     private static final int CREAM_TOP = Color.rgb(255, 251, 243);
@@ -27,6 +29,9 @@ public final class PJBuiltsSplashActivity extends Activity {
     private static final int GOLD_SOFT = Color.rgb(220, 193, 146);
 
     private boolean launched;
+    private boolean resumed;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable launchTask = this::openApp;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -43,15 +48,32 @@ public final class PJBuiltsSplashActivity extends Activity {
 
         IntroView intro = new IntroView();
         setContentView(intro);
-        intro.postDelayed(this::openApp, 3180L);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        resumed = true;
+        if (!launched) {
+            handler.removeCallbacks(launchTask);
+            handler.postDelayed(launchTask, 3180L);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        resumed = false;
+        handler.removeCallbacks(launchTask);
+        super.onPause();
     }
 
     private void openApp() {
-        if (launched || isFinishing() || isDestroyed()) return;
+        if (launched || !resumed || isFinishing() || isDestroyed()) return;
         launched = true;
+        handler.removeCallbacks(launchTask);
 
         Intent source = getIntent();
-        Intent app = new Intent(this, FloodSafeNativeActivity.class);
+        Intent app = new Intent(this, NativeFullActivity.class);
         app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         if (source != null) {
@@ -67,6 +89,13 @@ public final class PJBuiltsSplashActivity extends Activity {
     @Override
     public void onBackPressed() {
         // Keep this short launch animation uninterrupted.
+    }
+
+    @Override
+    protected void onDestroy() {
+        resumed = false;
+        handler.removeCallbacks(launchTask);
+        super.onDestroy();
     }
 
     private final class IntroView extends View {

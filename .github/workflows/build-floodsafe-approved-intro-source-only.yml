@@ -35,6 +35,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git fetch --no-tags --depth=1 origin e6e161a01196dea68d3ce68dcd928665c61f0a83
+          git checkout e6e161a01196dea68d3ce68dcd928665c61f0a83 -- \
+            .github/scripts/patch_v0919_notifications_reliable.py \
+            .github/scripts/patch_v0920_current_location_reliable.py \
+            .github/scripts/patch_v0921_district_language_text_only.py
           cp .github/scripts/patch_v0919_notifications_reliable.py /tmp/notification-only.py
           cp .github/scripts/patch_v0920_current_location_reliable.py /tmp/location-only.py
           cp .github/scripts/patch_v0921_district_language_text_only.py /tmp/district-language-only.py

@@ -325,7 +325,8 @@ jobs:
 
           java -cp 'work/tools/*' org.jf.smali.Main assemble work/original-smali -o work/classes.dex
           test -s work/classes.dex
-          strings work/classes.dex | grep -Fq 'IDEA  •  BUILD  •  INNOVATE'
+          strings work/classes.dex | grep -Fq 'PUJAN'
+          strings work/classes.dex | grep -Fq 'BUILTS'
           strings work/classes.dex | grep -Fq 'FloodSafeNativeActivity'
 
       - name: Repack without changing FloodSafe resources assets manifest or native libs

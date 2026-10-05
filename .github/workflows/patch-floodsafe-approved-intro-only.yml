@@ -54,15 +54,24 @@ jobs:
           cp "$BASE" work/base.apk
           unzip -t work/base.apk >/dev/null
 
-      - name: Download smali tools
+      - name: Install smali tools
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p work/tools
-          curl -fL --retry 3 -o work/tools/baksmali.jar https://github.com/JesusFreke/smali/releases/download/v2.5.2/baksmali-2.5.2.jar
-          curl -fL --retry 3 -o work/tools/smali.jar https://github.com/JesusFreke/smali/releases/download/v2.5.2/smali-2.5.2.jar
-          java -jar work/tools/baksmali.jar --version
-          java -jar work/tools/smali.jar --version
+          cat > work/smali-pom.xml <<'POM'
+          <project xmlns="http://maven.apache.org/POM/4.0.0">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>local</groupId><artifactId>smali-tools</artifactId><version>1</version>
+            <dependencies>
+              <dependency><groupId>org.smali</groupId><artifactId>baksmali</artifactId><version>2.5.2</version></dependency>
+              <dependency><groupId>org.smali</groupId><artifactId>smali</artifactId><version>2.5.2</version></dependency>
+            </dependencies>
+          </project>
+          POM
+          mvn -q -f work/smali-pom.xml dependency:copy-dependencies -DoutputDirectory="$PWD/work/tools" -DincludeScope=runtime
+          java -cp 'work/tools/*' org.jf.baksmali.Main --version
+          java -cp 'work/tools/*' org.jf.smali.Main --version
 
       - name: Compile approved cream gold PJBUILTS intro
         shell: bash
@@ -304,15 +313,15 @@ jobs:
         run: |
           set -euo pipefail
           unzip -p work/base.apk classes.dex > work/original-classes.dex
-          java -jar work/tools/baksmali.jar disassemble work/original-classes.dex -o work/original-smali
-          java -jar work/tools/baksmali.jar disassemble work/intro-dex/classes.dex -o work/intro-smali
+          java -cp 'work/tools/*' org.jf.baksmali.Main disassemble work/original-classes.dex -o work/original-smali
+          java -cp 'work/tools/*' org.jf.baksmali.Main disassemble work/intro-dex/classes.dex -o work/intro-smali
 
           OLD_DIR='work/original-smali/io/github/pujan1234hub/floodsafe/app'
           NEW_DIR='work/intro-smali/io/github/pujan1234hub/floodsafe/app'
           rm -f "$OLD_DIR"/PJBuiltsSplashActivity*.smali
           cp "$NEW_DIR"/PJBuiltsSplashActivity*.smali "$OLD_DIR"/
 
-          java -jar work/tools/smali.jar assemble work/original-smali -o work/classes.dex
+          java -cp 'work/tools/*' org.jf.smali.Main assemble work/original-smali -o work/classes.dex
           test -s work/classes.dex
           strings work/classes.dex | grep -Fq 'IDEA  •  BUILD  •  INNOVATE'
           strings work/classes.dex | grep -Fq 'FloodSafeNativeActivity'

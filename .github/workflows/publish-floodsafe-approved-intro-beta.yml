@@ -1,0 +1,59 @@
+name: Publish verified FloodSafe intro beta asset
+
+on:
+  push:
+    branches:
+      - intro/floodsafe-approved-pjbuilts-20261006
+    paths:
+      - '.github/workflows/publish-floodsafe-approved-intro-beta.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SOURCE_ARTIFACT_ID: '11378969735'
+      RELEASE_TAG: 'floodsafe-public-beta-2026-10-01'
+      PUBLIC_APK_NAME: 'FloodSafe-Nepal-Android-Beta.apk'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download verified intro-only APK artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/floodsafe-intro
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${SOURCE_ARTIFACT_ID}/zip" > /tmp/floodsafe-intro.zip
+          unzip -q /tmp/floodsafe-intro.zip -d /tmp/floodsafe-intro
+          APK="$(find /tmp/floodsafe-intro -type f -name '*.apk' | head -1)"
+          test -n "$APK" && test -s "$APK"
+          cp "$APK" "$PUBLIC_APK_NAME"
+          sha256sum "$PUBLIC_APK_NAME" > FloodSafe-Nepal-Android-Beta-SHA256.txt
+          unzip -t "$PUBLIC_APK_NAME" >/dev/null
+          ls -lh "$PUBLIC_APK_NAME"
+          cat FloodSafe-Nepal-Android-Beta-SHA256.txt
+
+      - name: Replace existing public beta asset without changing download URL
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null
+          gh release upload "$RELEASE_TAG"             "$PUBLIC_APK_NAME"             FloodSafe-Nepal-Android-Beta-SHA256.txt             --clobber             --repo "$GITHUB_REPOSITORY"
+
+      - name: Verify friendly public download asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/${PUBLIC_APK_NAME}"
+          curl -fL --range 0-63 "$URL" -o /tmp/apk-head
+          test -s /tmp/apk-head
+          echo "Public download remains: $URL"

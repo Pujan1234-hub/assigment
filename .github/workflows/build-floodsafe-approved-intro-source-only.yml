@@ -164,7 +164,7 @@ jobs:
           SPLASH='floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java'
           find floodsafe-android-app/app/src/main -type f ! -path "$SPLASH" -print0 | sort -z | xargs -0 sha256sum > /tmp/floodsafe-before-intro.sha256
           sha256sum floodsafe-android-app/app/build.gradle > /tmp/floodsafe-build-before-intro.sha256
-          grep -Fq 'new Intent(this, FloodSafeNativeActivity.class)' "$SPLASH"
+          grep -Fq 'new Intent(this, NativeFullActivity.class)' "$SPLASH"
 
       - name: Replace PJBUILTS splash source only
         shell: bash
@@ -174,7 +174,7 @@ jobs:
           cp .github/intro/PJBuiltsSplashActivity-approved.java "$SPLASH"
           grep -Fq 'PUJAN' "$SPLASH"
           grep -Fq 'IDEA  •  BUILD  •  INNOVATE' "$SPLASH"
-          grep -Fq 'new Intent(this, FloodSafeNativeActivity.class)' "$SPLASH"
+          grep -Fq 'new Intent(this, NativeFullActivity.class)' "$SPLASH"
 
       - name: Prove FloodSafe source unchanged outside intro
         shell: bash

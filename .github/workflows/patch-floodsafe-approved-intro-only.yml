@@ -1,0 +1,399 @@
+name: Patch FloodSafe approved PJBUILTS intro only
+
+on:
+  push:
+    branches:
+      - intro/floodsafe-approved-pjbuilts-20261006
+    paths:
+      - '.github/workflows/patch-floodsafe-approved-intro-only.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  patch-intro-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      SOURCE_ARTIFACT_ID: '11123751682'
+      SOURCE_APK_SHA256: 'e961d22180f1898de215a5258bac33e36176484281b785516b10b0b6e24ecdea'
+      OUT_APK: 'FloodSafe-Nepal-PJBUILTS-Approved-Intro-Test.apk'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" >/dev/null
+          echo "BT=$ANDROID_HOME/build-tools/36.0.0" >> "$GITHUB_ENV"
+
+      - name: Download exact approved public-beta source APK
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p work/source
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${SOURCE_ARTIFACT_ID}/zip" > work/source.zip
+          unzip -q work/source.zip -d work/source
+          BASE="$(find work/source -type f -name '*.apk' | head -1)"
+          test -n "$BASE" && test -s "$BASE"
+          ACTUAL="$(sha256sum "$BASE" | awk '{print $1}')"
+          echo "Source APK: $BASE"
+          echo "Source SHA256: $ACTUAL"
+          test "$ACTUAL" = "$SOURCE_APK_SHA256"
+          cp "$BASE" work/base.apk
+          unzip -t work/base.apk >/dev/null
+
+      - name: Download smali tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work/tools
+          curl -fL --retry 3 -o work/tools/baksmali.jar https://github.com/JesusFreke/smali/releases/download/v2.5.2/baksmali-2.5.2.jar
+          curl -fL --retry 3 -o work/tools/smali.jar https://github.com/JesusFreke/smali/releases/download/v2.5.2/smali-2.5.2.jar
+          java -jar work/tools/baksmali.jar --version
+          java -jar work/tools/smali.jar --version
+
+      - name: Compile approved cream gold PJBUILTS intro
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work/intro-src/io/github/pujan1234hub/floodsafe/app work/intro-classes work/intro-dex
+          cat > work/intro-src/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java <<'JAVA'
+          package io.github.pujan1234hub.floodsafe.app;
+
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.graphics.Canvas;
+          import android.graphics.Color;
+          import android.graphics.LinearGradient;
+          import android.graphics.Paint;
+          import android.graphics.Shader;
+          import android.graphics.Typeface;
+          import android.os.Bundle;
+          import android.os.SystemClock;
+          import android.view.View;
+          import android.view.Window;
+          import android.view.WindowManager;
+
+          public final class PJBuiltsSplashActivity extends Activity {
+              private static final int CREAM_TOP = Color.rgb(255, 251, 243);
+              private static final int CREAM_BOTTOM = Color.rgb(246, 236, 219);
+              private static final int GRAPHITE = Color.rgb(35, 34, 32);
+              private static final int GRAPHITE_SOFT = Color.rgb(82, 76, 67);
+              private static final int GOLD = Color.rgb(184, 138, 68);
+              private static final int GOLD_SOFT = Color.rgb(220, 193, 146);
+              private boolean launched;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  Window window = getWindow();
+                  window.setStatusBarColor(CREAM_TOP);
+                  window.setNavigationBarColor(CREAM_TOP);
+                  window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                  window.getDecorView().setSystemUiVisibility(
+                          View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                  if (getActionBar() != null) getActionBar().hide();
+
+                  final IntroView intro = new IntroView(this);
+                  setContentView(intro);
+                  intro.postDelayed(this::openApp, 3220L);
+              }
+
+              private void openApp() {
+                  if (launched || isFinishing() || isDestroyed()) return;
+                  launched = true;
+                  Intent source = getIntent();
+                  Intent app = new Intent(this, FloodSafeNativeActivity.class);
+                  app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                  if (source != null) {
+                      app.setData(source.getData());
+                      if (source.getExtras() != null) app.putExtras(source.getExtras());
+                  }
+                  startActivity(app);
+                  overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                  finish();
+              }
+
+              @Override
+              public void onBackPressed() {
+                  // Keep the short PJBUILTS intro uninterrupted.
+              }
+
+              private static final class IntroView extends View {
+                  private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
+                  private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                  private final long startedAt = SystemClock.uptimeMillis();
+                  private final float density;
+
+                  IntroView(Activity context) {
+                      super(context);
+                      density = getResources().getDisplayMetrics().density;
+                      setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                  }
+
+                  private static float clamp(float v) {
+                      return Math.max(0f, Math.min(1f, v));
+                  }
+
+                  private static float easeOut(float v) {
+                      v = clamp(v);
+                      float x = 1f - v;
+                      return 1f - x * x * x;
+                  }
+
+                  private static float smooth(float v) {
+                      v = clamp(v);
+                      return v * v * (3f - 2f * v);
+                  }
+
+                  private static int alpha(float v) {
+                      return (int) (255f * clamp(v));
+                  }
+
+                  private void background(Canvas canvas) {
+                      bgPaint.setShader(new LinearGradient(
+                              0f, 0f, 0f, getHeight(),
+                              CREAM_TOP, CREAM_BOTTOM, Shader.TileMode.CLAMP));
+                      canvas.drawRect(0f, 0f, getWidth(), getHeight(), bgPaint);
+                      bgPaint.setShader(null);
+                  }
+
+                  private void decorativeSweep(Canvas canvas, float t) {
+                      paint.setStyle(Paint.Style.FILL);
+                      paint.setShader(null);
+
+                      float sweep = smooth(t / 0.95f);
+                      float xTop = -getWidth() * 0.42f + sweep * getWidth() * 1.85f;
+                      paint.setColor(Color.argb(120, 220, 193, 146));
+                      canvas.drawRoundRect(xTop, getHeight() * 0.20f,
+                              xTop + getWidth() * 0.36f, getHeight() * 0.204f,
+                              12f * density, 12f * density, paint);
+
+                      float xBottom = getWidth() * 1.20f - sweep * getWidth() * 1.92f;
+                      paint.setColor(Color.argb(88, 184, 138, 68));
+                      canvas.drawRoundRect(xBottom, getHeight() * 0.79f,
+                              xBottom + getWidth() * 0.42f, getHeight() * 0.795f,
+                              12f * density, 12f * density, paint);
+                  }
+
+                  private void shinyText(Canvas canvas, String text, float centerX, float y,
+                                         float textSize, float progress, float opacity) {
+                      opacity = clamp(opacity);
+                      if (opacity <= 0f) return;
+
+                      paint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+                      paint.setTextAlign(Paint.Align.CENTER);
+                      paint.setTextSize(textSize);
+                      paint.setStyle(Paint.Style.FILL);
+                      paint.setShader(null);
+                      paint.clearShadowLayer();
+                      paint.setColor(Color.argb(alpha(opacity), 35, 34, 32));
+                      canvas.drawText(text, centerX, y, paint);
+
+                      float width = paint.measureText(text);
+                      float left = centerX - width / 2f;
+                      float shine = left - width * 0.25f + clamp(progress) * width * 1.50f;
+                      float band = Math.max(width * 0.12f, 24f * density);
+                      int transparentGold = Color.argb(0, 220, 193, 146);
+                      int brightGold = Color.argb(alpha(opacity * 0.98f), 225, 185, 105);
+                      paint.setShader(new LinearGradient(
+                              shine - band, 0f, shine + band, 0f,
+                              new int[]{transparentGold, brightGold, transparentGold},
+                              new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP));
+                      paint.setShadowLayer(10f * density, 0f, 0f,
+                              Color.argb(alpha(opacity * 0.40f), 220, 176, 92));
+                      canvas.drawText(text, centerX, y, paint);
+                      paint.setShader(null);
+                      paint.clearShadowLayer();
+                  }
+
+                  private void drawPujan(Canvas canvas, float t) {
+                      float in = easeOut(t / 0.46f);
+                      float out = t > 1.12f ? 1f - smooth((t - 1.12f) / 0.36f) : 1f;
+                      float opacity = in * out;
+                      float scale = 0.87f + 0.13f * in;
+                      float cx = getWidth() / 2f;
+                      float cy = getHeight() / 2f;
+
+                      canvas.save();
+                      canvas.scale(scale, scale, cx, cy);
+                      float size = getWidth() * 0.135f;
+                      shinyText(canvas, "PUJAN", cx, cy + size * 0.30f, size,
+                              smooth((t - 0.10f) / 0.58f), opacity);
+
+                      paint.setShader(null);
+                      paint.setColor(Color.argb(alpha(opacity * 0.90f), 184, 138, 68));
+                      paint.setStrokeWidth(Math.max(3f * density, getWidth() * 0.006f));
+                      paint.setStrokeCap(Paint.Cap.ROUND);
+                      float lineGrow = easeOut(t / 0.62f);
+                      float half = getWidth() * 0.15f * lineGrow;
+                      canvas.drawLine(cx - half, cy + size * 0.65f, cx + half,
+                              cy + size * 0.65f, paint);
+                      canvas.restore();
+                  }
+
+                  private void drawPjBuilts(Canvas canvas, float t) {
+                      float local = t - 1.18f;
+                      if (local < 0f) return;
+
+                      float in = easeOut(local / 0.55f);
+                      float out = t > 2.88f ? 1f - smooth((t - 2.88f) / 0.28f) : 1f;
+                      float opacity = in * out;
+                      float cx = getWidth() / 2f;
+                      float baseY = getHeight() / 2f - getWidth() * 0.035f;
+
+                      float pjSize = getWidth() * 0.205f;
+                      shinyText(canvas, "PJ", cx, baseY, pjSize,
+                              smooth((local - 0.05f) / 0.58f), opacity);
+
+                      float builtSize = getWidth() * 0.072f;
+                      shinyText(canvas, "BUILTS", cx, baseY + getWidth() * 0.125f,
+                              builtSize, smooth((local - 0.20f) / 0.55f), opacity);
+
+                      paint.setShader(null);
+                      paint.clearShadowLayer();
+                      paint.setColor(Color.argb(alpha(opacity * 0.92f), 184, 138, 68));
+                      paint.setStrokeWidth(Math.max(3f * density, getWidth() * 0.005f));
+                      paint.setStrokeCap(Paint.Cap.ROUND);
+                      float underline = getWidth() * 0.16f * easeOut(local / 0.65f);
+                      float lineY = baseY + getWidth() * 0.155f;
+                      canvas.drawLine(cx - underline, lineY, cx + underline, lineY, paint);
+
+                      float tagOpacity = opacity * easeOut((local - 0.32f) / 0.42f);
+                      paint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+                      paint.setTextAlign(Paint.Align.CENTER);
+                      paint.setTextSize(getWidth() * 0.030f);
+                      paint.setColor(Color.argb(alpha(tagOpacity), 82, 76, 67));
+                      canvas.drawText("IDEA  •  BUILD  •  INNOVATE", cx,
+                              baseY + getWidth() * 0.215f, paint);
+                  }
+
+                  @Override
+                  protected void onDraw(Canvas canvas) {
+                      super.onDraw(canvas);
+                      float t = (SystemClock.uptimeMillis() - startedAt) / 1000f;
+                      background(canvas);
+                      decorativeSweep(canvas, t);
+                      drawPujan(canvas, t);
+                      drawPjBuilts(canvas, t);
+                      if (t < 3.18f) postInvalidateOnAnimation();
+                  }
+              }
+          }
+          JAVA
+
+          javac -source 8 -target 8             -cp "$ANDROID_HOME/platforms/android-36/android.jar"             -d work/intro-classes             work/intro-src/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
+
+          "$BT/d8" --min-api 26 --output work/intro-dex work/intro-classes
+          test -s work/intro-dex/classes.dex
+
+      - name: Replace only splash class inside original DEX
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -p work/base.apk classes.dex > work/original-classes.dex
+          java -jar work/tools/baksmali.jar disassemble work/original-classes.dex -o work/original-smali
+          java -jar work/tools/baksmali.jar disassemble work/intro-dex/classes.dex -o work/intro-smali
+
+          OLD_DIR='work/original-smali/io/github/pujan1234hub/floodsafe/app'
+          NEW_DIR='work/intro-smali/io/github/pujan1234hub/floodsafe/app'
+          rm -f "$OLD_DIR"/PJBuiltsSplashActivity*.smali
+          cp "$NEW_DIR"/PJBuiltsSplashActivity*.smali "$OLD_DIR"/
+
+          java -jar work/tools/smali.jar assemble work/original-smali -o work/classes.dex
+          test -s work/classes.dex
+          strings work/classes.dex | grep -Fq 'IDEA  •  BUILD  •  INNOVATE'
+          strings work/classes.dex | grep -Fq 'FloodSafeNativeActivity'
+
+      - name: Repack without changing FloodSafe resources assets manifest or native libs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp work/base.apk work/unsigned.apk
+          zip -q -d work/unsigned.apk classes.dex || true
+          (cd work && zip -q -9 unsigned.apk classes.dex)
+
+          python3 - <<'PY'
+          import hashlib, zipfile, sys
+          base='work/base.apk'
+          patched='work/unsigned.apk'
+          allowed={'classes.dex'}
+          def hashes(path):
+              out={}
+              with zipfile.ZipFile(path) as z:
+                  for n in z.namelist():
+                      if n.endswith('/'): continue
+                      out[n]=hashlib.sha256(z.read(n)).hexdigest()
+              return out
+          a=hashes(base); b=hashes(patched)
+          if set(a)!=set(b):
+              print('ZIP entry set changed', sorted(set(a)^set(b))[:50]); sys.exit(1)
+          changed=[n for n in a if a[n]!=b[n]]
+          print('Changed entry payloads:', changed)
+          if changed != ['classes.dex']:
+              raise SystemExit('Unexpected APK payload changed')
+          PY
+
+          "$BT/zipalign" -f -p 4 work/unsigned.apk work/aligned.apk
+          "$BT/zipalign" -c -p 4 work/aligned.apk
+
+      - name: Sign test APK and verify install package
+        shell: bash
+        run: |
+          set -euo pipefail
+          keytool -genkeypair -noprompt             -keystore work/pjbuilts-test.jks             -storepass android -keypass android             -alias pjbuilts-test             -keyalg RSA -keysize 2048 -validity 10000             -dname "CN=PJBUILTS FloodSafe Test,O=PJBUILTS,C=GB"
+
+          "$BT/apksigner" sign             --ks work/pjbuilts-test.jks             --ks-key-alias pjbuilts-test             --ks-pass pass:android             --key-pass pass:android             --out "$OUT_APK"             work/aligned.apk
+
+          "$BT/apksigner" verify --verbose --print-certs "$OUT_APK"
+          unzip -t "$OUT_APK" >/dev/null
+          "$BT/zipalign" -c -p 4 "$OUT_APK"
+
+          python3 - <<'PY'
+          import hashlib, zipfile, sys, os
+          base='work/base.apk'
+          final=os.environ['OUT_APK']
+          def hashes(path):
+              out={}
+              with zipfile.ZipFile(path) as z:
+                  for n in z.namelist():
+                      if n.endswith('/'): continue
+                      if n.startswith('META-INF/') and n.rsplit('.',1)[-1].upper() in {'RSA','DSA','EC','SF','MF'}: continue
+                      out[n]=hashlib.sha256(z.read(n)).hexdigest()
+              return out
+          a=hashes(base); b=hashes(final)
+          common=set(a)&set(b)
+          changed=sorted(n for n in common if a[n]!=b[n])
+          added=sorted(set(b)-set(a))
+          removed=sorted(set(a)-set(b))
+          print('Final changed payloads:', changed)
+          print('Final added non-signature entries:', added)
+          print('Final removed non-signature entries:', removed)
+          if changed != ['classes.dex'] or added or removed:
+              raise SystemExit('Final APK changed something outside splash DEX')
+          PY
+
+          sha256sum "$OUT_APK" > "${OUT_APK}.sha256"
+          ls -lh "$OUT_APK" "${OUT_APK}.sha256"
+
+      - name: Upload intro-only FloodSafe test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-PJBUILTS-Approved-Intro-Only-Test
+          path: |
+            ${{ env.OUT_APK }}
+            ${{ env.OUT_APK }}.sha256
+          if-no-files-found: error
+          retention-days: 7

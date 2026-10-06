@@ -15,6 +15,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,14 +26,18 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept licenses and install SDK 36
+      - name: Prepare preinstalled Android SDK 36
         shell: bash
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          set -euo pipefail
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
 
       - name: Set up Gradle 8.13
         uses: gradle/actions/setup-gradle@v4
@@ -49,10 +54,15 @@ jobs:
           mkdir -p "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens"
           cat "$PART_DIR"/RiskEngine.kt.b64.* | base64 -d > "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/domain/RiskEngine.kt"
           cat "$PART_DIR"/MainActivity.kt.b64.* | base64 -d > "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/MainActivity.kt"
+
+          # Google Code Scanner classes live under com.google.mlkit.vision.codescanner.
+          sed -i 's/com\.google\.android\.gms\.mlkit\.vision\.codescanner/com.google.mlkit.vision.codescanner/g' "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/MainActivity.kt"
+
           test -s "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/domain/RiskEngine.kt"
           test -s "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/MainActivity.kt"
           grep -q "object RiskEngine" "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/domain/RiskEngine.kt"
           grep -q "class MainActivity" "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/MainActivity.kt"
+          grep -q "com.google.mlkit.vision.codescanner.GmsBarcodeScanning" "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/MainActivity.kt"
           echo "RiskEngine bytes: $(wc -c < "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/domain/RiskEngine.kt")"
           echo "MainActivity bytes: $(wc -c < "$APP_DIR/app/src/main/java/com/pjbuilts/scamlens/MainActivity.kt")"
 
@@ -76,14 +86,13 @@ jobs:
           APK="scamlens-build/ScamLens-v0.9-real-intelligence/app/build/outputs/apk/debug/app-debug.apk"
           cp "$APK" "scamlens-build/releases/ScamLens-PJBUILTS-v0.9-RealIntelligence.apk"
           rm -f "scamlens-build/releases/ScamLens-PJBUILTS-v0.9-RealIntelligence-source.zip"
-          (
-            cd scamlens-build
-            zip -qr "releases/ScamLens-PJBUILTS-v0.9-RealIntelligence-source.zip" "ScamLens-v0.9-real-intelligence"               -x "ScamLens-v0.9-real-intelligence/.gradle/*"                  "ScamLens-v0.9-real-intelligence/app/build/*"                  "ScamLens-v0.9-real-intelligence/build/*"
-          )
-          (
-            cd scamlens-build/releases
-            sha256sum ScamLens-PJBUILTS-v0.9-RealIntelligence.apk ScamLens-PJBUILTS-v0.9-RealIntelligence-source.zip > SHA256SUMS.txt
-          )
+          cd scamlens-build
+          zip -qr "releases/ScamLens-PJBUILTS-v0.9-RealIntelligence-source.zip" "ScamLens-v0.9-real-intelligence" \
+            -x "ScamLens-v0.9-real-intelligence/.gradle/*" \
+               "ScamLens-v0.9-real-intelligence/app/build/*" \
+               "ScamLens-v0.9-real-intelligence/build/*"
+          cd releases
+          sha256sum ScamLens-PJBUILTS-v0.9-RealIntelligence.apk ScamLens-PJBUILTS-v0.9-RealIntelligence-source.zip > SHA256SUMS.txt
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4

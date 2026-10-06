@@ -1,0 +1,47 @@
+name: Build ScamLens v0.8 Real Protection
+
+on:
+  push:
+    branches: [scamlens-v08-real-protection]
+    paths:
+      - 'scamlens-build/**'
+      - '.github/workflows/build-scamlens-v08.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Unpack ScamLens source
+        run: |
+          rm -rf scamlens-build/unpacked
+          mkdir -p scamlens-build/unpacked
+          unzip -q scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source.zip -d scamlens-build/unpacked
+      - name: Build debug APK
+        working-directory: scamlens-build/unpacked/ScamLens-v0.8-real-protection
+        run: gradle --no-daemon :app:assembleDebug --stacktrace
+      - name: Collect APK
+        run: |
+          cp scamlens-build/unpacked/ScamLens-v0.8-real-protection/app/build/outputs/apk/debug/app-debug.apk scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-debug.apk
+          sha256sum scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ScamLens-PJBUILTS-v0.8-RealProtection
+          path: |
+            scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-debug.apk
+            scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source.zip
+          if-no-files-found: error
+          retention-days: 14

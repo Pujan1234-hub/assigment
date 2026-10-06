@@ -30,11 +30,10 @@ jobs:
       - name: Prepare Android SDK
         run: |
           set -euxo pipefail
-          echo "ANDROID_HOME=$ANDROID_HOME"
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Reconstruct verified ScamLens source
+      - name: Reconstruct and patch ScamLens source
         run: |
           set -euxo pipefail
           rm -rf scamlens-build/unpacked
@@ -42,13 +41,31 @@ jobs:
           cat scamlens-build/source-b64/part* | base64 -d > scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip
           echo "926a68164af8f8a193691d8f96ef6e1eb18312b2bf7ca392766eb7abe5958bfe  scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip" | sha256sum -c -
           unzip -q scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip -d scamlens-build/unpacked
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("scamlens-build/unpacked/ScamLens-v0.8-real-protection/app/build.gradle.kts")
+          s = p.read_text()
+          needle = "    buildFeatures { compose = true }"
+          patch = """    compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+
+              buildFeatures { compose = true }"""
+          if "sourceCompatibility = JavaVersion.VERSION_17" not in s:
+              if needle not in s:
+                  raise SystemExit("Could not find buildFeatures anchor in app/build.gradle.kts")
+              s = s.replace(needle, patch)
+          p.write_text(s)
+          print(p.read_text())
+          PY
           echo "sdk.dir=$ANDROID_HOME" > scamlens-build/unpacked/ScamLens-v0.8-real-protection/local.properties
 
       - name: Build debug APK
         working-directory: scamlens-build/unpacked/ScamLens-v0.8-real-protection
         run: gradle --no-daemon :app:assembleDebug --stacktrace
 
-      - name: Collect APK
+      - name: Collect APK and patched source
         run: |
           set -euxo pipefail
           cp scamlens-build/unpacked/ScamLens-v0.8-real-protection/app/build/outputs/apk/debug/app-debug.apk scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-debug.apk

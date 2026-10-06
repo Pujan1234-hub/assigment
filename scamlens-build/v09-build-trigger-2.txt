@@ -1,0 +1,1 @@
+Trigger ScamLens v0.9 Real Intelligence build after Android SDK workflow fix.

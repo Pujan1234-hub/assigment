@@ -40,6 +40,34 @@ jobs:
           tar -xJf /tmp/scamlens-v10.tar.xz -C /tmp/scamlens-v10
           test -f /tmp/scamlens-v10/ScamLens-v1.0-real-protection/settings.gradle.kts
 
+      - name: Apply notification permission guard
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("/tmp/scamlens-v10/ScamLens-v1.0-real-protection/app/src/main/java/com/pjbuilts/scamlens/services/ScamNotificationHelper.kt")
+          s = p.read_text()
+          s = s.replace("import android.app.PendingIntent\n", "import android.app.PendingIntent\nimport android.Manifest\nimport android.content.pm.PackageManager\n")
+          s = s.replace("import androidx.core.app.NotificationManagerCompat\n", "import androidx.core.app.NotificationManagerCompat\nimport androidx.core.content.ContextCompat\n")
+          s = s.replace(
+              "        runCatching { NotificationManagerCompat.from(context).notify(id, notification) }",
+              "        if (canPostNotifications(context)) {\n            runCatching { NotificationManagerCompat.from(context).notify(id, notification) }\n        }"
+          )
+          s = s.replace(
+              "        runCatching { NotificationManagerCompat.from(context).notify(id, builder.build()) }",
+              "        if (canPostNotifications(context)) {\n            runCatching { NotificationManagerCompat.from(context).notify(id, builder.build()) }\n        }"
+          )
+          needle = "    fun createChannel(context: Context) {"
+          guard = """    private fun canPostNotifications(context: Context): Boolean {
+              return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                  ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+          }
+
+"""
+          if "private fun canPostNotifications" not in s:
+              s = s.replace(needle, guard + needle)
+          p.write_text(s)
+          PY
+
       - name: Compile APK
         working-directory: /tmp/scamlens-v10/ScamLens-v1.0-real-protection
         run: gradle :app:assembleDebug --stacktrace --no-daemon

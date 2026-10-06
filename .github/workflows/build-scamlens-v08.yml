@@ -59,6 +59,7 @@ jobs:
           p.write_text(s)
           print(p.read_text())
           PY
+          sed -i 's/com\.google\.android\.gms\.mlkit\.vision\.codescanner/com.google.mlkit.vision.codescanner/g' scamlens-build/unpacked/ScamLens-v0.8-real-protection/app/src/main/java/com/pjbuilts/scamlens/MainActivity.kt
           echo "sdk.dir=$ANDROID_HOME" > scamlens-build/unpacked/ScamLens-v0.8-real-protection/local.properties
 
       - name: Build debug APK

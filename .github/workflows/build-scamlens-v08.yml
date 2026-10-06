@@ -53,7 +53,9 @@ jobs:
           set -euxo pipefail
           cp scamlens-build/unpacked/ScamLens-v0.8-real-protection/app/build/outputs/apk/debug/app-debug.apk scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-debug.apk
           sha256sum scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-debug.apk
-          cp scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source.zip
+          rm -f scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source.zip
+          (cd scamlens-build/unpacked && zip -qr ../ScamLens-PJBUILTS-v0.8-RealProtection-source.zip ScamLens-v0.8-real-protection -x '*/build/*' '*/local.properties')
+          sha256sum scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source.zip
 
       - uses: actions/upload-artifact@v4
         with:

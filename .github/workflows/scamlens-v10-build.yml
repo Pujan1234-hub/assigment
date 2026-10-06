@@ -62,7 +62,7 @@ jobs:
                   ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
           }
 
-"""
+          """
           if "private fun canPostNotifications" not in s:
               s = s.replace(needle, guard + needle)
           p.write_text(s)

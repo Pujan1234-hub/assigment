@@ -23,11 +23,16 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
-
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
+
+      - name: Prepare Android SDK
+        run: |
+          set -euxo pipefail
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Reconstruct verified ScamLens source
         run: |
@@ -37,6 +42,7 @@ jobs:
           cat scamlens-build/source-b64/part* | base64 -d > scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip
           echo "926a68164af8f8a193691d8f96ef6e1eb18312b2bf7ca392766eb7abe5958bfe  scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip" | sha256sum -c -
           unzip -q scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip -d scamlens-build/unpacked
+          echo "sdk.dir=$ANDROID_HOME" > scamlens-build/unpacked/ScamLens-v0.8-real-protection/local.properties
 
       - name: Build debug APK
         working-directory: scamlens-build/unpacked/ScamLens-v0.8-real-protection

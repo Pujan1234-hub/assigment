@@ -4,7 +4,7 @@ on:
   push:
     branches: [scamlens-v08-real-protection]
     paths:
-      - 'scamlens-build/**'
+      - 'scamlens-build/source-b64/**'
       - '.github/workflows/build-scamlens-v08.yml'
   workflow_dispatch:
 
@@ -14,29 +14,41 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: android-actions/setup-android@v3
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - name: Unpack ScamLens source
+
+      - name: Reconstruct verified ScamLens source
         run: |
+          set -euxo pipefail
           rm -rf scamlens-build/unpacked
           mkdir -p scamlens-build/unpacked
-          unzip -q scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source.zip -d scamlens-build/unpacked
+          cat scamlens-build/source-b64/part* | base64 -d > scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip
+          echo "926a68164af8f8a193691d8f96ef6e1eb18312b2bf7ca392766eb7abe5958bfe  scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip" | sha256sum -c -
+          unzip -q scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip -d scamlens-build/unpacked
+
       - name: Build debug APK
         working-directory: scamlens-build/unpacked/ScamLens-v0.8-real-protection
         run: gradle --no-daemon :app:assembleDebug --stacktrace
+
       - name: Collect APK
         run: |
+          set -euxo pipefail
           cp scamlens-build/unpacked/ScamLens-v0.8-real-protection/app/build/outputs/apk/debug/app-debug.apk scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-debug.apk
           sha256sum scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-debug.apk
+          cp scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source-verified.zip scamlens-build/ScamLens-PJBUILTS-v0.8-RealProtection-source.zip
+
       - uses: actions/upload-artifact@v4
         with:
           name: ScamLens-PJBUILTS-v0.8-RealProtection

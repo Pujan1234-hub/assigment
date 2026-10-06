@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T16:06:12.334435Z",
+  "generated_at": "2026-10-06T20:57:56.677774Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,29 +12,16 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "कांग्रेस सभापतिमा गगन थापासहित तीन जनाको उम्मेदवारी",
-      "url": "https://www.ronbpost.com/2026/10/20639/",
-      "published_at": "2026-10-06T15:42:48Z",
-      "source": "RONB Post"
-    },
-    {
-      "title": "नेपाल र प्रशान्त क्षेत्रका टापु राष्ट्रहरू जलवायु सङ्कटको अग्रपङ्क्तिमा छन्: परराष्ट्रमन्त्री खनाल",
-      "url": "https://radionepalonline.com/2026/10/06/741158.html",
-      "published_at": "2026-10-06T15:41:36Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

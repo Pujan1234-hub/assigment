@@ -1,0 +1,71 @@
+name: Build ScamLens v1.0 Real Protection
+
+on:
+  push:
+    branches:
+      - scamlens-v1.0-real-protection
+    paths:
+      - "scamlens-build/v10/**"
+      - ".github/workflows/scamlens-v10-build.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android API 36
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Gradle 8.13
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.13"
+
+      - name: Reconstruct source
+        run: |
+          cat scamlens-build/v10/chunk*.txt | tr -d '\n\r' | base64 -d > /tmp/scamlens-v10.tar.xz
+          test "$(sha256sum /tmp/scamlens-v10.tar.xz | awk '{print $1}')" = "6bb4aa9943bf81cb0bd7633be30520afe4a1eca346ed2fcc83c4e3f946a25461"
+          mkdir -p /tmp/scamlens-v10
+          tar -xJf /tmp/scamlens-v10.tar.xz -C /tmp/scamlens-v10
+          test -f /tmp/scamlens-v10/ScamLens-v1.0-real-protection/settings.gradle.kts
+
+      - name: Compile APK
+        working-directory: /tmp/scamlens-v10/ScamLens-v1.0-real-protection
+        run: gradle :app:assembleDebug --stacktrace --no-daemon
+
+      - name: Lint
+        working-directory: /tmp/scamlens-v10/ScamLens-v1.0-real-protection
+        run: gradle :app:lintDebug --stacktrace --no-daemon
+
+      - name: Package delivery
+        run: |
+          mkdir -p build-delivery
+          cp /tmp/scamlens-v10/ScamLens-v1.0-real-protection/app/build/outputs/apk/debug/app-debug.apk build-delivery/ScamLens-PJBUILTS-v1.0-RealProtection.apk
+          (cd /tmp/scamlens-v10 && zip -qr "$GITHUB_WORKSPACE/build-delivery/ScamLens-PJBUILTS-v1.0-RealProtection-source.zip" ScamLens-v1.0-real-protection)
+          cp /tmp/scamlens-v10.tar.xz build-delivery/ScamLens-PJBUILTS-v1.0-RealProtection-source.tar.xz
+          sha256sum build-delivery/* > build-delivery/SHA256SUMS.txt
+          ls -lh build-delivery
+
+      - name: Upload APK and source
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScamLens-v1.0-RealProtection-delivery
+          path: build-delivery/*
+          if-no-files-found: error
+          retention-days: 14

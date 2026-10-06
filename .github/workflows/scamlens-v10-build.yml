@@ -26,10 +26,10 @@ jobs:
 
       - name: Install Android API 36
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          which sdkmanager
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Gradle 8.13
         uses: gradle/actions/setup-gradle@v4

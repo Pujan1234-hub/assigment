@@ -31,7 +31,10 @@ jobs:
 
       - name: Reconstruct source
         run: |
+          wc -c scamlens-build/v10/chunk*.txt
+          sha256sum scamlens-build/v10/chunk*.txt
           cat scamlens-build/v10/chunk*.txt | tr -d '\n\r' | base64 -d > /tmp/scamlens-v10.tar.xz
+          sha256sum /tmp/scamlens-v10.tar.xz
           test "$(sha256sum /tmp/scamlens-v10.tar.xz | awk '{print $1}')" = "6bb4aa9943bf81cb0bd7633be30520afe4a1eca346ed2fcc83c4e3f946a25461"
           mkdir -p /tmp/scamlens-v10
           tar -xJf /tmp/scamlens-v10.tar.xz -C /tmp/scamlens-v10

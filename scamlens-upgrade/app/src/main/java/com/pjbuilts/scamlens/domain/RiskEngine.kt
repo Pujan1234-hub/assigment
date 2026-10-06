@@ -52,13 +52,13 @@ object RiskEngine {
 
     fun analyse(input: String, source: ScanSource = ScanSource.MANUAL): ScanResult {
         val text = input.trim()
-        val lower = " \${text.lowercase(Locale.ROOT)} "
+        val lower = " ${text.lowercase(Locale.ROOT)} "
         val signals = mutableListOf<RiskSignal>()
 
         fun addHits(words: List<String>, title: String, detail: String, points: Int) {
             val hits = words.filter { lower.contains(it.lowercase(Locale.ROOT)) }
             if (hits.isNotEmpty()) {
-                signals += RiskSignal(title, "$detail (\${hits.take(3).joinToString()})", points)
+                signals += RiskSignal(title, "$detail (${hits.take(3).joinToString()})", points)
             }
         }
 
@@ -90,7 +90,7 @@ object RiskEngine {
                     if (!official) {
                         signals += RiskSignal(
                             "Brand/domain mismatch",
-                            "The message mentions \${brand.replaceFirstChar { it.uppercase() }}, but the link host is $host",
+                            "The message mentions ${brand.replaceFirstChar { it.uppercase() }}, but the link host is $host",
                             32
                         )
                     }

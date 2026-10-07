@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T13:47:08.721466Z",
+  "generated_at": "2026-10-07T19:36:05.741328Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,31 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 3
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "मन्त्री चौधरीसँग जिजिजिआइका राष्ट्रिय प्रतिनिधिको भेट",
-      "url": "https://radionepalonline.com/2026/10/07/741346.html",
-      "published_at": "2026-10-07T13:38:00Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "रेबिज निवारणसम्बन्धी राष्ट्रिय रणनीति तथा कार्ययोजना स्वीकृत",
-      "url": "https://radionepalonline.com/2026/10/07/741343.html",
-      "published_at": "2026-10-07T13:29:12Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "कांग्रेसको १५औँ महाधिवेशन: बिहीबार बिहान १० बजेदेखि मतदान",
-      "url": "https://radionepalonline.com/2026/10/07/741338.html",
-      "published_at": "2026-10-07T13:24:21Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

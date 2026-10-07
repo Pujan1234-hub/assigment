@@ -115,7 +115,7 @@ object ProtectionNotifier {
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setSubText("ScamLens Notification Guard")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_WARNING)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setAutoCancel(true)

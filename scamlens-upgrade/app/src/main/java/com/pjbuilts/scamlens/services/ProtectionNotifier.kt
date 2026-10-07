@@ -81,8 +81,12 @@ object ProtectionNotifier {
             builder.addAction(0, "Trust caller", trust)
         }
 
-        NotificationManagerCompat.from(context)
-            .notify(41000 + (result.normalizedNumber.hashCode() and 0x0fff), builder.build())
+        try {
+            NotificationManagerCompat.from(context)
+                .notify(41000 + (result.normalizedNumber.hashCode() and 0x0fff), builder.build())
+        } catch (_: SecurityException) {
+            // Permission can be revoked between the check and notify call.
+        }
     }
 
     fun showMessageAlert(context: Context, result: ScanResult, appLabel: String) {
@@ -122,8 +126,12 @@ object ProtectionNotifier {
             .setContentIntent(open)
             .build()
 
-        NotificationManagerCompat.from(context)
-            .notify(52000 + (result.rawInput.hashCode() and 0x0fff), notification)
+        try {
+            NotificationManagerCompat.from(context)
+                .notify(52000 + (result.rawInput.hashCode() and 0x0fff), notification)
+        } catch (_: SecurityException) {
+            // Permission can be revoked between the check and notify call.
+        }
     }
 
     private fun canNotify(context: Context): Boolean {

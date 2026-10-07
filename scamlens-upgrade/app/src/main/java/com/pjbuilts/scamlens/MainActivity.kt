@@ -341,8 +341,10 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
                         OutlinedButton({}, enabled = false) { Text("Call Guard active ✓") }
                     } else if (status.callGuardAvailable) {
                         Button({
-                            val rm = ctx.getSystemService(RoleManager::class.java)
-                            roleLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING))
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                val rm = ctx.getSystemService(RoleManager::class.java)
+                                roleLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING))
+                            }
                         }) { Text("Enable Call Guard") }
                     } else {
                         Text(if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)

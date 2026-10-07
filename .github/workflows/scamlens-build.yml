@@ -1,8 +1,8 @@
-name: ScamLens Android Build
+name: ScamLens v1.2 Full Upgrade
 
 on:
   push:
-    branches: [scamlens-v1-1-upgrade]
+    branches: [scamlens-v1.2-full-upgrade]
     paths:
       - 'scamlens-upgrade/**'
       - '.github/workflows/scamlens-build.yml'
@@ -11,32 +11,50 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
         with:
           packages: ''
+
       - name: Install Android SDK 36
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
+
       - name: Unit tests
         working-directory: scamlens-upgrade
         run: gradle --no-daemon testDebugUnitTest
+
+      - name: Lint
+        working-directory: scamlens-upgrade
+        run: gradle --no-daemon lintDebug
+
       - name: Build debug APK
         working-directory: scamlens-upgrade
         run: gradle --no-daemon assembleDebug
-      - name: Rename APK
-        run: cp scamlens-upgrade/app/build/outputs/apk/debug/app-debug.apk ScamLens-PJBUILTS-v1.1-debug.apk
+
+      - name: Package APK + source
+        run: |
+          mkdir -p delivery
+          cp scamlens-upgrade/app/build/outputs/apk/debug/app-debug.apk delivery/ScamLens-PJBUILTS-v1.2-FullProtection.apk
+          (cd scamlens-upgrade && zip -qr ../delivery/ScamLens-PJBUILTS-v1.2-source.zip . -x '.gradle/*' 'build/*' 'app/build/*')
+          sha256sum delivery/* > delivery/SHA256SUMS.txt
+          ls -lh delivery
+
       - uses: actions/upload-artifact@v4
         with:
-          name: ScamLens-PJBUILTS-v1.1
-          path: ScamLens-PJBUILTS-v1.1-debug.apk
+          name: ScamLens-PJBUILTS-v1.2-FullProtection
+          path: delivery/*
           if-no-files-found: error
+          retention-days: 14

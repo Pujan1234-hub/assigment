@@ -12,55 +12,83 @@ object PhoneRiskEngine {
         val display = rawNumber?.trim().orEmpty().ifBlank { "Private / withheld number" }
         val normalized = normalize(rawNumber)
         val reasons = mutableListOf<String>()
-        var score = 0
 
         if (locallyAllowed) {
             return PhoneRiskResult(
-                display, normalized, 0, Verdict.NO_STRONG_SIGNALS,
-                listOf("You marked this caller as trusted on this device."),
-                "Trusted locally. Stay alert if the conversation becomes unusual."
+                displayNumber = display,
+                normalizedNumber = normalized,
+                score = 0,
+                verdict = Verdict.NO_STRONG_SIGNALS,
+                reasons = listOf("You marked this caller as trusted on this device."),
+                recommendedAction = "Trusted locally. Stay alert if the caller asks for money, passwords, OTPs or remote access."
             )
         }
 
-        if (rawNumber.isNullOrBlank() || normalized.isBlank()) {
-            score += 55
+        if (locallyBlocked) {
+            return PhoneRiskResult(
+                displayNumber = display,
+                normalizedNumber = normalized,
+                score = 100,
+                verdict = Verdict.HIGH_RISK,
+                reasons = listOf("This number is on your ScamLens block list."),
+                recommendedAction = "Keep the call blocked. Only unblock it after independent verification.",
+                shouldAutoBlock = true
+            )
+        }
+
+        var score = if (normalized.isBlank()) 0 else 5
+
+        if (normalized.isBlank()) {
+            score += 58
             reasons += "Caller ID is hidden or unavailable, so the caller cannot be independently verified."
         } else {
-            reasons += "This caller is not on your local trusted list."
+            reasons += "This caller is not on your trusted list. Caller ID alone does not prove who is calling."
         }
+
         if (locallyReported) {
-            score += 55
+            score += 70
             reasons += "You previously reported this number as suspicious on this device."
         }
-        if (locallyBlocked) {
-            score = 100
-            reasons += "This number is on your local ScamLens block list."
+
+        when {
+            repeatCallsInTenMinutes >= 4 -> {
+                score += 42
+                reasons += "Four or more calls from this number were detected within ten minutes."
+            }
+            repeatCallsInTenMinutes == 3 -> {
+                score += 30
+                reasons += "Three calls from this number were detected within ten minutes."
+            }
+            repeatCallsInTenMinutes == 2 -> {
+                score += 16
+                reasons += "This number called more than once within ten minutes."
+            }
         }
-        if (repeatCallsInTenMinutes >= 3) {
-            score += 30
-            reasons += "Repeated calls from the same number were detected in a short period."
-        } else if (repeatCallsInTenMinutes == 2) {
-            score += 15
-            reasons += "This number called more than once in a short period."
-        }
+
         if (normalized.isNotBlank() && !isPlausible(normalized)) {
-            score += 18
-            reasons += "The caller ID format looks unusual or incomplete."
+            score += 32
+            reasons += "The caller ID format looks incomplete or implausible."
+        }
+
+        if (normalized.isNotBlank() && isHigherCostUkRange(normalized)) {
+            score += 12
+            reasons += "This looks like a UK higher-cost or personal-numbering range. That is not proof of a scam, but unexpected calls deserve extra caution."
         }
 
         score = score.coerceIn(0, 100)
         val verdict = when {
-            score >= 75 -> Verdict.HIGH_RISK
-            score >= 50 -> Verdict.SUSPECTED_SCAM
+            score >= 85 -> Verdict.HIGH_RISK
+            score >= 52 -> Verdict.SUSPECTED_SCAM
             score >= 25 -> Verdict.USE_CAUTION
             normalized.isNotBlank() -> Verdict.USE_CAUTION
-            else -> Verdict.NO_STRONG_SIGNALS
+            else -> Verdict.SUSPECTED_SCAM
         }
+
         val action = when (verdict) {
-            Verdict.HIGH_RISK -> "Do not share money, passwords, OTPs or remote-access control. End the call and verify independently."
-            Verdict.SUSPECTED_SCAM -> "Use caution. Do not trust caller ID alone; verify the organisation using a known official number."
-            Verdict.USE_CAUTION -> "Caller is unverified. Avoid sensitive information and verify independently."
-            Verdict.NO_STRONG_SIGNALS -> "No strong local signal found. This does not prove the caller is safe."
+            Verdict.HIGH_RISK -> "End or block the call. Do not send money, share passwords or OTPs, or allow remote access."
+            Verdict.SUSPECTED_SCAM -> "Do not trust the caller's story or caller ID. End the call and contact the organisation using a number you already know."
+            Verdict.USE_CAUTION -> "Caller is unverified. Avoid sensitive information and verify independently before acting."
+            Verdict.NO_STRONG_SIGNALS -> "Trusted locally, but remain cautious if the conversation becomes unusual."
         }
 
         return PhoneRiskResult(
@@ -68,7 +96,7 @@ object PhoneRiskEngine {
             normalizedNumber = normalized,
             score = score,
             verdict = verdict,
-            reasons = reasons,
+            reasons = reasons.distinct(),
             recommendedAction = action,
             shouldAutoBlock = autoBlockHighRisk && score >= 85
         )
@@ -81,5 +109,10 @@ object PhoneRiskEngine {
         val digits = number.count { it.isDigit() }
         if (digits in 3..6) return true
         return digits in 7..15
+    }
+
+    private fun isHigherCostUkRange(number: String): Boolean {
+        val compact = number.removePrefix("+44").removePrefix("0044").removePrefix("0")
+        return compact.startsWith("9") || compact.startsWith("70")
     }
 }

@@ -91,6 +91,16 @@ class LocalStore(context: Context) {
         return updated.size
     }
 
+    fun shouldAlert(fingerprint: String, cooldownMs: Long = 5 * 60 * 1000L): Boolean {
+        if (fingerprint.isBlank()) return false
+        val key = "alert_" + hash(fingerprint)
+        val now = System.currentTimeMillis()
+        val last = prefs.getLong(key, 0L)
+        if (now - last < cooldownMs) return false
+        prefs.edit().putLong(key, now).apply()
+        return true
+    }
+
     private fun appendHistory(item: JSONObject) {
         val current = readArray("history")
         val next = JSONArray().put(item)

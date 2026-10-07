@@ -8,7 +8,14 @@ data class RiskSignal(
     val title: String,
     val detail: String,
     val points: Int
-)
+) {
+    val strengthLabel: String
+        get() = when {
+            points >= 30 -> "strong"
+            points >= 18 -> "meaningful"
+            else -> "supporting"
+        }
+}
 
 data class ScanResult(
     val rawInput: String,
@@ -22,11 +29,29 @@ data class ScanResult(
 ) {
     val verdictLabel: String
         get() = when (verdict) {
-            Verdict.NO_STRONG_SIGNALS -> "No strong scam signals detected"
+            Verdict.NO_STRONG_SIGNALS -> "No strong scam signals"
             Verdict.USE_CAUTION -> "Unverified · use caution"
             Verdict.SUSPECTED_SCAM -> "Suspected scam"
             Verdict.HIGH_RISK -> "High risk · likely scam"
         }
+
+    val headline: String
+        get() = when (verdict) {
+            Verdict.NO_STRONG_SIGNALS -> "Nothing strongly suspicious was found"
+            Verdict.USE_CAUTION -> "Check this before you trust it"
+            Verdict.SUSPECTED_SCAM -> "This matches multiple scam patterns"
+            Verdict.HIGH_RISK -> "Stop — strong scam evidence detected"
+        }
+
+    val evidenceSummary: String
+        get() = when {
+            signals.isEmpty() -> "ScamLens found no strong local evidence. That is not a guarantee that the content is safe."
+            signals.size == 1 -> "ScamLens found 1 evidence signal: " + signals.first().title + "."
+            else -> "ScamLens found " + signals.size + " evidence signals. Strongest: " + signals.first().title + "."
+        }
+
+    val scoreLabel: String
+        get() = "Evidence " + score + "/100"
 }
 
 data class PhoneRiskResult(
@@ -40,9 +65,20 @@ data class PhoneRiskResult(
 ) {
     val verdictLabel: String
         get() = when (verdict) {
-            Verdict.NO_STRONG_SIGNALS -> "No strong scam signals"
+            Verdict.NO_STRONG_SIGNALS -> "Trusted on this device"
             Verdict.USE_CAUTION -> "Unverified caller"
             Verdict.SUSPECTED_SCAM -> "Suspected scam call"
             Verdict.HIGH_RISK -> "High-risk scam call"
         }
+
+    val headline: String
+        get() = when (verdict) {
+            Verdict.NO_STRONG_SIGNALS -> "You marked this caller as trusted"
+            Verdict.USE_CAUTION -> "Caller identity is not verified"
+            Verdict.SUSPECTED_SCAM -> "Do not trust this caller without verification"
+            Verdict.HIGH_RISK -> "Strong local evidence says block or end this call"
+        }
+
+    val scoreLabel: String
+        get() = "Evidence " + score + "/100"
 }

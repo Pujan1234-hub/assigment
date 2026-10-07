@@ -34,6 +34,20 @@ class RiskEngineTest {
     }
 
     @Test
+    fun ordinaryUnknownCallerIsUnverifiedNotSafe() {
+        val r = PhoneRiskEngine.analyse("+447700900123")
+        assertEquals(Verdict.USE_CAUTION, r.verdict)
+        assertTrue(r.verdictLabel.contains("Unverified"))
+    }
+
+    @Test
+    fun suspiciousDeliveryLinkGetsMeaningfulReaction() {
+        val r = RiskEngine.analyse("Royal Mail: missed delivery. Pay redelivery fee now at https://royalmail-redelivery-check.xyz/login")
+        assertTrue(r.score >= 52)
+        assertTrue(r.verdict == Verdict.SUSPECTED_SCAM || r.verdict == Verdict.HIGH_RISK)
+    }
+
+    @Test
     fun blockedCallerGetsMaximumRisk() {
         val r = PhoneRiskEngine.analyse("+447700900123", locallyBlocked = true)
         assertEquals(100, r.score)

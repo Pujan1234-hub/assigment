@@ -213,16 +213,16 @@ private enum class Tab(val title: String, val icon: String) {
     val bg = bg(r.verdict); val fg = fg(r.verdict)
     Card(colors = CardDefaults.cardColors(containerColor = bg)) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-            Text(r.verdictLabel.uppercase(), fontWeight = FontWeight.Black, color = fg)
-            Text(r.score.toString() + "/100 evidence risk", fontSize = 30.sp, fontWeight = FontWeight.Black, color = fg)
+            Text(r.verdictLabel.uppercase(), fontWeight = FontWeight.Black, color = fg, fontSize = 13.sp)
+            Text(r.headline, fontSize = 25.sp, fontWeight = FontWeight.Black, color = fg)
+            Text(r.evidenceSummary, color = Slate)
             LinearProgressIndicator(progress = { r.score / 100f }, modifier = Modifier.fillMaxWidth())
-            Text(r.category, fontWeight = FontWeight.Bold)
-            if (r.signals.isEmpty()) Text("No strong pattern matched. This is not a guarantee of safety.", color = Slate)
-            else {
+            Text(r.scoreLabel + " · " + r.category, color = Slate, fontSize = 12.sp)
+            if (r.signals.isNotEmpty()) {
                 Text("Why ScamLens reacted", fontWeight = FontWeight.Bold)
-                r.signals.take(6).forEach { s -> Text("• " + s.title + " (+" + s.points + "): " + s.detail) }
+                r.signals.take(6).forEach { s -> Text("• " + s.title + " · " + s.strengthLabel + ": " + s.detail) }
             }
-            Text("Recommended action", fontWeight = FontWeight.Bold)
+            Text("What to do now", fontWeight = FontWeight.Bold)
             r.actions.take(4).forEach { a -> Text("• " + a) }
         }
     }
@@ -231,13 +231,15 @@ private enum class Tab(val title: String, val icon: String) {
 @Composable private fun PhoneCard(r: PhoneRiskResult, trust: ()->Unit, report: ()->Unit, block: ()->Unit) {
     Card(colors = CardDefaults.cardColors(containerColor = bg(r.verdict))) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-            Text(r.verdictLabel.uppercase(), fontWeight = FontWeight.Black, color = fg(r.verdict))
-            Text(r.displayNumber, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Text(r.score.toString() + "/100 evidence risk", fontSize = 27.sp, fontWeight = FontWeight.Black)
+            Text(r.verdictLabel.uppercase(), fontWeight = FontWeight.Black, color = fg(r.verdict), fontSize = 13.sp)
+            Text(r.headline, fontSize = 24.sp, fontWeight = FontWeight.Black)
+            Text(r.displayNumber, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(r.scoreLabel, color = Slate, fontSize = 12.sp)
             r.reasons.forEach { Text("• " + it) }
+            Text("What to do now", fontWeight = FontWeight.Bold)
             Text(r.recommendedAction, fontWeight = FontWeight.SemiBold)
             if (r.normalizedNumber.isNotBlank()) Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                TextButton(trust) { Text("Trust") }; TextButton(report) { Text("Report") }; Button(block) { Text("Block future") }
+                TextButton(trust) { Text("Trust") }; TextButton(report) { Text("Report") }; Button(block) { Text("Report + block") }
             }
         }
     }
@@ -258,7 +260,7 @@ private enum class Tab(val title: String, val icon: String) {
         item { Text("Live protection", fontSize = 28.sp, fontWeight = FontWeight.Black); Text("Enable Android access for real incoming-call and notification reactions.", color = Slate) }
         item { Card(colors = CardDefaults.cardColors(containerColor = SoftForest)) { Column(Modifier.padding(18.dp)) {
             Text("Incoming Call Guard", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Text("Shows caller status, evidence score, reasons and Block/Trust actions before you rely on the caller.", color = Slate)
+            Text("Shows a clear verdict first — UNVERIFIED, SUSPECTED SCAM or HIGH RISK — with reasons and Block/Trust actions. Evidence score is secondary.", color = Slate)
             Spacer(Modifier.height(10.dp))
             Button({
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -283,7 +285,14 @@ private enum class Tab(val title: String, val icon: String) {
         }}}
         item { Toggle("Warn on unverified incoming calls","Show a heads-up status even when the evidence score is low.",store.warnEveryUnverifiedCall) { store.warnEveryUnverifiedCall=it; changed() } }
         item { Toggle("Auto-block 85+ local risk","Reject only very-high-risk calls or numbers already on your block list.",store.autoBlockHighRisk) { store.autoBlockHighRisk=it; changed() } }
-        item { Card(colors = CardDefaults.cardColors(containerColor = SoftAmber)) { Text("ScamLens will not invent caller reputation. Unknown callers are labelled UNVERIFIED until real evidence exists.", Modifier.padding(16.dp), fontWeight = FontWeight.SemiBold) } }
+        item { Card { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Reaction levels", fontWeight = FontWeight.Bold)
+            Text("UNVERIFIED — caller identity not confirmed", color = Slate)
+            Text("CAUTION — meaningful suspicious evidence", color = Slate)
+            Text("SUSPECTED SCAM — multiple/strong scam signals", color = Slate)
+            Text("HIGH RISK — strong evidence; block/end and verify independently", color = Slate)
+        }}}
+        item { Card(colors = CardDefaults.cardColors(containerColor = SoftAmber)) { Text("ScamLens will not invent caller reputation. Unknown callers stay UNVERIFIED until real evidence exists.", Modifier.padding(16.dp), fontWeight = FontWeight.SemiBold) } }
     }
 }
 
@@ -301,8 +310,8 @@ private enum class Tab(val title: String, val icon: String) {
 
 @Composable private fun HistoryItemCard(h: HistoryItem) {
     Card { Column(Modifier.padding(14.dp)) {
-        Row(Modifier.fillMaxWidth()) { Text(h.kind, fontWeight = FontWeight.Bold, color = Forest); Spacer(Modifier.weight(1f)); Text(h.score.toString()+"/100", fontWeight = FontWeight.Bold) }
-        Text(h.verdict, fontWeight = FontWeight.SemiBold); Text(h.category, color = Slate)
+        Row(Modifier.fillMaxWidth()) { Text(h.kind, fontWeight = FontWeight.Bold, color = Forest); Spacer(Modifier.weight(1f)); Text("Evidence " + h.score + "/100", color = Slate, fontSize = 12.sp) }
+        Text(h.verdict, fontWeight = FontWeight.Black); Text(h.category, color = Slate)
         if (h.preview.isNotBlank()) Text(h.preview, maxLines = 2)
         Text(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(h.time)), fontSize = 11.sp, color = Slate)
     }}
@@ -318,7 +327,7 @@ private enum class Tab(val title: String, val icon: String) {
             Text("Privacy", fontWeight = FontWeight.Bold)
             Text("Core scoring and screenshot OCR run locally. History is short, redacted and device-local.", color = Slate)
         }}}
-        item { Text("ScamLens 1.1 · PJBUILTS", color = Slate) }
+        item { Text("ScamLens 1.2 · PJBUILTS", color = Slate) }
     }
 }
 

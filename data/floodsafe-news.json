@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T16:32:55.648318Z",
+  "generated_at": "2026-10-09T21:14:01.397158Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,35 +12,16 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 2
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "व्यवसायमैत्री वातावरण बनाउन सरकार प्रतिबद्ध छः गृहमन्त्री गुरुङ",
-      "url": "https://radionepalonline.com/2026/10/09/741874.html",
-      "published_at": "2026-10-09T16:30:06Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "आइतबारदेखि उपत्यकाका छ स्थानमा १३ कम्पनीको ग्यास साटफेर गर्न पाइने",
-      "url": "https://radionepalonline.com/2026/10/09/741872.html",
-      "published_at": "2026-10-09T16:15:20Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "सशस्त्रका एआईजी वंशीराज दाहाललाई गृहले सेवाबाट हटायो",
-      "url": "https://www.ronbpost.com/2026/10/20725/",
-      "published_at": "2026-10-09T16:14:43Z",
-      "source": "RONB Post"
-    }
-  ]
+  "items": []
 }

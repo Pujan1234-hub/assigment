@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-08T22:28:48.158912Z",
+  "generated_at": "2026-10-09T02:30:10.268865Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,16 +12,29 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 0
+      "items": 1
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 0
+      "items": 1
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": []
+  "items": [
+    {
+      "title": "दशैंका लागि अग्रिम टिकट बुकिङ खुल्यो, बसपार्क क्षेत्रमा यात्रुको चहलपहल",
+      "url": "https://www.ronbpost.com/2026/10/20694/",
+      "published_at": "2026-10-09T02:21:45Z",
+      "source": "RONB Post"
+    },
+    {
+      "title": "कांग्रेस महाधिवेशन : बिहान ७ बजेदेखि मतदान, आजै मतगणना गर्ने तयारी",
+      "url": "https://radionepalonline.com/2026/10/09/741658.html",
+      "published_at": "2026-10-09T02:08:20Z",
+      "source": "Radio Nepal"
+    }
+  ]
 }

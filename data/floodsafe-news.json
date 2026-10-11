@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-11T06:17:40.903043Z",
+  "generated_at": "2026-10-11T13:07:28.886254Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,29 +12,16 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "बेत्रावतीमा सञ्चालनमा आयो बेलीब्रिज, रसुवा-नुवाकोट आवागमन सहज हुने",
-      "url": "https://www.ronbpost.com/2026/10/20747/",
-      "published_at": "2026-10-11T06:10:57Z",
-      "source": "RONB Post"
-    },
-    {
-      "title": "बूढीगण्डकी बाढी: कुन-कुन क्षेत्रमा पुग्यो क्षति? (विस्तृत विवरण)",
-      "url": "https://radionepalonline.com/2026/10/11/742246.html",
-      "published_at": "2026-10-11T05:52:16Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

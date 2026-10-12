@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-12T07:16:02.937450Z",
+  "generated_at": "2026-10-12T23:19:48.799654Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "चाडपर्व लक्षित ट्राफिक प्रहरीको सक्रियता: सुरक्षित यात्राका लागि सचेतना र कडाइ",
-      "url": "https://radionepalonline.com/2026/10/12/742499.html",
-      "published_at": "2026-10-12T06:53:29Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

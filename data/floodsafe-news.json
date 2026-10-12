@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-11T21:53:09.323100Z",
+  "generated_at": "2026-10-12T00:59:24.665740Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,12 +16,37 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 0
+      "items": 4
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": []
+  "items": [
+    {
+      "title": "आजका लागि तोकियो विदेशी मुद्राको विनिमयदर",
+      "url": "https://radionepalonline.com/2026/10/12/742399.html",
+      "published_at": "2026-10-12T00:49:42Z",
+      "source": "Radio Nepal"
+    },
+    {
+      "title": "आँबुखैरेनीमा ४५ रोपनीमा सयपत्री फूलखेती",
+      "url": "https://radionepalonline.com/2026/10/12/742396.html",
+      "published_at": "2026-10-12T00:46:22Z",
+      "source": "Radio Nepal"
+    },
+    {
+      "title": "सहरको स्वादका लागि छुट्छ हिमालको दसैँ–तिहार",
+      "url": "https://radionepalonline.com/2026/10/12/742393.html",
+      "published_at": "2026-10-12T00:42:05Z",
+      "source": "Radio Nepal"
+    },
+    {
+      "title": "दुर्गा पक्षको दोस्रो दिनः ब्रह्मचारिणी देवीको पूजा आराधना गरिँदै",
+      "url": "https://radionepalonline.com/2026/10/12/742389.html",
+      "published_at": "2026-10-12T00:35:46Z",
+      "source": "Radio Nepal"
+    }
+  ]
 }

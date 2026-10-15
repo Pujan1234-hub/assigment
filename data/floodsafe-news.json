@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T12:53:07.088015Z",
+  "generated_at": "2026-10-15T17:36:16.391978Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,43 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 5
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "राष्ट्रिय मानव अधिकार आयोग र मातहतका कार्यालय दसैँ बिदामा पनि खुला रहने",
-      "url": "https://radionepalonline.com/2026/10/15/743183.html",
-      "published_at": "2026-10-15T12:49:30Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "नेप्से परिसूचक सामान्य अङ्कले वृद्धि",
-      "url": "https://radionepalonline.com/2026/10/15/743181.html",
-      "published_at": "2026-10-15T12:45:58Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "एमालेको नीति अनुसन्धान प्रतिष्ठानको वेबसाइट सार्वजनिक",
-      "url": "https://radionepalonline.com/2026/10/15/743177.html",
-      "published_at": "2026-10-15T12:42:23Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "पश्चिमी वायुको प्रभाव : आज र भोलि देशका विभिन्न स्थानमा वर्षा र हिमपातको सम्भावना",
-      "url": "https://radionepalonline.com/2026/10/15/743174.html",
-      "published_at": "2026-10-15T12:35:13Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "उदयपुरमा यात्रुवाहक बस दुर्घटना हुँदा एक जनाको मृत्यु, १४ जना घाइते",
-      "url": "https://radionepalonline.com/2026/10/15/743170.html",
-      "published_at": "2026-10-15T12:27:55Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

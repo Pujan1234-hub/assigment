@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T11:39:38.192494Z",
+  "generated_at": "2026-10-16T15:34:36.510660Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -11,12 +11,13 @@
   ],
   "sources": {
     "RONB Post": {
-      "ok": true,
-      "items": 0
+      "ok": false,
+      "items": 0,
+      "error": "HTTPSConnectionPool(host='www.ronbpost.com', port=443): Read timed out. (read timeout=15)"
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 2
+      "items": 1
     },
     "News24 Nepal": {
       "ok": true,
@@ -25,15 +26,9 @@
   },
   "items": [
     {
-      "title": "एमालेद्वारा मधेश प्रदेश सरकारलाई दिएको समर्थन फिर्ता",
-      "url": "https://radionepalonline.com/2026/10/16/743420.html",
-      "published_at": "2026-10-16T11:39:32Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "सल्यानमा दसैँका लागि घर फर्किनेको चाप बढ्यो, चार स्थानमा यात्रु सहायता कक्ष स्थापना",
-      "url": "https://radionepalonline.com/2026/10/16/743417.html",
-      "published_at": "2026-10-16T11:15:22Z",
+      "title": "ट्रमा उपचार सेवा देशभर विस्तार गर्ने सरकारको योजना",
+      "url": "https://radionepalonline.com/2026/10/16/743483.html",
+      "published_at": "2026-10-16T15:20:18Z",
       "source": "Radio Nepal"
     }
   ]

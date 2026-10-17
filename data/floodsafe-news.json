@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-17T08:55:27.130103Z",
+  "generated_at": "2026-10-17T12:49:09.225208Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "दसैँ बिदामा पनि स्वास्थ्य सेवा नियमित गर्न आग्रह",
-      "url": "https://radionepalonline.com/2026/10/17/743620.html",
-      "published_at": "2026-10-17T08:35:09Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

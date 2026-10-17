@@ -1,0 +1,30 @@
+name: SATHI Flood AI Check
+
+on:
+  push:
+    branches: [sathi-flood-ai-additive]
+    paths:
+      - 'floodsafe-nepal/v25/sathi-flood-ai/**'
+      - '.github/workflows/sathi-flood-ai-check.yml'
+  pull_request:
+    paths:
+      - 'floodsafe-nepal/v25/sathi-flood-ai/**'
+      - '.github/workflows/sathi-flood-ai-check.yml'
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check floodsafe-nepal/v25/sathi-flood-ai/engine.js
+          node --check floodsafe-nepal/v25/sathi-flood-ai/knowledge-v1.js
+          node --check floodsafe-nepal/v25/sathi-flood-ai/controller.js
+      - name: Verify additive-only PR paths
+        run: |
+          test -f floodsafe-nepal/v25/sathi-flood-ai/.additive-lock
+          echo 'SATHI additive module syntax OK'

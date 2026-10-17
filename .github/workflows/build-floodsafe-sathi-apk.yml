@@ -1,0 +1,48 @@
+name: Build FloodSafe SATHI APK
+
+on:
+  push:
+    branches: [sathi-flood-ai-additive]
+    paths:
+      - 'floodsafe-sathi-android/**'
+      - 'floodsafe-nepal/v25/sathi-flood-ai/**'
+      - '.github/workflows/build-floodsafe-sathi-apk.yml'
+  pull_request:
+    paths:
+      - 'floodsafe-sathi-android/**'
+      - 'floodsafe-nepal/v25/sathi-flood-ai/**'
+      - '.github/workflows/build-floodsafe-sathi-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build isolated SATHI APK
+        run: gradle -p floodsafe-sathi-android clean assembleDebug --stacktrace
+      - name: Verify stable FloodSafe files were not edited in this PR
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          bad=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep '^floodsafe-nepal/v25/' | grep -v '^floodsafe-nepal/v25/sathi-flood-ai/' || true)
+          if [ -n "$bad" ]; then
+            echo "Existing V25 files were modified:" >&2
+            echo "$bad" >&2
+            exit 1
+          fi
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-SATHI-debug
+          path: floodsafe-sathi-android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14

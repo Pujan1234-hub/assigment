@@ -94,6 +94,8 @@
       </p>
       <div class="pjb-festival-divider" aria-hidden="true">❀</div>
       <div class="pjb-festival-signature">सप्रेम, शुभकामनासहित<strong>Pujan</strong></div>
+      <p id="pjb-festival-audio-hint" role="status" aria-live="polite" hidden
+        style="font-size:12px;color:#8c5322;margin:12px 0 0;font-weight:650;line-height:1.6">♪ धुन सुन्न शुभकामना बक्समा एकपटक छुनुहोस्</p>
     </section>`;
   function mount() {
     if (document.getElementById("pjb-festival-overlay")) return;
@@ -101,6 +103,14 @@
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const close = overlay.querySelector("#pjb-festival-close");
+    const audioHint = overlay.querySelector("#pjb-festival-audio-hint");
+    function hint(visible, unavailable = false) {
+      if (!audioHint) return;
+      audioHint.hidden = !visible;
+      if (visible) audioHint.textContent = unavailable
+        ? "धुन अहिले उपलब्ध छैन"
+        : "♪ धुन सुन्न शुभकामना बक्समा एकपटक छुनुहोस्";
+    }
 
 
     // Audio recordings supplied by public music archive links referenced on
@@ -108,11 +118,10 @@
     // Some browsers disallow automatic audio with sound. In that case, the first
     // touch within the card retries the same recording without a play button.
     const audioTracks = isDashain ? [
-      "https://ia600205.us.archive.org/34/items/MangalDhoon_415/MangalDhoon.mp3",
-      "https://archive.org/download/dashaindhoon_201910/Dashain%20Dhoon.mp3",
-      "https://archive.org/download/Malshree_510/Vajra-Malshree.mp3"
+      "https://www.newar.com.np/wp-content/uploads/2021/09/malshree_dhun.mp3",
+      "https://archive.org/download/dashaindhoon_201910/Dashain%20Dhoon.mp3"
     ] : [
-      "https://ia600205.us.archive.org/34/items/MangalDhoon_415/MangalDhoon.mp3",
+      "https://www.newar.com.np/wp-content/uploads/2021/09/malshree_dhun.mp3",
       "https://archive.org/download/dashaindhoon_201910/Dashain%20Dhoon.mp3"
     ];
     let sound = null;
@@ -137,6 +146,7 @@
       isClosed = true;
       ++soundTry;
       allowGestureRetry = false;
+      hint(false);
       releaseSound();
       overlay.removeEventListener("pointerdown", onFirstGesture, true);
       overlay.removeEventListener("touchstart", onFirstGesture, true);
@@ -145,12 +155,12 @@
     function tryRecording(index, token) {
       if (isClosed || token !== soundTry) return;
       releaseSound();
-      if (index >= audioTracks.length) { allowGestureRetry = false; return; }
+      if (index >= audioTracks.length) { allowGestureRetry = false; hint(true, true); return; }
       const item = new Audio();
       item.src = audioTracks[index];
       item.preload = "auto";
       item.loop = true;
-      item.volume = 0.48;
+      item.volume = 0.8;
       sound = item;
       function nextAudio() {
         if (!isClosed && token === soundTry && sound === item) {
@@ -163,6 +173,7 @@
         if (token !== soundTry || isClosed) return;
         clearTimer();
         allowGestureRetry = false;
+        hint(false);
       };
       soundTimer = setTimeout(nextAudio, 12500);
       try {
@@ -173,6 +184,7 @@
             if (error && error.name === "NotAllowedError") {
               clearTimer();
               allowGestureRetry = true;
+              hint(true);
             } else if (error && error.name !== "AbortError") {
               nextAudio();
             }
@@ -182,11 +194,12 @@
         if (error && error.name === "NotAllowedError") {
           clearTimer();
           allowGestureRetry = true;
+          hint(true);
         } else nextAudio();
       }
     }
     function onFirstGesture(event) {
-      if (!allowGestureRetry || isClosed || !sound) return;
+      if (isClosed || !sound || !sound.paused) return;
       if (event.target.closest && event.target.closest("#pjb-festival-close")) return;
       if (event.type === "keydown" && (event.key === "Escape" || event.key === "Tab")) return;
       allowGestureRetry = false;
@@ -194,11 +207,11 @@
         const promise = sound.play();
         if (promise && typeof promise.catch === "function") {
           promise.catch(error => {
-            if (error && error.name === "NotAllowedError") allowGestureRetry = true;
+            if (error && error.name === "NotAllowedError") { allowGestureRetry = true; hint(true); }
             else if (error && error.name !== "AbortError") tryRecording(1, soundTry);
           });
         }
-      } catch (_) { allowGestureRetry = true; }
+      } catch (_) { allowGestureRetry = true; hint(true); }
     }
     overlay.addEventListener("pointerdown", onFirstGesture, true);
     overlay.addEventListener("touchstart", onFirstGesture, {capture:true,passive:true});

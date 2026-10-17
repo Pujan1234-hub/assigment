@@ -18,7 +18,7 @@
   const isTihar = day >= "2026-11-07" && day <= "2026-11-12";
   if (!isDashain && !isTihar) return;
   const season = isDashain ? "dashain" : "tihar";
-  const dismissKey = "pjb-festival-2083-" + season;
+  const dismissKey = "pjb-festival-2083-" + season + "-wish-v3";
   try { if (sessionStorage.getItem(dismissKey) === "dismissed") return; } catch (_) {}
 
   const style = document.createElement("style");
@@ -55,10 +55,6 @@
     .pjb-festival-divider:before,.pjb-festival-divider:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,#c38c44 70%,transparent)}
     .pjb-festival-signature{font-size:13px;color:#90683b;line-height:1.55}
     .pjb-festival-signature strong{display:block;letter-spacing:.12em;font-size:15px;color:#693518;margin-top:2px}
-    #pjb-festival-music{font:700 13px/1.3 system-ui,-apple-system,sans-serif;cursor:pointer;display:inline-flex;align-items:center;
-      gap:8px;justify-content:center;border:1px solid #c38b42;padding:10px 17px;border-radius:30px;
-      background:#fffaf0;color:#7d481c;box-shadow:0 4px 14px #9d6f2022;margin-top:14px}
-    #pjb-festival-music:hover,#pjb-festival-music:focus-visible{background:#ffe7bb;outline:2px solid #d5a65a;outline-offset:2px}
     .pjb-festival-light{position:absolute;pointer-events:none;top:12%;color:#d99243;font-size:16px;opacity:.7;animation:pjb-festival-float 5s ease-in-out infinite alternate}
     .pjb-festival-light.a{left:7%;animation-delay:-2s}.pjb-festival-light.b{right:7%;animation-delay:-.6s}
     @keyframes pjb-festival-float{from{transform:translateY(0) rotate(-15deg);opacity:.35}to{transform:translateY(-16px) rotate(20deg);opacity:.8}}
@@ -88,16 +84,16 @@
         <div class="pjb-festival-portrait"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Goddess_Durga-_Early_1900_print_Durga_is_depicted_in_the_Hindu_pantheon_as_a_Goddess_riding_a_lion_and_with_many_arms%2C_each_carrying_a_weapon_to_defeat_Mahishasura_or_the_buffalo_demon.jpg/250px-thumbnail.jpg" alt="माता दुर्गाको मनमोहक चित्र" width="128" height="192"></div>
         <p id="pjb-festival-copy" class="pjb-festival-copy">
           <span class="pjb-festival-blessing">शुभ विजयादशमी • शुभ तिहार</span>
-          माता दुर्गाको कृपाले हरेक मनमा साहस, हरेक घरमा सुख र हरेक यात्रामा उज्यालो छाओस्।
-          टीकाको आशीर्वादले सम्बन्ध अझ आत्मीय बनाओस्, तिहारका दीपहरूले आशा र समृद्धिका नयाँ ढोका खोलून्।
+          माता दुर्गाको असीम कृपाले तपाईं र तपाईंको परिवारमा सुख, शान्ति, सुस्वास्थ्य र समृद्धि सधैँ रहिरहोस्।
+          मान्यजनको टीका र जमराले स्नेह र आत्मीयता अझ गाढा बनाओस्।
+          तिहारका दीपहरूले हरेक घर उज्यालो पारून्, हरेक मनमा नयाँ आशा र उत्साह जगाऊन्।
         </p>
       </div>
       <p style="font-size:13px;line-height:1.7;color:#845833;margin:15px 0 0">
-        स्वदेश तथा विदेशमा रहनुभएका सम्पूर्ण नेपालीजनमा सुस्वास्थ्य, शान्ति, प्रेम र सफलताको हार्दिक कामना।
+        स्वदेश तथा विदेशमा रहनुभएका सम्पूर्ण नेपाली दाजुभाइ तथा दिदीबहिनीहरूमा बडादशैँ र तिहारको हार्दिक मंगलमय शुभकामना।
       </p>
       <div class="pjb-festival-divider" aria-hidden="true">❀</div>
-      <div class="pjb-festival-signature">सप्रेम, शुभेच्छासहित<strong>PJBUILTS</strong></div>
-      <button type="button" id="pjb-festival-music" aria-pressed="false"><span aria-hidden="true">♫</span><span id="pjb-festival-music-label">मधुर चाडपर्वको धुन सुन्नुहोस्</span></button>
+      <div class="pjb-festival-signature">सप्रेम, शुभकामनासहित<strong>Pujan</strong></div>
     </section>`;
   function mount() {
     if (document.getElementById("pjb-festival-overlay")) return;
@@ -105,91 +101,110 @@
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const close = overlay.querySelector("#pjb-festival-close");
-    const music = overlay.querySelector("#pjb-festival-music");
-    const musicLabel = overlay.querySelector("#pjb-festival-music-label");
 
-    // Stream a genuine traditional Dashain recording, not computer-generated notes.
-    // Historical recordings hosted by Internet Archive; no audio is republished here.
-    // Source references: https://ekendraonline.com/nepal/download-bijaya-dashain-maalshree-raaga-dhoon/
+
+    // Audio recordings supplied by public music archive links referenced on
+    // EkendraOnLine's Dashain/Malshree collection. This is real recorded music.
+    // Some browsers disallow automatic audio with sound. In that case, the first
+    // touch within the card retries the same recording without a play button.
     const audioTracks = isDashain ? [
-      "https://archive.org/download/dashaindhoon_201910/Dashain%20Dhoon.mp3",
       "https://ia600205.us.archive.org/34/items/MangalDhoon_415/MangalDhoon.mp3",
+      "https://archive.org/download/dashaindhoon_201910/Dashain%20Dhoon.mp3",
       "https://archive.org/download/Malshree_510/Vajra-Malshree.mp3"
     ] : [
       "https://ia600205.us.archive.org/34/items/MangalDhoon_415/MangalDhoon.mp3",
       "https://archive.org/download/dashaindhoon_201910/Dashain%20Dhoon.mp3"
     ];
-    const idleText = isDashain ? "दशैँको मालश्री धुन सुन्नुहोस्" : "चाडपर्वको मङ्गल धुन सुन्नुहोस्";
-    const activeText = isDashain ? "मालश्री धुन बन्द गर्नुहोस्" : "मङ्गल धुन बन्द गर्नुहोस्";
-    let sound = null, soundTry = 0, soundTimer = null;
-    musicLabel.textContent = idleText;
-    function stopMusic() {
-      ++soundTry;
+    let sound = null;
+    let soundTry = 1;
+    let soundTimer = null;
+    let allowGestureRetry = false;
+    let isClosed = false;
+    function clearTimer() {
       if (soundTimer !== null) { clearTimeout(soundTimer); soundTimer = null; }
-      if (sound) {
-        sound.onerror = null;
-        sound.onplaying = null;
-        sound.pause();
-        sound.removeAttribute("src");
-        sound.load();
-        sound = null;
-      }
-      music.setAttribute("aria-pressed", "false");
-      musicLabel.textContent = idleText;
     }
-    function tryRecording(index, attempt) {
-      if (attempt !== soundTry) return;
-      if (soundTimer !== null) { clearTimeout(soundTimer); soundTimer = null; }
-      if (sound) {
-        sound.onerror = null;
-        sound.onplaying = null;
-        sound.pause();
-        sound.removeAttribute("src");
-        sound.load();
-        sound = null;
-      }
-      if (index >= audioTracks.length) {
-        musicLabel.textContent = "धुन खोल्न फेरि थिच्नुहोस्";
-        music.setAttribute("aria-pressed", "false");
-        return;
-      }
-      musicLabel.textContent = "मालश्री धुन लोड हुँदैछ…";
-      const item = new Audio(audioTracks[index]);
-      sound = item;
+    function releaseSound() {
+      clearTimer();
+      if (!sound) return;
+      sound.onerror = null;
+      sound.onplaying = null;
+      sound.pause();
+      sound.removeAttribute("src");
+      sound.load();
+      sound = null;
+    }
+    function stopMusic() {
+      isClosed = true;
+      ++soundTry;
+      allowGestureRetry = false;
+      releaseSound();
+      overlay.removeEventListener("pointerdown", onFirstGesture, true);
+      overlay.removeEventListener("touchstart", onFirstGesture, true);
+      overlay.removeEventListener("keydown", onFirstGesture, true);
+    }
+    function tryRecording(index, token) {
+      if (isClosed || token !== soundTry) return;
+      releaseSound();
+      if (index >= audioTracks.length) { allowGestureRetry = false; return; }
+      const item = new Audio();
+      item.src = audioTracks[index];
       item.preload = "auto";
-      item.volume = 0.62;
       item.loop = true;
-      const advance = () => {
-        if (attempt === soundTry && sound === item) tryRecording(index + 1, attempt);
-      };
-      item.onerror = advance;
+      item.volume = 0.48;
+      sound = item;
+      function nextAudio() {
+        if (!isClosed && token === soundTry && sound === item) {
+          allowGestureRetry = false;
+          tryRecording(index + 1, token);
+        }
+      }
+      item.onerror = nextAudio;
       item.onplaying = () => {
-        if (attempt !== soundTry || sound !== item) return;
-        if (soundTimer !== null) { clearTimeout(soundTimer); soundTimer = null; }
-        musicLabel.textContent = activeText;
-        music.setAttribute("aria-pressed", "true");
+        if (token !== soundTry || isClosed) return;
+        clearTimer();
+        allowGestureRetry = false;
       };
-      soundTimer = setTimeout(advance, 18000);
+      soundTimer = setTimeout(nextAudio, 12500);
       try {
         const promise = item.play();
         if (promise && typeof promise.catch === "function") {
-          promise.catch(err => {
-            if (err && err.name === "NotAllowedError") {
-              if (attempt !== soundTry || sound !== item) return;
-              stopMusic();
-              musicLabel.textContent = "धुन सुन्न फेरि थिच्नुहोस्";
-              return;
+          promise.catch(error => {
+            if (isClosed || token !== soundTry || sound !== item) return;
+            if (error && error.name === "NotAllowedError") {
+              clearTimer();
+              allowGestureRetry = true;
+            } else if (error && error.name !== "AbortError") {
+              nextAudio();
             }
-            advance();
           });
         }
-      } catch (_) { advance(); }
+      } catch (error) {
+        if (error && error.name === "NotAllowedError") {
+          clearTimer();
+          allowGestureRetry = true;
+        } else nextAudio();
+      }
     }
-    music.addEventListener("click", () => {
-      if (sound) { stopMusic(); return; }
-      const attempt = ++soundTry;
-      tryRecording(0, attempt);
-    });
+    function onFirstGesture(event) {
+      if (!allowGestureRetry || isClosed || !sound) return;
+      if (event.target.closest && event.target.closest("#pjb-festival-close")) return;
+      if (event.type === "keydown" && (event.key === "Escape" || event.key === "Tab")) return;
+      allowGestureRetry = false;
+      try {
+        const promise = sound.play();
+        if (promise && typeof promise.catch === "function") {
+          promise.catch(error => {
+            if (error && error.name === "NotAllowedError") allowGestureRetry = true;
+            else if (error && error.name !== "AbortError") tryRecording(1, soundTry);
+          });
+        }
+      } catch (_) { allowGestureRetry = true; }
+    }
+    overlay.addEventListener("pointerdown", onFirstGesture, true);
+    overlay.addEventListener("touchstart", onFirstGesture, {capture:true,passive:true});
+    overlay.addEventListener("keydown", onFirstGesture, true);
+    // Start together with the popup, never continue after it closes.
+    tryRecording(0, soundTry);
     function dismiss() {
       try{sessionStorage.setItem(dismissKey,"dismissed")}catch(_){}
       stopMusic();document.body.style.overflow=oldOverflow;

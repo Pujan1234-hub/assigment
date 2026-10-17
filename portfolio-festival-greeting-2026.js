@@ -85,7 +85,7 @@
       <h2 id="pjb-festival-title">${isDashain ? "बडादशैँ तथा शुभ दीपावली" : "शुभ दीपावली तथा तिहार"}</h2>
       <p class="pjb-festival-sub">हार्दिक मंगलमय शुभकामना</p>
       <div class="pjb-festival-content">
-        <div class="pjb-festival-portrait"><img src="./assets/pjbuilts-durga-2083.jpg" alt="माता दुर्गाको मनमोहक चित्र" width="128" height="192"></div>
+        <div class="pjb-festival-portrait"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Goddess_Durga-_Early_1900_print_Durga_is_depicted_in_the_Hindu_pantheon_as_a_Goddess_riding_a_lion_and_with_many_arms%2C_each_carrying_a_weapon_to_defeat_Mahishasura_or_the_buffalo_demon.jpg/250px-thumbnail.jpg" alt="माता दुर्गाको मनमोहक चित्र" width="128" height="192"></div>
         <p id="pjb-festival-copy" class="pjb-festival-copy">
           <span class="pjb-festival-blessing">शुभ विजयादशमी • शुभ तिहार</span>
           माता दुर्गाको कृपाले हरेक मनमा साहस, हरेक घरमा सुख र हरेक यात्रामा उज्यालो छाओस्।

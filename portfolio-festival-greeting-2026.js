@@ -107,49 +107,89 @@
     const close = overlay.querySelector("#pjb-festival-close");
     const music = overlay.querySelector("#pjb-festival-music");
     const musicLabel = overlay.querySelector("#pjb-festival-music-label");
-    let ctx = null, loop = null, playing = false;
-    const melody = [293.66,369.99,440,493.88,440,369.99,329.63,293.66,
-      329.63,369.99,440,587.33,493.88,440,369.99,293.66,329.63,369.99,440,329.63];
 
-    function scheduleTune() {
-      if (!ctx) return;
-      const start = ctx.currentTime + .08;
-      for (let i=0;i<melody.length;i++) {
-        const t = start + i*.39, note = melody[i];
-        const o=ctx.createOscillator(), overtone=ctx.createOscillator(), v=ctx.createGain();
-        o.type="sine";o.frequency.value=note;
-        overtone.type="triangle";overtone.frequency.value=note*2;
-        const overtoneVol=ctx.createGain();overtoneVol.gain.value=.10;
-        o.connect(v);overtone.connect(overtoneVol);overtoneVol.connect(v);
-        v.connect(ctx.destination);
-        v.gain.setValueAtTime(.0001,t);v.gain.exponentialRampToValueAtTime(.052,t+.045);
-        v.gain.exponentialRampToValueAtTime(.0001,t+.35);
-        o.start(t);o.stop(t+.36);overtone.start(t);overtone.stop(t+.36);
-        if(i%4===0) {
-          const drum=ctx.createOscillator(),g=ctx.createGain();drum.type="sine";
-          drum.frequency.setValueAtTime(140,t);drum.frequency.exponentialRampToValueAtTime(72,t+.18);
-          g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.025,t+.015);
-          g.gain.exponentialRampToValueAtTime(.0001,t+.22);
-          drum.connect(g);g.connect(ctx.destination);drum.start(t);drum.stop(t+.23);
-        }
+    // Stream a genuine traditional Dashain recording, not computer-generated notes.
+    // Historical recordings hosted by Internet Archive; no audio is republished here.
+    // Source references: https://ekendraonline.com/nepal/download-bijaya-dashain-maalshree-raaga-dhoon/
+    const audioTracks = isDashain ? [
+      "https://archive.org/download/dashaindhoon_201910/Dashain%20Dhoon.mp3",
+      "https://ia600205.us.archive.org/34/items/MangalDhoon_415/MangalDhoon.mp3",
+      "https://archive.org/download/Malshree_510/Vajra-Malshree.mp3"
+    ] : [
+      "https://ia600205.us.archive.org/34/items/MangalDhoon_415/MangalDhoon.mp3",
+      "https://archive.org/download/dashaindhoon_201910/Dashain%20Dhoon.mp3"
+    ];
+    const idleText = isDashain ? "दशैँको मालश्री धुन सुन्नुहोस्" : "चाडपर्वको मङ्गल धुन सुन्नुहोस्";
+    const activeText = isDashain ? "मालश्री धुन बन्द गर्नुहोस्" : "मङ्गल धुन बन्द गर्नुहोस्";
+    let sound = null, soundTry = 0, soundTimer = null;
+    musicLabel.textContent = idleText;
+    function stopMusic() {
+      ++soundTry;
+      if (soundTimer !== null) { clearTimeout(soundTimer); soundTimer = null; }
+      if (sound) {
+        sound.onerror = null;
+        sound.onplaying = null;
+        sound.pause();
+        sound.removeAttribute("src");
+        sound.load();
+        sound = null;
       }
+      music.setAttribute("aria-pressed", "false");
+      musicLabel.textContent = idleText;
     }
-    async function stopMusic() {
-      playing = false;music.setAttribute("aria-pressed","false");
-      musicLabel.textContent="मधुर चाडपर्वको धुन सुन्नुहोस्";
-      if(loop){clearInterval(loop);loop=null;}
-      const previous=ctx;ctx=null;
-      if(previous)try{await previous.close()}catch(_){}
-    }
-    music.addEventListener("click",async () => {
-      if(playing){await stopMusic();return;}
-      const Audio = window.AudioContext || window.webkitAudioContext;
-      if(!Audio){musicLabel.textContent="यस ब्राउजरमा धुन उपलब्ध छैन";music.disabled=true;return;}
+    function tryRecording(index, attempt) {
+      if (attempt !== soundTry) return;
+      if (soundTimer !== null) { clearTimeout(soundTimer); soundTimer = null; }
+      if (sound) {
+        sound.onerror = null;
+        sound.onplaying = null;
+        sound.pause();
+        sound.removeAttribute("src");
+        sound.load();
+        sound = null;
+      }
+      if (index >= audioTracks.length) {
+        musicLabel.textContent = "धुन खोल्न फेरि थिच्नुहोस्";
+        music.setAttribute("aria-pressed", "false");
+        return;
+      }
+      musicLabel.textContent = "मालश्री धुन लोड हुँदैछ…";
+      const item = new Audio(audioTracks[index]);
+      sound = item;
+      item.preload = "auto";
+      item.volume = 0.62;
+      item.loop = true;
+      const advance = () => {
+        if (attempt === soundTry && sound === item) tryRecording(index + 1, attempt);
+      };
+      item.onerror = advance;
+      item.onplaying = () => {
+        if (attempt !== soundTry || sound !== item) return;
+        if (soundTimer !== null) { clearTimeout(soundTimer); soundTimer = null; }
+        musicLabel.textContent = activeText;
+        music.setAttribute("aria-pressed", "true");
+      };
+      soundTimer = setTimeout(advance, 18000);
       try {
-        ctx=new Audio();await ctx.resume();playing=true;scheduleTune();
-        loop=setInterval(scheduleTune,melody.length*390);
-        music.setAttribute("aria-pressed","true");musicLabel.textContent="धुन बन्द गर्नुहोस्";
-      }catch(_){await stopMusic();musicLabel.textContent="धुन बजाउन सकिएन";}
+        const promise = item.play();
+        if (promise && typeof promise.catch === "function") {
+          promise.catch(err => {
+            if (err && err.name === "NotAllowedError") {
+              if (attempt !== soundTry || sound !== item) return;
+              stopMusic();
+              musicLabel.textContent = "धुन सुन्न फेरि थिच्नुहोस्";
+              return;
+            }
+            advance();
+          });
+        }
+      } catch (_) { advance(); }
+    }
+    music.addEventListener("click", () => {
+      if (sound && !sound.paused) { stopMusic(); return; }
+      if (sound) stopMusic();
+      const attempt = ++soundTry;
+      tryRecording(0, attempt);
     });
     function dismiss() {
       try{sessionStorage.setItem(dismissKey,"dismissed")}catch(_){}

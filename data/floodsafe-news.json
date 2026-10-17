@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-17T12:49:09.225208Z",
+  "generated_at": "2026-10-17T16:00:08.703215Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,16 +12,29 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 0
+      "items": 1
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 0
+      "items": 1
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": []
+  "items": [
+    {
+      "title": "विपद् प्रभावित क्षेत्रमा हेलिकोप्टरबाट ट्रान्सफर्मर ढुवानी",
+      "url": "https://www.ronbpost.com/2026/10/20916/",
+      "published_at": "2026-10-17T15:49:29Z",
+      "source": "RONB Post"
+    },
+    {
+      "title": "नयाँ बसपार्कसहित उपत्यकाका विभिन्न नाकामा यात्रुको चाप बढ्यो",
+      "url": "https://radionepalonline.com/2026/10/17/743725.html",
+      "published_at": "2026-10-17T15:46:17Z",
+      "source": "Radio Nepal"
+    }
+  ]
 }

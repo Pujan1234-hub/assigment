@@ -18,7 +18,7 @@
   const isTihar = day >= "2026-11-07" && day <= "2026-11-12";
   if (!isDashain && !isTihar) return;
   const season = isDashain ? "dashain" : "tihar";
-  const dismissKey = "pjb-festival-2083-" + season + "-wish-v3";
+  const dismissKey = "pjb-festival-2083-" + season + "-malshree-v4";
   try { if (sessionStorage.getItem(dismissKey) === "dismissed") return; } catch (_) {}
 
   const style = document.createElement("style");

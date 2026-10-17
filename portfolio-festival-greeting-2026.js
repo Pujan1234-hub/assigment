@@ -186,8 +186,7 @@
       } catch (_) { advance(); }
     }
     music.addEventListener("click", () => {
-      if (sound && !sound.paused) { stopMusic(); return; }
-      if (sound) stopMusic();
+      if (sound) { stopMusic(); return; }
       const attempt = ++soundTry;
       tryRecording(0, attempt);
     });

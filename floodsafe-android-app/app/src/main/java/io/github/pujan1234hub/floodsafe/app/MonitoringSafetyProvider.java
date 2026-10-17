@@ -32,6 +32,9 @@ public final class MonitoringSafetyProvider extends ContentProvider {
         Context context = getContext();
         if (context == null) return false;
         app = context.getApplicationContext();
+        // SATHI is installed from the existing process-start provider so the native
+        // map/activity source remains untouched.
+        SathiNextLevelV0918.install(app);
         sanitize();
         main.postDelayed(guard, 60_000L);
         return true;

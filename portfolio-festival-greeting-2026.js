@@ -149,7 +149,8 @@
       hint(false);
       releaseSound();
       overlay.removeEventListener("pointerdown", onFirstGesture, true);
-      overlay.removeEventListener("touchstart", onFirstGesture, true);
+      overlay.removeEventListener("pointerup", onFirstGesture, true);
+      overlay.removeEventListener("touchend", onFirstGesture, true);
       overlay.removeEventListener("keydown", onFirstGesture, true);
     }
     function tryRecording(index, token) {
@@ -198,23 +199,42 @@
         } else nextAudio();
       }
     }
+    // Mobile Chrome grants transient audio activation on POINTERUP/TOUCHEND,
+    // not on touchstart/pointerdown. Starting before that made the first tap fail.
+    let gesturePending = false;
     function onFirstGesture(event) {
-      if (isClosed || !sound || !sound.paused) return;
+      if (isClosed || !sound || !sound.paused || gesturePending) return;
       if (event.target.closest && event.target.closest("#pjb-festival-close")) return;
-      if (event.type === "keydown" && (event.key === "Escape" || event.key === "Tab")) return;
+      if (event.type === "pointerdown" && event.pointerType !== "mouse") return;
+      if (event.type === "pointerup" && event.pointerType === "mouse") return;
+      if (event.type === "keydown" && !["Enter", " "].includes(event.key)) return;
+      gesturePending = true;
       allowGestureRetry = false;
+      const activeSound = sound;
       try {
-        const promise = sound.play();
-        if (promise && typeof promise.catch === "function") {
-          promise.catch(error => {
-            if (error && error.name === "NotAllowedError") { allowGestureRetry = true; hint(true); }
-            else if (error && error.name !== "AbortError") tryRecording(1, soundTry);
-          });
-        }
-      } catch (_) { allowGestureRetry = true; hint(true); }
+        const promise = activeSound.play();
+        if (promise && typeof promise.then === "function") {
+          promise.then(() => {
+            if (activeSound === sound && !isClosed) hint(false);
+          }).catch(error => {
+            if (activeSound !== sound || isClosed) return;
+            if (error && error.name === "NotAllowedError") {
+              allowGestureRetry = true;
+              hint(true);
+            } else if (error && error.name !== "AbortError") {
+              tryRecording(1, soundTry);
+            }
+          }).finally(() => { gesturePending = false; });
+        } else gesturePending = false;
+      } catch (_) {
+        gesturePending = false;
+        allowGestureRetry = true;
+        hint(true);
+      }
     }
     overlay.addEventListener("pointerdown", onFirstGesture, true);
-    overlay.addEventListener("touchstart", onFirstGesture, {capture:true,passive:true});
+    overlay.addEventListener("pointerup", onFirstGesture, true);
+    if (!window.PointerEvent) overlay.addEventListener("touchend", onFirstGesture, {capture:true,passive:true});
     overlay.addEventListener("keydown", onFirstGesture, true);
     // Start together with the popup, never continue after it closes.
     tryRecording(0, soundTry);

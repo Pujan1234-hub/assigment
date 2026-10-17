@@ -78,22 +78,22 @@
       <span class="pjb-festival-light a" aria-hidden="true">✦</span><span class="pjb-festival-light b" aria-hidden="true">✦</span>
       <div class="pjb-festival-top">PJBUILTS • २०८३</div>
       <div class="pjb-festival-symbol" aria-hidden="true">✦ ❀ ✦</div>
-      <h2 id="pjb-festival-title">${isDashain ? "बडादशैँ तथा शुभ दीपावली" : "शुभ दीपावली तथा तिहार"}</h2>
+      <h2 id="pjb-festival-title">बडादशैँ तथा तिहार २०८३</h2>
       <p class="pjb-festival-sub">हार्दिक मंगलमय शुभकामना</p>
       <div class="pjb-festival-content">
         <div class="pjb-festival-portrait"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Goddess_Durga-_Early_1900_print_Durga_is_depicted_in_the_Hindu_pantheon_as_a_Goddess_riding_a_lion_and_with_many_arms%2C_each_carrying_a_weapon_to_defeat_Mahishasura_or_the_buffalo_demon.jpg/250px-thumbnail.jpg" alt="माता दुर्गाको मनमोहक चित्र" width="128" height="192"></div>
         <p id="pjb-festival-copy" class="pjb-festival-copy">
           <span class="pjb-festival-blessing">शुभ विजयादशमी • शुभ तिहार</span>
-          माता दुर्गाको असीम कृपाले तपाईं र तपाईंको परिवारमा सुख, शान्ति, सुस्वास्थ्य र समृद्धि सधैँ रहिरहोस्।
-          मान्यजनको टीका र जमराले स्नेह र आत्मीयता अझ गाढा बनाओस्।
-          तिहारका दीपहरूले हरेक घर उज्यालो पारून्, हरेक मनमा नयाँ आशा र उत्साह जगाऊन्।
+          माता दुर्गाको असीम कृपाले तपाईं तथा तपाईंको परिवारमा सुख, शान्ति, सुस्वास्थ्य र समृद्धि सधैँ रहिरहोस्।
+          मान्यजनबाट प्राप्त टीका, जमरा र आशीर्वादले पारिवारिक सम्बन्धमा माया, सद्भाव र आत्मीयता अझ प्रगाढ बनाओस्।
+          तिहारका दीपहरूले हरेक घर उज्यालो बनाऊन्। जीवनमा नयाँ आशा, उमङ्ग र सफलताको उज्यालो छाओस्।
         </p>
       </div>
       <p style="font-size:13px;line-height:1.7;color:#845833;margin:15px 0 0">
-        स्वदेश तथा विदेशमा रहनुभएका सम्पूर्ण नेपाली दाजुभाइ तथा दिदीबहिनीहरूमा बडादशैँ र तिहारको हार्दिक मंगलमय शुभकामना।
+        स्वदेश तथा विदेशमा रहनुभएका सम्पूर्ण नेपाली दाजुभाइ तथा दिदीबहिनीहरूमा बडादशैँ र तिहारको हार्दिक शुभकामना।
       </p>
       <div class="pjb-festival-divider" aria-hidden="true">❀</div>
-      <div class="pjb-festival-signature">सप्रेम, शुभकामनासहित<strong>Pujan</strong></div>
+      <div class="pjb-festival-signature">हार्दिक शुभेच्छासहित<strong>Pujan</strong></div>
       <p id="pjb-festival-audio-hint" role="status" aria-live="polite" hidden
         style="font-size:12px;color:#8c5322;margin:12px 0 0;font-weight:650;line-height:1.6">♪ धुन सुन्न शुभकामना बक्समा एकपटक छुनुहोस्</p>
     </section>`;

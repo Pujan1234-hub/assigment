@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18T13:31:10.760297Z",
+  "generated_at": "2026-10-18T16:50:18.456758Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -20,15 +20,8 @@
     },
     "News24 Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     }
   },
-  "items": [
-    {
-      "title": "ठेचो देय कप २०८३ को उपाधि सरस्वती युवा क्लबलाई",
-      "url": "https://www.news24nepal.com/detail/13965",
-      "published_at": "2026-10-18T13:21:07Z",
-      "source": "News24 Nepal"
-    }
-  ]
+  "items": []
 }

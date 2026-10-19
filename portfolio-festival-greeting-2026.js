@@ -97,8 +97,13 @@
       <p id="pjb-festival-audio-hint" role="status" aria-live="polite" hidden
         style="font-size:12px;color:#8c5322;margin:12px 0 0;font-weight:650;line-height:1.6">♪ धुन सुन्न शुभकामना बक्समा एकपटक छुनुहोस्</p>
     </section>`;
+  // One popup and one audio lifecycle per page load. The intro completion
+  // event and its 5-second safety fallback can both call mount(). Once the
+  // user closes the popup, NEVER start a second audio player from a timer.
+  let didMountOrDismiss = false;
   function mount() {
-    if (document.getElementById("pjb-festival-overlay")) return;
+    if (didMountOrDismiss || document.getElementById("pjb-festival-overlay")) return;
+    didMountOrDismiss = true;
     document.body.appendChild(overlay);
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -239,6 +244,8 @@
     // Start together with the popup, never continue after it closes.
     tryRecording(0, soundTry);
     function dismiss() {
+      if (isClosed) return; // Repeated close/touch events must remain inert.
+      didMountOrDismiss = true;
       try{sessionStorage.setItem(dismissKey,"dismissed")}catch(_){}
       stopMusic();document.body.style.overflow=oldOverflow;
       overlay.remove();style.remove();document.removeEventListener("keydown",onKey);

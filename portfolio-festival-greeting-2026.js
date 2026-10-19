@@ -249,6 +249,22 @@
     document.addEventListener("keydown",onKey);
     requestAnimationFrame(()=>{overlay.classList.add("pjb-visible");close.focus({preventScroll:true})});
   }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});
-  else mount();
+  // The original PJBUILTS opening intro always goes first. Mounting the
+  // festival dialog (and starting its music) before this would cover the
+  // intro because both overlays are top-level fixed elements.
+  function mountAfterIntro() {
+    if (window.__pjbuiltsIntroFinished || !document.getElementById("pjbuilts-original-intro")) {
+      mount();
+      return;
+    }
+    document.addEventListener("pjbuilts:intro-complete", mount, {once:true});
+    // Safety fallback only if the intro's JavaScript could not dispatch its
+    // completion event; the CSS animation has already finished by this point.
+    window.setTimeout(() => {
+      const intro = document.getElementById("pjbuilts-original-intro");
+      if (!intro || getComputedStyle(intro).visibility === "hidden") mount();
+    }, 5000);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mountAfterIntro,{once:true});
+  else mountAfterIntro();
 })();

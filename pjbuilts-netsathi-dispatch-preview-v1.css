@@ -1,0 +1,192 @@
+/* NetSathi ISP dispatch animation — preview only.
+ * ONLY the #netsathi project's decorative .project-visual is styled.
+ * The live screenshot gallery #netsathi-showcase is excluded entirely.
+ */
+body #work #netsathi > .project-visual.nsx-active{
+ display:block!important;place-items:unset!important;padding:0!important;
+ width:100%!important;height:370px!important;min-height:370px!important;
+ overflow:hidden!important;background:#071923!important;
+ border-bottom:1px solid #183647!important;
+}
+body #work #netsathi .nsx-shell,
+body #work #netsathi .nsx-shell *{box-sizing:border-box}
+body #work #netsathi .nsx-shell{
+ --ns-mint:#6ee7c2;--ns-cyan:#36c9e6;--ns-slate:#a4bbc8;
+ width:100%;height:100%;min-width:0;overflow:hidden;
+ color:#f2f9fb;text-align:left;
+ background:radial-gradient(ellipse at 87% 11%,rgba(31,172,189,.19),transparent 40%),linear-gradient(135deg,#071923,#0c2332 66%,#092331);
+ display:grid;grid-template-rows:41px 62px minmax(121px,1fr) 94px 19px;
+ padding:14px 15px 10px;isolation:isolate;
+ font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+ -webkit-font-smoothing:antialiased;
+}
+body #work #netsathi .nsx-top{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+ border-bottom:1px solid rgba(148,213,224,.13);min-width:0;
+}
+body #work #netsathi .nsx-brand{display:flex;align-items:center;gap:9px;min-width:0;font-size:14px;font-weight:860;letter-spacing:-.04em;line-height:1.05}
+body #work #netsathi .nsx-brand small{display:block;color:#789cab;font-size:7px;letter-spacing:.17em;margin-top:4px;font-weight:840}
+body #work #netsathi .nsx-brandmark{
+ width:29px;height:29px;flex:none;position:relative;
+ background:rgba(52,201,208,.13);border:1px solid rgba(71,211,220,.3);
+ border-radius:9px;display:grid;place-items:center;
+}
+body #work #netsathi .nsx-brandmark i{position:absolute;border-radius:50%;background:#6ee7c2;box-shadow:0 0 9px rgba(110,231,194,.23)}
+body #work #netsathi .nsx-brandmark i:first-child{width:8px;height:8px;left:10px;top:10px}
+body #work #netsathi .nsx-brandmark i:nth-child(2){width:4px;height:4px;left:5px;top:17px}
+body #work #netsathi .nsx-brandmark i:last-child{width:4px;height:4px;right:5px;top:6px}
+body #work #netsathi .nsx-label{
+ display:flex;align-items:center;gap:5px;
+ color:#77dac7;border:1px solid rgba(92,223,191,.23);
+ border-radius:5px;background:rgba(57,198,167,.075);
+ padding:6px 8px;letter-spacing:.09em;font-size:7px;font-weight:850;white-space:nowrap;
+}
+body #work #netsathi .nsx-label i{
+ width:5px;height:5px;background:#6ee7c2;border-radius:50%;
+ animation:nsx-pulse 2.1s ease-out infinite;
+}
+body #work #netsathi .nsx-titlebar{display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0}
+body #work #netsathi .nsx-eyebrow{font-size:8px;letter-spacing:.12em;color:#7baabc;font-weight:830;display:block;margin-bottom:5px}
+body #work #netsathi .nsx-titlebar strong{color:#e9f9fd;font-size:clamp(17px,2.5vw,22px);font-weight:850;line-height:1.12;letter-spacing:-.047em}
+body #work #netsathi .nsx-titlebar em{color:#6ee7c2;font-style:normal}
+body #work #netsathi .nsx-case{
+ display:flex;flex-direction:column;align-items:flex-end;flex:none;gap:5px;
+ color:#7095a7;font-size:7px;letter-spacing:.08em;font-weight:750;white-space:nowrap;
+}
+body #work #netsathi .nsx-case b{color:#a6f8da;letter-spacing:.015em;font-size:10px}
+body #work #netsathi .nsx-steps{
+ display:grid;grid-template-columns:minmax(0,1fr) 10px minmax(0,1fr) 10px minmax(0,1fr);
+ align-items:stretch;gap:4px;min-width:0;min-height:0;
+}
+body #work #netsathi .nsx-step{
+ display:flex;flex-direction:column;min-width:0;min-height:0;
+ background:linear-gradient(158deg,rgba(29,69,84,.73),rgba(17,42,59,.88));
+ border:1px solid rgba(100,173,187,.19);
+ border-radius:9px;padding:10px 8px 8px;
+ box-shadow:inset 0 1px rgba(255,255,255,.025);
+ animation:nsx-step-focus 8.4s ease-in-out infinite;
+}
+body #work #netsathi .nsx-step-two{animation-delay:-5.7s;background:linear-gradient(160deg,rgba(23,71,82,.85),rgba(14,53,64,.90))}
+body #work #netsathi .nsx-step-three{animation-delay:-3.1s;background:linear-gradient(160deg,rgba(23,77,67,.78),rgba(12,50,58,.87))}
+body #work #netsathi .nsx-step-top{display:flex;align-items:center;gap:5px;color:#91b3c0;font-size:7.5px;font-weight:850;white-space:nowrap;letter-spacing:.025em}
+body #work #netsathi .nsx-step-icon{
+ flex:none;display:grid;place-items:center;height:22px;width:22px;
+ border-radius:6px;color:#7cd8e5;border:1px solid rgba(113,211,229,.19);
+ background:rgba(60,190,207,.09);font-size:8px;font-weight:900;
+}
+body #work #netsathi .nsx-step-two .nsx-step-icon{color:#7ee8cb;background:rgba(77,205,167,.1)}
+body #work #netsathi .nsx-step-three .nsx-step-icon{color:#a2f5bd;background:rgba(85,213,138,.09)}
+body #work #netsathi .nsx-step>b{margin:11px 0 0;color:#f0fbff;line-height:1.18;letter-spacing:-.035em;font-size:11px;font-weight:820}
+body #work #netsathi .nsx-step>small{display:block;color:#81a2b1;font-size:8px;margin-top:5px;line-height:1.3}
+body #work #netsathi .nsx-chip{
+ display:inline-flex;align-items:center;align-self:flex-start;margin-top:auto;
+ color:#80cce2;font-size:7px;letter-spacing:.02em;font-weight:850;
+ padding:5px 6px;border-radius:4px;background:rgba(49,186,209,.10);
+ border:1px solid rgba(76,191,218,.16);
+}
+body #work #netsathi .nsx-step-two .nsx-chip{color:#8be5d1;background:rgba(60,206,176,.1);border-color:rgba(77,201,170,.2)}
+body #work #netsathi .nsx-step-three .nsx-chip{color:#aceabb;background:rgba(62,196,130,.1);border-color:rgba(86,207,148,.19)}
+body #work #netsathi .nsx-packet{position:relative;height:100%;min-width:0;overflow:hidden}
+body #work #netsathi .nsx-packet:before{
+ content:"";position:absolute;top:50%;height:1px;left:-1px;right:-1px;background:rgba(82,213,210,.22);
+}
+body #work #netsathi .nsx-packet>span{
+ position:absolute;display:block;top:calc(50% - 3px);left:-7px;
+ width:7px;height:7px;border-radius:50%;background:#8bffe0;
+ box-shadow:0 0 12px rgba(139,255,224,.85);
+ animation:nsx-traffic 8.4s linear infinite;
+}
+body #work #netsathi .nsx-packet-two>span{animation-delay:-5.6s}
+body #work #netsathi .nsx-bottom{
+ display:grid;grid-template-columns:1.35fr .95fr;gap:8px;
+ min-width:0;padding-top:9px;
+}
+body #work #netsathi .nsx-route,
+body #work #netsathi .nsx-resolved{
+ min-width:0;position:relative;overflow:hidden;
+ border:1px solid rgba(89,174,182,.18);
+ background:rgba(9,37,51,.78);border-radius:8px;padding:8px 9px;
+}
+body #work #netsathi .nsx-route-top{display:flex;justify-content:space-between;gap:7px}
+body #work #netsathi .nsx-route-top span{color:#90d7dd;font-size:7px;font-weight:850;letter-spacing:.08em}
+body #work #netsathi .nsx-route-top b{color:#648fa0;font-size:7px;font-weight:850;white-space:nowrap}
+body #work #netsathi .nsx-route svg{display:block;width:100%;height:52px;margin-top:1px}
+body #work #netsathi .nsx-road{fill:none;stroke:#2e6170;stroke-width:2.5;stroke-dasharray:3 5}
+body #work #netsathi .nsx-journey{
+ fill:none;stroke:#6fedd2;stroke-width:2.7;
+ stroke-dasharray:310;stroke-dashoffset:310;stroke-linecap:round;
+ animation:nsx-route-animate 8.4s ease-in-out infinite;
+}
+body #work #netsathi .nsx-start{fill:#9cf4de}
+body #work #netsathi .nsx-end{fill:#f1c184;stroke:#081f2b;stroke-width:3}
+body #work #netsathi .nsx-resolved{display:flex;flex-direction:column;justify-content:center;gap:4px;align-items:flex-start}
+body #work #netsathi .nsx-resolved-mark{
+ width:22px;height:22px;display:grid;place-items:center;
+ border-radius:7px;color:#0f513f;background:#81e7bd;font-size:14px;font-weight:900;
+ animation:nsx-repair-finish 8.4s ease-out infinite;
+}
+body #work #netsathi .nsx-resolved b{font-size:11px;color:#eafbf6;letter-spacing:-.02em;font-weight:820}
+body #work #netsathi .nsx-resolved small{font-size:8px;line-height:1.25;color:#85aebb}
+body #work #netsathi .nsx-resolved>span{font-size:7px;font-weight:850;color:#8fe5bd;letter-spacing:.06em;margin-top:2px}
+body #work #netsathi .nsx-footer{
+ border-top:1px solid rgba(105,187,189,.13);min-width:0;
+ display:flex;align-items:end;justify-content:space-between;gap:4px;
+ color:#789aaa;font-size:7px;letter-spacing:.025em;white-space:nowrap;font-weight:800;
+}
+body #work #netsathi .nsx-footer span:first-child{color:#8bbfbd;display:flex;align-items:center;gap:4px}
+body #work #netsathi .nsx-footer i{display:block;flex:none;width:5px;height:5px;background:#72e0c0;border-radius:50%}
+@keyframes nsx-pulse{
+ 0%,100%{box-shadow:0 0 0 0 rgba(104,236,195,.45)}
+ 60%{box-shadow:0 0 0 6px rgba(104,236,195,0)}
+}
+@keyframes nsx-traffic{
+ 0%,12%{left:-8px;opacity:0}
+ 18%,33%{opacity:1}
+ 41%{left:calc(100% + 4px);opacity:0}
+ 42%,100%{opacity:0}
+}
+@keyframes nsx-step-focus{
+ 0%,15%,90%,100%{border-color:rgba(100,173,187,.19);box-shadow:none}
+ 22%,48%{border-color:rgba(113,233,205,.59);box-shadow:0 0 22px rgba(57,205,180,.13)}
+}
+@keyframes nsx-route-animate{
+ 0%,25%{stroke-dashoffset:310;opacity:.35}
+ 70%,86%{stroke-dashoffset:0;opacity:1}
+ 100%{stroke-dashoffset:-22;opacity:.55}
+}
+@keyframes nsx-repair-finish{
+ 0%,68%,100%{transform:scale(.85);opacity:.33}
+ 79%,93%{transform:scale(1);opacity:1}
+}
+@media(max-width:700px){
+ body #work #netsathi > .project-visual.nsx-active{height:350px!important;min-height:350px!important}
+ body #work #netsathi .nsx-shell{
+  padding:11px 10px 9px;grid-template-rows:38px 59px minmax(120px,1fr) 92px 18px;
+ }
+ body #work #netsathi .nsx-step{padding:8px 5px 7px;border-radius:7px}
+ body #work #netsathi .nsx-steps{grid-template-columns:minmax(0,1fr) 7px minmax(0,1fr) 7px minmax(0,1fr);gap:3px}
+ body #work #netsathi .nsx-step-top{gap:3px;font-size:6.4px}
+ body #work #netsathi .nsx-step-icon{width:18px;height:18px;font-size:7px}
+ body #work #netsathi .nsx-step>b{font-size:9.6px;margin-top:9px}
+ body #work #netsathi .nsx-step>small{font-size:7.3px}
+ body #work #netsathi .nsx-chip{font-size:6.2px;padding:4px 3px}
+ body #work #netsathi .nsx-titlebar strong{font-size:17px}
+ body #work #netsathi .nsx-route-top b{font-size:6px}
+ body #work #netsathi .nsx-route-top span{font-size:6.5px}
+ body #work #netsathi .nsx-resolved b{font-size:10px}
+ body #work #netsathi .nsx-footer{font-size:6.2px}
+}
+@media(max-width:360px){
+ body #work #netsathi .nsx-brand{font-size:12px}
+ body #work #netsathi .nsx-label{font-size:6px;padding:5px 6px}
+ body #work #netsathi .nsx-step-top{font-size:5.8px}
+ body #work #netsathi .nsx-step>b{font-size:8.4px}
+ body #work #netsathi .nsx-case{font-size:6px}
+ body #work #netsathi .nsx-footer span:last-child{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ body #work #netsathi .nsx-shell *,body #work #netsathi .nsx-shell *::before,
+ body #work #netsathi .nsx-shell *::after{animation:none!important}
+ body #work #netsathi .nsx-journey{stroke-dashoffset:0!important}
+ body #work #netsathi .nsx-resolved-mark{opacity:1!important;transform:none!important}
+}

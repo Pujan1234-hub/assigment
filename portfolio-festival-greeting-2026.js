@@ -12,13 +12,13 @@
     return values.year + "-" + values.month + "-" + values.day;
   }
 
-  // Nepal festival calendar 2083: separate, self-expiring festive windows.
+  // Nepal calendar 2083: keep the same Dashain–Tihar–Chhath greeting
+  // continuously through Chhath's final sunrise rituals (16 Nov 2026).
+  // Hide automatically on new page loads from 17 Nov, Nepal local time.
   const day = nepalDate();
   const isDashain = day >= "2026-10-11" && day <= "2026-10-25";
-  const isTihar = day >= "2026-11-07" && day <= "2026-11-12";
-  if (!isDashain && !isTihar) return;
-  const season = isDashain ? "dashain" : "tihar";
-  const dismissKey = "pjb-festival-2083-" + season + "-malshree-v4";
+  if (day < "2026-10-11" || day > "2026-11-16") return;
+  const dismissKey = "pjb-festival-2083-dashain-tihar-chhath-malshree-v4";
   try { if (sessionStorage.getItem(dismissKey) === "dismissed") return; } catch (_) {}
 
   const style = document.createElement("style");

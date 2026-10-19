@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-19T14:24:59.356497Z",
+  "generated_at": "2026-10-19T20:06:12.051038Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,29 +12,16 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "विश्वकप लिग-२ : ओमानविरुद्ध नेपालको १० रनको जित",
-      "url": "https://radionepalonline.com/2026/10/19/744093.html",
-      "published_at": "2026-10-19T14:06:04Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "ओमानविरुद्ध रोमाञ्चक जित निकाल्दै नेपाल शीर्ष ६ मा",
-      "url": "https://www.ronbpost.com/2026/10/20947/",
-      "published_at": "2026-10-19T13:56:00Z",
-      "source": "RONB Post"
-    }
-  ]
+  "items": []
 }

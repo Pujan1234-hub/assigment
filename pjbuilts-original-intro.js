@@ -15,7 +15,11 @@
     intro.classList.add('pj-orig-dismissed');
     intro.setAttribute('aria-hidden','true');
     if(document.activeElement===skip)skip.blur();
-    window.setTimeout(()=>intro.remove(),210);
+    window.setTimeout(()=>{
+      intro.remove();
+      window.__pjbuiltsIntroFinished=true;
+      document.dispatchEvent(new Event('pjbuilts:intro-complete'));
+    },210);
   }
   skip?.addEventListener('click',finish,{once:true});
   // CSS also dismisses after 2.65 seconds if JS is delayed.

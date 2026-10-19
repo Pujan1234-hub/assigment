@@ -646,3 +646,14 @@ html[data-pj-layout="editorial-v4"] body .foot{border-top-color:#dee1e4!importan
 @media(prefers-reduced-motion:reduce){
  html[data-pj-layout="editorial-v4"] body .pj-showcase-links a{transition:none!important}
 }
+
+/* Dynamic NetSathi showcase and existing galleries always occupy the full
+   grid width; these nodes are created by the unmodified application scripts. */
+html[data-pj-layout="editorial-v4"] body #work .project-list > :not(article.project){
+ grid-column:1 / -1!important;
+ min-width:0!important;
+}
+html[data-pj-layout="editorial-v4"] body #work .project-list > #netsathi-showcase{
+ width:100%!important;
+ max-width:100%!important;
+}

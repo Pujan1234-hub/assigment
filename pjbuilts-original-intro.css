@@ -134,3 +134,64 @@
  #pjbuilts-original-intro .pj-orig-tagline,
  #pjbuilts-original-intro .pj-orig-pujan{animation:none!important}
 }
+
+/* Restored FloodSafe Nepal reference splash:
+   metallic-gold light travels THROUGH PJ, BUILTS and PUJAN lettering,
+   with an animated gold underline beneath the brand and final name.
+   Timed to the user's original 2026-10-19 FloodSafe intro video. */
+#pjbuilts-original-intro .pj-orig-metal{
+  display:inline-block;
+  color:#20201f;
+  background-image:linear-gradient(110deg,
+    #20201f 0%,#20201f 24%,
+    #7b562a 35%,#b78c49 39%,
+    #fff0bf 44%,#d7ae64 49%,
+    #886028 54%,#20201f 65%,#20201f 100%);
+  background-size:260% 100%;
+  background-position:100% 50%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  will-change:background-position;
+}
+#pjbuilts-original-intro .pj-orig-metal-pj{
+  animation:pj-orig-gold-sheen 950ms cubic-bezier(.19,.69,.27,.99) 240ms both;
+}
+#pjbuilts-original-intro .pj-orig-metal-builts{
+  position:relative;
+  animation:pj-orig-gold-sheen 870ms cubic-bezier(.19,.69,.27,.99) 600ms both;
+}
+#pjbuilts-original-intro .pj-orig-metal-pujan{
+  position:relative;
+  animation:pj-orig-gold-sheen 680ms ease-in-out 1920ms both;
+}
+#pjbuilts-original-intro .pj-orig-metal-builts::after,
+#pjbuilts-original-intro .pj-orig-metal-pujan::after{
+  content:"";pointer-events:none;position:absolute;
+  left:50%;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,#8d652d,#f3db9b 42%,#aa7b35 100%);
+  box-shadow:0 0 7px rgba(195,149,70,.14);
+  transform-origin:center;
+  transform:translateX(-50%) scaleX(0);
+}
+#pjbuilts-original-intro .pj-orig-metal-builts::after{
+  bottom:-9px;width:112%;
+  animation:pj-orig-gold-underline 450ms ease-out 680ms both;
+}
+#pjbuilts-original-intro .pj-orig-metal-pujan::after{
+  bottom:-17px;width:74%;
+  animation:pj-orig-gold-underline 320ms ease-out 2000ms both;
+}
+@keyframes pj-orig-gold-sheen{
+  from{background-position:100% 50%}
+  to{background-position:0% 50%}
+}
+@keyframes pj-orig-gold-underline{
+  0%{transform:translateX(-50%) scaleX(0);opacity:.1}
+  100%{transform:translateX(-50%) scaleX(1);opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+ #pjbuilts-original-intro .pj-orig-metal{animation:none!important;background-position:100% 50%}
+ #pjbuilts-original-intro .pj-orig-metal-builts::after,
+ #pjbuilts-original-intro .pj-orig-metal-pujan::after{animation:none!important;transform:translateX(-50%) scaleX(1)}
+}

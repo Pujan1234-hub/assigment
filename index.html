@@ -261,5 +261,25 @@ html[data-pj-layout="editorial-v4"] body #work #apkdoctor .project-visual{min-he
 <script src="./pjbuilts-team-fix-preview-v1.js?v=20261019-two-previews-v1" defer></script>
 <script src="./pjbuilts-netsathi-dispatch-preview-v1.js?v=20261019-isp-motion-v1" defer></script>
 
+<script id="pj-feature-count-v9">
+/* Keep the visible product total aligned with the nine published project cards. */
+(()=>{
+  function syncProductCount(){
+    const target=document.querySelector('.hero-stats .stat:first-child strong');
+    if(target && target.textContent.trim()!=='9') target.textContent='9';
+  }
+  function start(){
+    syncProductCount();
+    const area=document.querySelector('.hero-stats');
+    if(area){
+      const observer=new MutationObserver(syncProductCount);
+      observer.observe(area,{childList:true,characterData:true,subtree:true});
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
+  window.addEventListener('load',syncProductCount,{once:true});
+})();
+</script>
 </body>
 </html>

@@ -163,6 +163,39 @@ jobs:
           PY
           grep -Fq '#2fbbf7' floodsafe-android-app/app/src/main/res/drawable/ic_floodsafe.xml
 
+      - name: Set package ID for existing Play Console app
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, copy
+          app='com.pjbuilts.floodsafenepal'
+          old='io.github.pujan1234hub.floodsafe.app'
+          build=Path('floodsafe-android-app/app/build.gradle')
+          s=build.read_text()
+          before="applicationId '"+old+"'"
+          assert s.count(before)==1, 'Original Android application ID not found exactly once'
+          s=s.replace(before,"applicationId '"+app+"'",1)
+          s=s.replace('versionCode 121','versionCode 122',1)
+          s=s.replace("versionName '0.9.21-play-icon'","versionName '0.9.21-play-beta'",1)
+          assert "applicationId '"+app+"'" in s and 'versionCode 122' in s and "versionName '0.9.21-play-beta'" in s
+          build.write_text(s)
+          # The Google Services plugin requires a client record matching the Android application ID.
+          # Reuse the existing Firebase project for build-only configuration; a separately registered
+          # Firebase Android app for the new package is still required for reliable FCM delivery.
+          p=Path('floodsafe-android-app/app/google-services.json')
+          data=json.loads(p.read_text())
+          clients=[x for x in data['client'] if x['client_info']['android_client_info']['package_name']==old]
+          assert len(clients)==1, 'Expected one original Firebase Android client'
+          replacement=copy.deepcopy(clients[0])
+          replacement['client_info']['android_client_info']['package_name']=app
+          data['client'].append(replacement)
+          p.write_text(json.dumps(data,indent=2)+'\n')
+          assert any(x['client_info']['android_client_info']['package_name']==app for x in data['client'])
+          print('Play Console applicationId and beta version code set successfully.')
+          PY
+
       - name: Build and unit test native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease --no-daemon --stacktrace
 

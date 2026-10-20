@@ -147,6 +147,22 @@ jobs:
           grep -Fq 'V0919_NOTIFICATION_ONLY_START' "$J/FloodMonitorService.java"
           echo 'PASS: district language/text fix only; map/cloud/river/SATHI/location/notification systems preserved'
 
+      - name: Apply FloodSafe Play launcher icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp .github/branding/floodsafe-play-icon.xml floodsafe-android-app/app/src/main/res/drawable/ic_floodsafe.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/build.gradle')
+          s=p.read_text()
+          s=s.replace('versionCode 120','versionCode 121')
+          s=s.replace("versionName '0.9.21-district-language-text-test'","versionName '0.9.21-play-icon'")
+          assert 'versionCode 121' in s and "versionName '0.9.21-play-icon'" in s, 'version bump failed'
+          p.write_text(s)
+          PY
+          grep -Fq '#2fbbf7' floodsafe-android-app/app/src/main/res/drawable/ic_floodsafe.xml
+
       - name: Build and unit test native APK
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease --no-daemon --stacktrace
 

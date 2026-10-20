@@ -142,6 +142,36 @@ footer{padding:28px 0 40px}.foot{border-top:1px solid var(--line);padding-top:22
   }
 }
 </script>
+
+<style id="pj-apkdoctor-static">
+/* Self-contained featured card: does not alter other portfolio products. */
+#work #apkdoctor{--accent:#168b69;scroll-margin-top:110px;}
+#work #apkdoctor .apkdoctor-stage{position:relative;display:grid;place-items:center;width:100%;height:100%;min-height:400px;overflow:hidden;isolation:isolate;background:radial-gradient(circle at 50% 40%,#f2fff8,#e9f5ed 66%,#e1efe6);}
+#work #apkdoctor .apkdoctor-orbit{position:absolute;z-index:0;width:310px;height:310px;border:1px solid rgba(34,137,102,.2);border-radius:50%;animation:pjApkSpin 19s linear infinite;}
+#work #apkdoctor .apkdoctor-orbit.orb-b{width:415px;height:415px;border-style:dashed;animation-duration:30s;animation-direction:reverse;}
+#work #apkdoctor .apkdoctor-preview{position:relative;z-index:2;width:min(235px,56%);background:#fffefa;border:7px solid #102921;border-radius:25px;overflow:hidden;box-shadow:0 22px 55px rgba(8,58,38,.22);animation:pjApkFloat 6s ease-in-out infinite;}
+#work #apkdoctor .apkdoctor-preview img{display:block;width:100%;height:auto;}
+#work #apkdoctor .apkdoctor-chip{position:absolute;z-index:3;padding:10px 13px;border:1px solid #b0decd;background:rgba(255,255,255,.96);box-shadow:0 12px 24px rgba(34,100,74,.10);border-radius:11px;color:#166449;font:800 .67rem/1.4 Inter,system-ui,sans-serif;letter-spacing:.03em;animation:pjApkFloat 5s ease-in-out infinite;}
+#work #apkdoctor .apkdoctor-chip i{display:inline-block;background:#1c9c71;width:7px;height:7px;border-radius:50%;vertical-align:middle;margin-right:6px;}
+#work #apkdoctor .chip-a{left:6%;top:23%;}.apkdoctor-chip.chip-b{right:6%;bottom:21%;animation-delay:-2.5s!important;}
+#work #apkdoctor .apkdoctor-scan{position:absolute;z-index:2;top:18%;width:56%;height:2px;background:linear-gradient(90deg,transparent,#20b67d,transparent);box-shadow:0 0 14px #33aa78;opacity:.45;pointer-events:none;animation:pjApkScan 6s ease-in-out infinite;}
+@keyframes pjApkFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+@keyframes pjApkSpin{to{transform:rotate(360deg)}}
+@keyframes pjApkScan{0%,100%{top:20%;opacity:0}50%{top:80%;opacity:.65}}
+html[data-pj-layout="editorial-v4"] body #work #apkdoctor.project{grid-column:1/-1!important;}
+@media(min-width:920px){
+html[data-pj-layout="editorial-v4"] body #work #apkdoctor.project{display:grid!important;grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr)!important;min-height:490px!important;}
+html[data-pj-layout="editorial-v4"] body #work #apkdoctor .project-copy{order:0!important;padding:35px 42px!important;}
+html[data-pj-layout="editorial-v4"] body #work #apkdoctor .project-visual{order:1!important;min-height:490px!important;height:auto!important;border-left:1px solid #d7ebdf!important;border-bottom:0!important;padding:0!important;}
+}
+@media(max-width:919px){
+html[data-pj-layout="editorial-v4"] body #work #apkdoctor .project-visual{min-height:370px!important;height:370px!important;padding:0!important;}
+#work #apkdoctor .apkdoctor-stage{min-height:370px;}
+#work #apkdoctor .apkdoctor-preview{width:min(174px,58%);}
+#work #apkdoctor .chip-a{left:3%;}#work #apkdoctor .chip-b{right:3%;}
+}
+@media(prefers-reduced-motion:reduce){#work #apkdoctor .apkdoctor-preview,#work #apkdoctor .apkdoctor-orbit,#work #apkdoctor .apkdoctor-chip,#work #apkdoctor .apkdoctor-scan{animation:none!important;}}
+</style>
 </head>
 <body id="top">
 <div id="pjbuilts-original-intro" aria-label="PJBUILTS original opening animation">
@@ -158,11 +188,36 @@ footer{padding:28px 0 40px}.foot{border-top:1px solid var(--line);padding-top:22
 <div class="progress" id="progress"></div><div class="cursor-glow"></div>
 <nav class="nav" id="nav"><div class="wrap navin"><a class="brand" href="#top"><span class="brandmark">P</span><span>Pujan Chapagain</span></a><div class="navlinks"><a href="#work">Projects</a><a href="#process">Process</a><a href="#about">About</a><a href="#contact">Contact</a></div><div class="status-pill"><i></i> Building & shipping</div></div></nav>
 
-<header class="hero" id="home"><canvas id="fx" class="hero-canvas"></canvas><div class="wrap hero-grid"><div class="reveal on"><div class="eyebrow"><span></span> Software developer · United Kingdom</div><h1><span class="grad">Pujan</span>Chapagain <span class="thin">I build useful software for real people — web, Android, AI and real-time products.</span></h1><p class="hero-copy">My portfolio is built around working ideas, not decorative case studies. From team operations and diagnostics to expiry tracking, flood awareness and AI assistants, each product starts with a real problem and gets refined through hands-on testing.</p><div class="hero-actions"><a class="btn primary" href="#work">Explore projects <span>↓</span></a><a class="btn" href="mailto:pujanchapagain.software@gmail.com">Start a conversation <span>↗</span></a></div><div class="hero-stats"><div class="stat"><strong>6</strong><span>featured products</span></div><div class="stat"><strong>Web + Android</strong><span>multi-platform builds</span></div><div class="stat"><strong>AI + realtime</strong><span>practical product focus</span></div></div></div><div class="hero-visual reveal on" data-delay="2"><div class="orbit one"><i></i></div><div class="orbit two"><i></i></div><div class="orbit three"><i></i></div><div class="dev-card tilt"><div class="dev-top"><span class="mini-dots"><i></i><i></i><i></i></span><span class="code-label">pujan.dev</span></div><div class="code"><div><span class="c2">const</span> developer = {</div><div>&nbsp;&nbsp;name: <span class="c3">"Pujan Chapagain"</span>,</div><div>&nbsp;&nbsp;focus: [<span class="c1">"Android"</span>, <span class="c1">"Web"</span>, <span class="c1">"AI"</span>],</div><div>&nbsp;&nbsp;style: <span class="c4">"build → test → improve"</span>,</div><div>&nbsp;&nbsp;goal: <span class="c3">"make useful things"</span></div><div>};</div><div class="dim">// shipping practical software</div></div><div class="live-line"><i></i><span>Currently building and improving real products</span></div></div><div class="float-chip fc1">REAL-TIME<b>Team systems</b></div><div class="float-chip fc2">MOBILE<b>Android apps</b></div><div class="float-chip fc3">INTELLIGENCE<b>AI workflows</b></div></div></div></header>
+<header class="hero" id="home"><canvas id="fx" class="hero-canvas"></canvas><div class="wrap hero-grid"><div class="reveal on"><div class="eyebrow"><span></span> Software developer · United Kingdom</div><h1><span class="grad">Pujan</span>Chapagain <span class="thin">I build useful software for real people — web, Android, AI and real-time products.</span></h1><p class="hero-copy">My portfolio is built around working ideas, not decorative case studies. From team operations and diagnostics to expiry tracking, flood awareness and AI assistants, each product starts with a real problem and gets refined through hands-on testing.</p><div class="hero-actions"><a class="btn primary" href="#work">Explore projects <span>↓</span></a><a class="btn" href="mailto:pujanchapagain.software@gmail.com">Start a conversation <span>↗</span></a></div><div class="hero-stats"><div class="stat"><strong>9</strong><span>featured products</span></div><div class="stat"><strong>Web + Android</strong><span>multi-platform builds</span></div><div class="stat"><strong>AI + realtime</strong><span>practical product focus</span></div></div></div><div class="hero-visual reveal on" data-delay="2"><div class="orbit one"><i></i></div><div class="orbit two"><i></i></div><div class="orbit three"><i></i></div><div class="dev-card tilt"><div class="dev-top"><span class="mini-dots"><i></i><i></i><i></i></span><span class="code-label">pujan.dev</span></div><div class="code"><div><span class="c2">const</span> developer = {</div><div>&nbsp;&nbsp;name: <span class="c3">"Pujan Chapagain"</span>,</div><div>&nbsp;&nbsp;focus: [<span class="c1">"Android"</span>, <span class="c1">"Web"</span>, <span class="c1">"AI"</span>],</div><div>&nbsp;&nbsp;style: <span class="c4">"build → test → improve"</span>,</div><div>&nbsp;&nbsp;goal: <span class="c3">"make useful things"</span></div><div>};</div><div class="dim">// shipping practical software</div></div><div class="live-line"><i></i><span>Currently building and improving real products</span></div></div><div class="float-chip fc1">REAL-TIME<b>Team systems</b></div><div class="float-chip fc2">MOBILE<b>Android apps</b></div><div class="float-chip fc3">INTELLIGENCE<b>AI workflows</b></div></div></div></header>
 
 <div class="marquee" aria-hidden="true"><div class="marquee-track"><span>Android Studio</span><b>◆</b><span>Web Apps</span><b>◆</b><span>Real-time Data</span><b>◆</b><span>Supabase</span><b>◆</b><span>AI Assistants</span><b>◆</b><span>Product Design</span><b>◆</b><span>Testing</span><b>◆</b><span>Android Studio</span><b>◆</b><span>Web Apps</span><b>◆</b><span>Real-time Data</span><b>◆</b><span>Supabase</span><b>◆</b><span>AI Assistants</span><b>◆</b><span>Product Design</span><b>◆</b><span>Testing</span><b>◆</b></div></div>
 
-<section id="work"><div class="wrap"><div class="section-head reveal"><div class="section-index">01 / SELECTED WORK</div><div class="section-title"><small>Flagship projects</small><h2>Every app gets its own identity.</h2><p>Six products, each presented around the experience it is designed to create. Hover, scroll and explore — the motion is part of the story, not decoration for decoration’s sake.</p></div></div><div class="project-list">
+<section id="work"><div class="wrap"><div class="section-head reveal"><div class="section-index">01 / SELECTED WORK</div><div class="section-title"><small>Flagship projects</small><h2>Every app gets its own identity.</h2><p>Nine products, each presented around the experience it is designed to create. Hover, scroll and explore — the motion is part of the story, not decoration for decoration’s sake.</p></div></div><div class="project-list">
+
+<article class="project reveal on" id="apkdoctor" style="--accent:#168b69">
+  <div class="project-copy">
+    <div class="project-no">FEATURED · WEB TOOL · ANDROID DIAGNOSTICS</div>
+    <h3>APKDoctor</h3>
+    <div class="status"><i></i> Free browser-based static analysis</div>
+    <p>Upload an APK or Android project ZIP to inspect common issues before releasing your app. APKDoctor reviews package structure, Android manifests, permissions, native libraries, Gradle configuration, possible secrets and release blockers. Checks run in your browser — your file stays on your device. Runtime installation and crash testing are not part of this browser scan.</p>
+    <div class="features">
+      <div class="feature"><b>01</b> APK & ZIP inspection</div>
+      <div class="feature"><b>02</b> Manifest & permissions</div>
+      <div class="feature"><b>03</b> Security & exposed secrets</div>
+      <div class="feature"><b>04</b> Gradle & release checks</div>
+    </div>
+    <div class="project-links"><a href="https://apkdoctor-pujan7.vercel.app/" target="_blank" rel="noopener noreferrer">Open APKDoctor ↗</a></div>
+  </div>
+  <div class="project-visual" aria-label="APKDoctor website preview">
+    <div class="apkdoctor-stage">
+      <span class="apkdoctor-orbit orb-a" aria-hidden="true"></span><span class="apkdoctor-orbit orb-b" aria-hidden="true"></span>
+      <span class="apkdoctor-chip chip-a"><i></i> BROWSER-BASED</span>
+      <div class="apkdoctor-preview"><img src="https://raw.githubusercontent.com/Pujan1234-hub/assigment/main/assets/portfolio/apkdoctor-preview.svg" alt="Actual APKDoctor website screenshot provided by the project owner" width="270" height="551" loading="lazy"></div>
+      <span class="apkdoctor-chip chip-b"><i></i> APK · PROJECT ZIP</span>
+      <span class="apkdoctor-scan" aria-hidden="true"></span>
+    </div>
+  </div>
+</article>
 
 <article class="project reveal tilt" id="teamtracker" style="--accent:#46e7ff"><div class="project-copy"><div class="project-no">01 · Team operations</div><h3>Team Tracker</h3><div class="status"><i></i> Interactive web build</div><p>A live operations workspace for busy teams: active staff, assigned tasks, completion status and location context in one control-room view instead of scattered updates.</p><div class="features"><div class="feature"><b>01</b>Live shift status</div><div class="feature"><b>02</b>Task flow</div><div class="feature"><b>03</b>Map context</div><div class="feature"><b>04</b>Role-based views</div></div><div class="project-links"><a href="./team-tracker/">Open web app ↗</a><a href="#contact">Discuss project</a></div></div><div class="project-visual"><div class="visual-grid"></div><div class="browser"><div class="browserbar"><span class="browserdots"><i></i><i></i><i></i></span><span>CONTROL ROOM · LIVE</span></div><div class="browserbody"><div class="metric-row"><div class="metric"><span>Online</span><strong><em>24</em> staff</strong></div><div class="metric"><span>Tasks</span><strong>08 active</strong></div><div class="metric"><span>Completed</span><strong><em>91%</em></strong></div></div><div class="fake-map"><div class="radar"></div><i class="map-dot d1"></i><i class="map-dot d2"></i><i class="map-dot d3"></i></div><div class="task-list"><div class="task"><span>Area check · Zone C</span><b>ASSIGNED</b></div><div class="task"><span>Support request · Level 1</span><b>ACK</b></div><div class="task"><span>Routine inspection</span><b>DONE</b></div></div></div></div></div></article>
 
@@ -205,6 +260,6 @@ footer{padding:28px 0 40px}.foot{border-top:1px solid var(--line);padding-top:22
 <script src="./auto-update.js" defer></script>\n<script src="./portfolio-layout-v4.js?v=20261019-editorial-v4" defer></script>
 <script src="./pjbuilts-team-fix-preview-v1.js?v=20261019-two-previews-v1" defer></script>
 <script src="./pjbuilts-netsathi-dispatch-preview-v1.js?v=20261019-isp-motion-v1" defer></script>
-<script src="https://pujan1234-hub.github.io/assigment/portfolio-apkdoctor-v1.js?v=20261020-pjapk1" defer></script>
+
 </body>
 </html>

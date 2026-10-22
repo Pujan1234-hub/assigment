@@ -37,9 +37,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -92,14 +89,6 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
     private TextView alertBox;
     private double cloudCover = 0d;
     private double currentRainMm = 0d;
-    private final Runnable stationAutoRefresh = new Runnable() {
-        @Override public void run() {
-            if (isFinishing() || isDestroyed()) return;
-            refreshRivers();
-            main.postDelayed(this, 30000L);
-        }
-    };
-
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -108,7 +97,6 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
         locationManager = getSystemService(LocationManager.class);
         setContentView(buildUi());
         enableBackgroundMonitoring();
-        restoreLastStationCache();
         refreshAll();
         requestLocation();
     }
@@ -199,7 +187,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
     }
 
     private void refreshRivers() {
-        if (stations.isEmpty()) feed.setText("BIPAD/DHM river feed refresh हुँदैछ…");
+        feed.setText("BIPAD/DHM river feed refresh हुँदैछ…");
         io.execute(() -> {
             try {
                 JSONObject root = getJson(RIVER_ENDPOINT + "?_native=" + System.currentTimeMillis());
@@ -210,59 +198,16 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
                     LiveStation s = parseRiver(rows.optJSONObject(i), now);
                     if (s != null) out.add(s);
                 }
-                // Retain last official station locations when a source times out or returns no rows.
-                if (out.isEmpty()) throw new Exception("Empty official station feed");
                 out.sort(Comparator.comparingInt((LiveStation s) -> s.rank).thenComparingDouble(this::distanceToUser));
                 synchronized (stations) {
                     stations.clear();
                     stations.addAll(out);
                 }
-                saveLastStationCache(root);
                 runOnUiThread(this::renderRiverData);
             } catch (Exception e) {
-                runOnUiThread(() -> feed.setText("BIPAD feed unavailable • saved stations visible; readings may be stale"));
+                runOnUiThread(() -> feed.setText("River refresh failed • stale data लाई live देखाइएको छैन"));
             }
         });
-    }
-
-    private void saveLastStationCache(JSONObject root) {
-        try (FileOutputStream out = new FileOutputStream(new File(getFilesDir(), "official-river-last-good.json"))) {
-            out.write(root.toString().getBytes(StandardCharsets.UTF_8));
-        } catch (Exception ignored) { }
-    }
-
-    private void restoreLastStationCache() {
-        io.execute(() -> {
-            try {
-                File file = new File(getFilesDir(), "official-river-last-good.json");
-                if (!file.isFile() || file.length() > 5_000_000L) return;
-                byte[] bytes;
-                try (FileInputStream in = new FileInputStream(file)) { bytes = in.readAllBytes(); }
-                JSONArray records = arrayFrom(new JSONObject(new String(bytes, StandardCharsets.UTF_8)));
-                List<LiveStation> restored = new ArrayList<>();
-                for (int i=0;i<records.length();i++) {
-                    LiveStation value=parseRiver(records.optJSONObject(i), System.currentTimeMillis());
-                    if (value != null) restored.add(value);
-                }
-                if (restored.isEmpty()) return;
-                synchronized (stations) {
-                    if (!stations.isEmpty()) return;
-                    stations.addAll(restored);
-                }
-                runOnUiThread(this::renderRiverData);
-            } catch (Exception ignored) { }
-        });
-    }
-
-    @Override protected void onResume() {
-        super.onResume();
-        main.removeCallbacks(stationAutoRefresh);
-        stationAutoRefresh.run();
-    }
-
-    @Override protected void onPause() {
-        main.removeCallbacks(stationAutoRefresh);
-        super.onPause();
     }
 
     private void refreshRain() {

@@ -242,15 +242,20 @@ final class FloodSafeNativeMapView extends FrameLayout {
             if (riversGeoJson != null && style.getSource("fs-rivers") == null) {
                 style.addSource(new GeoJsonSource("fs-rivers", riversGeoJson));
                 style.addLayer(new LineLayer("fs-river-glow", "fs-rivers").withProperties(
-                        lineColor("#003d55"), lineWidth(4.0f), lineOpacity(0.55f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
+                        lineColor("#1faef1"), lineWidth(6.0f), lineOpacity(0.34f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
                 style.addLayer(new LineLayer("fs-rivers-layer", "fs-rivers").withProperties(
                         lineColor("#49dcff"), lineWidth(1.65f), lineOpacity(0.96f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
             }
             ensureRiverRiskSource("fs-river-alert", "fs-river-alert-glow", "fs-river-alert-layer", "#ffc928");
             ensureRiverRiskSource("fs-river-warning", "fs-river-warning-glow", "fs-river-warning-layer", "#ff8a1f");
             ensureRiverRiskSource("fs-river-danger", "fs-river-danger-glow", "fs-river-danger-layer", "#f22f4b");
-            ensurePointSource("fs-flow-particles", "fs-flow-particles-layer", "#d6fbff", 2.7f, 0.90f);
-            ensurePointSource("fs-stale", "fs-stale-layer", "#8e99a5", 4.0f, 0.92f);
+            ensurePointSource("fs-flow-particles", "fs-flow-particles-layer", "#e4fdff", 3.8f, 1f);
+            if (style.getLayer("fs-flow-glow-halo") == null) {
+                style.addLayerBelow(new CircleLayer("fs-flow-glow-halo", "fs-flow-particles").withProperties(
+                    circleColor("#22bcf7"), circleRadius(9f), circleOpacity(0.24f)
+                ), "fs-flow-particles-layer");
+            }
+            ensurePointSource("fs-stale", "fs-stale-layer", "#2d8cff", 4.7f, 0.95f);
             ensurePointSource("fs-normal", "fs-normal-layer", "#2d8cff", 4.4f, 0.98f);
             ensurePointSource("fs-alert", "fs-alert-layer", "#ffc928", 5.0f, 1f);
             ensurePointSource("fs-warning", "fs-warning-layer", "#ff8a1f", 5.8f, 1f);
@@ -284,7 +289,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         style.addSource(new GeoJsonSource(sourceId, emptyFeatureCollection()));
         style.addLayer(new CircleLayer(layerId, sourceId).withProperties(
                 circleColor(color), circleRadius(radius), circleOpacity(opacity),
-                circleStrokeColor("#ffffff"), circleStrokeWidth(1.0f)));
+                circleStrokeColor("fs-stale".equals(sourceId) ? "#929ba8" : "#ffffff"), circleStrokeWidth("fs-stale".equals(sourceId) ? 2.1f : 1.0f)));
     }
 
     private void refreshStationSources() {
@@ -452,7 +457,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
             if (!animationRunning || !styleReady || style == null) return;
             try {
                 JSONArray features = new JSONArray();
-                int n = Math.min(36, rivers.size());
+                int n = Math.min(72, rivers.size());
                 double phase = ((System.currentTimeMillis() - particleStart) % 6500L) / 6500.0;
                 for (int i = 0; i < n; i++) {
                     RiverWay r = rivers.get(i);
@@ -467,7 +472,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 JSONObject fc = new JSONObject().put("type", "FeatureCollection").put("features", features);
                 setGeo("fs-flow-particles", fc.toString());
             } catch (Exception ignored) {}
-            main.postDelayed(this, 160L);
+            main.postDelayed(this, 220L);
         }
     };
 

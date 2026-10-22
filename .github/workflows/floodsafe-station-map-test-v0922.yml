@@ -1,0 +1,111 @@
+name: FloodSafe Station Map v0.9.22 Test APK
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/floodsafe-station-map-test-v0922.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: floodsafe-station-map-test-v0922
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Java 17 and Android SDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Install Android platform
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;35.0.0"
+
+      - name: Reuse actual approved beta's map and river assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fLsS --retry 3 --max-time 180 'https://pjbuilts.com/downloads/FloodSafe-Nepal-Beta-Test.apk' -o /tmp/approved-beta.apk
+          python3 - <<'PY'
+          import zipfile,pathlib,shutil
+          z=zipfile.ZipFile('/tmp/approved-beta.apk')
+          base=pathlib.Path('floodsafe-android-app/app/src/main')
+          for obj in z.infolist():
+              if not obj.filename.startswith('assets/') or obj.is_dir():continue
+              p=pathlib.PurePosixPath(obj.filename)
+              if '..' in p.parts:raise ValueError('Unsafe asset path')
+              out=base.joinpath(*p.parts)
+              out.parent.mkdir(parents=True,exist_ok=True)
+              with z.open(obj) as src,open(out,'wb') as dst:shutil.copyfileobj(src,dst)
+          print('Bundled approved river assets loaded')
+          PY
+
+      - name: Configure isolated station test app without altering beta installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,json
+          root=pathlib.Path('floodsafe-android-app/app')
+          gradle=root/'build.gradle'
+          s=gradle.read_text()
+          assert "versionCode 110" in s and "versionName '0.8.90-native'" in s
+          s=s.replace('versionCode 110','versionCode 121')
+          s=s.replace("versionName '0.8.90-native'","versionName '0.9.22-station-map-test'")
+          s=s.replace('debug {\n            minifyEnabled false',"debug {\n            applicationIdSuffix '.stationtest'\n            versionNameSuffix '-preview'\n            minifyEnabled false")
+          gradle.write_text(s)
+          cfg=json.loads((root/'google-services.json').read_text())
+          for x in cfg['client']:
+              x['client_info']['android_client_info']['package_name']='io.github.pujan1234hub.floodsafe.app.stationtest'
+          gs=root/'src/debug/google-services.json'
+          gs.parent.mkdir(parents=True,exist_ok=True);gs.write_text(json.dumps(cfg))
+          values=root/'src/debug/res/values/strings.xml'
+          values.parent.mkdir(parents=True,exist_ok=True)
+          values.write_text('<resources><string name="app_name">FloodSafe Station TEST</string></resources>')
+          PY
+
+      - name: Compile independent APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle --no-daemon --max-workers=2 -p floodsafe-android-app :app:assembleDebug
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | head -3
+          cp "$APK" FloodSafe-Nepal-StationMap-v0.9.22-TEST.apk
+          sha256sum FloodSafe-Nepal-StationMap-v0.9.22-TEST.apk > FloodSafe-StationMap-test-SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-StationMap-v0.9.22-TEST-APK
+          path: |
+            FloodSafe-Nepal-StationMap-v0.9.22-TEST.apk
+            FloodSafe-StationMap-test-SHA256.txt
+          retention-days: 14
+
+      - name: Publish separate test-only prerelease APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG=floodsafe-station-map-test-20261022
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" FloodSafe-Nepal-StationMap-v0.9.22-TEST.apk FloodSafe-StationMap-test-SHA256.txt --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" FloodSafe-Nepal-StationMap-v0.9.22-TEST.apk FloodSafe-StationMap-test-SHA256.txt --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "FloodSafe Station Map v0.9.22 TEST" --notes "Separate debug-signed station-map test APK. Installs alongside official beta; beta remains untouched. Station locations are blue with grey stale outlines. Official measurements are only live if timestamps are fresh. Map flow visuals are decorative, not live water velocity." --prerelease --latest=false
+          fi

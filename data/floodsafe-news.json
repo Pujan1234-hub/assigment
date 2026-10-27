@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-26T21:47:00.261279Z",
+  "generated_at": "2026-10-27T00:55:30.109747Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -11,9 +11,8 @@
   ],
   "sources": {
     "RONB Post": {
-      "ok": false,
-      "items": 0,
-      "error": "Response ended prematurely"
+      "ok": true,
+      "items": 0
     },
     "Radio Nepal": {
       "ok": false,

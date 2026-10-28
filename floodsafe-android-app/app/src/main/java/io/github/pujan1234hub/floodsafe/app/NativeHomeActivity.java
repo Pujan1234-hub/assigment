@@ -250,7 +250,7 @@ public class NativeHomeActivity extends Activity implements LocationListener {
     private void refreshRivers() {
         riverSummary.setText("Official river data refresh हुँदैछ…");
         io.execute(() -> { try {
-            JSONObject root=getJson(RIVER_ENDPOINT+"?_native="+System.currentTimeMillis()); JSONArray rows=root.optJSONArray("results"); if(rows==null) rows=new JSONArray();
+            JSONObject root=OfficialStationFeeds.rivers(); JSONArray rows=root.optJSONArray("results"); if(rows==null) rows=new JSONArray();
             List<RiverStation> out=new ArrayList<>(); long now=System.currentTimeMillis();
             for(int i=0;i<rows.length();i++){ JSONObject r=rows.optJSONObject(i); if(r==null)continue; RiverStation s=parseStation(r,now); if(s!=null)out.add(s); }
             out.sort(Comparator.comparingInt((RiverStation s)->s.rank).thenComparingDouble(s->distanceKm(s.lat,s.lon)));

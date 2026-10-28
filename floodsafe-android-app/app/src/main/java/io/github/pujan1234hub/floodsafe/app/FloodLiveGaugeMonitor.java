@@ -71,14 +71,14 @@ final class FloodLiveGaugeMonitor {
     }};
 
     private void pollRiverOnce() throws Exception{
-        String body=fetch(RIVER_ENDPOINT+"?_bg="+System.currentTimeMillis());if(body.isEmpty())return;
+        String body=OfficialStationFeeds.rivers().toString();if(body.isEmpty())return;
         markPoll("live_gauge_poll_time");int hash=hash(body);if(hash==lastRiverHash)return;lastRiverHash=hash;
         cacheBody("floodsafe_live_gauges",body,"live_gauge_change_time");
         try{checkNearbyHazards(new JSONObject(body));}catch(Exception ignored){}
     }
 
     private void pollRainOnce() throws Exception{
-        String body=fetch(RAIN_ENDPOINT+"&_bg="+System.currentTimeMillis());if(body.isEmpty())return;
+        String body=OfficialStationFeeds.rainfall().toString();if(body.isEmpty())return;
         markPoll("live_rain_poll_time");int hash=hash(body);if(hash==lastRainHash)return;lastRainHash=hash;
         cacheBody("floodsafe_live_rain",body,"live_rain_change_time");
     }

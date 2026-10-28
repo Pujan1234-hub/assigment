@@ -81,7 +81,7 @@ public final class RiverAlertWorker extends Worker {
         }
 
         try {
-            JSONObject root = fetch();
+            JSONObject root = OfficialStationFeeds.rivers();
             JSONArray rows = root.optJSONArray("results");
             if (rows == null) return Result.retry();
 

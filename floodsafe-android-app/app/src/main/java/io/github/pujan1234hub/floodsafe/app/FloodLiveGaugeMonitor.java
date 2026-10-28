@@ -57,6 +57,8 @@ final class FloodLiveGaugeMonitor {
     private final AtomicBoolean hydroInFlight=new AtomicBoolean(false);
     private volatile boolean running=false;
     private volatile int lastRiverHash=0,lastRainHash=0,lastHydroHash=0;
+    // The new official source is checked at most once per minute, not every second.
+    private volatile long lastOfficialRiverAttempt=0L,lastOfficialRainAttempt=0L;
 
     FloodLiveGaugeMonitor(Context context){app=context.getApplicationContext();}
     void start(){if(running)return;running=true;handler.post(tick);}
@@ -71,6 +73,9 @@ final class FloodLiveGaugeMonitor {
     }};
 
     private void pollRiverOnce() throws Exception{
+        final long now=System.currentTimeMillis();
+        if(now-lastOfficialRiverAttempt<60_000L)return;
+        lastOfficialRiverAttempt=now;
         String body=OfficialStationFeeds.rivers().toString();if(body.isEmpty())return;
         markPoll("live_gauge_poll_time");int hash=hash(body);if(hash==lastRiverHash)return;lastRiverHash=hash;
         cacheBody("floodsafe_live_gauges",body,"live_gauge_change_time");
@@ -78,6 +83,9 @@ final class FloodLiveGaugeMonitor {
     }
 
     private void pollRainOnce() throws Exception{
+        final long now=System.currentTimeMillis();
+        if(now-lastOfficialRainAttempt<60_000L)return;
+        lastOfficialRainAttempt=now;
         String body=OfficialStationFeeds.rainfall().toString();if(body.isEmpty())return;
         markPoll("live_rain_poll_time");int hash=hash(body);if(hash==lastRainHash)return;lastRainHash=hash;
         cacheBody("floodsafe_live_rain",body,"live_rain_change_time");

@@ -187,10 +187,10 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
     }
 
     private void refreshRivers() {
-        feed.setText("BIPAD/DHM river feed refresh हुँदैछ…");
+        feed.setText("आधिकारिक नदीको ताजा मापन जाँच्दै…");
         io.execute(() -> {
             try {
-                JSONObject root = getJson(RIVER_ENDPOINT + "?_native=" + System.currentTimeMillis());
+                JSONObject root = OfficialStationFeeds.rivers();
                 JSONArray rows = arrayFrom(root);
                 List<LiveStation> out = new ArrayList<>();
                 long now = System.currentTimeMillis();
@@ -213,7 +213,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
     private void refreshRain() {
         io.execute(() -> {
             try {
-                JSONObject root = getJson(BIPAD_RAIN_ENDPOINT + "&_fs=" + System.currentTimeMillis());
+                JSONObject root = OfficialStationFeeds.rainfall();
                 JSONArray rows = arrayFrom(root);
                 List<RainStation> out = new ArrayList<>();
                 for (int i = 0; i < rows.length(); i++) {
@@ -226,7 +226,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
                 }
                 runOnUiThread(this::renderRainData);
             } catch (Exception e) {
-                runOnUiThread(() -> rainDetail.setText("BIPAD rainfall station detail अहिले fetch हुन सकेन। GPS weather rainfall भने live छ।"));
+                runOnUiThread(() -> rainDetail.setText("DHM को नयाँ वर्षा मापन उपलब्ध छैन।"));
             }
         });
     }
@@ -246,7 +246,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
             }
         }
         counts.setText("🔴 " + danger + "   🟠 " + warning + "   🟡 " + alert + "   🔵 " + normal + "   ⚪ stale " + stale);
-        feed.setText("Fresh official stations: " + (danger + warning + alert + normal) + " / total " + copy.size());
+        feed.setText("BIPAD / DHM · ताजा नदी मापन: " + (danger + warning + alert + normal) + " · जम्मा स्टेशन: " + copy.size());
 
         LiveStation closest = null;
         double closestKm = Double.POSITIVE_INFINITY;
@@ -274,7 +274,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
     private void renderRainData() {
         RainStation best = nearestRainStation(userLat, userLon);
         if (best == null) {
-            rainDetail.setText(String.format(Locale.US, "GPS weather precipitation: %.1f mm • nearby BIPAD rainfall station उपलब्ध छैन", currentRainMm));
+            rainDetail.setText(String.format(Locale.US, "GPS weather precipitation: %.1f mm • नजिकको DHM वर्षा स्टेशन उपलब्ध छैन", currentRainMm));
             return;
         }
         double d = km(userLat, userLon, best.lat, best.lon);
@@ -354,6 +354,15 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
         if (name.isEmpty()) name = "Rainfall station";
         double rainfall = num(r, "rainfall", "rainfall_mm", "value", "amount", "rainfall24h", "rain24h", "_lastRainfall");
         String status = str(r, "status", "status_name", "alertStatus", "alert_status");
+        JSONObject periods = r.optJSONObject("rainfallHours");
+        if (periods != null) {
+            StringBuilder details = new StringBuilder();
+            for (int hours : new int[]{1,3,6,12,24}) {
+                double rain = periods.optDouble(String.valueOf(hours), Double.NaN);
+                if (Double.isFinite(rain)) details.append(hours).append("h: ").append(String.format(Locale.US, "%.1f mm  ", rain));
+            }
+            if (details.length() > 0) status = details.toString().trim();
+        }
         return new RainStation(name, lat, lon, rainfall, status);
     }
 

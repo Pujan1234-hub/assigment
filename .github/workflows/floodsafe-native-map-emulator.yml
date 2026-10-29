@@ -1,0 +1,53 @@
+name: FloodSafe Native Station Map Screenshot Check
+on:
+  push:
+    branches:
+      - repair/floodsafe-v0921-true-native-direct-20261029
+    paths:
+      - '.github/workflows/floodsafe-native-map-emulator.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download compiled native APK direct from GitHub release
+        run: |
+          curl -fL --retry 3 -o floodsafe-native.apk 'https://github.com/Pujan1234-hub/assigment/releases/download/floodsafe-v0921-NATIVE-ONE-MAP-TEST-20261029/FloodSafe-Nepal-v0.9.21-NATIVE-ONE-MAP-TEST.apk'
+          test "$(stat -c %s floodsafe-native.apk)" -gt 85000000
+      - name: Launch intro, native dashboard and original station map on Android 14
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-boot-timeout: 600
+          disable-animations: false
+          script: |
+            adb install -r floodsafe-native.apk
+            adb logcat -c
+            adb shell am start -W -n io.github.pujan1234hub.floodsafe.app.preview/io.github.pujan1234hub.floodsafe.app.PJBuiltsSplashActivity
+            sleep 12
+            adb shell dumpsys activity activities | grep -F NativeFullActivity
+            adb shell pidof io.github.pujan1234hub.floodsafe.app.preview
+            adb shell screencap -p /sdcard/floodsafe-dashboard.png
+            adb pull /sdcard/floodsafe-dashboard.png .
+            adb shell input swipe 500 1750 500 500 450
+            sleep 5
+            adb shell screencap -p /sdcard/floodsafe-map.png
+            adb pull /sdcard/floodsafe-map.png .
+            sh -c 'if adb logcat -d -v brief | grep -A 9 -F "FATAL EXCEPTION" | grep -Fq "io.github.pujan1234hub.floodsafe.app"; then echo "NATIVE_APP_CRASH"; exit 1; else echo "NATIVE_DASHBOARD_START_PASS"; fi'
+      - name: Upload screen evidence for live station map
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FloodSafe-Native-ONE-MAP-Android-Emulator-Images
+          path: |
+            floodsafe-dashboard.png
+            floodsafe-map.png
+          if-no-files-found: ignore
+          retention-days: 7

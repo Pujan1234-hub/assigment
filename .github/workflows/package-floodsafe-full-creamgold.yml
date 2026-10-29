@@ -1,4 +1,4 @@
-name: Package FloodSafe FULL Cream-Gold Test APK
+name: FloodSafe Nepal Border & Stability Test APK
 
 on:
   push:
@@ -81,6 +81,13 @@ jobs:
             adb logcat -c
             adb shell am start -W -n io.github.pujan1234hub.floodsafe.app/.PJBuiltsSplashActivity
             sleep 12
+            # Scroll to the river map, drag and pinch-zoom; catch unexpected process loss.
+            adb shell input swipe 400 1550 400 350 480
+            adb shell input swipe 260 750 790 780 550
+            adb shell input swipe 750 810 220 760 550
+            sleep 3
+            adb shell pidof io.github.pujan1234hub.floodsafe.app
+            adb shell dumpsys meminfo io.github.pujan1234hub.floodsafe.app | head -45
             adb shell dumpsys activity activities | grep NativeFullActivity
             adb shell pidof io.github.pujan1234hub.floodsafe.app
             sh -c 'if adb logcat -d -v brief | grep -A 9 -F "FATAL EXCEPTION" | grep -Fq "io.github.pujan1234hub.floodsafe.app"; then echo APK_STARTUP_CRASH_DETECTED; exit 1; else echo APK_FULL_STARTUP_SMOKE_PASS; fi'
@@ -88,7 +95,7 @@ jobs:
       - name: Upload verified FULL APK for private testing only
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-FULL-CreamGold-Test-APK
+          name: FloodSafe-Nepal-BorderStability-20261029-TEST-APK
           path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
           if-no-files-found: error

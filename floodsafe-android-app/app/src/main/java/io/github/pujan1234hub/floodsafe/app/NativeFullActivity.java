@@ -92,6 +92,10 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private SpeechRecognizer speech;
     private TextToSpeech tts;
     private boolean english;
+    // Live UI translations; do not rebuild screens or touch data on language change.
+    private final java.util.Map<String,String> neToEn=new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.Map<String,String> enToNe=new java.util.concurrent.ConcurrentHashMap<>();
+    private boolean newsKnowledgeDisconnected=false;
     private double lat=Double.NaN,lon=Double.NaN;
     private long locAt;
     // Only the manually tapped GPS button needs extra duplicate-callback protection.
@@ -264,7 +268,25 @@ public final class NativeFullActivity extends Activity implements LocationListen
         ImageView icon=new ImageView(this);icon.setImageResource(R.mipmap.ic_launcher);GradientDrawable ib=round(Color.WHITE,16,Color.rgb(209,229,239),1);icon.setBackground(ib);icon.setPadding(dp(3),dp(3),dp(3),dp(3));row.addView(icon,new LinearLayout.LayoutParams(dp(52),dp(52)));
         LinearLayout brand=new LinearLayout(this);brand.setOrientation(LinearLayout.VERTICAL);brand.setPadding(dp(10),0,0,0);LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(0,-2,1f);row.addView(brand,bp);
         TextView title=text("FloodSafe Nepal",25,true,Color.rgb(16,39,70));brand.addView(title);brandSub=text("",12,true,Color.rgb(82,116,139));brand.addView(brandSub);
-        langBtn=text("",12,true,Color.rgb(18,48,76));langBtn.setGravity(Gravity.CENTER);langBtn.setPadding(dp(12),dp(10),dp(12),dp(10));langBtn.setBackground(round(Color.WHITE,99,Color.rgb(209,229,239),1));langBtn.setOnClickListener(v->{english=!english;getSharedPreferences(PREFS,MODE_PRIVATE).edit().putBoolean(KEY_LANG,english).apply();applyLanguage();refreshRiverUi();});row.addView(langBtn);
+        langBtn=text("",12,true,Color.rgb(18,48,76));langBtn.setGravity(Gravity.CENTER);langBtn.setPadding(dp(12),dp(10),dp(12),dp(10));langBtn.setBackground(round(Color.WHITE,99,Color.rgb(209,229,239),1));langBtn.setOnClickListener(v->{
+            english=!english;
+            getSharedPreferences(PREFS,MODE_PRIVATE).edit().putBoolean(KEY_LANG,english).apply();
+            // Switch visible text in place; no GPS/weather/network refresh on a language tap.
+            applyLanguage();
+            refreshRiverUi();
+            updateSelectedDistrictWeather();
+            renderGovernment();
+            if(newsShowingKnowledge){
+                newsTitle.setText(t("📚 ज्ञानका कुरा","📚 Knowledge for Life"));
+                newsSub.setText(newsKnowledgeDisconnected?
+                    t("समाचार स्रोत जोडिएन • नयाँ खबर आएपछि आफैँ देखिन्छ","News feed unavailable • Fresh stories return automatically"):
+                    t("३० मिनेटभित्र नयाँ समाचार छैन • जीवनोपयोगी ज्ञान","No news published in the last 30 minutes • Life lessons"));
+                renderCurrentNewsKnowledgeLanguage();
+            }else if(!freshNewsOnScreen.isEmpty()){
+                renderNews(new ArrayList<>(freshNewsOnScreen));
+            }
+            translateExistingViews(root);
+        });row.addView(langBtn);
         return row;
     }
 
@@ -555,12 +577,55 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private FrameLayout.LayoutParams bottomParams(){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(-1,dp(72),Gravity.BOTTOM);p.setMargins(dp(9),0,dp(9),dp(9));return p;}
     private void smoothTo(View v){if(v==null)return;scroll.post(()->scroll.smoothScrollTo(0,Math.max(0,v.getTop()-dp(8))));}
 
-    private void applyLanguage(){brandSub.setText(t("नेपाल • नदी • बाढी • चौबीसै घण्टा चेतावनी","Nepal • rivers • floods • 24/7 alerts"));langBtn.setText(t("अङ्ग्रेजी","नेपाली"));weatherText.setText(currentWeather.isEmpty()?t("नेपालको निगरानी स्थान छान्नुहोस्","Choose a monitoring location"):currentWeather);weatherSupport.setText(t("नेपालको मौसम + official BIPAD/DHM realtime नदी status","Local weather + official BIPAD/DHM river status"));if(!Double.isFinite(lat)){place.setText(t("📍 नेपालमा निगरानी स्थान छान्नुहोस्","📍 Choose a monitoring location"));rainTiming.setText(t("हालको स्थान लिएपछि आगामी वर्षा timing देखाइन्छ।","Rain timing appears after location is available."));}mapTitle.setText(t("🇳🇵 आधिकारिक नदी स्टेशन नक्सा","🇳🇵 Official river station map"));mapSub.setText(t("नदी/स्टेशन थिचेर पानीको तह, चेतावनी र official time हेर्नुहोस्।","Tap a river station for level, warning and official time."));mapHint.setText(t("🇳🇵 official नदी स्टेशन र नदी geometry","🇳🇵 official stations and river geometry"));nearTitle.setText(t("🌊 नजिकका नदी स्टेशन","🌊 Nearby river stations"));nearSub.setText(t("तपाईंको स्थान नजिकको official नदी अवस्था","Official river status near your location"));nationalTitle.setText(t("🌊 ७७ जिल्लाका नदी स्टेशन खोज्नुहोस्","🌊 Find river stations by district"));nationalSub.setText(t("जिल्ला छानेपछि त्यही जिल्लाका आधिकारिक स्टेशन र मापन देखिन्छन्।","Choose a district to view only its official stations and readings."));if(districtPicker!=null)districtPicker.setHint(t("🔎 जिल्लाको नाम टाइप गर्नुहोस् / छान्नुहोस्","🔎 Search or select a district"));if(gyanTitle!=null)gyanTitle.setText(t("📚 ज्ञानका कुरा","📚 Knowledge for Life"));if(gyanSub!=null&&gyanMessage!=null){int prev=(gyanIndex+GyanKnowledge.ITEMS.size()-11)%GyanKnowledge.ITEMS.size();GyanKnowledge.Entry e=GyanKnowledge.ITEMS.get(prev);gyanSub.setText("✦ "+GyanKnowledge.categoryName(e.category,english)+" · "+e.title(english));gyanMessage.setText(e.body(english));}newsTitle.setText(t("📰 नेपालका पछिल्ला समाचार","📰 Latest Nepal news"));privacyTitle.setText(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety"));privacySub.setText(t("Location, microphone र alert data कसरी प्रयोग हुन्छ हेर्नुहोस्।","See how location, microphone and alert data are used."));if(miniForecast!=null)miniForecast.useLanguage(english);updateOutsideNotice();}
-    private String t(String ne,String en){return english?en:ne;}
+    private void applyLanguage(){brandSub.setText(t("नेपाल • नदी • बाढी • चौबीसै घण्टा चेतावनी","Nepal • rivers • floods • 24/7 alerts"));langBtn.setText(t("अङ्ग्रेजी","नेपाली"));weatherText.setText(currentWeather.isEmpty()?t("निगरानी स्थान छान्नुहोस्","Choose a monitoring location"):currentWeather);weatherSupport.setText(t("स्थानीय मौसम र DHM/BIPAD को वास्तविक नदी अवस्था","Local weather + official BIPAD/DHM river status"));if(!Double.isFinite(lat)){place.setText(t("📍 नेपालमा निगरानी स्थान छान्नुहोस्","📍 Choose a monitoring location"));rainTiming.setText(t("हालको स्थान लिएपछि आगामी वर्षा timing देखाइन्छ।","Rain timing appears after location is available."));}mapTitle.setText(t("🇳🇵 आधिकारिक नदी स्टेशन नक्सा","🇳🇵 Official river station map"));mapSub.setText(t("नदी/स्टेशन थिचेर पानीको तह, चेतावनी र official time हेर्नुहोस्।","Tap a river station for level, warning and official time."));mapHint.setText(t("🇳🇵 आधिकारिक नदी स्टेशन र नदी संरचना","🇳🇵 official stations and river geometry"));nearTitle.setText(t("🌊 नजिकका नदी स्टेशन","🌊 Nearby river stations"));nearSub.setText(t("तपाईंको स्थान नजिकको official नदी अवस्था","Official river status near your location"));nationalTitle.setText(t("🌊 ७७ जिल्लाका नदी स्टेशन खोज्नुहोस्","🌊 Find river stations by district"));nationalSub.setText(t("जिल्ला छानेपछि त्यही जिल्लाका आधिकारिक स्टेशन र मापन देखिन्छन्।","Choose a district to view only its official stations and readings."));if(districtPicker!=null)districtPicker.setHint(t("🔎 जिल्लाको नाम टाइप गर्नुहोस् / छान्नुहोस्","🔎 Search or select a district"));if(gyanTitle!=null)gyanTitle.setText(t("📚 ज्ञानका कुरा","📚 Knowledge for Life"));if(gyanSub!=null&&gyanMessage!=null){int prev=(gyanIndex+GyanKnowledge.ITEMS.size()-11)%GyanKnowledge.ITEMS.size();GyanKnowledge.Entry e=GyanKnowledge.ITEMS.get(prev);gyanSub.setText("✦ "+GyanKnowledge.categoryName(e.category,english)+" · "+e.title(english));gyanMessage.setText(e.body(english));}newsTitle.setText(t("📰 नेपालका पछिल्ला समाचार","📰 Latest Nepal news"));privacyTitle.setText(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety"));privacySub.setText(t("स्थान, माइक्रोफोन र चेतावनीका विवरण कसरी प्रयोग हुन्छन् हेर्नुहोस्।","See how location, microphone and alert data are used."));if(miniForecast!=null)miniForecast.useLanguage(english);updateOutsideNotice();}
+    private String t(String ne,String en){
+        if(ne!=null&&en!=null&&!ne.isEmpty()&&!en.isEmpty()&&!ne.equals(en)){
+            neToEn.put(ne,en);
+            enToNe.put(en,ne);
+        }
+        return english?en:ne;
+    }
+    private String localizedExistingText(String value){
+        if(value==null||value.isEmpty())return value;
+        java.util.Map<String,String> source=english?neToEn:enToNe;
+        String exact=source.get(value);
+        if(exact!=null)return exact;
+        // Some original labels include an emoji/nav icon before the bilingual text.
+        for(java.util.Map.Entry<String,String> pair:source.entrySet()){
+            String before=pair.getKey();
+            if(before.length()<4||!value.endsWith(before))continue;
+            int prefixLen=value.length()-before.length();
+            if(prefixLen>0&&prefixLen<=14){
+                String prefix=value.substring(0,prefixLen);
+                if(prefix.endsWith(" ")||prefix.endsWith("\n"))
+                    return prefix+pair.getValue();
+            }
+        }
+        return value;
+    }
+    private void translateExistingViews(View view){
+        if(view==null)return;
+        if(view instanceof TextView && !(view instanceof EditText)){
+            TextView v=(TextView)view;
+            String old=v.getText().toString(),translated=localizedExistingText(old);
+            if(!old.equals(translated))v.setText(translated);
+        }
+        if(view instanceof ViewGroup){
+            ViewGroup group=(ViewGroup)view;
+            for(int i=0;i<group.getChildCount();i++)translateExistingViews(group.getChildAt(i));
+        }
+    }
+    private void renderCurrentNewsKnowledgeLanguage(){
+        if(newsKnowledgeCategory==null||newsKnowledgeText==null||GyanKnowledge.ITEMS.isEmpty())return;
+        // Keep the current lesson; the language button does not advance the rotation.
+        GyanKnowledge.Entry e=FloodSafeRemoteConfig.newsLessonAt(newsKnowledgeIndex-7);
+        newsKnowledgeCategory.setText("✦ "+GyanKnowledge.categoryName(e.category,english)+" · "+e.title(english));
+        newsKnowledgeText.setText(e.body(english));
+    }
 
     private void refreshAll(){restoreLocation();refreshRivers();refreshGovernment();refreshDistrictWeather();refreshHuman();refreshNews();refreshNearbyRainGauge();if(Double.isFinite(lat)&&Double.isFinite(lon))fetchWeather(lat,lon);}
     private void restoreLocation(){if(Double.isFinite(lat)&&Double.isFinite(lon)){place.setText(isNepal(lat,lon)?t("📍 पछिल्लो GPS • Nepal","📍 Last GPS • Nepal"):t("🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो","🌍 GPS outside Nepal • weather follows this location"));updateOutsideNotice();}}
-    private void updateOutsideNotice(){TextView v=root==null?null:root.findViewById(android.R.id.hint);if(v==null)return;boolean out=Double.isFinite(lat)&&Double.isFinite(lon)&&!isNepal(lat,lon);v.setVisibility(out?View.VISIBLE:View.GONE);v.setText(t("🇳🇵 FloodSafe Nepal-only monitoring\nतपाईं नेपाल बाहिर हुँदा नजिकको नदी चेतावनी पठाइँदैन। नेपालभित्र current GPS हुँदा २ km भित्रको verified Warning/Danger मात्र emergency alert आउँछ।","🇳🇵 FloodSafe Nepal-only monitoring\nOutside Nepal, nearby river warnings are not sent. In Nepal, only verified Warning/Danger within 2 km can trigger the emergency river alert."));}
+    private void updateOutsideNotice(){TextView v=root==null?null:root.findViewById(android.R.id.hint);if(v==null)return;boolean out=Double.isFinite(lat)&&Double.isFinite(lon)&&!isNepal(lat,lon);v.setVisibility(out?View.VISIBLE:View.GONE);v.setText(t("🇳🇵 FloodSafe नेपालभित्रको निगरानी\nतपाईं नेपाल बाहिर हुँदा नजिकको नदी चेतावनी पठाइँदैन। नेपालभित्र हालको GPS हुँदा २ किमिभित्रको प्रमाणित चेतावनी/खतरा अवस्थामा मात्र आपत्कालीन नदी सूचना आउँछ।","🇳🇵 FloodSafe Nepal-only monitoring\nOutside Nepal, nearby river warnings are not sent. In Nepal, only verified Warning/Danger within 2 km can trigger the emergency river alert."));}
 
     private void requestLocation(){requestLocation(false);}
     private void requestLocation(boolean fromTap){
@@ -839,6 +904,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
             return;
         }
         newsShowingKnowledge=false;
+        newsKnowledgeDisconnected=false;
         main.removeCallbacks(newsKnowledgeTick);
         newsKnowledgeCategory=null;newsKnowledgeText=null;
         newsList.removeAllViews();
@@ -867,6 +933,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         freshNewsOnScreen.clear();
         currentNewsForSathi=new JSONArray();
         newsShowingKnowledge=true;
+        newsKnowledgeDisconnected=disconnected;
         newsTitle.setText(t("📚 ज्ञानका कुरा","📚 Knowledge for Life"));
         newsSub.setText(disconnected?
             t("समाचार स्रोत जोडिएन • नयाँ खबर आएपछि आफैँ देखिन्छ","News feed unavailable • Fresh stories return automatically"):

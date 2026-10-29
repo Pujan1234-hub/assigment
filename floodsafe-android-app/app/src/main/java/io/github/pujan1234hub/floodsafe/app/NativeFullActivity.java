@@ -153,7 +153,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private PlayStoreUpdateBridge playUpdates;
     private final Runnable onOtaContentChanged=()->{
         if(isFinishing()||isDestroyed())return;
-        if(newsShowingKnowledge)showNextNewsKnowledge();
+        showNextNewsKnowledge();
         // Only content and safe presentation intervals update here; no alert thresholds.
     };
     private final List<NewsItem> freshNewsOnScreen=new ArrayList<>();

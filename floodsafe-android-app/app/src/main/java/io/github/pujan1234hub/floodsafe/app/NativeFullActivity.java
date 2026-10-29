@@ -243,8 +243,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
         if(governmentList==null)return;
         governmentList.removeAllViews();
         int count=currentGovernmentNotices.length();
-        governmentStatus.setText(count==0?t("अहिले लागू भएको पुष्टि गरिएको सूचना भेटिएन।","No verified notices in effect at this check.")
-          :t("DHM / NDRRMA का "+count+" लागू सूचना · मूल सरकारी प्रकाशनबाट स्रोत हेर्नुहोस्",""+count+" current DHM / NDRRMA advisories · read original publication"));
+        governmentStatus.setText(count==0?t("हाल लागू वा आगामी पुष्टि गरिएको सूचना भेटिएन।","No verified active or upcoming notices at this check.")
+          :t("DHM / NDRRMA का "+count+" लागू/आगामी सूचना · मूल सरकारी प्रकाशनबाट स्रोत हेर्नुहोस्",""+count+" current/upcoming DHM / NDRRMA advisories · read original publication"));
         for(int i=0;i<Math.min(count,expandedGovernment?count:1);i++){
             JSONObject n=currentGovernmentNotices.optJSONObject(i);
             if(n==null)continue;

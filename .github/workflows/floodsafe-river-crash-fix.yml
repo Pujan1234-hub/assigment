@@ -31,7 +31,7 @@ jobs:
           mkdir -p "$ASSETS/data" "$ASSETS/floodsafe-nepal"
           cp -a data/. "$ASSETS/data/"
           cp -a floodsafe-nepal/. "$ASSETS/floodsafe-nepal/"
-          python3 floodsafe-android-app/scripts/prepare_native_rivers.py data/nepal-waterways-snapshot.json data/nepal-districts.geojson "$ASSETS/data/nepal-rivers-native.json"
+          python3 floodsafe-android-app/scripts/prepare_native_rivers.py data/nepal-waterways-snapshot.json floodsafe-nepal/v24/nepal-districts.geojson "$ASSETS/data/nepal-rivers-native.json"
           test -s "$ASSETS/data/nepal-rivers-native.json"
           test -s "$ASSETS/pjbuilts-original-splash.html"
           python3 - <<'PY'

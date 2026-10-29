@@ -1,107 +1,140 @@
 package io.github.pujan1234hub.floodsafe.app;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.Locale;
 import java.util.ArrayList;
 
-/**
- * Source-grounded on-device SATHI Q&A: uses only loaded FloodSafe data,
- * never hallucinates an AI prediction or an official warning.
+/** Explicit intent routing for Romanised Nepali / Nepali / English.
+ * Only reports loaded observations, never invents a forecast or a government notice.
  */
 final class SathiKnowledge {
- private SathiKnowledge(){}
- static String answer(String prompt,boolean en,JSONArray rivers,JSONArray govt,JSONArray weather,JSONArray news,String localWeather,boolean nepalGps){
-  String q=prompt==null?"":prompt.trim().toLowerCase(Locale.ROOT);
-  if(q.isEmpty())return en?"Ask about a district, river station, weather, government bulletin or app.":"जिल्ला, नदी स्टेशन, मौसम, सरकारी सूचना वा app बारे सोध्नुहोस्।";
-  // Curated life knowledge is explicitly separate from live, official river data.
-  if(GyanKnowledge.isKnowledgeQuestion(q))return GyanKnowledge.answer(prompt,en);
-  if(contains(q,"flood safety","बाढीबाट बच्न","बाढीमा के गर्ने","बाढी आयो","emergency kit","आपतकालीन झोला")){
-      return GyanKnowledge.answer("बाढी सुरक्षा",en);
-  }
-  if(contains(q,"what can you do","के के सक्छ","कुन कुन प्रश्न","तिम्रो काम","who are you","को हौ")){
-      return en?"I am SATHI, an offline data-aware helper inside FloodSafe. I can explain loaded river-gauge status, timestamps, nearby risk, government notices, district weather, recent news and curated Gita, science and safety lessons. I do not independently verify live alerts or invent predictions."
-               :"म FloodSafe भित्रको डेटा बुझाएर सहयोग गर्ने SATHI हुँ। उपलब्ध नदी मापन, मापन समय, नजिकको जोखिम, लागू सरकारी सूचना, जिल्लाको मौसम, समाचार र गीता/विज्ञान/सुरक्षा ज्ञान बुझाउन सक्छु। म आफैँ नयाँ सरकारी चेतावनी वा भविष्यवाणी बनाउँदिनँ।";
-  }
-  boolean riverQ=contains(q,"नदी","खोला","river","khola","flood","बाढी","level","पानीको सतह","station","स्टेशन");
-  boolean explicitGovt=contains(q,"सरकार","सरकारी","government","official alert","dhm","ndrrma","सूचना","notice","bulletin");
-  // A river-warning question must consult river gauges, not jump to the government bulletin screen.
-  boolean govtQ=explicitGovt||(!riverQ&&contains(q,"चेतावनी","chetauni","warning"));
-  boolean weatherQ=contains(q,"मौसम","weather","rain","वर्षा","badal","बादल","cloud","धाम","घाम","हुरी","storm","thunder","चट्याङ","snow","हिमपात");
-  if(govtQ){
-   JSONArray verified=new JSONArray();long now=System.currentTimeMillis();
-   if(govt!=null)for(int i=0;i<govt.length();i++){JSONObject n=govt.optJSONObject(i);if(GovernmentNotices.valid(n,now))verified.put(n);}
-   govt=verified;
-   if(govt.length()==0)return en?"No currently verified government bulletin in the latest check. This is not an all-clear. Check dhm.gov.np or call 1155.":"हालको जाँचमा लागू भएको प्रमाणित सरकारी बुलेटिन भेटिएन। यसको अर्थ जोखिम छैन भन्ने होइन। dhm.gov.np वा ११५५ मा जाँच्नुहोस्।";
-   StringBuilder b=new StringBuilder(en?"Currently valid source-linked government advisories (relayed):":"स्रोतसहितका हाल लागू सरकारी सूचना (relay):");
-   for(int i=0;i<Math.min(3,govt.length());i++){JSONObject g=govt.optJSONObject(i);if(g==null)continue;b.append("\n").append(i+1).append(". ").append(g.optString("agency")).append(": ")
-    .append(GovernmentNotices.title(g,en)).append("\n")
-    .append(en?"Valid: ":"लागू: ").append(g.optString("validFrom")).append(" – ").append(g.optString("validUntil"));}
-   b.append(en?"\nVerify details in Government Advisories above.":"\nमूल विवरण माथिको सरकारी सूचना खण्डमा हेर्नुहोस्।");
-   return b.toString();
-  }
-  // River name or district name explicitly mentioned: match against actual stations.
-  ArrayList<JSONObject> matched=new ArrayList<>();
-  if(rivers!=null)for(int i=0;i<rivers.length();i++){
-   JSONObject r=rivers.optJSONObject(i);if(r==null)continue;
-   String name=r.optString("name","").toLowerCase(Locale.ROOT),district=r.optString("district","").toLowerCase(Locale.ROOT);
-   String[] words=name.replace("river","").replace("khola","").replaceAll("\\bat\\b","").split("[ /()-]+");
-   boolean selected=false;
-   for(String w:words)if(w.length()>=4&&q.contains(w)){selected=true;break;}
-   if(!selected&&district.length()>=4&&q.contains(district))selected=true;
-   if(selected)matched.add(r);
-  }
-  if(!matched.isEmpty()){
-   StringBuilder b=new StringBuilder(en?"Matching official river stations:":"मिल्दो आधिकारिक नदी स्टेशन:");
-   for(int i=0;i<Math.min(5,matched.size());i++){
-    JSONObject r=matched.get(i);b.append("\n• ").append(r.optString("name"));
-    double lev=r.optDouble("level",Double.NaN);
-    b.append(" — ").append(Double.isFinite(lev)?String.format(Locale.US,"%.2f m",lev):en?"no current level":"नयाँ मापन छैन");
-    b.append(" · ").append(r.optString("stage","unknown"));
-    if(r.optBoolean("fresh",false))b.append(en?" · recent reading":" · हालको मापन");
-    else b.append(en?" · older/unverified":" · पुरानो/अपुष्ट");
-   }
-   if(matched.size()>5)b.append(en?"\nSearch and select the district to see every relevant station.":"\nत्यस जिल्लाका सबै स्टेशन हेर्न जिल्लाको नाम खोजेर छान्नुहोस्।");
-   return b.toString();
-  }
-  if(weather!=null)for(int i=0;i<weather.length();i++){
-   JSONObject d=weather.optJSONObject(i);if(d==null)continue;
-   String name=d.optString("name","").toLowerCase(Locale.ROOT);
-   if(name.length()<4||!q.contains(name))continue;
-   int code=d.optInt("code",-1);
-   return (en?"District model: ":"जिल्लाको मौसम अनुमान: ")+d.optString("name")+
-     " · "+DistrictWeatherStore.condition(code,en)+
-     " · "+String.format(Locale.US,"%.1f mm",d.optDouble("rain",Double.NaN))+
-     " · "+String.format(Locale.US,"%.0f%%",d.optDouble("cloud",Double.NaN))+
-     (en?" cloud. Representative point; not an official rain gauge.":" बादल। प्रतिनिधि स्थानको मोडेल हो, आधिकारिक वर्षामापक होइन।");
-  }
-  if(contains(q,"news","समाचार","khabar","खबर")){
-   if(news==null||news.length()==0)return en?"No verified fresh news in the current feed.":"हालको समाचार स्रोतमा नयाँ प्रमाणित खबर छैन।";
-   StringBuilder b=new StringBuilder(en?"Latest source-linked news:":"स्रोतसहितका पछिल्ला समाचार:");
-   for(int i=0;i<Math.min(3,news.length());i++){JSONObject v=news.optJSONObject(i);if(v!=null)b.append("\n• ").append(v.optString("title")).append(" (").append(v.optString("source")).append(")");}
-   return b.toString();
-  }
-  if(weatherQ)return localWeather==null||localWeather.isEmpty()
-    ?(en?"Local weather data not yet available; choose GPS/district.":"हालको मौसम data उपलब्ध छैन; GPS वा जिल्ला छान्नुहोस्।")
-    :(en?"Current GPS weather: ":"हालको GPS मौसम: ")+localWeather;
-  if(riverQ){
-   int danger=0,warning=0,alert=0,normal=0,stale=0;
-   if(rivers!=null)for(int i=0;i<rivers.length();i++){
-    JSONObject r=rivers.optJSONObject(i);if(r==null)continue;
-    String stage=r.optString("stage");
-    if("danger".equals(stage))danger++;else if("warning".equals(stage))warning++;
-    else if("alert".equals(stage))alert++;else if("normal".equals(stage))normal++;else stale++;
-   }
-   return (en?"Latest river gauge categories: ":"नदी स्टेशनका पछिल्ला वर्ग: ")+"🔴 "+danger+" 🟠 "+warning+" 🟡 "+alert+" 🔵 "+normal+
-     (en?" · no confirmed measurement ":" · अपुष्ट मापन ")+stale+
-     (en?". Government weather advisories are separate.": "। सरकारी मौसम चेतावनी यसभन्दा छुट्टै हुन्।");
-  }
-  if(contains(q,"location","gps","ठाउँ","स्थान","nearby","नजिक")){
-   return nepalGps?(en?"Nepal GPS available. Nearby rivers use verified readings within 30 km.":"नेपालको GPS उपलब्ध छ। ३० किमिभित्रको प्रमाणित नदी स्टेशन खोजिन्छ।")
-     :(en?"Outside Nepal or GPS unavailable: Nepal-specific nearby river alerts are inactive.":"नेपालबाहिर वा GPS उपलब्ध छैन: नेपालको नजिकका नदी अलर्ट निष्क्रिय छन्।");
-  }
-  if(contains(q,"nasa","landslide","पहिरो","satellite","उपग्रह"))return en?"Open Advanced > NASA for Nepal-focused rainfall and landslide model layers. Models are not government warnings.":"उन्नत जानकारी > NASA मा नेपालको वर्षा र पहिरोका मोडेल तह हेर्नुहोस्। मोडेल सरकारी चेतावनी होइन।";
-  if(contains(q,"app","feature","फिचर","के गर्न","help","सहायता"))return en?"FloodSafe shows DHM/BIPAD river gauges, government weather advisories, district weather, 7-day GloFAS rainfall/flow models and Nepal-only 2 km emergency risk.":"FloodSafe मा DHM/BIPAD नदी मापन, सरकारी मौसम सूचना, जिल्लाको मौसम, ७ दिनको GloFAS पूर्वानुमान र नेपालमा २ किमिभित्रको जोखिम हेर्न सकिन्छ।";
-  return en?"I don't have a verified answer in FloodSafe's available data. Please ask about a river, district, DHM notice, weather or news.":"FloodSafe मा उपलब्ध प्रमाणित data बाट यो प्रश्नको उत्तर भेटिएन। नदी, जिल्ला, DHM सूचना, मौसम वा समाचारबारे सोध्नुहोस्।";
- }
- private static boolean contains(String q,String...words){for(String w:words)if(q.contains(w))return true;return false;}
+    private SathiKnowledge(){}
+    static String answer(String prompt,boolean en,JSONArray rivers,JSONArray govt,JSONArray weather,
+                         JSONArray news,String localWeather,boolean nepalGps){
+        return answer(prompt,en,rivers,govt,weather,news,localWeather,nepalGps,0);
+    }
+    static String answer(String prompt,boolean en,JSONArray rivers,JSONArray govt,JSONArray weather,
+                         JSONArray news,String localWeather,boolean nepalGps,int lessonOffset){
+        String q=prompt==null?"":prompt.trim().toLowerCase(Locale.ROOT);
+        if(q.isEmpty())return en?"Ask about a particular river, district weather, current notice, news or knowledge topic."
+                             :"कुन नदी, जिल्लाको मौसम, सरकारी सूचना, समाचार वा ज्ञानको विषय सोध्नुहुन्छ?";
+        boolean weatherQ=has(q,"weather","mausam","mousam","मौसम","rain","pani par","badal","बादल","cloud","वर्षा","ghaam","घाम","तापक्रम","temperature");
+        boolean newsQ=has(q,"news","समाचार","khabar","खबर","headline");
+        boolean knowledgeQ=has(q,"गीता","gita","geeta","भगवद","krishna","कृष्ण","gyan","gyaan","ज्ञान","lesson","पढाइ","study","science","विज्ञान","book","पुस्तक","जीवन","जिन्दगी","karma","कर्म","motivation","बाढीबाट बच्न","flood safety");
+        boolean riverQ=has(q,"नदी","खोला","river","khola","nadi","gauge","flood level","पानीको सतह","station","स्टेशन","water level");
+        boolean govtQ=has(q,"सरकार","सरकारी","government","official alert","dhm notice","ndrrma","सूचना","notice","bulletin");
+        boolean alertQ=has(q,"चेतावनी","chetauni","warning");
+        boolean regional=has(q,"kathmandu","katmandu","ktm","काठमाडौं","काठमाडौँ");
+        // Weather and news intents MUST win over river name substring matches.
+        if(weatherQ && !riverQ)return weatherAnswer(q,en,weather,localWeather,regional,nepalGps);
+        if(newsQ)return newsAnswer(en,news);
+        if(govtQ || (alertQ&&!riverQ))return governmentAnswer(en,govt);
+        if(knowledgeQ)return GyanKnowledge.answerWithOffset(prompt,en,lessonOffset);
+        if(riverQ)return riverAnswer(q,en,rivers);
+        if(has(q,"nasa","landslide","पहिरो","satellite","उपग्रह"))
+           return en?"The Advanced → NASA view displays model layers for Nepal. A satellite/model result is not an official flood warning."
+                    :"उन्नत → NASA मा नेपालको मोडेल तह हेर्न सकिन्छ। Satellite वा मोडेलको अनुमान सरकारी बाढी चेतावनी होइन।";
+        if(has(q,"gps","location","ठाउँ","स्थान","nearby","नजिक"))
+           return nepalGps?(en?"Nepal GPS location is available. Check the nearest verified DHM gauges and their observation time."
+                              :"नेपालभित्र GPS उपलब्ध छ। नजिकको DHM स्टेशन, मापन र समय जाँच्नुहोस्।")
+               :(en?"Nepal nearby-river alert is inactive outside Nepal. Local weather uses GPS, not a Nepal river gauge."
+                    :"नेपालबाहिर नेपालको नजिकको नदी अलर्ट लागू हुँदैन। GPS मौसम र नेपालका नदी मापन अलग हुन्।");
+        if(has(q,"what can","what do","who are","तिम्रो काम","के गर्न सक्छ","help","मद्दत","feature","फिचर"))
+           return en?"I can explain current loaded DHM river levels, district weather models, verified government notices, source-linked news and curated general knowledge. Ask a specific question."
+                    :"म उपलब्ध DHM नदी मापन, जिल्लाको मौसम अनुमान, प्रमाणित सरकारी सूचना, स्रोतसहितको समाचार र सामान्य ज्ञान बुझाउँछु। कुनै खास प्रश्न सोध्नुहोस्।";
+        return en?"I cannot identify the topic yet. For example ask ‘KTM weather k cha?’, ‘Bagmati river level?’, ‘government notice?’, ‘Gita advice?’ or ‘news?’"
+                 :"प्रश्नको विषय स्पष्ट भएन। उदाहरण: ‘ktm weather k cha?’, ‘बागमती नदीको सतह?’, ‘सरकारी सूचना?’, ‘गीता ज्ञान?’ वा ‘समाचार?’";
+    }
+    private static String weatherAnswer(String q,boolean en,JSONArray weather,String localWeather,boolean ktm,boolean nepalGps){
+        String district=ktm?"Kathmandu":"";
+        JSONObject found=null;
+        if(weather!=null)for(int i=0;i<weather.length();i++){
+            JSONObject v=weather.optJSONObject(i);if(v==null)continue;
+            String name=v.optString("name","").toLowerCase(Locale.ROOT);
+            if(ktm && (name.equals("kathmandu")||name.equals("काठमाडौं")||name.equals("काठमाडौँ"))){found=v;break;}
+            if(name.length()>=3&&q.contains(name)){found=v;district=v.optString("name");break;}
+        }
+        if(found!=null){
+            int code=found.optInt("code",-1);
+            double rain=found.optDouble("rain",Double.NaN),cloud=found.optDouble("cloud",Double.NaN),temp=found.optDouble("temperature",Double.NaN);
+            StringBuilder b=new StringBuilder(en?"🌦 District weather model: ":"🌦 जिल्लाको मौसम अनुमान: ");
+            b.append(district.isEmpty()?found.optString("name"):district);
+            b.append("\n").append(DistrictWeatherStore.condition(code,en));
+            if(Double.isFinite(temp))b.append(String.format(Locale.US," · %.1f°C",temp));
+            if(Double.isFinite(rain))b.append(String.format(Locale.US," · %.1f mm",rain));
+            if(Double.isFinite(cloud))b.append(String.format(Locale.US," · %.0f%%",cloud)).append(en?" cloud":" बादल");
+            return b.toString()+(en?"\nOpen-Meteo estimate for a representative district point, not DHM measured rainfall."
+                                 :"\nयो Open-Meteo को प्रतिनिधि स्थानको अनुमान हो, DHM को वास्तविक वर्षामापक होइन।");
+        }
+        if(ktm)return en?"Kathmandu's current district model is not loaded. Try again after weather refresh or choose Kathmandu in district search; I will not substitute your phone's UK weather."
+                        :"काठमाडौँको ताजा जिल्ला मौसम अहिले load भएको छैन। Weather refresh भएपछि पुनः सोध्नुहोस्। UK मा रहेको फोनको मौसमलाई काठमाडौँको भनेर देखाउँदिनँ।";
+        // If a location word is specified but its district model is missing, never substitute local GPS data.
+        if(has(q,"pokhara","chitwan","biratnagar","butwal","birgunj","dharan","नेपालगञ्ज","बिर्तामोड"))
+           return en?"The requested place is not matched in the loaded 77-district model. Choose the relevant district in the app."
+                    :"सोधिएको ठाउँको मौसम हालको ७७-जिल्ला मोडेलसँग मिलेन। सम्बन्धित जिल्ला छानेर जाँच्नुहोस्।";
+        if(localWeather!=null&&!localWeather.isEmpty())
+           return (en?"🌤 Phone GPS weather: ":"🌤 फोनको GPS मौसम: ")+localWeather+
+               (en?"\nThis is a local model estimate, not a DHM station reading.":"\nयो स्थानीय मोडेल अनुमान हो, DHM स्टेशनको मापन होइन।");
+        return en?"Local weather has not loaded. Allow GPS or select a district to see its model."
+                 :"हाल GPS मौसम load भएको छैन। GPS अनुमति दिनुहोस् वा जिल्ला छान्नुहोस्।";
+    }
+    private static String newsAnswer(boolean en,JSONArray news){
+        if(news==null||news.length()==0)return en?"No recent source-linked story is loaded right now. This does not mean no news was published; check the News section's refresh status."
+                                                 :"अहिले स्रोतसहितको नयाँ समाचार load भएको छैन। समाचार नै प्रकाशित भएको छैन भन्ने अर्थ होइन; समाचार खण्डमा Refresh अवस्था जाँच्नुहोस्।";
+        StringBuilder b=new StringBuilder(en?"📰 Loaded source-linked headlines:":"📰 उपलब्ध स्रोतसहितका समाचार:");
+        for(int i=0;i<Math.min(news.length(),4);i++){
+            JSONObject x=news.optJSONObject(i);if(x==null)continue;
+            b.append("\n• ").append(x.optString("title")).append(" (").append(x.optString("source")).append(")");
+        }
+        return b.toString();
+    }
+    private static String governmentAnswer(boolean en,JSONArray govt){
+        JSONArray valid=new JSONArray();long now=System.currentTimeMillis();
+        if(govt!=null)for(int i=0;i<govt.length();i++){JSONObject o=govt.optJSONObject(i);if(GovernmentNotices.valid(o,now))valid.put(o);}
+        if(valid.length()==0)return en?"No active verified government bulletin is loaded. This is not an all-clear; check dhm.gov.np."
+                                        :"हाल लागू भएको प्रमाणित सरकारी सूचना load छैन। खतरा छैन भन्ने होइन; dhm.gov.np पनि जाँच्नुहोस्।";
+        StringBuilder b=new StringBuilder(en?"Active verified government bulletins:":"हाल लागू प्रमाणित सरकारी सूचना:");
+        for(int i=0;i<Math.min(valid.length(),3);i++){JSONObject o=valid.optJSONObject(i);if(o==null)continue;
+            b.append("\n• ").append(o.optString("agency")).append(" · ").append(GovernmentNotices.title(o,en))
+                .append("\n").append(en?"Until ":"म्याद: ").append(o.optString("validUntil"));}
+        return b.toString();
+    }
+    private static String riverAnswer(String q,boolean en,JSONArray rivers){
+        ArrayList<JSONObject> matched=new ArrayList<>();
+        if(rivers!=null)for(int i=0;i<rivers.length();i++){
+            JSONObject r=rivers.optJSONObject(i);if(r==null)continue;
+            String name=r.optString("name","").toLowerCase(Locale.ROOT);
+            String district=r.optString("district","").toLowerCase(Locale.ROOT);
+            boolean same=district.length()>3&&q.contains(district);
+            if(!same){
+                // Match distinctive river tokens only, never "at", "river" or "station".
+                String[] tokens=name.replaceAll("\\b(river|khola|at|station|bridge|highway)\\b","").split("[ /()-]+");
+                for(String tok:tokens)if(tok.length()>=5&&q.contains(tok)){same=true;break;}
+            }
+            if(same)matched.add(r);
+        }
+        if(matched.isEmpty()){
+            int danger=0,warning=0,alert=0,normal=0,stale=0;
+            if(rivers!=null)for(int i=0;i<rivers.length();i++){
+                JSONObject r=rivers.optJSONObject(i);if(r==null)continue;
+                String stage=r.optString("stage");
+                if("danger".equals(stage))danger++;else if("warning".equals(stage))warning++;
+                else if("alert".equals(stage))alert++;else if("normal".equals(stage))normal++;else stale++;
+            }
+            return (en?"DHM river stations loaded: ":"DHM नदी स्टेशन: ")+"🔴 "+danger+" 🟠 "+warning+" 🟡 "+alert+" 🔵 "+normal+
+                (en?" · stale/unavailable ":" · पुरानो/नभएको ")+stale+
+                (en?"\nName a particular river for exact level and observation time.":"\nठ्याक्कै मापनका लागि नदीको नाम भन्नुहोस्।");
+        }
+        StringBuilder b=new StringBuilder(en?"Matching verified river stations:":"मिल्दो आधिकारिक नदी स्टेशन:");
+        for(int i=0;i<Math.min(matched.size(),5);i++){
+            JSONObject r=matched.get(i);double level=r.optDouble("level",Double.NaN);
+            b.append("\n• ").append(r.optString("name")).append(": ")
+             .append(Double.isFinite(level)?String.format(Locale.US,"%.2f m",level):en?"no measured level":"मापन छैन")
+             .append(" · ").append(r.optString("stage")).append(r.optBoolean("fresh")?(en?" (recent)":" (हालको)"):(en?" (stale)":" (पुरानो)"));
+        }
+        if(matched.size()>5)b.append(en?"\nSearch this district to see remaining stations.":"\nबाँकी हेर्न सम्बन्धित जिल्ला छान्नुहोस्।");
+        return b.toString();
+    }
+    private static boolean has(String q,String...values){for(String x:values)if(q.contains(x))return true;return false;}
 }

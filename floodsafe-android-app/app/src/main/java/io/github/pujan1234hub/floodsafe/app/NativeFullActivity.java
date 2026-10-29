@@ -101,6 +101,9 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private TextView alarmTitle,alarmText,riskBadge,riskValue,riskText,stationCount,warningCount,dangerCount,feedFresh;
     private TextView nearTitle,nearSub,nationalTitle,nationalSub,nationalFresh,humanFresh,humanDeaths,humanInjured,humanMissing,humanRescued,humanDetail;
     private TextView newsTitle,newsSub,privacyTitle,privacySub,mapTitle,mapSub,mapHint,gyanTitle,gyanSub,gyanMessage;
+    private TextView rainGaugeTitle,rainGaugeInfo,rainGaugeHint;
+    private long lastRainGaugeRequestAt=0;
+    private double lastRainGaugeLat=Double.NaN,lastRainGaugeLon=Double.NaN;
     private LinearLayout gyanRotator;
     private int gyanIndex=0;
     private final Runnable gyanTick=new Runnable(){
@@ -193,6 +196,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
          advanced.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});
          content.addView(advanced,lp(-1,dp(62),0,dp(10),0,dp(12)));
         content.addView(riskCard());
+        content.addView(rainGaugeCard());
         nearSection=nearCard();content.addView(nearSection);
         content.addView(nationalCard());
         humanCard=humanCard();content.addView(humanCard);
@@ -228,24 +232,111 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
     private TextView weatherStat(LinearLayout parent,String value,String label){LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);TextView v=text(value,18,true,Color.WHITE);TextView l=text(label,11,true,Color.rgb(215,238,248));box.addView(v);box.addView(l);parent.addView(box,new LinearLayout.LayoutParams(0,-2,1f));return v;}
 
+    // MapLibre satellite / DEM + river GeoJSON are deliberately NOT inflated inside
+    // the Home ScrollView. Rendering a MapView while scrolling caused repeated ANRs
+    // on real devices. Full live map remains available on a dedicated screen.
     private View mapCard(){
-        LinearLayout c=card();LinearLayout head=new LinearLayout(this);head.setOrientation(LinearLayout.HORIZONTAL);LinearLayout labels=new LinearLayout(this);labels.setOrientation(LinearLayout.VERTICAL);head.addView(labels,new LinearLayout.LayoutParams(0,-2,1));mapTitle=text("",20,true,Color.rgb(16,39,70));mapSub=text("",12,true,Color.rgb(100,130,151));labels.addView(mapTitle);labels.addView(mapSub);TextView live=badge(t("DHM / BIPAD","DHM / BIPAD"),Color.rgb(233,255,245),Color.rgb(18,128,90));head.addView(live);c.addView(head);
-        LinearLayout tools=new LinearLayout(this);tools.setOrientation(LinearLayout.HORIZONTAL);Button zi=smallButton("＋ "+t("ठूलो","Zoom")),zo=smallButton("− "+t("सानो","Out")),d3=smallButton("◈ 3D"),reset=smallButton("🇳🇵 "+t("नेपाल","Nepal"));tools.addView(zi,weight());tools.addView(zo,weight());tools.addView(d3,weight());tools.addView(reset,weight());c.addView(tools,lp(-1,dp(48),0,dp(10),0,dp(8)));
-        FrameLayout holder=new FrameLayout(this);
-        map=new FloodSafeNativeMapView(this,station->{
-            if(station instanceof RiverStation)showStation((RiverStation)station);
+        LinearLayout c=card();
+        mapTitle=text(t("🇳🇵 आधिकारिक नदी नक्सा","🇳🇵 Official river map"),20,true,Color.rgb(16,39,70));
+        mapSub=text(t("DHM/BIPAD नदी स्टेशन, नदीको चमक र ७७ जिल्लाको मौसम चिन्ह।",
+                       "DHM/BIPAD river stations, river glow and 77-district weather icons."),13,false,Color.rgb(99,126,144));
+        c.addView(mapTitle);c.addView(mapSub,lp(-1,-2,0,dp(8),0,dp(12)));
+        TextView preview=text(t("🗺️ नदीको नक्सा, 3D, zoom र बादल हेर्न तल थिच्नुहोस्।",
+                         "🗺️ Open the live map for river geometry, 3D, zoom and weather clouds."),15,true,Color.rgb(31,80,113));
+        preview.setPadding(dp(14),dp(25),dp(14),dp(25));
+        preview.setBackground(round(Color.rgb(234,248,255),20,Color.rgb(168,210,230),1));
+        c.addView(preview);
+        Button open=button(t("🗺️ लाइभ नदी नक्सा खोल्नुहोस् →","🗺️ Open live river map →"));
+        open.setOnClickListener(v->openMapScreen());
+        c.addView(open,lp(-1,dp(57),0,dp(12),0,0));
+        mapHint=text(t("नक्साको rendering छुट्टै स्क्रिनमा हुन्छ, Home scrolling अड्किँदैन।",
+                       "The map runs separately so Home stays responsive."),11,false,Color.rgb(103,132,154));
+        c.addView(mapHint,lp(-1,-2,0,dp(8),0,0));
+        return c;
+    }
+    private void openMapScreen(){
+        Intent i=new Intent(this,FloodSafeMapActivity.class);
+        i.putExtra("lat",lat);i.putExtra("lon",lon);
+        startActivity(i);
+    }
+    private View rainGaugeCard(){
+        LinearLayout c=card();
+        rainGaugeTitle=text(t("🌧️ GPS नजिकको DHM वर्षामापक","🌧️ Nearest DHM rain gauge"),19,true,Color.rgb(17,50,77));
+        rainGaugeInfo=text(t("नेपालको location लिएपछि नजिकको आधिकारिक स्टेशन जाँचिन्छ।",
+                            "The closest official rain gauge is checked when Nepal GPS is available."),13,true,Color.rgb(47,80,104));
+        rainGaugeHint=text(t("यो Open-Meteo अनुमान होइन; उपलब्ध भए DHM को मापन र मिति देखिन्छ।",
+                            "Actual DHM observation, when available; separate from Open-Meteo model."),11,false,Color.rgb(102,132,151));
+        c.addView(rainGaugeTitle);
+        c.addView(rainGaugeInfo,lp(-1,-2,0,dp(12),0,0));
+        c.addView(rainGaugeHint,lp(-1,-2,0,dp(8),0,0));
+        return c;
+    }
+    private void refreshNearbyRainGauge(){
+        if(rainGaugeInfo==null)return;
+        if(!isNepal(lat,lon)){
+            rainGaugeInfo.setText(t("नेपालभित्र GPS हुँदा मात्र DHM वर्षामापकसँग दूरी तुलना गर्न सकिन्छ।",
+                                    "Nearest DHM rain gauge applies only to a GPS location within Nepal."));
+            rainGaugeHint.setText(t("यहाँको मौसम भने Open-Meteo बाट हेर्न सकिन्छ।",
+                                   "Your local weather forecast is available separately from Open-Meteo."));
+            return;
+        }
+        final double targetLat=lat,targetLon=lon;
+        long now=System.currentTimeMillis();
+        if(now-lastRainGaugeRequestAt<10L*60L*1000L&&
+           Double.isFinite(lastRainGaugeLat)&&distanceBetweenKm(targetLat,targetLon,lastRainGaugeLat,lastRainGaugeLon)<3d)return;
+        lastRainGaugeRequestAt=now;lastRainGaugeLat=targetLat;lastRainGaugeLon=targetLon;
+        rainGaugeInfo.setText(t("DHM को नजिकको वास्तविक वर्षामापक जाँच हुँदैछ…",
+                                "Checking the nearest real DHM rain gauge…"));
+        io.execute(()->{
+            try{
+                JSONObject root=OfficialStationFeeds.rainfall();
+                JSONArray data=root.optJSONArray("results");
+                JSONObject nearest=null;double best=Double.POSITIVE_INFINITY;
+                if(data!=null)for(int i=0;i<data.length();i++){
+                    JSONObject o=data.optJSONObject(i);if(o==null)continue;
+                    double a=o.optDouble("latitude",Double.NaN),b=o.optDouble("longitude",Double.NaN);
+                    if(!Double.isFinite(a)||!Double.isFinite(b))continue;
+                    double km=distanceBetweenKm(targetLat,targetLon,a,b);
+                    if(km<best){best=km;nearest=o;}
+                }
+                final JSONObject station=nearest;final double km=best;
+                runOnUiThread(()->{
+                    if(isFinishing()||isDestroyed()||rainGaugeInfo==null)return;
+                    // Ignore a reply for an older GPS location.
+                    if(distanceBetweenKm(lat,lon,targetLat,targetLon)>3d)return;
+                    if(station==null){
+                        rainGaugeInfo.setText(t("अहिले पुष्टि भएको DHM वर्षा मापन उपलब्ध छैन।",
+                                            "No currently verified DHM rainfall observation available."));
+                        rainGaugeHint.setText(t("API उपलब्ध नभए अनुमानलाई मापन भनेर देखाइँदैन।",
+                                             "A forecast is not substituted for a missing gauge reading."));
+                        return;
+                    }
+                    String name=station.optString("stationName","DHM");
+                    double amount=station.optDouble("rainfall",Double.NaN);
+                    String amt=Double.isFinite(amount)?String.format(Locale.US,"%.1f mm",amount):"—";
+                    rainGaugeInfo.setText("📍 "+name+" · "+String.format(Locale.US,"%.1f km",km)+"\n🌧 "+amt);
+                    rainGaugeHint.setText((english?"DHM actual rain station · Observed: ":"DHM वास्तविक वर्षामापक · मापन: ")+station.optString("observedAt","—")+
+                       (km>50d?t("\n⚠️ यो स्टेशन ५० किमिभन्दा टाढा छ; यहाँको सटीक वर्षा होइन।",
+                                  "\n⚠️ This gauge is over 50 km away; not your exact local rainfall."):
+                                  t("\nOpen-Meteo को GPS वर्षा अनुमानबाट छुट्टै वास्तविक मापन।",
+                                    "\nObserved rain, distinct from GPS modelled rainfall.")));
+                });
+            }catch(Exception e){
+                runOnUiThread(()->{
+                    if(isFinishing()||isDestroyed()||rainGaugeInfo==null)return;
+                    rainGaugeInfo.setText(t("DHM वर्षा स्टेशनको ताजा मापन अहिले उपलब्ध छैन।",
+                                            "Current official DHM rainfall feed unavailable."));
+                    rainGaugeHint.setText(t("मौसमको अनुमानलाई सरकारी मापन मानिएको छैन।",
+                                           "Model weather is not presented as an official observation."));
+                });
+            }
         });
-        holder.addView(map,new FrameLayout.LayoutParams(-1,dp(430)));
-        mapWeather=new AnimatedNepalWeatherOverlay(this);mapWeather.setClickable(false);
-        holder.addView(mapWeather,new FrameLayout.LayoutParams(-1,dp(430)));mapWeather.setVisibility(View.GONE);
-        districtSky=new DistrictWeatherOverlay(this,new DistrictWeatherOverlay.Projection(){
-            public android.graphics.PointF project(double a,double o){return map.weatherPoint(a,o);}
-            public double zoom(){return map.weatherZoom();}
-        });
-        holder.addView(districtSky,new FrameLayout.LayoutParams(-1,dp(430)));
-        map.setWeatherOverlayInvalidator(() -> { if(districtSky!=null)districtSky.invalidate(); });
-        mapHint=text("",11,true,Color.rgb(84,115,137));mapHint.setPadding(dp(12),dp(9),dp(12),dp(9));mapHint.setBackground(round(Color.argb(240,255,255,255),18,Color.rgb(207,226,237),1));FrameLayout.LayoutParams hp=new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM);hp.setMargins(dp(10),0,dp(10),dp(10));holder.addView(mapHint,hp);c.addView(holder);
-        zi.setOnClickListener(v->map.zoomBy(1.25f));zo.setOnClickListener(v->map.zoomBy(.8f));reset.setOnClickListener(v->map.resetView());d3.setOnClickListener(v->{map.toggleTerrain();d3.setText(map.terrain?"▱ 2D":"◈ 3D");});return c;
+    }
+    private static double distanceBetweenKm(double a,double o,double b,double p){
+        if(!Double.isFinite(a)||!Double.isFinite(o)||!Double.isFinite(b)||!Double.isFinite(p))return Double.POSITIVE_INFINITY;
+        double x=Math.toRadians(b-a),y=Math.toRadians(p-o);
+        double q=Math.sin(x/2)*Math.sin(x/2)+Math.cos(Math.toRadians(a))*Math.cos(Math.toRadians(b))*Math.sin(y/2)*Math.sin(y/2);
+        return 12742d*Math.asin(Math.min(1d,Math.sqrt(q)));
     }
 
     private View governmentCard(){
@@ -404,19 +495,19 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private View newsCard(){LinearLayout c=card();newsTitle=text("",20,true,Color.rgb(16,39,70));newsSub=text("RONB Post • Radio Nepal • News24 Nepal",12,true,Color.rgb(100,130,151));c.addView(newsTitle);c.addView(newsSub);newsList=new LinearLayout(this);newsList.setOrientation(LinearLayout.VERTICAL);c.addView(newsList,lp(-1,-2,0,dp(8),0,0));return c;}
     private View privacyCard(){LinearLayout c=card();privacyTitle=text("",20,true,Color.rgb(16,39,70));privacySub=text("",12,true,Color.rgb(100,130,151));c.addView(privacyTitle);c.addView(privacySub);Button b=smallButton(t("गोपनीयता नीति हेर्नुहोस् →","View privacy policy →"));b.setOnClickListener(v->showPrivacy());c.addView(b,lp(-1,dp(48),0,dp(10),0,0));return c;}
 
-    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.argb(246,255,255,255),24,Color.rgb(208,227,237),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->smoothTo(mapAnchor));a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->smoothTo(newsAnchor));return nav;}
+    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.argb(246,255,255,255),24,Color.rgb(208,227,237),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->openMapScreen());a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->smoothTo(newsAnchor));return nav;}
     private FrameLayout.LayoutParams bottomParams(){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(-1,dp(72),Gravity.BOTTOM);p.setMargins(dp(9),0,dp(9),dp(9));return p;}
     private void smoothTo(View v){if(v==null)return;scroll.post(()->scroll.smoothScrollTo(0,Math.max(0,v.getTop()-dp(8))));}
 
     private void applyLanguage(){brandSub.setText(t("नेपाल • नदी • बाढी • चौबीसै घण्टा चेतावनी","Nepal • rivers • floods • 24/7 alerts"));langBtn.setText(t("अङ्ग्रेजी","नेपाली"));weatherText.setText(currentWeather.isEmpty()?t("नेपालको निगरानी स्थान छान्नुहोस्","Choose a monitoring location"):currentWeather);weatherSupport.setText(t("नेपालको मौसम + official BIPAD/DHM realtime नदी status","Local weather + official BIPAD/DHM river status"));if(!Double.isFinite(lat)){place.setText(t("📍 नेपालमा निगरानी स्थान छान्नुहोस्","📍 Choose a monitoring location"));rainTiming.setText(t("हालको स्थान लिएपछि आगामी वर्षा timing देखाइन्छ।","Rain timing appears after location is available."));}mapTitle.setText(t("🇳🇵 आधिकारिक नदी स्टेशन नक्सा","🇳🇵 Official river station map"));mapSub.setText(t("नदी/स्टेशन थिचेर पानीको तह, चेतावनी र official time हेर्नुहोस्।","Tap a river station for level, warning and official time."));mapHint.setText(t("🇳🇵 official नदी स्टेशन र नदी geometry","🇳🇵 official stations and river geometry"));nearTitle.setText(t("🌊 नजिकका नदी स्टेशन","🌊 Nearby river stations"));nearSub.setText(t("तपाईंको स्थान नजिकको official नदी अवस्था","Official river status near your location"));nationalTitle.setText(t("🌊 ७७ जिल्लाका नदी स्टेशन खोज्नुहोस्","🌊 Find river stations by district"));nationalSub.setText(t("जिल्ला छानेपछि त्यही जिल्लाका आधिकारिक स्टेशन र मापन देखिन्छन्।","Choose a district to view only its official stations and readings."));if(districtPicker!=null)districtPicker.setHint(t("🔎 जिल्लाको नाम टाइप गर्नुहोस् / छान्नुहोस्","🔎 Search or select a district"));if(gyanTitle!=null)gyanTitle.setText(t("📚 ज्ञानका कुरा","📚 Knowledge for Life"));if(gyanSub!=null&&gyanMessage!=null){int prev=(gyanIndex+GyanKnowledge.ITEMS.size()-11)%GyanKnowledge.ITEMS.size();GyanKnowledge.Entry e=GyanKnowledge.ITEMS.get(prev);gyanSub.setText("✦ "+GyanKnowledge.categoryName(e.category,english)+" · "+e.title(english));gyanMessage.setText(e.body(english));}newsTitle.setText(t("📰 नेपालका पछिल्ला समाचार","📰 Latest Nepal news"));privacyTitle.setText(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety"));privacySub.setText(t("Location, microphone र alert data कसरी प्रयोग हुन्छ हेर्नुहोस्।","See how location, microphone and alert data are used."));if(miniForecast!=null)miniForecast.useLanguage(english);updateOutsideNotice();}
     private String t(String ne,String en){return english?en:ne;}
 
-    private void refreshAll(){restoreLocation();refreshRivers();refreshGovernment();refreshDistrictWeather();refreshHuman();refreshNews();if(Double.isFinite(lat)&&Double.isFinite(lon))fetchWeather(lat,lon);}
+    private void refreshAll(){restoreLocation();refreshRivers();refreshGovernment();refreshDistrictWeather();refreshHuman();refreshNews();refreshNearbyRainGauge();if(Double.isFinite(lat)&&Double.isFinite(lon))fetchWeather(lat,lon);}
     private void restoreLocation(){if(Double.isFinite(lat)&&Double.isFinite(lon)){place.setText(isNepal(lat,lon)?t("📍 पछिल्लो GPS • Nepal","📍 Last GPS • Nepal"):t("🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो","🌍 GPS outside Nepal • weather follows this location"));updateOutsideNotice();}}
     private void updateOutsideNotice(){TextView v=root==null?null:root.findViewById(android.R.id.hint);if(v==null)return;boolean out=Double.isFinite(lat)&&Double.isFinite(lon)&&!isNepal(lat,lon);v.setVisibility(out?View.VISIBLE:View.GONE);v.setText(t("🇳🇵 FloodSafe Nepal-only monitoring\nतपाईं नेपाल बाहिर हुँदा नजिकको नदी चेतावनी पठाइँदैन। नेपालभित्र current GPS हुँदा २ km भित्रको verified Warning/Danger मात्र emergency alert आउँछ।","🇳🇵 FloodSafe Nepal-only monitoring\nOutside Nepal, nearby river warnings are not sent. In Nepal, only verified Warning/Danger within 2 km can trigger the emergency river alert."));}
 
     private void requestLocation(){if(!hasLocationPermission()){requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},REQ_LOCATION);return;}if(lm==null)return;try{Location a=lm.getLastKnownLocation(LocationManager.GPS_PROVIDER),b=lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER),best=a==null?b:b==null?a:(a.getTime()>=b.getTime()?a:b);if(best!=null&&System.currentTimeMillis()-best.getTime()<24L*60*60*1000)onLocationChanged(best);if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))lm.requestSingleUpdate(LocationManager.GPS_PROVIDER,this,getMainLooper());else if(lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER))lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER,this,getMainLooper());}catch(Exception ignored){}}
-    @Override public void onLocationChanged(Location l){if(l==null)return;lat=l.getLatitude();lon=l.getLongitude();locAt=System.currentTimeMillis();getSharedPreferences(PREFS,MODE_PRIVATE).edit().putLong(KEY_LAT,Double.doubleToRawLongBits(lat)).putLong(KEY_LON,Double.doubleToRawLongBits(lon)).putLong(KEY_AT,locAt).apply();getSharedPreferences(RainAlertWorker.PREFS,MODE_PRIVATE).edit().putLong("lat",Double.doubleToRawLongBits(lat)).putLong("lon",Double.doubleToRawLongBits(lon)).putLong("location_time",locAt).putLong("device_lat",Double.doubleToRawLongBits(lat)).putLong("device_lon",Double.doubleToRawLongBits(lon)).putLong("device_location_time",locAt).putBoolean("follow_device",true).putBoolean("location_stale",false).putBoolean("enabled",true).apply();place.setText(isNepal(lat,lon)?t("📍 हालको GPS • Nepal","📍 Current GPS • Nepal"):t("🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो","🌍 GPS outside Nepal • local weather only"));updateOutsideNotice();reverseGeocode();fetchWeather(lat,lon);refreshRiverUi();FloodMonitorService.startIfEnabled(this);}
+    @Override public void onLocationChanged(Location l){if(l==null)return;lat=l.getLatitude();lon=l.getLongitude();locAt=System.currentTimeMillis();getSharedPreferences(PREFS,MODE_PRIVATE).edit().putLong(KEY_LAT,Double.doubleToRawLongBits(lat)).putLong(KEY_LON,Double.doubleToRawLongBits(lon)).putLong(KEY_AT,locAt).apply();getSharedPreferences(RainAlertWorker.PREFS,MODE_PRIVATE).edit().putLong("lat",Double.doubleToRawLongBits(lat)).putLong("lon",Double.doubleToRawLongBits(lon)).putLong("location_time",locAt).putLong("device_lat",Double.doubleToRawLongBits(lat)).putLong("device_lon",Double.doubleToRawLongBits(lon)).putLong("device_location_time",locAt).putBoolean("follow_device",true).putBoolean("location_stale",false).putBoolean("enabled",true).apply();place.setText(isNepal(lat,lon)?t("📍 हालको GPS • Nepal","📍 Current GPS • Nepal"):t("🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो","🌍 GPS outside Nepal • local weather only"));updateOutsideNotice();reverseGeocode();fetchWeather(lat,lon);refreshNearbyRainGauge();refreshRiverUi();FloodMonitorService.startIfEnabled(this);}
     private void reverseGeocode(){io.execute(()->{try{List<android.location.Address>a=new Geocoder(this,Locale.getDefault()).getFromLocation(lat,lon,1);if(a!=null&&!a.isEmpty()){String s=a.get(0).getLocality();if(s==null)s=a.get(0).getSubAdminArea();if(s==null)s=a.get(0).getCountryName();final String label=s;if(label!=null)runOnUiThread(()->place.setText("📍 "+label));}}catch(Exception ignored){}});}
 
     private void fetchWeather(double a,double o){fetchSevenDay(a,o);io.execute(()->{try{String u=String.format(Locale.US,"https://api.open-meteo.com/v1/forecast?latitude=%.6f&longitude=%.6f&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,weather_code,wind_speed_10m&hourly=precipitation_probability,precipitation&forecast_hours=6&timezone=auto",a,o);JSONObject j=getJson(u);JSONObject c=j.getJSONObject("current");double te=c.optDouble("temperature_2m",Double.NaN),pr=c.optDouble("precipitation",0),hu=c.optDouble("relative_humidity_2m",Double.NaN),wi=c.optDouble("wind_speed_10m",Double.NaN),cloud=c.optDouble("cloud_cover",0);int code=c.optInt("weather_code",0);String ws=code>=95?t("⛈️ चट्याङ/हुरीको सम्भावना","⛈️ Thunderstorm"):pr>=.5?t("🌧️ वर्षा भइरहेको छ","🌧️ Rain now"):cloud>65?t("☁️ बादल","☁️ Cloudy"):cloud>25?t("⛅ आंशिक बादल","⛅ Partly cloudy"):t("☀️ सफा मौसम","☀️ Sunny");String timing=rainTiming(j);currentWeather=ws;runOnUiThread(()->{temp.setText(Double.isFinite(te)?Math.round(te)+"°":"—°");weatherText.setText(ws);rain.setText(String.format(Locale.US,"%.1f mm",pr));humidity.setText(Double.isFinite(hu)?Math.round(hu)+"%":"—");wind.setText(Double.isFinite(wi)?Math.round(wi)+" km/h":"—");rainTiming.setText(timing);if(mapWeather!=null)mapWeather.setConditions(cloud,pr,code);});}catch(Exception e){runOnUiThread(()->weatherText.setText(t("मौसम refresh हुन सकेन","Weather refresh failed")));}});}
@@ -474,8 +565,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
        fingerprint=31*fingerprint+Long.hashCode(q.at);
        fingerprint=31*fingerprint+Double.hashCode(q.level);
        fingerprint=31*fingerprint+q.stage.hashCode();}
-      if(fingerprint!=lastStationMapHash){lastStationMapHash=fingerprint;map.setStations(copy,lat,lon);}
-      else map.updateUserLocation(lat,lon);int d=0,w=0,a=0,n=0,stale=0;for(RiverStation s:copy){switch(s.stage){case"danger":d++;break;case"warning":w++;break;case"alert":a++;break;case"normal":n++;break;default:stale++;}}stationCount.setText(String.valueOf(copy.size()));warningCount.setText(String.valueOf(w));dangerCount.setText(String.valueOf(d));feedFresh.setText(t("DHM/BIPAD · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · मापन नभएका "+stale,"DHM/BIPAD · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · unavailable "+stale));nationalFresh.setText(feedFresh.getText());updateRisk(copy);nearList.removeAllViews();
+      if(fingerprint!=lastStationMapHash){lastStationMapHash=fingerprint;if(map!=null)map.setStations(copy,lat,lon);}
+      else if(map!=null)map.updateUserLocation(lat,lon);int d=0,w=0,a=0,n=0,stale=0;for(RiverStation s:copy){switch(s.stage){case"danger":d++;break;case"warning":w++;break;case"alert":a++;break;case"normal":n++;break;default:stale++;}}stationCount.setText(String.valueOf(copy.size()));warningCount.setText(String.valueOf(w));dangerCount.setText(String.valueOf(d));feedFresh.setText(t("DHM/BIPAD · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · मापन नभएका "+stale,"DHM/BIPAD · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · unavailable "+stale));nationalFresh.setText(feedFresh.getText());updateRisk(copy);nearList.removeAllViews();
         boolean inNepal=isNepal(lat,lon)&&locAt>0&&System.currentTimeMillis()-locAt<24L*60*60*1000;
         if(nearSection!=null)nearSection.setVisibility(inNepal?View.VISIBLE:View.GONE);
         if(inNepal){

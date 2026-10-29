@@ -47,9 +47,11 @@ jobs:
           grep -Fq 'new Intent(this, NativeFullActivity.class)' "$JAVA/PJBuiltsSplashActivity.java"
           grep -Fq 'AnimatedNepalWeatherOverlay' "$JAVA/NativeFullActivity.java"
           grep -Fq 'new AnimatedNepalWeatherOverlay(this)' "$JAVA/NativeFullActivity.java"
-          grep -Fq 'new NativeRiverMap()' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'new FloodSafeNativeMapView(this' "$JAVA/NativeFullActivity.java"
+          ! grep -Fq 'new NativeRiverMap()' "$JAVA/NativeFullActivity.java"
+          ! grep -Fq 'Full river satellite map' "$JAVA/NativeFullActivity.java"
           grep -Fq 'new Intent(this,FloodSafeAdvancedActivity.class)' "$JAVA/NativeFullActivity.java"
-          grep -Fq 'new Intent(this,FloodSafeNativeActivity.class)' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'NepalRiverBoundary' "$JAVA/FloodSafeNativeMapView.java"
           grep -Fq 'EMERGENCY_FRESH_MS=10L' "$JAVA/NativeFullActivity.java"
           test -s floodsafe-android-app/app/src/main/assets/pjbuilts-original-splash.html
       - name: Android native unit tests and compile
@@ -64,13 +66,13 @@ jobs:
             unzip -Z -1 "$APK" | grep -Fxq "$asset"
           done
           test "$(stat -c %s "$APK")" -gt 85000000
-          cp "$APK" FloodSafe-Nepal-v0.9.21-NATIVE-TEST.apk
-          sha256sum FloodSafe-Nepal-v0.9.21-NATIVE-TEST.apk
-          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-NATIVE-TEST.apk
+          cp "$APK" FloodSafe-Nepal-v0.9.21-NATIVE-ONE-MAP-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-NATIVE-ONE-MAP-TEST.apk
+          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-NATIVE-ONE-MAP-TEST.apk
       - uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-v0921-NATIVE-direct-test
-          path: FloodSafe-Nepal-v0.9.21-NATIVE-TEST.apk
+          path: FloodSafe-Nepal-v0.9.21-NATIVE-ONE-MAP-TEST.apk
           retention-days: 14
           if-no-files-found: error
       - name: Create public prerelease with a DIRECT APK file link (website untouched)
@@ -79,10 +81,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="floodsafe-v0921-NATIVE-TEST-20261029"
+          TAG="floodsafe-v0921-NATIVE-ONE-MAP-TEST-20261029"
           gh release view "$TAG" >/dev/null 2>&1 && {
-             gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-NATIVE-TEST.apk --clobber
-          } || gh release create "$TAG" FloodSafe-Nepal-v0.9.21-NATIVE-TEST.apk \
+             gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-NATIVE-ONE-MAP-TEST.apk --clobber
+          } || gh release create "$TAG" FloodSafe-Nepal-v0.9.21-NATIVE-ONE-MAP-TEST.apk \
             --target "$GITHUB_SHA" --prerelease \
-            --title "FloodSafe Nepal v0.9.21 Original Native Test" \
-            --notes "Native Android UI from original v0.9.21 repair branch, with original cream-gold intro and native sun/cloud/rain/storm, current DHM river data, 7-day GPS forecast. TEST build only. Does not replace production APK or site."
+            --title "FloodSafe Nepal v0.9.21 One Native Station Map Test" \
+            --notes "Restored original v0.9.21 full Android interface with ONE MapLibre interactive official station map (DHM/BIPAD live data), native sun/cloud/rain/storm, authentic cream-gold intro, native advanced features. This is a test build; do not replace production."

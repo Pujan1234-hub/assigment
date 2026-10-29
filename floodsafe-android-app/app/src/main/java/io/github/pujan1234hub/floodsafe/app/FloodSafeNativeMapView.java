@@ -82,6 +82,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
     private String riversGeoJson = null;
     private long particleStart = 0L;
     private boolean animationRunning = false;
+    private boolean rendererStarted = false, rendererResumed = false, hostPaused = false;
 
     FloodSafeNativeMapView(Context context, StationTapListener listener) {
         super(context);
@@ -109,7 +110,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 refreshStationSources();
                 refreshRiverRiskSources();
                 refreshUserSource();
-                startParticles();
+                if(rendererResumed)startParticles();
             });
             map.addOnMapClickListener(this::onMapClick);
             // Weather icons must redraw during every camera movement, not jump to a cached location.
@@ -121,18 +122,28 @@ final class FloodSafeNativeMapView extends FrameLayout {
         loadBundledGeometry();
     }
 
-    @Override protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        try { mapView.onStart(); } catch (Exception ignored) {}
-        try { mapView.onResume(); } catch (Exception ignored) {}
+    private void resumeRenderer(){
+        if(hostPaused)return;
+        if(!rendererStarted){try{mapView.onStart();rendererStarted=true;}catch(Exception ignored){}}
+        if(!rendererResumed){try{mapView.onResume();rendererResumed=true;}catch(Exception ignored){}}
+        if(styleReady)startParticles();
     }
-
-    @Override protected void onDetachedFromWindow() {
-        animationRunning = false;
+    private void pauseRenderer(){
+        animationRunning=false;
+        main.removeCallbacks(particleTick);
+        if(rendererResumed){try{mapView.onPause();}catch(Exception ignored){}rendererResumed=false;}
+        if(rendererStarted){try{mapView.onStop();}catch(Exception ignored){}rendererStarted=false;}
+    }
+    void onHostPause(){hostPaused=true;pauseRenderer();}
+    void onHostResume(){hostPaused=false;if(isAttachedToWindow())resumeRenderer();}
+    @Override protected void onAttachedToWindow(){
+        super.onAttachedToWindow();
+        resumeRenderer();
+    }
+    @Override protected void onDetachedFromWindow(){
+        hostPaused=true;pauseRenderer();
         main.removeCallbacksAndMessages(null);
-        try { mapView.onPause(); } catch (Exception ignored) {}
-        try { mapView.onStop(); } catch (Exception ignored) {}
-        try { mapView.onDestroy(); } catch (Exception ignored) {}
+        try{mapView.onDestroy();}catch(Exception ignored){}
         io.shutdownNow();
         super.onDetachedFromWindow();
     }

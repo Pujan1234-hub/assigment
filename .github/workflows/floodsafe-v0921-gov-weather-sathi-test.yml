@@ -104,7 +104,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: FloodSafe-v0921-Border-Cloud-Stability-TEST
+          name: FloodSafe-v0921-Gyan-District-Sathi-TEST
           path: ./test-apk
       - name: Install native debug and record startup evidence
         uses: reactivecircus/android-emulator-runner@v2

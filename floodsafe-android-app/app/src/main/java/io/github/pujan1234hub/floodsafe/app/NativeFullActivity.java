@@ -126,6 +126,14 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private FloodSafeNativeMapView map;
     private volatile NepalRiverBoundary nepalDistrictBorder;
     private long lastGovernmentExpiryCheckAt;
+    private static final long GOVERNMENT_FOREGROUND_REFRESH_MS=10L*60L*1000L;
+    private final Runnable governmentAutoRefresh=new Runnable(){
+        @Override public void run(){
+            if(isFinishing()||isDestroyed())return;
+            refreshGovernment();
+            main.postDelayed(this,GOVERNMENT_FOREGROUND_REFRESH_MS);
+        }
+    };
     private NativeSevenDayChart miniForecast;
     private AnimatedNepalWeatherOverlay mapWeather;
     private DistrictWeatherOverlay districtSky;
@@ -689,7 +697,10 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private LinearLayout.LayoutParams lp(int w,int h,int l,int t,int r,int b){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(w,h);p.setMargins(dp(l),dp(t),dp(r),dp(b));return p;}private LinearLayout.LayoutParams weight(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-1,1f);p.setMargins(dp(2),0,dp(2),0);return p;}private int dp(int v){return Math.round(v*getResources().getDisplayMetrics().density);}
     private static final class RiverStation{final String name,district,stage;final double lat,lon,level,warning,danger;final long at;final boolean fresh;final int rank;RiverStation(String n,String di,double a,double o,double l,double w,double d,long tm,boolean f,String s,int r){name=n;district=di;lat=a;lon=o;level=l;warning=w;danger=d;at=tm;fresh=f;stage=s;rank=r;}}
     private static final class NewsItem{final String title,source,url;final long at;NewsItem(String t,String s,String u,long a){title=t;source=s;url=u;at=a;}}
-    @Override protected void onPause(){main.removeCallbacks(gyanTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
-    @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();main.post(mapVisibilityTick);main.removeCallbacks(gyanTick);main.post(gyanTick);}
+    @Override protected void onPause(){main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(gyanTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
+    @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();
+        main.post(mapVisibilityTick);main.removeCallbacks(gyanTick);main.post(gyanTick);
+        main.removeCallbacks(governmentAutoRefresh);main.postDelayed(governmentAutoRefresh,GOVERNMENT_FOREGROUND_REFRESH_MS);
+    }
     @Override protected void onDestroy(){main.removeCallbacksAndMessages(null);if(speech!=null){try{speech.destroy();}catch(Exception ignored){}}if(tts!=null){tts.stop();tts.shutdown();}io.shutdownNow();super.onDestroy();}
 }

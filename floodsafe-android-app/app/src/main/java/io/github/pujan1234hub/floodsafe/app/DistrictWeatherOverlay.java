@@ -14,6 +14,8 @@ final class DistrictWeatherOverlay extends View {
  private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
  private final Projection projector;
  private JSONArray districts=new JSONArray();
+ private boolean animationActive=true;
+ void setAnimationActive(boolean active){if(animationActive==active)return;animationActive=active;if(active)invalidate();}
  private final float den;
  DistrictWeatherOverlay(Context ctx,Projection p){
   super(ctx);projector=p;den=getResources().getDisplayMetrics().density;
@@ -52,6 +54,6 @@ final class DistrictWeatherOverlay extends View {
     for(int k=-1;k<=1;k++)c.drawLine(x+k*4*den,y+7*den+shift,x+k*4*den-2*den,y+11*den+shift,paint);
    }
   }
-  if(getWindowToken()!=null)postInvalidateDelayed(650L);
+  if(animationActive&&getWindowToken()!=null)postInvalidateDelayed(900L);
  }
 }

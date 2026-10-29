@@ -29,7 +29,12 @@ public final class GovernmentWarningWorker extends Worker {
    StringBuilder keys=new StringBuilder();
    for(int i=0;i<a.length();i++){JSONObject n=a.optJSONObject(i);if(n!=null)keys.append(n.optString("id")).append('|');}
    String now=keys.toString();
-   if(now.isEmpty()){p.edit().putString("latest","").apply();return Result.success();}
+   if(now.isEmpty()){
+      NotificationManager notifications=(NotificationManager)app.getSystemService(Context.NOTIFICATION_SERVICE);
+      if(notifications!=null)notifications.cancel(1402);
+      p.edit().putString("latest","").apply();
+      return Result.success();
+   }
    if(now.equals(p.getString("latest","")))return Result.success();
    JSONObject first=a.optJSONObject(0);if(first==null)return Result.success();
    String link=first.optString("sourceUrl",GovernmentNotices.DIRECT_DHM);
@@ -44,7 +49,18 @@ public final class GovernmentWarningWorker extends Worker {
    String body=first.optString("titleNe","सरकारी चेतावनी हेर्नुहोस्");
    Notification.Builder b=Build.VERSION.SDK_INT>=26?new Notification.Builder(app,channel):new Notification.Builder(app);
    b.setSmallIcon(android.R.drawable.ic_dialog_alert).setContentTitle(title).setContentText(body)
-    .setStyle(new Notification.BigTextStyle().bigText(body+"\nमूल सरकारी प्रकाशनबाट पुष्टि गर्नुहोस्।"))
+    .setStyle(new Notification.BigTextStyle().bigText(body+"\nमूल सरकारी प्रकाशनबाट पुष्टि गर्नुहोस्।"));
+   // Android automatically removes a stale bulletin notification at its validity end,
+   // even if background WorkManager is delayed or the user never taps the notice.
+   if(Build.VERSION.SDK_INT>=26){
+      long maxExpiry=0L;
+      for(int i=0;i<a.length();i++){
+         JSONObject item=a.optJSONObject(i);
+         if(item!=null)maxExpiry=Math.max(maxExpiry,GovernmentNotices.time(item.optString("validUntil")));
+      }
+      if(maxExpiry>System.currentTimeMillis())b.setTimeoutAfter(maxExpiry-System.currentTimeMillis());
+   }
+   b
     .setAutoCancel(true).setContentIntent(open);
    m.notify(1402,b.build());p.edit().putString("latest",now).apply();
    return Result.success();

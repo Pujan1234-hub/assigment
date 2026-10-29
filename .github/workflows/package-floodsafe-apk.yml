@@ -26,7 +26,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Bundle native Nepal river geometry and district boundaries
+      - name: Bundle Nepal-only native map data
         shell: bash
         run: |
           set -euo pipefail
@@ -37,18 +37,18 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          root=Path('floodsafe-android-app/app/src/main/assets/data')
-          districts=json.loads((root/'nepal-districts.geojson').read_text())
-          rivers=json.loads((root/'nepal-waterways-tiles/overview.json').read_text())
-          assert len(districts.get('features',[]))>=70,'Nepal border unavailable'
-          assert len(rivers.get('waterways',[]))>=50,'River overview unavailable'
-          print('Native boundary and river asset checks OK')
+          root = Path('floodsafe-android-app/app/src/main/assets/data')
+          districts = json.loads((root/'nepal-districts.geojson').read_text())
+          rivers = json.loads((root/'nepal-waterways-tiles/overview.json').read_text())
+          assert len(districts.get('features', [])) >= 70, 'Nepal boundary missing'
+          assert len(rivers.get('waterways', [])) >= 50, 'River overview missing'
+          print('Nepal border and rivers ready for packaging')
           PY
 
       - name: Unit tests and native APK build
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
-      - name: Verify v0.8.90 native-only APK
+      - name: Verify native APK and warning guards
         shell: bash
         run: |
           set -euo pipefail
@@ -58,40 +58,22 @@ jobs:
           grep -Fq "versionName '0.8.90-native'" "$G"
           test -s "$APK"
           unzip -t "$APK" >/dev/null
-          unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
+          unzip -l "$APK" | grep -Eq 'classes[0-9]*[.]dex'
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-districts.geojson'
           unzip -l "$APK" | grep -Fq 'assets/data/nepal-waterways-tiles/overview.json'
           grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
           grep -Fq 'MAX_AGE_MS = 10L * 60L * 1000L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
           grep -Fq 'POST_NOTIFICATIONS' floodsafe-android-app/app/src/main/AndroidManifest.xml
           grep -Fq 'manager.notify(requestCode, notification)' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
-          if unzip -l "$APK" | grep -Eq 'assets/floodsafe-nepal|\.html$|\.js
+          if unzip -l "$APK" | grep -Eq 'assets/floodsafe-nepal|[.]html$|[.]js$'; then
             echo 'ERROR: web assets found in native-only APK'
             exit 1
           fi
           sha256sum "$APK" | tee /tmp/floodsafe-native-apk-sha256.txt
           stat -c '%s' "$APK" | tee /tmp/floodsafe-native-apk-size.txt
-          echo 'FloodSafe v0.8.90 native-only APK PASS'
+          echo 'FloodSafe native river boundary + warning-source checks PASS'
 
-      - name: Upload v0.8.90 native-only APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: FloodSafe-Nepal-v0.8.90-NativeOnly-APK
-          path: |
-            floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
-            /tmp/floodsafe-native-apk-sha256.txt
-            /tmp/floodsafe-native-apk-size.txt
-          if-no-files-found: error
-          retention-days: 14
-; then
-            echo 'ERROR: web assets found in native-only APK'
-            exit 1
-          fi
-          sha256sum "$APK" | tee /tmp/floodsafe-native-apk-sha256.txt
-          stat -c '%s' "$APK" | tee /tmp/floodsafe-native-apk-size.txt
-          echo 'FloodSafe v0.8.90 native-only APK PASS'
-
-      - name: Upload v0.8.90 native-only APK
+      - name: Upload tested native APK
         uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-Nepal-v0.8.90-NativeOnly-APK

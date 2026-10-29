@@ -99,6 +99,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private TextView nearTitle,nearSub,nationalTitle,nationalSub,nationalFresh,humanFresh,humanDeaths,humanInjured,humanMissing,humanRescued,humanDetail;
     private TextView newsTitle,newsSub,privacyTitle,privacySub,mapTitle,mapSub,mapHint;
     private FloodSafeNativeMapView map;
+    private volatile NepalRiverBoundary nepalDistrictBorder;
+    private long lastGovernmentExpiryCheckAt;
     private NativeSevenDayChart miniForecast;
     private AnimatedNepalWeatherOverlay mapWeather;
     private DistrictWeatherOverlay districtSky;
@@ -205,6 +207,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
             public double zoom(){return map.weatherZoom();}
         });
         holder.addView(districtSky,new FrameLayout.LayoutParams(-1,dp(430)));
+        map.setWeatherOverlayInvalidator(() -> { if(districtSky!=null)districtSky.invalidate(); });
         mapHint=text("",11,true,Color.rgb(84,115,137));mapHint.setPadding(dp(12),dp(9),dp(12),dp(9));mapHint.setBackground(round(Color.argb(240,255,255,255),18,Color.rgb(207,226,237),1));FrameLayout.LayoutParams hp=new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM);hp.setMargins(dp(10),0,dp(10),dp(10));holder.addView(mapHint,hp);c.addView(holder);
         zi.setOnClickListener(v->map.zoomBy(1.25f));zo.setOnClickListener(v->map.zoomBy(.8f));reset.setOnClickListener(v->map.resetView());d3.setOnClickListener(v->{map.toggleTerrain();d3.setText(map.terrain?"▱ 2D":"◈ 3D");});return c;
     }
@@ -241,6 +244,14 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
     private void renderGovernment(){
         if(governmentList==null)return;
+        // Revalidate expiry even when offline; the last fetched warning must not remain forever.
+        JSONArray stillValid=new JSONArray();
+        long now=System.currentTimeMillis();
+        for(int i=0;i<currentGovernmentNotices.length();i++){
+            JSONObject item=currentGovernmentNotices.optJSONObject(i);
+            if(GovernmentNotices.valid(item,now))stillValid.put(item);
+        }
+        currentGovernmentNotices=stillValid;
         governmentList.removeAllViews();
         int count=currentGovernmentNotices.length();
         governmentStatus.setText(count==0?t("हाल लागू वा आगामी पुष्टि गरिएको सूचना भेटिएन।","No verified active or upcoming notices at this check.")
@@ -365,7 +376,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
 
     private void refreshRivers(){feedFresh.setText(t("Official नदी अवस्था refresh हुँदैछ…","Refreshing official river status…"));io.execute(()->{try{JSONObject root=OfficialStationFeeds.rivers();JSONArray rows=root.optJSONArray("results");if(rows==null)rows=root.optJSONArray("data");if(rows==null)rows=new JSONArray();List<RiverStation> out=new ArrayList<>();long now=System.currentTimeMillis();for(int i=0;i<rows.length();i++){RiverStation s=parseStation(rows.optJSONObject(i),now);if(s!=null)out.add(s);}out.sort(Comparator.comparingInt((RiverStation s)->s.rank).thenComparingDouble(s->distanceKm(s.lat,s.lon)));synchronized(stations){stations.clear();stations.addAll(out);}runOnUiThread(this::refreshRiverUi);}catch(Exception e){runOnUiThread(()->feedFresh.setText(t("River data refresh हुन सकेन • stale लाई live भनिएको छैन","River refresh failed • stale data is not live")));}});}
-    private RiverStation parseStation(JSONObject r,long now){if(r==null)return null;double a=num(r,"latitude","lat","stationLatitude","station_latitude"),o=num(r,"longitude","lon","lng","stationLongitude","station_longitude");if(!Double.isFinite(a)||!Double.isFinite(o)||!isNepal(a,o))return null;double level=num(r,"waterLevel","water_level","currentWaterLevel","current_water_level","currentLevel","current_level","_lastWaterLevel"),warning=num(r,"warningLevel","warning_level","warningThreshold","warning_threshold","_lastWarningLevel"),danger=num(r,"dangerLevel","danger_level","dangerThreshold","danger_threshold","_lastDangerLevel");long at=parseTime(str(r,"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime"));boolean fresh=at>0&&now-at<=RIVER_FRESH_MS&&at-now<=5*60_000L;String raw=str(r,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT);String stage="unknown";int rank=4;if(fresh){if((Double.isFinite(level)&&Double.isFinite(danger)&&danger>0&&level>=danger)||(raw.contains("DANGER")&&!raw.contains("BELOW DANGER"))||raw.contains("RED")){stage="danger";rank=0;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning)||(raw.contains("WARNING")&&!raw.contains("BELOW WARNING"))||raw.contains("ORANGE")){stage="warning";rank=1;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning*.8)||raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW")){stage="alert";rank=2;}else if(Double.isFinite(level)||raw.contains("NORMAL")||raw.contains("BLUE")){stage="normal";rank=3;}}String name=str(r,"river_name","riverName","station_name","stationName","title","name");if(name.isEmpty())name="Official river station";String district=str(r,"districtName","district_name","district");return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank);}
+    private RiverStation parseStation(JSONObject r,long now){if(r==null)return null;double a=num(r,"latitude","lat","stationLatitude","station_latitude"),o=num(r,"longitude","lon","lng","stationLongitude","station_longitude");if(!Double.isFinite(a)||!Double.isFinite(o)||!isNepal(a,o))return null;NepalRiverBoundary polygon=nepalDistrictBorder();if(polygon==null||!polygon.contains(o,a))return null;double level=num(r,"waterLevel","water_level","currentWaterLevel","current_water_level","currentLevel","current_level","_lastWaterLevel"),warning=num(r,"warningLevel","warning_level","warningThreshold","warning_threshold","_lastWarningLevel"),danger=num(r,"dangerLevel","danger_level","dangerThreshold","danger_threshold","_lastDangerLevel");long at=parseTime(str(r,"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime"));boolean fresh=at>0&&now-at<=RIVER_FRESH_MS&&at-now<=5*60_000L;String raw=str(r,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT);String stage="unknown";int rank=4;if(fresh){if((Double.isFinite(level)&&Double.isFinite(danger)&&danger>0&&level>=danger)||(raw.contains("DANGER")&&!raw.contains("BELOW DANGER"))||raw.contains("RED")){stage="danger";rank=0;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning)||(raw.contains("WARNING")&&!raw.contains("BELOW WARNING"))||raw.contains("ORANGE")){stage="warning";rank=1;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning*.8)||raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW")){stage="alert";rank=2;}else if(Double.isFinite(level)||raw.contains("NORMAL")||raw.contains("BLUE")){stage="normal";rank=3;}}String name=str(r,"river_name","riverName","station_name","stationName","title","name");if(name.isEmpty())name="Official river station";String district=str(r,"districtName","district_name","district");return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank);}
     private void refreshRiverUi(){if(nearList==null||isFinishing()||isDestroyed())return;
       List<RiverStation> copy;synchronized(stations){copy=new ArrayList<>(stations);}
       long fingerprint=37;
@@ -456,10 +467,21 @@ public final class NativeFullActivity extends Activity implements LocationListen
 
     private void enableMonitoring(){getSharedPreferences(RainAlertWorker.PREFS,MODE_PRIVATE).edit().putBoolean("enabled",true).apply();Constraints c=new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();WorkManager wm=WorkManager.getInstance(getApplicationContext());wm.enqueueUniquePeriodicWork("floodsafe-local-rain-alerts",ExistingPeriodicWorkPolicy.UPDATE,new PeriodicWorkRequest.Builder(RainAlertWorker.class,15,TimeUnit.MINUTES).setConstraints(c).build());wm.enqueueUniquePeriodicWork("floodsafe-local-river-alerts",ExistingPeriodicWorkPolicy.UPDATE,new PeriodicWorkRequest.Builder(RiverAlertWorker.class,15,TimeUnit.MINUTES).setConstraints(c).build());wm.enqueueUniquePeriodicWork("floodsafe-government-bulletins",ExistingPeriodicWorkPolicy.KEEP,new PeriodicWorkRequest.Builder(GovernmentWarningWorker.class,30,TimeUnit.MINUTES).setConstraints(c).build());FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},REQ_NOTIFY);}
 
-    private final Runnable clockTick=new Runnable(){@Override public void run(){try{java.time.ZonedDateTime z=java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Kathmandu"));clock.setText(String.format(Locale.US,"%02d:%02d:%02d NPT",z.getHour(),z.getMinute(),z.getSecond()));}catch(Exception ignored){}main.postDelayed(this,1000);}};
+    private final Runnable clockTick=new Runnable(){@Override public void run(){try{java.time.ZonedDateTime z=java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Kathmandu"));clock.setText(String.format(Locale.US,"%02d:%02d:%02d NPT",z.getHour(),z.getMinute(),z.getSecond()));}catch(Exception ignored){}long now=System.currentTimeMillis();
+        if(governmentList!=null&&now-lastGovernmentExpiryCheckAt>=60_000L){
+            lastGovernmentExpiryCheckAt=now;
+            renderGovernment();
+        }
+        main.postDelayed(this,1000);}};
     private void initTts(){tts=new TextToSpeech(getApplicationContext(),s->{if(s==TextToSpeech.SUCCESS&&tts!=null){int r=tts.setLanguage(Locale.forLanguageTag("ne-NP"));if(r==TextToSpeech.LANG_MISSING_DATA||r==TextToSpeech.LANG_NOT_SUPPORTED)tts.setLanguage(new Locale("ne"));tts.setSpeechRate(.92f);}});}private void speak(String s){if(tts!=null&&s!=null&&!s.isEmpty())tts.speak(s,TextToSpeech.QUEUE_FLUSH,null,"sathi-native-full");}
     @Override public void onRequestPermissionsResult(int code,String[]p,int[]g){super.onRequestPermissionsResult(code,p,g);if(code==REQ_LOCATION&&hasLocationPermission())requestLocation();else if(code==REQ_MIC&&checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)showSathiDialog(null);}
     private boolean hasLocationPermission(){return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED||checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED;}
+    private synchronized NepalRiverBoundary nepalDistrictBorder(){
+        if(nepalDistrictBorder!=null)return nepalDistrictBorder;
+        try{nepalDistrictBorder=new NepalRiverBoundary(assetJson("floodsafe-nepal/v24/nepal-districts.geojson").toString());}
+        catch(Exception unavailable){try{nepalDistrictBorder=new NepalRiverBoundary(assetJson("floodsafe-nepal/v24/nepal-districts.json").toString());}catch(Exception ignored){}}
+        return nepalDistrictBorder;
+    }
     private static boolean isNepal(double a,double o){return Double.isFinite(a)&&Double.isFinite(o)&&a>=26.2&&a<=30.5&&o>=80&&o<=88.35;}
     private double distanceKm(double a,double o){if(!isNepal(lat,lon))return Double.NaN;double R=6371,dLat=Math.toRadians(a-lat),dLon=Math.toRadians(o-lon),q=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(Math.toRadians(lat))*Math.cos(Math.toRadians(a))*Math.sin(dLon/2)*Math.sin(dLon/2);return 2*R*Math.asin(Math.sqrt(q));}
     private JSONObject assetJson(String path)throws Exception{try(InputStream in=getAssets().open(path);BufferedReader r=new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8))){StringBuilder b=new StringBuilder();String line;while((line=r.readLine())!=null)b.append(line);return new JSONObject(b.toString());}}

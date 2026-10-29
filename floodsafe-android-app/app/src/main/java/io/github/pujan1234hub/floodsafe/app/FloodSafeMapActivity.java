@@ -107,7 +107,7 @@ public final class FloodSafeMapActivity extends Activity {
                     double level=number(o,"waterLevel","water_level","currentWaterLevel","current_level","_lastWaterLevel");
                     double warn=number(o,"warningLevel","warning_level","warningThreshold","_lastWarningLevel");
                     double danger=number(o,"dangerLevel","danger_level","dangerThreshold","_lastDangerLevel");
-                    long at=timestamp(text(o,"waterLevelOn","water_level_on","measuredOn","observedAt","observationTime","_measurementTime"));
+                    long at=timestamp(text(o,"waterLevelOn","water_level_on","measuredOn","observedAt","observationTime","_measurementTime","waterLevelOn"));
                     boolean fresh=at>0&&at<=now+300000L&&now-at<=2L*3600000L;
                     String raw=text(o,"_officialStatus","status","riskLevel").toUpperCase(Locale.ROOT);
                     String stage="unknown";
@@ -117,7 +117,7 @@ public final class FloodSafeMapActivity extends Activity {
                         else if(Double.isFinite(warn)&&warn>0&&level>=warn*.8||raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW"))stage="alert";
                         else stage="normal";
                     }
-                    String name=text(o,"river_name","riverName","station_name","stationName","title","name");
+                    String name=text(o,"river_name","riverName","station_name","stationName","station_name","title","name");
                     if(name.isEmpty())name="Official station";
                     points.add(new MapStation(name,lat,lon,level,fresh,stage,at));
                 }

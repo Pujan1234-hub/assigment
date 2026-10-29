@@ -1,8 +1,8 @@
-name: FloodSafe Nepal v0.9.21 Hybrid OTA Satellite District and Place Labels TEST
+name: FloodSafe Nepal v0.9.21 Hybrid OTA My Location Flicker TEST
 on:
   push:
     branches:
-      - test/floodsafe-v0921-hybrid-ota-map-place-labels-20261029
+      - test/floodsafe-v0921-ota-location-tap-flicker-20261029
     paths:
       - '.github/workflows/floodsafe-v0921-gov-weather-sathi-test.yml'
       - 'floodsafe-android-app/**'
@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: floodsafe-v0921-hybrid-ota-place-labels-isolated-test
+  group: floodsafe-v0921-ota-location-flicker-isolated-test
   cancel-in-progress: true
 jobs:
   android:
@@ -117,6 +117,12 @@ jobs:
           grep -Fq 'districtNamesOverlay.postInvalidateOnAnimation()' "$JAVA/FloodSafeNativeMapView.java"
           grep -Fq 'map.setMaxZoomPreference(CAMERA_MAX_ZOOM)' "$JAVA/FloodSafeNativeMapView.java"
           grep -Fq 'StationDetailSheet.show(this,s.name' "$JAVA/FloodSafeMapActivity.java"
+          grep -Fq 'locate.setOnClickListener(v->requestLocation(true))' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'boolean sameRecentFix=meters[0]<65f' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'version!=weatherRequestVersion' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'Math.abs(lat-requestedLat)>0.00065' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'Keep the previous weather card visible' "$JAVA/NativeFullActivity.java"
+          ! grep -Fq 'miniForecast.setForecast(new JSONObject())' "$JAVA/NativeFullActivity.java"
           grep -Fq 'floodSafetyAnswer' "$JAVA/SathiKnowledge.java"
           grep -Fq 'StationDetailSheet.show' "$JAVA/FloodSafeNativeMapView.java"
           grep -Fq 'StationDetailSheet.show' "$JAVA/FloodSafeMapActivity.java"
@@ -150,13 +156,13 @@ jobs:
             unzip -Z -1 "$APK" | grep -Fxq "$asset"
           done
           test "$(stat -c %s "$APK")" -gt 85000000
-          cp "$APK" FloodSafe-Nepal-v0.9.21-OTA-MAP-LABELS-TEST.apk
-          sha256sum FloodSafe-Nepal-v0.9.21-OTA-MAP-LABELS-TEST.apk
-          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-OTA-MAP-LABELS-TEST.apk
+          cp "$APK" FloodSafe-Nepal-v0.9.21-OTA-LOCATION-FLICKER-FIX-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-OTA-LOCATION-FLICKER-FIX-TEST.apk
+          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-OTA-LOCATION-FLICKER-FIX-TEST.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0921-OTA-Map-Labels-TEST
-          path: FloodSafe-Nepal-v0.9.21-OTA-MAP-LABELS-TEST.apk
+          name: FloodSafe-v0921-OTA-Location-Flicker-TEST
+          path: FloodSafe-Nepal-v0.9.21-OTA-LOCATION-FLICKER-FIX-TEST.apk
           retention-days: 14
           if-no-files-found: error
 
@@ -168,7 +174,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: FloodSafe-v0921-OTA-Map-Labels-TEST
+          name: FloodSafe-v0921-OTA-Location-Flicker-TEST
           path: ./test-apk
       - name: Install native debug and record startup evidence
         uses: reactivecircus/android-emulator-runner@v2
@@ -181,7 +187,7 @@ jobs:
           disable-animations: false
           script: |
             set +e
-            adb install -r ./test-apk/FloodSafe-Nepal-v0.9.21-OTA-MAP-LABELS-TEST.apk
+            adb install -r ./test-apk/FloodSafe-Nepal-v0.9.21-OTA-LOCATION-FLICKER-FIX-TEST.apk
             adb logcat -c
             adb shell am start -n io.github.pujan1234hub.floodsafe.app.preview/io.github.pujan1234hub.floodsafe.app.PJBuiltsSplashActivity
             sleep 18
@@ -199,7 +205,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0921-OTA-Map-Labels-Diagnostics
+          name: FloodSafe-v0921-OTA-Location-Flicker-Diagnostics
           path: |
             native-screen.png
             activity-state.txt
@@ -214,7 +220,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: FloodSafe-v0921-OTA-Map-Labels-TEST
+          name: FloodSafe-v0921-OTA-Location-Flicker-TEST
           path: ./apk
       - name: Publish direct TEST APK without changing production
         shell: bash
@@ -222,17 +228,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          APK=./apk/FloodSafe-Nepal-v0.9.21-OTA-MAP-LABELS-TEST.apk
+          APK=./apk/FloodSafe-Nepal-v0.9.21-OTA-LOCATION-FLICKER-FIX-TEST.apk
           test -s "$APK"
           test "$(stat -c %s "$APK")" -gt 85000000
           unzip -t "$APK" >/dev/null
           unzip -Z -1 "$APK" | grep -Fqx 'assets/pjbuilts-original-splash.html'
           unzip -Z -1 "$APK" | grep -Fqx 'assets/floodsafe-nepal/v25/index.html'
           sha256sum "$APK" > STABILITY-GYAN-SHA256.txt
-          TAG=floodsafe-v0921-ota-map-labels-test-20261029
-          NOTES='TEST ONLY. Based on previous full-feature FloodSafe Nepal v0.9.21 HYBRID OTA preview, preserves validated remote config revision support, offline cache, SATHI, News/Gyan, Play in-app update bridge, original cream-gold splash, official DHM/BIPAD levels and warning/danger station cards. FIX for missing map location names: transparent Esri World Boundaries and Places reference tiles for available city/place labels above existing satellite and hillshade; independent native drawn district names from 77 locally bundled coordinates, visible even when remote labels are down. Camera-linked redraw on map pan/pinch/zoom; do not change river geometry, layers, alert logic or original safe satellite zoom cap. This is an isolated preview APK, no production website or stable app edited. Esri service availability and runtime must be tested on device; tile labels depend on provider availability.'
+          TAG=floodsafe-v0921-ota-location-flicker-test-20261029
+          NOTES='TEST ONLY. Fix ONLY the Android Home My Current Location tap-induced flicker reported in user video: do not instantly apply a potentially stale cached fix before another GPS callback when location is already known; debounce duplicate taps; prevent redundant Home weather and station redraws for near-identical GPS readings within 90 seconds; avoid old network weather/geocoder responses overwriting the newer location/language; preserve last good seven-day forecast instead of clearing the chart on a temporary error. The initial auto-location behavior remains available. Everything else inherited intact from prior OTA Map Labels test: 77 districts + satellite place labels, source v0.9.21, original cream-gold splash, map, 3D, official river warnings/danger levels, SATHI, News/Gyan, content OTA + optional Play-native updates and existing alert logic. Production app/site are NOT changed. Phone runtime flicker improvement is not certified by unit tests.'
           if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$TAG" "$APK" STABILITY-GYAN-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" "$APK" STABILITY-GYAN-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 Hybrid OTA Map Labels TEST' --notes "$NOTES" --prerelease --latest=false
+            gh release create "$TAG" "$APK" STABILITY-GYAN-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 OTA My Location Tap Flicker Fix TEST' --notes "$NOTES" --prerelease --latest=false
           fi

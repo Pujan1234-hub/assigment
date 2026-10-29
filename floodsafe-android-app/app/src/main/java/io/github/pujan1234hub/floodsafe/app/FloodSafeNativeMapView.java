@@ -60,8 +60,14 @@ final class FloodSafeNativeMapView extends FrameLayout {
     interface StationTapListener { void onStationTap(Object stationObject); }
 
     private static final LatLng NEPAL_CENTER = new LatLng(28.10, 84.15);
+    // Esri World Imagery returns "Map data not yet available" placeholder images at
+    // some high zoom tile levels in Nepal. Request no deeper than 15 from Esri;
+    // MapLibre scales the available z15 parent imagery as the camera zooms further.
+    // Max camera 17 limits excessive raster blur, and applies to pinch as well as +.
+    private static final int SATELLITE_SOURCE_MAX_ZOOM = 15;
+    private static final double CAMERA_MAX_ZOOM = 17.0;
     private static final String STYLE_JSON = "{\"version\":8,\"sources\":{" +
-            "\"satellite\":{\"type\":\"raster\",\"tiles\":[\"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}\"],\"tileSize\":256,\"maxzoom\":19,\"attribution\":\"Imagery © Esri\"}," +
+            "\"satellite\":{\"type\":\"raster\",\"tiles\":[\"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}\"],\"tileSize\":256,\"maxzoom\":15,\"attribution\":\"Imagery © Esri\"}," +
             "\"terrain\":{\"type\":\"raster-dem\",\"tiles\":[\"https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png\"],\"tileSize\":256,\"encoding\":\"terrarium\",\"minzoom\":0,\"maxzoom\":15,\"attribution\":\"Terrain © AWS Terrain Tiles\"}}," +
             "\"layers\":[{\"id\":\"satellite\",\"type\":\"raster\",\"source\":\"satellite\"},{\"id\":\"hillshade\",\"type\":\"hillshade\",\"source\":\"terrain\",\"paint\":{\"hillshade-exaggeration\":0.30,\"hillshade-shadow-color\":\"#14242c\",\"hillshade-highlight-color\":\"#f2fdff\",\"hillshade-accent-color\":\"#4f7f8e\"}}]}";
 
@@ -106,7 +112,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         mapView.getMapAsync(m -> {
             map = m;
             map.setMinZoomPreference(4.8);
-            map.setMaxZoomPreference(19.0);
+            map.setMaxZoomPreference(CAMERA_MAX_ZOOM);
             try {
                 LatLngBounds bounds = new LatLngBounds.Builder()
                         .include(new LatLng(25.4, 79.2))
@@ -213,7 +219,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         if (map == null) return;
         double current = map.getCameraPosition().zoom;
         double delta = Math.log(Math.max(0.2f, factor)) / Math.log(2.0);
-        map.animateCamera(CameraUpdateFactory.zoomTo(Math.max(4.8, Math.min(19.0, current + delta))), 300);
+        map.animateCamera(CameraUpdateFactory.zoomTo(Math.max(4.8, Math.min(CAMERA_MAX_ZOOM, current + delta))), 300);
     }
 
     void resetView() {

@@ -13,11 +13,16 @@ final class SathiKnowledge {
  static String answer(String prompt,boolean en,JSONArray rivers,JSONArray govt,JSONArray weather,JSONArray news,String localWeather,boolean nepalGps){
   String q=prompt==null?"":prompt.trim().toLowerCase(Locale.ROOT);
   if(q.isEmpty())return en?"Ask about a district, river station, weather, government bulletin or app.":"जिल्ला, नदी स्टेशन, मौसम, सरकारी सूचना वा app बारे सोध्नुहोस्।";
-  boolean govtQ=contains(q,"सरकार","सरकारी","government","official alert","dhm","ndrrma","सूचना","notice","bulletin","चेतावनी","chetauni","warning");
   boolean riverQ=contains(q,"नदी","खोला","river","khola","flood","बाढी","level","पानीको सतह","station","स्टेशन");
+  boolean explicitGovt=contains(q,"सरकार","सरकारी","government","official alert","dhm","ndrrma","सूचना","notice","bulletin");
+  // A river-warning question must consult river gauges, not jump to the government bulletin screen.
+  boolean govtQ=explicitGovt||(!riverQ&&contains(q,"चेतावनी","chetauni","warning"));
   boolean weatherQ=contains(q,"मौसम","weather","rain","वर्षा","badal","बादल","cloud","धाम","घाम","हुरी","storm","thunder","चट्याङ","snow","हिमपात");
   if(govtQ){
-   if(govt==null||govt.length()==0)return en?"No currently verified government bulletin in the latest check. This is not an all-clear. Check dhm.gov.np or call 1155.":"हालको जाँचमा लागू भएको प्रमाणित सरकारी बुलेटिन भेटिएन। यसको अर्थ जोखिम छैन भन्ने होइन। dhm.gov.np वा ११५५ मा जाँच्नुहोस्।";
+   JSONArray verified=new JSONArray();long now=System.currentTimeMillis();
+   if(govt!=null)for(int i=0;i<govt.length();i++){JSONObject n=govt.optJSONObject(i);if(GovernmentNotices.valid(n,now))verified.put(n);}
+   govt=verified;
+   if(govt.length()==0)return en?"No currently verified government bulletin in the latest check. This is not an all-clear. Check dhm.gov.np or call 1155.":"हालको जाँचमा लागू भएको प्रमाणित सरकारी बुलेटिन भेटिएन। यसको अर्थ जोखिम छैन भन्ने होइन। dhm.gov.np वा ११५५ मा जाँच्नुहोस्।";
    StringBuilder b=new StringBuilder(en?"Current/upcoming source-linked government advisories (relayed):":"स्रोतसहितका लागू/आगामी सरकारी सूचना (relay):");
    for(int i=0;i<Math.min(3,govt.length());i++){JSONObject g=govt.optJSONObject(i);if(g==null)continue;b.append("\n").append(i+1).append(". ").append(g.optString("agency")).append(": ")
     .append(GovernmentNotices.title(g,en)).append("\n")
@@ -30,7 +35,7 @@ final class SathiKnowledge {
   if(rivers!=null)for(int i=0;i<rivers.length();i++){
    JSONObject r=rivers.optJSONObject(i);if(r==null)continue;
    String name=r.optString("name","").toLowerCase(Locale.ROOT),district=r.optString("district","").toLowerCase(Locale.ROOT);
-   String[] words=name.replace("river","").replace("khola","").replace("at","").split("[ /()-]+");
+   String[] words=name.replace("river","").replace("khola","").replaceAll("\\bat\\b","").split("[ /()-]+");
    boolean selected=false;
    for(String w:words)if(w.length()>=4&&q.contains(w)){selected=true;break;}
    if(!selected&&district.length()>=4&&q.contains(district))selected=true;

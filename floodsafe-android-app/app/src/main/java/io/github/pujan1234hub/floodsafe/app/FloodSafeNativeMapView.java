@@ -193,41 +193,34 @@ final class FloodSafeNativeMapView extends FrameLayout {
             }
             try {
                 String raw;
-                try { raw = readAsset("data/nepal-waterways-snapshot.json"); }
-                catch (Exception e) { raw = readAsset("data/nepal-waterways-tiles/overview.json"); }
+                raw = readAsset("data/nepal-rivers-native.json"); // clipped and simplified at APK build time
                 JSONObject root = new JSONObject(raw);
                 JSONArray ways = root.optJSONArray("waterways");
-                // Use the genuine Nepal border, not the old rectangular bounding box.
-                // If the district boundary is absent, fail closed rather than draw
-                // waterways across another country.
-                NepalRiverBoundary nepalClip = districtGeoJson == null
-                        ? null : new NepalRiverBoundary(districtGeoJson);
-                if (ways != null && nepalClip != null) {
-                    List<RiverWay> all = new ArrayList<>();
-                    for (int i = 0; i < ways.length(); i++) {
-                        JSONObject w = ways.optJSONObject(i);
-                        if (w == null) continue;
-                        JSONArray pts = w.optJSONArray("pts");
-                        if (pts == null || pts.length() < 2) continue;
-                        String name = firstNonEmpty(w.optString("name_ne"),
-                                w.optString("name"), w.optString("name_en"), "नदी / खोला");
-                        String type = w.optString("type", "stream");
-                        // Every crossing is split at Nepal's actual boundary;
-                        // risk colours and particles reuse only these clipped lines.
-                        for (List<double[]> clipped : nepalClip.clip(pts)) {
-                            RiverWay rw = new RiverWay();
-                            rw.name = name;
-                            rw.type = type;
-                            rw.points.addAll(clipped);
-                            if (rw.points.size() >= 2) all.add(rw);
-                        }
+                // Never run 77-polygon / 200m sampling on the UI device.
+                // CI already clipped every river to actual Nepal district geometry.
+                if (ways == null || ways.length() < 75) throw new IllegalStateException("No prepared river network");
+                List<RiverWay> all = new ArrayList<>();
+                for (int i = 0; i < ways.length(); i++) {
+                    JSONObject w = ways.optJSONObject(i);
+                    if (w == null) continue;
+                    JSONArray pts = w.optJSONArray("pts");
+                    if (pts == null || pts.length() < 2) continue;
+                    RiverWay rw = new RiverWay();
+                    rw.name = firstNonEmpty(w.optString("name_ne"), w.optString("name"), "नदी / खोला");
+                    rw.type = w.optString("type", "stream");
+                    for (int k = 0; k < pts.length(); k++) {
+                        JSONArray xy = pts.optJSONArray(k);
+                        if (xy == null) continue;
+                        double lo=xy.optDouble(0,Double.NaN),la=xy.optDouble(1,Double.NaN);
+                        if (!Double.isFinite(lo)||!Double.isFinite(la))continue;
+                        rw.points.add(new double[]{lo,la});
                     }
-                    all.sort(Comparator.comparingInt(FloodSafeNativeMapView::riverScore).reversed());
-                    if (all.size() > 1400) all = new ArrayList<>(all.subList(0, 1400));
-                    rivers.clear();
-                    rivers.addAll(all);
-                    riversGeoJson = makeRiversGeoJson(all);
+                    if(rw.points.size()>=2)all.add(rw);
                 }
+                if(all.size()<75)throw new IllegalStateException("Prepared river data unexpectedly sparse");
+                rivers.clear();
+                rivers.addAll(all);
+                riversGeoJson = makeRiversGeoJson(all);
             } catch (Exception ignored) {}
             main.post(() -> {
                 installGeoLayers();
@@ -249,9 +242,9 @@ final class FloodSafeNativeMapView extends FrameLayout {
             if (riversGeoJson != null && style.getSource("fs-rivers") == null) {
                 style.addSource(new GeoJsonSource("fs-rivers", riversGeoJson));
                 style.addLayer(new LineLayer("fs-river-glow", "fs-rivers").withProperties(
-                        lineColor("#003d55"), lineWidth(4.0f), lineOpacity(0.55f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
+                        lineColor("#29baff"), lineWidth(5.2f), lineOpacity(0.34f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
                 style.addLayer(new LineLayer("fs-rivers-layer", "fs-rivers").withProperties(
-                        lineColor("#49dcff"), lineWidth(1.65f), lineOpacity(0.96f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
+                        lineColor("#45e3ff"), lineWidth(2.25f), lineOpacity(0.99f), lineCap(LINE_CAP_ROUND), lineJoin(LINE_JOIN_ROUND)));
             }
             ensureRiverRiskSource("fs-river-alert", "fs-river-alert-glow", "fs-river-alert-layer", "#ffc928");
             ensureRiverRiskSource("fs-river-warning", "fs-river-warning-glow", "fs-river-warning-layer", "#ff8a1f");
@@ -309,7 +302,11 @@ final class FloodSafeNativeMapView extends FrameLayout {
         if (!styleReady || style == null || rivers.isEmpty()) return;
         List<StationDot> snapshot;
         synchronized (stations) { snapshot = new ArrayList<>(stations); }
-        for (RiverWay river : rivers) river.stage = riverStage(river, snapshot);
+        // Only actually elevated, current gauges can recolour river segments.
+        // Normal and unverified station markers still render on the map.
+        List<StationDot> elevated=new ArrayList<>();
+        for(StationDot dot:snapshot)if(dot.fresh&&severity(normalizeStage(dot.stage))>0)elevated.add(dot);
+        for(RiverWay river:rivers)river.stage=riverStage(river,elevated);
         setGeo("fs-river-alert", riverGeoByStage(rivers, "alert"));
         setGeo("fs-river-warning", riverGeoByStage(rivers, "warning"));
         setGeo("fs-river-danger", riverGeoByStage(rivers, "danger"));
@@ -459,7 +456,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
             if (!animationRunning || !styleReady || style == null) return;
             try {
                 JSONArray features = new JSONArray();
-                int n = Math.min(36, rivers.size());
+                int n = Math.min(20, rivers.size());
                 double phase = ((System.currentTimeMillis() - particleStart) % 6500L) / 6500.0;
                 for (int i = 0; i < n; i++) {
                     RiverWay r = rivers.get(i);
@@ -474,7 +471,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 JSONObject fc = new JSONObject().put("type", "FeatureCollection").put("features", features);
                 setGeo("fs-flow-particles", fc.toString());
             } catch (Exception ignored) {}
-            main.postDelayed(this, 160L);
+            main.postDelayed(this, 310L);
         }
     };
 

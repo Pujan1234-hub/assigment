@@ -134,6 +134,9 @@ public final class NativeFullActivity extends Activity implements LocationListen
         alarmBanner=new LinearLayout(this);alarmBanner.setOrientation(LinearLayout.VERTICAL);alarmBanner.setPadding(dp(16),dp(14),dp(16),dp(14));alarmBanner.setBackground(round(Color.rgb(255,235,239),22,Color.rgb(239,138,152),2));
         alarmTitle=text(t("⚠️ नदी चेतावनी","⚠️ River warning"),22,true,Color.rgb(146,34,56));alarmText=text("",14,true,Color.rgb(146,34,56));alarmBanner.addView(alarmTitle);alarmBanner.addView(alarmText);alarmBanner.setVisibility(View.GONE);content.addView(alarmBanner,lp(-1,-2,0,0,0,dp(12)));
         mapAnchor=mapCard();content.addView(mapAnchor);
+         Button advanced=button(t("✨ उन्नत जानकारी · नदी, वर्षा, बाढी, NASA र चेतावनी","✨ Advanced · Rivers, Rain, Flood, NASA & Alerts"));
+         advanced.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});
+         content.addView(advanced,lp(-1,dp(62),0,dp(10),0,dp(12)));
         content.addView(riskCard());
         content.addView(nearCard());
         content.addView(nationalCard());

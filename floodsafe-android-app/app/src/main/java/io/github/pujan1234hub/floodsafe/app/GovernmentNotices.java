@@ -41,13 +41,12 @@ final class GovernmentNotices {
   String issuer=item.optString("agency");
   if(!("DHM".equals(issuer)||"NDRRMA".equals(issuer)))return false;
   String stage=item.optString("status");
-  if(!"in_effect".equals(stage)&&!"upcoming".equals(stage))return false;
+  if(!"in_effect".equals(stage))return false;
   long start=time(item.optString("validFrom")),end=time(item.optString("validUntil"));
   long issued=time(item.optString("issuedAt"));
   String url=item.optString("sourceUrl");
   return start>0&&end>start&&issued>0&&issued<=now+5*60000L
-      &&end>=now&&end-now<14L*86400000L
-      &&("in_effect".equals(stage)?start<=now:(start>now&&start-now<=7L*86400000L))
+      &&start<=now&&now<end
       &&url.startsWith("https://")&&(url.contains("dhm.gov.np")||url.contains("ndrrma")||url.contains("x.com/DHM_")||url.contains("x.com/NMD_Weather")||url.contains("x.com/NDRRMA_"));
  }
  static JSONArray active(JSONObject root,long now){

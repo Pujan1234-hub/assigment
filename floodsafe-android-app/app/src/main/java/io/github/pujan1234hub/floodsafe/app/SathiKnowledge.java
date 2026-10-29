@@ -18,7 +18,7 @@ final class SathiKnowledge {
   boolean weatherQ=contains(q,"मौसम","weather","rain","वर्षा","badal","बादल","cloud","धाम","घाम","हुरी","storm","thunder","चट्याङ","snow","हिमपात");
   if(govtQ){
    if(govt==null||govt.length()==0)return en?"No currently verified government bulletin in the latest check. This is not an all-clear. Check dhm.gov.np or call 1155.":"हालको जाँचमा लागू भएको प्रमाणित सरकारी बुलेटिन भेटिएन। यसको अर्थ जोखिम छैन भन्ने होइन। dhm.gov.np वा ११५५ मा जाँच्नुहोस्।";
-   StringBuilder b=new StringBuilder(en?"Active source-linked government advisories (relayed):":"स्रोतसहितका लागू सरकारी सूचना (relay):");
+   StringBuilder b=new StringBuilder(en?"Current/upcoming source-linked government advisories (relayed):":"स्रोतसहितका लागू/आगामी सरकारी सूचना (relay):");
    for(int i=0;i<Math.min(3,govt.length());i++){JSONObject g=govt.optJSONObject(i);if(g==null)continue;b.append("\n").append(i+1).append(". ").append(g.optString("agency")).append(": ")
     .append(GovernmentNotices.title(g,en)).append("\n")
     .append(en?"Valid: ":"लागू: ").append(g.optString("validFrom")).append(" – ").append(g.optString("validUntil"));}

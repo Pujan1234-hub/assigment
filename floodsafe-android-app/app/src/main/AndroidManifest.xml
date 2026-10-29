@@ -24,6 +24,7 @@
         <activity android:name=".VoiceMainActivity" android:exported="false" android:launchMode="singleTop" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".NativeHomeActivity" android:exported="false" android:launchMode="singleTop" />
         <activity android:name=".NativeFullActivity" android:exported="false" android:launchMode="singleTop" />
+        <activity android:name=".GyanActivity" android:exported="false" />
         <activity android:name=".FloodSafeAdvancedActivity" android:exported="false" />
         <activity android:name=".FloodSafeNasaSatelliteActivity" android:exported="false" />
         <activity android:name=".FloodSafeNativeActivity" android:exported="false" android:launchMode="singleTop" />

@@ -274,7 +274,13 @@ final class FloodSafeNativeMapView extends FrameLayout {
                             rw.name = name;
                             rw.type = type;
                             rw.points.addAll(clipped);
-                            if (rw.points.size() >= 2) all.add(rw);
+                            if (rw.points.size() >= 2) {
+                                for(double[] pt : clipped) {
+                                    rw.minLat=Math.min(rw.minLat,pt[1]);rw.maxLat=Math.max(rw.maxLat,pt[1]);
+                                    rw.minLon=Math.min(rw.minLon,pt[0]);rw.maxLon=Math.max(rw.maxLon,pt[0]);
+                                }
+                                all.add(rw);
+                            }
                         }
                     }
                     all.sort(Comparator.comparingInt(FloodSafeNativeMapView::riverScore).reversed());
@@ -400,15 +406,9 @@ final class FloodSafeNativeMapView extends FrameLayout {
     }
 
     private static boolean withinRiverEnvelope(StationDot s, RiverWay r, double pad) {
-        if (r.points.isEmpty()) return false;
-        // Cheap bounding check avoids expensive distance loops for unrelated gauges.
-        double minLat=Double.POSITIVE_INFINITY,maxLat=Double.NEGATIVE_INFINITY;
-        double minLon=Double.POSITIVE_INFINITY,maxLon=Double.NEGATIVE_INFINITY;
-        for (double[] p : r.points) {
-            minLat=Math.min(minLat,p[1]);maxLat=Math.max(maxLat,p[1]);
-            minLon=Math.min(minLon,p[0]);maxLon=Math.max(maxLon,p[0]);
-        }
-        return s.lat>=minLat-pad&&s.lat<=maxLat+pad&&s.lon>=minLon-pad&&s.lon<=maxLon+pad;
+        // Bounding envelopes are calculated once, OFF the main thread during geometry load.
+        return s.lat>=r.minLat-pad && s.lat<=r.maxLat+pad
+            && s.lon>=r.minLon-pad && s.lon<=r.maxLon+pad;
     }
     private static boolean stationNearRiver(StationDot s, RiverWay r, double maxKm) {
         int stride = Math.max(1, r.points.size() / 100);
@@ -679,6 +679,10 @@ final class FloodSafeNativeMapView extends FrameLayout {
         Object original; String name, stage; double lat, lon, level, rainfallMm; boolean fresh;
     }
     private static final class RiverWay {
-        String name, type, stage = "normal"; final List<double[]> points = new ArrayList<>();
+        String name, type, volatileStage = "normal";
+        volatile String stage = "normal";
+        double minLat=Double.POSITIVE_INFINITY,maxLat=Double.NEGATIVE_INFINITY;
+        double minLon=Double.POSITIVE_INFINITY,maxLon=Double.NEGATIVE_INFINITY;
+        final List<double[]> points = new ArrayList<>();
     }
 }

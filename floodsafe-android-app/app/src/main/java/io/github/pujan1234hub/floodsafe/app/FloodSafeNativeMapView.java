@@ -3,7 +3,13 @@ package io.github.pujan1234hub.floodsafe.app;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.Typeface;
+import android.view.View;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -68,10 +74,21 @@ final class FloodSafeNativeMapView extends FrameLayout {
     private static final double CAMERA_MAX_ZOOM = 17.0;
     private static final String STYLE_JSON = "{\"version\":8,\"sources\":{" +
             "\"satellite\":{\"type\":\"raster\",\"tiles\":[\"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}\"],\"tileSize\":256,\"maxzoom\":15,\"attribution\":\"Imagery © Esri\"}," +
-            "\"terrain\":{\"type\":\"raster-dem\",\"tiles\":[\"https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png\"],\"tileSize\":256,\"encoding\":\"terrarium\",\"minzoom\":0,\"maxzoom\":15,\"attribution\":\"Terrain © AWS Terrain Tiles\"}}," +
-            "\"layers\":[{\"id\":\"satellite\",\"type\":\"raster\",\"source\":\"satellite\"},{\"id\":\"hillshade\",\"type\":\"hillshade\",\"source\":\"terrain\",\"paint\":{\"hillshade-exaggeration\":0.30,\"hillshade-shadow-color\":\"#14242c\",\"hillshade-highlight-color\":\"#f2fdff\",\"hillshade-accent-color\":\"#4f7f8e\"}}]}";
+            "\"terrain\":{\"type\":\"raster-dem\",\"tiles\":[\"https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png\"],\"tileSize\":256,\"encoding\":\"terrarium\",\"minzoom\":0,\"maxzoom\":15,\"attribution\":\"Terrain © AWS Terrain Tiles\"}," +
+            // Transparent place-name reference overlay: no raster basemap replacement.
+            // Keep max tile zoom 12; overzoom locally instead of requesting unavailable deep tiles.
+            "\"place-labels\":{\"type\":\"raster\",\"tiles\":[\"https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}\"],\"tileSize\":256,\"minzoom\":0,\"maxzoom\":12,\"attribution\":\"Place names © Esri, © OpenStreetMap contributors\"}}," +
+            "\"layers\":[{\"id\":\"satellite\",\"type\":\"raster\",\"source\":\"satellite\"},{\"id\":\"hillshade\",\"type\":\"hillshade\",\"source\":\"terrain\",\"paint\":{\"hillshade-exaggeration\":0.30,\"hillshade-shadow-color\":\"#14242c\",\"hillshade-highlight-color\":\"#f2fdff\",\"hillshade-accent-color\":\"#4f7f8e\"}},{\"id\":\"place-labels\",\"type\":\"raster\",\"source\":\"place-labels\"}]}";
 
     private final MapView mapView;
+    private final View districtNamesOverlay;
+    private volatile List<DistrictLabel> bundledDistrictNames=java.util.Collections.emptyList();
+    private final Paint districtText=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint districtOutline=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private static final class DistrictLabel {
+        final String name;final double lat,lon;
+        DistrictLabel(String n,double a,double o){name=n;lat=a;lon=o;}
+    }
     private final StationTapListener stationTapListener;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -108,6 +125,24 @@ final class FloodSafeNativeMapView extends FrameLayout {
         MapLibre.getInstance(context.getApplicationContext());
         mapView = new MapView(context);
         addView(mapView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        // Native Android text fallback ensures all 77 district names can still render
+        // even if Esri reference/OSM town-label tiles are offline or later retired.
+        districtText.setTextAlign(Paint.Align.CENTER);
+        districtText.setTypeface(Typeface.create("sans-serif-medium",Typeface.BOLD));
+        districtText.setStyle(Paint.Style.FILL);
+        districtText.setColor(Color.WHITE);
+        districtOutline.setTextAlign(Paint.Align.CENTER);
+        districtOutline.setTypeface(Typeface.create("sans-serif-medium",Typeface.BOLD));
+        districtOutline.setStyle(Paint.Style.STROKE);
+        districtOutline.setStrokeJoin(Paint.Join.ROUND);
+        districtOutline.setStrokeWidth(4.5f*getResources().getDisplayMetrics().density);
+        districtOutline.setColor(Color.rgb(14,30,42));
+        districtNamesOverlay=new View(context){
+            @Override protected void onDraw(Canvas canvas){super.onDraw(canvas);drawBundledDistrictNames(canvas);}
+        };
+        districtNamesOverlay.setClickable(false);
+        districtNamesOverlay.setFocusable(false);
+        addView(districtNamesOverlay,new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
         mapView.onCreate((Bundle) null);
         mapView.getMapAsync(m -> {
             map = m;
@@ -130,6 +165,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 if(rendererResumed)startParticles();
             });
             map.addOnMapClickListener(this::onMapClick);
+            map.addOnCameraIdleListener(()->districtNamesOverlay.invalidate());
             // Weather icons must redraw during every camera movement, not jump to a cached location.
             map.addOnCameraMoveListener(() -> {
                 if (!particlesEnabled || hostPaused || disposed) return;
@@ -139,6 +175,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
                     weatherFrameAt=now;
                     Runnable notify = weatherOverlayInvalidator;
                     if (notify != null) notify.run();
+                    districtNamesOverlay.postInvalidateOnAnimation();
                 }
             });
         });
@@ -238,8 +275,53 @@ final class FloodSafeNativeMapView extends FrameLayout {
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cp), 500);
     }
 
+
+    /** 77 reliable locally bundled names, positioned in the native camera projection. */
+    private void drawBundledDistrictNames(Canvas canvas){
+        if(map==null||canvas==null)return;
+        double zoom=map.getCameraPosition().zoom;
+        if(zoom<5.15||zoom>11.8)return;
+        List<DistrictLabel> labels=bundledDistrictNames;
+        if(labels.isEmpty())return;
+        float density=getResources().getDisplayMetrics().density;
+        float sp=getResources().getDisplayMetrics().scaledDensity;
+        float font=(zoom>=8.2?13.5f:zoom>=6.6?12.3f:11.2f)*sp;
+        districtText.setTextSize(font);
+        districtOutline.setTextSize(font);
+        List<RectF> used=new ArrayList<>(75);
+        for(DistrictLabel d:labels){
+            PointF p;
+            try{p=map.getProjection().toScreenLocation(new LatLng(d.lat,d.lon));}
+            catch(Exception e){continue;}
+            if(p==null||p.x<25*density||p.y<25*density||
+               p.x>getWidth()-25*density||p.y>getHeight()-25*density)continue;
+            float textWidth=districtText.measureText(d.name);
+            RectF rect=new RectF(p.x-textWidth*.5f-4*density,p.y-font-4*density,
+                                 p.x+textWidth*.5f+4*density,p.y+5*density);
+            boolean overlap=false;
+            for(RectF prior:used)if(RectF.intersects(prior,rect)){overlap=true;break;}
+            if(overlap)continue;
+            used.add(rect);
+            canvas.drawText(d.name,p.x,p.y,districtOutline);
+            canvas.drawText(d.name,p.x,p.y,districtText);
+        }
+    }
+
     private void loadBundledGeometry() {
         io.execute(() -> {
+            try{
+                JSONArray districts=DistrictWeatherStore.districts(getContext());
+                List<DistrictLabel> local=new ArrayList<>(districts.length());
+                for(int i=0;i<districts.length();i++){
+                    JSONObject d=districts.optJSONObject(i);if(d==null)continue;
+                    double lat=d.optDouble("lat",Double.NaN),lon=d.optDouble("lon",Double.NaN);
+                    String name=d.optString("name","").trim();
+                    if(!name.isEmpty()&&Double.isFinite(lat)&&Double.isFinite(lon)
+                       &&lat>=26.2&&lat<=30.5&&lon>=80.0&&lon<=88.35)
+                        local.add(new DistrictLabel(name,lat,lon));
+                }
+                bundledDistrictNames=java.util.Collections.unmodifiableList(local);
+            }catch(Exception ignored){}
             try {
                 districtGeoJson = readAsset("data/nepal-districts.geojson");
             } catch (Exception ignored) {
@@ -329,6 +411,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 }
             } catch (Exception ignored) {}
             main.post(() -> {
+                districtNamesOverlay.invalidate();
                 installGeoLayers();
                 refreshRiverRiskSources();
             });

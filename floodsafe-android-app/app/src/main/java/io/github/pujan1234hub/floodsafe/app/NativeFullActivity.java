@@ -89,7 +89,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private long locAt;
     private FrameLayout root;
     private ScrollView scroll;
-    private LinearLayout content,nearList,nationalList,newsList,humanCard,alarmBanner;
+    private LinearLayout content,nearList,nationalList,newsList,humanCard,alarmBanner,governmentList;
     private TextView brandSub,langBtn,place,clock,temp,weatherText,weatherSupport,rainTiming,rain,humidity,wind;
     private TextView alarmTitle,alarmText,riskBadge,riskValue,riskText,stationCount,warningCount,dangerCount,feedFresh;
     private TextView nearTitle,nearSub,nationalTitle,nationalSub,nationalFresh,humanFresh,humanDeaths,humanInjured,humanMissing,humanRescued,humanDetail;
@@ -99,6 +99,10 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private AnimatedNepalWeatherOverlay mapWeather;
     private View homeAnchor,mapAnchor,newsAnchor;
     private String currentWeather="";
+    private JSONArray currentGovernmentNotices=new JSONArray();
+    private TextView governmentStatus;
+    private boolean expandedGovernment=false;
+    private long governmentCheckedAt=0L;
     private boolean showAllStations=false;
 
     @Override public void onCreate(Bundle state){
@@ -134,6 +138,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         TextView outside=text("",13,true,Color.rgb(40,85,111)); outside.setId(android.R.id.hint); outside.setPadding(dp(15),dp(13),dp(15),dp(13)); outside.setBackground(round(Color.rgb(239,249,255),22,Color.rgb(159,205,232),1)); content.addView(outside,lp(-1,-2,0,0,0,dp(10)));
         alarmBanner=new LinearLayout(this);alarmBanner.setOrientation(LinearLayout.VERTICAL);alarmBanner.setPadding(dp(16),dp(14),dp(16),dp(14));alarmBanner.setBackground(round(Color.rgb(255,235,239),22,Color.rgb(239,138,152),2));
         alarmTitle=text(t("⚠️ नदी चेतावनी","⚠️ River warning"),22,true,Color.rgb(146,34,56));alarmText=text("",14,true,Color.rgb(146,34,56));alarmBanner.addView(alarmTitle);alarmBanner.addView(alarmText);alarmBanner.setVisibility(View.GONE);content.addView(alarmBanner,lp(-1,-2,0,0,0,dp(12)));
+        content.addView(governmentCard(),lp(-1,-2,0,0,0,dp(12)));
         mapAnchor=mapCard();content.addView(mapAnchor);
          Button advanced=button(t("✨ उन्नत जानकारी · नदी, वर्षा, बाढी, NASA र चेतावनी","✨ Advanced · Rivers, Rain, Flood, NASA & Alerts"));
          advanced.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});
@@ -186,6 +191,65 @@ public final class NativeFullActivity extends Activity implements LocationListen
         zi.setOnClickListener(v->map.zoomBy(1.25f));zo.setOnClickListener(v->map.zoomBy(.8f));reset.setOnClickListener(v->map.resetView());d3.setOnClickListener(v->{map.toggleTerrain();d3.setText(map.terrain?"▱ 2D":"◈ 3D");});return c;
     }
 
+    private View governmentCard(){
+        LinearLayout c=card();
+        c.addView(text(t("⚠️ नेपाल सरकारका मौसम तथा बाढी सूचना","⚠️ Government weather and flood advisories"),19,true,Color.rgb(16,39,70)));
+        governmentStatus=text(t("DHM / NDRRMA सूचना जाँच हुँदैछ…","Checking DHM / NDRRMA notices…"),12,false,Color.rgb(103,132,154));
+        c.addView(governmentStatus);
+        governmentList=new LinearLayout(this);governmentList.setOrientation(LinearLayout.VERTICAL);
+        c.addView(governmentList,lp(-1,-2,0,dp(8),0,0));
+        Button more=smallButton(t("सबै सरकारी सूचना","All government advisories"));
+        more.setOnClickListener(v->{expandedGovernment=!expandedGovernment;renderGovernment();});
+        c.addView(more,lp(-1,dp(45),0,dp(8),0,0));
+        return c;
+    }
+    private void refreshGovernment(){
+        io.execute(()->{
+            try {
+                JSONObject result=GovernmentNotices.fetch();
+                JSONArray notices=GovernmentNotices.active(result,System.currentTimeMillis());
+                runOnUiThread(()->{
+                    if(isFinishing()||governmentList==null)return;
+                    currentGovernmentNotices=notices;
+                    governmentCheckedAt=System.currentTimeMillis();
+                    renderGovernment();
+                });
+            }catch(Exception e){
+                runOnUiThread(()->{
+                    if(governmentStatus!=null)governmentStatus.setText(t("हाल पुष्टि गरिएका सरकारी सूचना ल्याउन सकिएन। DHM मा जाँच्नुहोस्।","Verified government advisories unavailable. Check DHM directly."));
+                });
+            }
+        });
+    }
+    private void renderGovernment(){
+        if(governmentList==null)return;
+        governmentList.removeAllViews();
+        int count=currentGovernmentNotices.length();
+        governmentStatus.setText(count==0?t("अहिले लागू भएको पुष्टि गरिएको सूचना भेटिएन।","No verified notices in effect at this check.")
+          :t("DHM / NDRRMA का "+count+" लागू सूचना · मूल सरकारी प्रकाशनबाट स्रोत हेर्नुहोस्",""+count+" current DHM / NDRRMA advisories · read original publication"));
+        for(int i=0;i<Math.min(count,expandedGovernment?count:1);i++){
+            JSONObject n=currentGovernmentNotices.optJSONObject(i);
+            if(n==null)continue;
+            String source=n.optString("sourceUrl"),title=GovernmentNotices.title(n,english);
+            String period=GovernmentNotices.period(n,english);
+            TextView v=text(n.optString("agency")+" • "+title+"\n"+period,13,true,Color.rgb(30,65,84));
+            v.setPadding(dp(12),dp(11),dp(12),dp(11));
+            v.setBackground(round(Color.rgb(255,249,236),15,Color.rgb(227,205,166),1));
+            LinearLayout.LayoutParams p=lp(-1,-2,0,dp(5),0,dp(5));
+            governmentList.addView(v,p);
+            v.setOnClickListener(view->new AlertDialog.Builder(this)
+                .setTitle(n.optString("agency")+" · "+title)
+                .setMessage(GovernmentNotices.summary(n,english)+"\n\n"+period+"\n\n"+t("सरकारी सूचनाको स्वतन्त्र relay; स्रोतबाट पुष्टि गर्नुहोस्।","Independently relayed government announcement; verify the original source."))
+                .setPositiveButton(t("मूल सूचना","Open original"),(d,w)->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(source)));}catch(Exception ignored){}})
+                .setNegativeButton(t("बन्द","Close"),null).show());
+        }
+        if(count==0){
+            TextView link=text(t("मूल DHM वेबसाइट खोल्नुहोस् ↗","Open official DHM website ↗"),12,true,Color.rgb(18,114,167));
+            governmentList.addView(link);
+            link.setOnClickListener(v->startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(GovernmentNotices.DIRECT_DHM))));
+        }
+    }
+
     private View riskCard(){LinearLayout c=card();LinearLayout h=new LinearLayout(this);h.setOrientation(LinearLayout.HORIZONTAL);LinearLayout left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);h.addView(left,new LinearLayout.LayoutParams(0,-2,1));TextView title=text(t("🛡️ मेरो निगरानी क्षेत्रको बाढी जोखिम","🛡️ Flood risk near me"),20,true,Color.rgb(16,39,70));left.addView(title);feedFresh=text("",12,true,Color.rgb(100,130,151));left.addView(feedFresh);riskBadge=badge("—",Color.rgb(237,247,252),Color.rgb(23,116,174));h.addView(riskBadge);c.addView(h);riskValue=text("—",34,true,Color.rgb(85,117,139));c.addView(riskValue,lp(-1,-2,0,dp(12),0,0));riskText=text("",13,false,Color.rgb(95,125,146));c.addView(riskText);LinearLayout stats=new LinearLayout(this);stats.setOrientation(LinearLayout.HORIZONTAL);stationCount=stat(stats,"—",t("सबै official स्टेशन","Official stations"));warningCount=stat(stats,"—",t("चेतावनी","Warning"));dangerCount=stat(stats,"—",t("खतरा","Danger"));c.addView(stats,lp(-1,-2,0,dp(12),0,0));return c;}
     private TextView stat(LinearLayout p,String n,String l){LinearLayout b=new LinearLayout(this);b.setOrientation(LinearLayout.VERTICAL);b.setGravity(Gravity.CENTER);b.setPadding(dp(5),dp(9),dp(5),dp(9));b.setBackground(round(Color.rgb(243,249,252),16,Color.rgb(218,234,242),1));TextView v=text(n,21,true,Color.rgb(16,39,70));TextView s=text(l,9,true,Color.rgb(103,132,154));s.setGravity(Gravity.CENTER);b.addView(v);b.addView(s);LinearLayout.LayoutParams q=new LinearLayout.LayoutParams(0,-2,1);q.setMargins(dp(3),0,dp(3),0);p.addView(b,q);return v;}
 
@@ -202,7 +266,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private void applyLanguage(){brandSub.setText(t("नेपाल • नदी • बाढी • चौबीसै घण्टा चेतावनी","Nepal • rivers • floods • 24/7 alerts"));langBtn.setText(t("अङ्ग्रेजी","नेपाली"));weatherText.setText(currentWeather.isEmpty()?t("नेपालको निगरानी स्थान छान्नुहोस्","Choose a monitoring location"):currentWeather);weatherSupport.setText(t("नेपालको मौसम + official BIPAD/DHM realtime नदी status","Local weather + official BIPAD/DHM river status"));if(!Double.isFinite(lat)){place.setText(t("📍 नेपालमा निगरानी स्थान छान्नुहोस्","📍 Choose a monitoring location"));rainTiming.setText(t("हालको स्थान लिएपछि आगामी वर्षा timing देखाइन्छ।","Rain timing appears after location is available."));}mapTitle.setText(t("🇳🇵 आधिकारिक नदी स्टेशन नक्सा","🇳🇵 Official river station map"));mapSub.setText(t("नदी/स्टेशन थिचेर पानीको तह, चेतावनी र official time हेर्नुहोस्।","Tap a river station for level, warning and official time."));mapHint.setText(t("🇳🇵 official नदी स्टेशन र नदी geometry","🇳🇵 official stations and river geometry"));nearTitle.setText(t("🌊 नजिकका नदी स्टेशन","🌊 Nearby river stations"));nearSub.setText(t("तपाईंको स्थान नजिकको official नदी अवस्था","Official river status near your location"));nationalTitle.setText(t("🌊 ७७ जिल्ला — सबै official नदी स्टेशन","🌊 77 districts — official river stations"));nationalSub.setText(t("Latest official reading; stale data लाई live खतरा मानिँदैन।","Latest official readings; stale data is not treated as a live threat."));newsTitle.setText(t("📰 नेपालका पछिल्ला समाचार","📰 Latest Nepal news"));privacyTitle.setText(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety"));privacySub.setText(t("Location, microphone र alert data कसरी प्रयोग हुन्छ हेर्नुहोस्।","See how location, microphone and alert data are used."));if(miniForecast!=null)miniForecast.useLanguage(english);updateOutsideNotice();}
     private String t(String ne,String en){return english?en:ne;}
 
-    private void refreshAll(){restoreLocation();refreshRivers();refreshHuman();refreshNews();if(Double.isFinite(lat)&&Double.isFinite(lon))fetchWeather(lat,lon);}
+    private void refreshAll(){restoreLocation();refreshRivers();refreshGovernment();refreshHuman();refreshNews();if(Double.isFinite(lat)&&Double.isFinite(lon))fetchWeather(lat,lon);}
     private void restoreLocation(){if(Double.isFinite(lat)&&Double.isFinite(lon)){place.setText(isNepal(lat,lon)?t("📍 पछिल्लो GPS • Nepal","📍 Last GPS • Nepal"):t("🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो","🌍 GPS outside Nepal • weather follows this location"));updateOutsideNotice();}}
     private void updateOutsideNotice(){TextView v=root==null?null:root.findViewById(android.R.id.hint);if(v==null)return;boolean out=Double.isFinite(lat)&&Double.isFinite(lon)&&!isNepal(lat,lon);v.setVisibility(out?View.VISIBLE:View.GONE);v.setText(t("🇳🇵 FloodSafe Nepal-only monitoring\nतपाईं नेपाल बाहिर हुँदा नजिकको नदी चेतावनी पठाइँदैन। नेपालभित्र current GPS हुँदा २ km भित्रको verified Warning/Danger मात्र emergency alert आउँछ।","🇳🇵 FloodSafe Nepal-only monitoring\nOutside Nepal, nearby river warnings are not sent. In Nepal, only verified Warning/Danger within 2 km can trigger the emergency river alert."));}
 

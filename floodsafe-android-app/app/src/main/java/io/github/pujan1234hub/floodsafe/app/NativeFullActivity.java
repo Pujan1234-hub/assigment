@@ -148,6 +148,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private JSONArray currentNewsForSathi=new JSONArray();
     private long newsLastFetchedAt=0L;
     private boolean newsRefreshing=false;
+    private static final long NEWS_POLL_INTERVAL_MS=60_000L;
     private final List<NewsItem> freshNewsOnScreen=new ArrayList<>();
     private TextView newsKnowledgeCategory,newsKnowledgeText;
     private int newsKnowledgeIndex=4;
@@ -171,8 +172,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 }
                 if(active.size()!=freshNewsOnScreen.size())renderNews(active);
             }
-            if(System.currentTimeMillis()-newsLastFetchedAt>5L*60L*1000L)refreshNews();
-            main.postDelayed(this,30000L);
+            if(System.currentTimeMillis()-newsLastFetchedAt>=NEWS_POLL_INTERVAL_MS)refreshNews();
+            main.postDelayed(this,20000L);
         }
     };
     private TextView governmentStatus;
@@ -237,7 +238,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         nearSection=nearCard();content.addView(nearSection);
         content.addView(nationalCard());
         humanCard=humanCard();content.addView(humanCard);
-        content.addView(gyanCard());
+        // Only one editorial slot: fresh news OR knowledge, never both.
         newsAnchor=newsCard();content.addView(newsAnchor);
         content.addView(privacyCard());
         root.addView(bottomNav(),bottomParams());
@@ -532,14 +533,12 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private View newsCard(){LinearLayout c=card();newsTitle=text("",20,true,Color.rgb(16,39,70));
         newsSub=text("RONB Post • Radio Nepal • News24 Nepal",12,true,Color.rgb(100,130,151));
         c.addView(newsTitle);c.addView(newsSub);
-        Button refresh=smallButton(t("↻ समाचार पुनः जाँच्नुहोस्","↻ Refresh news"));
-        refresh.setOnClickListener(v->refreshNews());
-        c.addView(refresh,lp(-1,dp(45),0,dp(9),0,0));
+        // Foreground feed polling and lifecycle refresh are automatic; no manual button.
         newsList=new LinearLayout(this);newsList.setOrientation(LinearLayout.VERTICAL);
         c.addView(newsList,lp(-1,-2,0,dp(8),0,0));return c;}
     private View privacyCard(){LinearLayout c=card();privacyTitle=text("",20,true,Color.rgb(16,39,70));privacySub=text("",12,true,Color.rgb(100,130,151));c.addView(privacyTitle);c.addView(privacySub);Button b=smallButton(t("गोपनीयता नीति हेर्नुहोस् →","View privacy policy →"));b.setOnClickListener(v->showPrivacy());c.addView(b,lp(-1,dp(48),0,dp(10),0,0));return c;}
 
-    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.argb(246,255,255,255),24,Color.rgb(208,227,237),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->openMapScreen());a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->{smoothTo(newsAnchor);if(System.currentTimeMillis()-newsLastFetchedAt>5L*60L*1000L)refreshNews();});return nav;}
+    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.argb(246,255,255,255),24,Color.rgb(208,227,237),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->openMapScreen());a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->{smoothTo(newsAnchor);if(System.currentTimeMillis()-newsLastFetchedAt>=NEWS_POLL_INTERVAL_MS)refreshNews();});return nav;}
     private FrameLayout.LayoutParams bottomParams(){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(-1,dp(72),Gravity.BOTTOM);p.setMargins(dp(9),0,dp(9),dp(9));return p;}
     private void smoothTo(View v){if(v==null)return;scroll.post(()->scroll.smoothScrollTo(0,Math.max(0,v.getTop()-dp(8))));}
 
@@ -630,8 +629,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private void refreshNews(){
         if(newsList==null||newsRefreshing||isFinishing()||isDestroyed())return;
         newsRefreshing=true;
-        newsList.removeAllViews();
-        newsList.addView(empty(t("स्रोतबाट समाचार जाँच हुँदैछ…","Checking original news feeds…")));
+        // Preserve the visible headline/knowledge during background refresh to prevent UI flicker.
+        if(newsList.getChildCount()==0)showNewsKnowledgeFallback(false);
         io.execute(()->{
             final long now=System.currentTimeMillis();
             List<NewsFeedParser.Item> articles=new ArrayList<>();
@@ -656,12 +655,24 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 if(isFinishing()||isDestroyed()||newsList==null)return;
                 newsLastFetchedAt=System.currentTimeMillis();
                 if(!reached){
-                    showNewsKnowledgeFallback(true);
+                    if(!newsShowingKnowledge)showNewsKnowledgeFallback(true);
                     return;
                 }
-                renderNews(out);
+                // Render only when content changed or the 30-minute window expired.
+                if(!sameCurrentNews(out) || newsShowingKnowledge)renderNews(out);
             });
         });
+    }
+    private boolean sameCurrentNews(List<NewsItem> incoming){
+        long now=System.currentTimeMillis();
+        List<NewsItem> filtered=new ArrayList<>();
+        for(NewsItem n:incoming)if(n.at>0&&n.at<=now+300000L&&now-n.at<=NewsFeedParser.RECENT_MS)filtered.add(n);
+        if(filtered.size()!=freshNewsOnScreen.size())return false;
+        for(int i=0;i<filtered.size();i++){
+            NewsItem a=filtered.get(i),b=freshNewsOnScreen.get(i);
+            if(a.at!=b.at||!a.url.equals(b.url))return false;
+        }
+        return true;
     }
     private void renderNews(List<NewsItem> out){
         currentNewsForSathi=new JSONArray();
@@ -675,7 +686,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
             catch(Exception ignored){}
         }
         if(out.isEmpty()){
-            showNewsKnowledgeFallback(false);
+            if(!newsShowingKnowledge)showNewsKnowledgeFallback(false);
             return;
         }
         newsShowingKnowledge=false;
@@ -850,12 +861,12 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private LinearLayout.LayoutParams lp(int w,int h,int l,int t,int r,int b){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(w,h);p.setMargins(dp(l),dp(t),dp(r),dp(b));return p;}private LinearLayout.LayoutParams weight(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-1,1f);p.setMargins(dp(2),0,dp(2),0);return p;}private int dp(int v){return Math.round(v*getResources().getDisplayMetrics().density);}
     private static final class RiverStation{final String name,district,stage;final double lat,lon,level,warning,danger;final long at;final boolean fresh;final int rank;RiverStation(String n,String di,double a,double o,double l,double w,double d,long tm,boolean f,String s,int r){name=n;district=di;lat=a;lon=o;level=l;warning=w;danger=d;at=tm;fresh=f;stage=s;rank=r;}}
     private static final class NewsItem{final String title,source,url;final long at;NewsItem(String t,String s,String u,long a){title=t;source=s;url=u;at=a;}}
-    @Override protected void onPause(){main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(newsAutoRefreshTick);main.removeCallbacks(newsKnowledgeTick);main.removeCallbacks(gyanTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
+    @Override protected void onPause(){main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(newsAutoRefreshTick);main.removeCallbacks(newsKnowledgeTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
     @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();
-        main.post(mapVisibilityTick);main.removeCallbacks(gyanTick);main.post(gyanTick);
+        main.post(mapVisibilityTick);
         main.removeCallbacks(governmentAutoRefresh);main.postDelayed(governmentAutoRefresh,GOVERNMENT_FOREGROUND_REFRESH_MS);
-        if(newsList!=null&&System.currentTimeMillis()-newsLastFetchedAt>5L*60L*1000L)refreshNews();
-        main.removeCallbacks(newsAutoRefreshTick);main.postDelayed(newsAutoRefreshTick,30000L);
+        if(newsList!=null&&System.currentTimeMillis()-newsLastFetchedAt>=NEWS_POLL_INTERVAL_MS)refreshNews();
+        main.removeCallbacks(newsAutoRefreshTick);main.postDelayed(newsAutoRefreshTick,20000L);
         if(newsShowingKnowledge){main.removeCallbacks(newsKnowledgeTick);main.postDelayed(newsKnowledgeTick,10500L);}
     }
     @Override protected void onDestroy(){main.removeCallbacksAndMessages(null);if(speech!=null){try{speech.destroy();}catch(Exception ignored){}}if(tts!=null){tts.stop();tts.shutdown();}io.shutdownNow();super.onDestroy();}

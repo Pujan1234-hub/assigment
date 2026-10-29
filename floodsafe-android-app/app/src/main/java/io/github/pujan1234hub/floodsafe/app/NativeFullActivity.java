@@ -100,8 +100,26 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private TextView brandSub,langBtn,place,clock,temp,weatherText,weatherSupport,rainTiming,rain,humidity,wind;
     private TextView alarmTitle,alarmText,riskBadge,riskValue,riskText,stationCount,warningCount,dangerCount,feedFresh;
     private TextView nearTitle,nearSub,nationalTitle,nationalSub,nationalFresh,humanFresh,humanDeaths,humanInjured,humanMissing,humanRescued,humanDetail;
-    private TextView newsTitle,newsSub,privacyTitle,privacySub,mapTitle,mapSub,mapHint,gyanTitle,gyanSub;
-    private Button gyanButton;
+    private TextView newsTitle,newsSub,privacyTitle,privacySub,mapTitle,mapSub,mapHint,gyanTitle,gyanSub,gyanMessage;
+    private LinearLayout gyanRotator;
+    private int gyanIndex=0;
+    private final Runnable gyanTick=new Runnable(){
+       @Override public void run(){
+          if(gyanRotator==null||gyanSub==null||gyanMessage==null||isFinishing()||isDestroyed())return;
+          if(GyanKnowledge.ITEMS.isEmpty())return;
+          // Vary topics rather than showing all six Gita passages consecutively.
+          GyanKnowledge.Entry item=GyanKnowledge.ITEMS.get(gyanIndex%GyanKnowledge.ITEMS.size());
+          gyanIndex=(gyanIndex+11)%GyanKnowledge.ITEMS.size();
+          gyanRotator.animate().cancel();
+          gyanRotator.animate().alpha(0f).setDuration(230L).withEndAction(()->{
+             if(isFinishing()||isDestroyed())return;
+             gyanSub.setText("✦ "+GyanKnowledge.categoryName(item.category,english)+"  ·  "+item.title(english));
+             gyanMessage.setText(item.body(english));
+             gyanRotator.animate().alpha(1f).setDuration(350L).start();
+          }).start();
+          main.postDelayed(this,10000L);
+       }
+    };
     private FloodSafeNativeMapView map;
     private volatile NepalRiverBoundary nepalDistrictBorder;
     private long lastGovernmentExpiryCheckAt;
@@ -367,11 +385,19 @@ public final class NativeFullActivity extends Activity implements LocationListen
         }
     }
     private View gyanCard(){
+        // Automatically rotates short knowledge highlights. No reading screen or tap required.
         LinearLayout c=card();
-        gyanTitle=text("",20,true,Color.rgb(65,52,39));c.addView(gyanTitle);
-        gyanSub=text("",13,false,Color.rgb(115,93,72));c.addView(gyanSub,lp(-1,-2,0,dp(7),0,dp(9)));
-        gyanButton=button("");gyanButton.setOnClickListener(v->startActivity(new Intent(this,GyanActivity.class)));
-        c.addView(gyanButton,lp(-1,dp(50),0,dp(5),0,0));
+        gyanTitle=text(t("📚 ज्ञानका कुरा","📚 Knowledge for Life"),20,true,Color.rgb(65,52,39));c.addView(gyanTitle);
+        gyanRotator=new LinearLayout(this);gyanRotator.setOrientation(LinearLayout.VERTICAL);
+        gyanSub=text("",14,true,Color.rgb(150,104,52));
+        gyanRotator.addView(gyanSub,lp(-1,-2,0,dp(10),0,dp(5)));
+        gyanMessage=text("",14,false,Color.rgb(75,72,64));
+        gyanMessage.setMaxLines(4);
+        gyanMessage.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        gyanRotator.addView(gyanMessage);
+        c.addView(gyanRotator);
+        TextView footer=text(t("✨ नयाँ ज्ञान आफैँ आउँछ • गीताको भावार्थ, बाढी, विज्ञान, सामान्य ज्ञान र जीवन","✨ Automatically changing insights • Gita, flood, science and life"),10,false,Color.rgb(132,119,106));
+        c.addView(footer,lp(-1,-2,0,dp(10),0,0));
         return c;
     }
     private LinearLayout humanCard(){LinearLayout c=card();TextView t=text("🧑‍🤝‍🧑 "+t("Human Status — पछिल्लो विपद्","Human Status — latest disaster"),20,true,Color.rgb(16,39,70));humanFresh=text("",12,true,Color.rgb(100,130,151));c.addView(t);c.addView(humanFresh);LinearLayout stats=new LinearLayout(this);stats.setOrientation(LinearLayout.HORIZONTAL);humanDeaths=stat(stats,"—",t("मृतक","Deaths"));humanInjured=stat(stats,"—",t("घाइते","Injured"));humanMissing=stat(stats,"—",t("बेपत्ता","Missing"));humanRescued=stat(stats,"—",t("उद्धार","Rescued"));c.addView(stats,lp(-1,-2,0,dp(10),0,0));humanDetail=text("",12,false,Color.rgb(95,125,146));c.addView(humanDetail);c.setVisibility(View.GONE);return c;}
@@ -382,7 +408,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private FrameLayout.LayoutParams bottomParams(){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(-1,dp(72),Gravity.BOTTOM);p.setMargins(dp(9),0,dp(9),dp(9));return p;}
     private void smoothTo(View v){if(v==null)return;scroll.post(()->scroll.smoothScrollTo(0,Math.max(0,v.getTop()-dp(8))));}
 
-    private void applyLanguage(){brandSub.setText(t("नेपाल • नदी • बाढी • चौबीसै घण्टा चेतावनी","Nepal • rivers • floods • 24/7 alerts"));langBtn.setText(t("अङ्ग्रेजी","नेपाली"));weatherText.setText(currentWeather.isEmpty()?t("नेपालको निगरानी स्थान छान्नुहोस्","Choose a monitoring location"):currentWeather);weatherSupport.setText(t("नेपालको मौसम + official BIPAD/DHM realtime नदी status","Local weather + official BIPAD/DHM river status"));if(!Double.isFinite(lat)){place.setText(t("📍 नेपालमा निगरानी स्थान छान्नुहोस्","📍 Choose a monitoring location"));rainTiming.setText(t("हालको स्थान लिएपछि आगामी वर्षा timing देखाइन्छ।","Rain timing appears after location is available."));}mapTitle.setText(t("🇳🇵 आधिकारिक नदी स्टेशन नक्सा","🇳🇵 Official river station map"));mapSub.setText(t("नदी/स्टेशन थिचेर पानीको तह, चेतावनी र official time हेर्नुहोस्।","Tap a river station for level, warning and official time."));mapHint.setText(t("🇳🇵 official नदी स्टेशन र नदी geometry","🇳🇵 official stations and river geometry"));nearTitle.setText(t("🌊 नजिकका नदी स्टेशन","🌊 Nearby river stations"));nearSub.setText(t("तपाईंको स्थान नजिकको official नदी अवस्था","Official river status near your location"));nationalTitle.setText(t("🌊 ७७ जिल्लाका नदी स्टेशन खोज्नुहोस्","🌊 Find river stations by district"));nationalSub.setText(t("जिल्ला छानेपछि त्यही जिल्लाका आधिकारिक स्टेशन र मापन देखिन्छन्।","Choose a district to view only its official stations and readings."));if(districtPicker!=null)districtPicker.setHint(t("🔎 जिल्लाको नाम टाइप गर्नुहोस् / छान्नुहोस्","🔎 Search or select a district"));if(gyanTitle!=null)gyanTitle.setText(t("📚 ज्ञानका कुरा","📚 Knowledge for Life"));if(gyanSub!=null)gyanSub.setText(t("भगवद्गीताको जीवनोपयोगी ज्ञान, बाढी सुरक्षा, सामान्य ज्ञान, विज्ञान, पुस्तक र डिजिटल सीप।","Gita life lessons, flood safety, general knowledge, science, books and digital skills."));if(gyanButton!=null)gyanButton.setText(t("ज्ञानका पाठ पढ्नुहोस् →","Read knowledge lessons →"));newsTitle.setText(t("📰 नेपालका पछिल्ला समाचार","📰 Latest Nepal news"));privacyTitle.setText(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety"));privacySub.setText(t("Location, microphone र alert data कसरी प्रयोग हुन्छ हेर्नुहोस्।","See how location, microphone and alert data are used."));if(miniForecast!=null)miniForecast.useLanguage(english);updateOutsideNotice();}
+    private void applyLanguage(){brandSub.setText(t("नेपाल • नदी • बाढी • चौबीसै घण्टा चेतावनी","Nepal • rivers • floods • 24/7 alerts"));langBtn.setText(t("अङ्ग्रेजी","नेपाली"));weatherText.setText(currentWeather.isEmpty()?t("नेपालको निगरानी स्थान छान्नुहोस्","Choose a monitoring location"):currentWeather);weatherSupport.setText(t("नेपालको मौसम + official BIPAD/DHM realtime नदी status","Local weather + official BIPAD/DHM river status"));if(!Double.isFinite(lat)){place.setText(t("📍 नेपालमा निगरानी स्थान छान्नुहोस्","📍 Choose a monitoring location"));rainTiming.setText(t("हालको स्थान लिएपछि आगामी वर्षा timing देखाइन्छ।","Rain timing appears after location is available."));}mapTitle.setText(t("🇳🇵 आधिकारिक नदी स्टेशन नक्सा","🇳🇵 Official river station map"));mapSub.setText(t("नदी/स्टेशन थिचेर पानीको तह, चेतावनी र official time हेर्नुहोस्।","Tap a river station for level, warning and official time."));mapHint.setText(t("🇳🇵 official नदी स्टेशन र नदी geometry","🇳🇵 official stations and river geometry"));nearTitle.setText(t("🌊 नजिकका नदी स्टेशन","🌊 Nearby river stations"));nearSub.setText(t("तपाईंको स्थान नजिकको official नदी अवस्था","Official river status near your location"));nationalTitle.setText(t("🌊 ७७ जिल्लाका नदी स्टेशन खोज्नुहोस्","🌊 Find river stations by district"));nationalSub.setText(t("जिल्ला छानेपछि त्यही जिल्लाका आधिकारिक स्टेशन र मापन देखिन्छन्।","Choose a district to view only its official stations and readings."));if(districtPicker!=null)districtPicker.setHint(t("🔎 जिल्लाको नाम टाइप गर्नुहोस् / छान्नुहोस्","🔎 Search or select a district"));if(gyanTitle!=null)gyanTitle.setText(t("📚 ज्ञानका कुरा","📚 Knowledge for Life"));if(gyanSub!=null&&gyanMessage!=null){int prev=(gyanIndex+GyanKnowledge.ITEMS.size()-11)%GyanKnowledge.ITEMS.size();GyanKnowledge.Entry e=GyanKnowledge.ITEMS.get(prev);gyanSub.setText("✦ "+GyanKnowledge.categoryName(e.category,english)+" · "+e.title(english));gyanMessage.setText(e.body(english));}newsTitle.setText(t("📰 नेपालका पछिल्ला समाचार","📰 Latest Nepal news"));privacyTitle.setText(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety"));privacySub.setText(t("Location, microphone र alert data कसरी प्रयोग हुन्छ हेर्नुहोस्।","See how location, microphone and alert data are used."));if(miniForecast!=null)miniForecast.useLanguage(english);updateOutsideNotice();}
     private String t(String ne,String en){return english?en:ne;}
 
     private void refreshAll(){restoreLocation();refreshRivers();refreshGovernment();refreshDistrictWeather();refreshHuman();refreshNews();if(Double.isFinite(lat)&&Double.isFinite(lon))fetchWeather(lat,lon);}
@@ -572,7 +598,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private LinearLayout.LayoutParams lp(int w,int h,int l,int t,int r,int b){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(w,h);p.setMargins(dp(l),dp(t),dp(r),dp(b));return p;}private LinearLayout.LayoutParams weight(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-1,1f);p.setMargins(dp(2),0,dp(2),0);return p;}private int dp(int v){return Math.round(v*getResources().getDisplayMetrics().density);}
     private static final class RiverStation{final String name,district,stage;final double lat,lon,level,warning,danger;final long at;final boolean fresh;final int rank;RiverStation(String n,String di,double a,double o,double l,double w,double d,long tm,boolean f,String s,int r){name=n;district=di;lat=a;lon=o;level=l;warning=w;danger=d;at=tm;fresh=f;stage=s;rank=r;}}
     private static final class NewsItem{final String title,source,url;final long at;NewsItem(String t,String s,String u,long a){title=t;source=s;url=u;at=a;}}
-    @Override protected void onPause(){if(map!=null)map.onHostPause();super.onPause();}
-    @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();main.post(mapVisibilityTick);}
+    @Override protected void onPause(){main.removeCallbacks(gyanTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
+    @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();main.post(mapVisibilityTick);main.removeCallbacks(gyanTick);main.post(gyanTick);}
     @Override protected void onDestroy(){main.removeCallbacksAndMessages(null);if(speech!=null){try{speech.destroy();}catch(Exception ignored){}}if(tts!=null){tts.stop();tts.shutdown();}io.shutdownNow();super.onDestroy();}
 }

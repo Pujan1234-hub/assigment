@@ -118,13 +118,13 @@ public final class FloodSafeAdvancedActivity extends Activity {
    if(url==null){summary.setText(tr("GPS अनुमति लिएपछि स्थानीय पूर्वानुमान देखिन्छ।","Enable GPS to see your local forecast."));return;}
    pool.execute(()->{
      try{JSONObject j=get(url);runOnUiThread(()->{
-       if(seq!=requestSeq||isFinishing())return;
+       if(seq!=requestSeq||isFinishing()||isDestroyed())return;
        if(mode.equals("river")||mode.equals("rain")){
          entries=j.optJSONArray(mode.equals("river")?"stations":"items");
          if(entries==null)entries=new JSONArray();renderEntries();
        }else if(mode.equals("forecast"))renderForecast(j);
        else renderNotices(j);
-     });}catch(Exception e){runOnUiThread(()->{if(seq==requestSeq)summary.setText(tr("मापन उपलब्ध छैन। फेरि प्रयास गर्नुहोस्।","Data unavailable. Try again."));});}
+     });}catch(Exception e){runOnUiThread(()->{if(seq==requestSeq&&!isFinishing()&&!isDestroyed())summary.setText(tr("मापन उपलब्ध छैन। फेरि प्रयास गर्नुहोस्।","Data unavailable. Try again."));});}
    });
  }
  private void renderEntries(){
@@ -192,7 +192,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
  }
  private void renderNotices(JSONObject j){
    holder.removeAllViews();entries=null;
-   JSONArray rows=j.optJSONArray("items");
+   JSONArray rows=mode.equals("warning")?GovernmentNotices.active(j,System.currentTimeMillis()):j.optJSONArray("items");
    if(rows==null||rows.length()==0){summary.setText(tr("नयाँ घटना वा सूचना भेटिएन।","No recent events or notices found."));return;}
    summary.setText(tr(rows.length()+" उपलब्ध सूचना",""+rows.length()+" entries"));
    for(int i=0;i<Math.min(15,rows.length());i++){
@@ -223,5 +223,5 @@ public final class FloodSafeAdvancedActivity extends Activity {
      return new JSONObject(body.toString());
    }finally{conn.disconnect();}
  }
- @Override public void onDestroy(){pool.shutdownNow();super.onDestroy();}
+ @Override public void onDestroy(){requestSeq++;pool.shutdownNow();super.onDestroy();}
 }

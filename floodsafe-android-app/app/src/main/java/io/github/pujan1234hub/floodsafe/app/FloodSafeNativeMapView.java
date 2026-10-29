@@ -187,7 +187,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
     private void loadBundledGeometry() {
         io.execute(() -> {
             try {
-                districtGeoJson = readAsset("floodsafe-nepal/v24/nepal-districts.geojson");
+                districtGeoJson = readAsset("data/nepal-districts.geojson");
             } catch (Exception ignored) {
                 try { districtGeoJson = readAsset("floodsafe-nepal/v24/nepal-districts.json"); } catch (Exception ignored2) {}
             }

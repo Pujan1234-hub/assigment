@@ -151,6 +151,10 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
         refresh.setOnClickListener(v -> refreshAll());
         nepal.setOnClickListener(v -> map.resetView());
         root.addView(controls, margin(-1, dp(52), 0, 0, 0, 10));
+        Button nasa = button("🛰 NASA भू–उपग्रह नक्सा · नेपालका ७७ जिल्ला");
+        nasa.setOnClickListener(v -> startActivity(
+                new android.content.Intent(this, FloodSafeNasaSatelliteActivity.class)));
+        root.addView(nasa, margin(-1, dp(56), 0, 0, 0, 10));
 
         alertBox = text("", 14, true, Color.rgb(139, 30, 47));
         alertBox.setPadding(dp(14), dp(12), dp(14), dp(12));

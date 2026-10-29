@@ -120,7 +120,7 @@ public final class FloodSafeMapActivity extends Activity {
                     }
                     String name=text(o,"river_name","riverName","station_name","stationName","station_name","title","name");
                     if(name.isEmpty())name="Official station";
-                    points.add(new MapStation(name,lat,lon,level,fresh,stage,at));
+                    points.add(new MapStation(name,lat,lon,level,positiveThreshold(warn),positiveThreshold(danger),fresh,stage,at));
                 }
                 runOnUiThread(()->{
                     if(isFinishing()||isDestroyed()||nativeMap==null)return;
@@ -146,7 +146,7 @@ public final class FloodSafeMapActivity extends Activity {
         StationDetailSheet.show(this,s.name,s.stage,s.level,s.fresh,s.at,
             english?"Verified DHM/BIPAD station. Tap a new marker to inspect that gauge.":
                     "DHM/BIPAD स्टेशनको उपलब्ध मापन। अर्को स्टेशन हेर्न नक्साको बिन्दु थिच्नुहोस्।",
-            english,false);
+            english,false,s.warning,s.danger);
     }
     private Button button(String s){
         Button b=new Button(this);b.setAllCaps(false);b.setText(s);b.setTextSize(13);
@@ -161,10 +161,17 @@ public final class FloodSafeMapActivity extends Activity {
     private static String text(JSONObject o,String...names){for(String n:names){String s=o.optString(n,"").trim();if(!s.isEmpty()&&!"null".equalsIgnoreCase(s))return s;}return "";}
     private static double number(JSONObject o,String...names){for(String n:names){double x=o.optDouble(n,Double.NaN);if(Double.isFinite(x))return x;}return Double.NaN;}
     private static long timestamp(String s){try{return Instant.parse(s).toEpochMilli();}catch(Exception ignored){return -1L;}}
+    private static double positiveThreshold(double threshold){
+        // Missing and zero thresholds must never appear as real official gauge limits.
+        return Double.isFinite(threshold)&&threshold>0d?threshold:Double.NaN;
+    }
     private static final class MapStation {
-        final String name,stage;final double lat,lon,level,rainfallMm;final boolean fresh;final long at;
-        MapStation(String n,double a,double o,double l,boolean f,String st,long t){
-            name=n;lat=a;lon=o;level=l;rainfallMm=Double.NaN;fresh=f;stage=st;at=t;
+        final String name,stage;
+        final double lat,lon,level,rainfallMm,warning,danger;
+        final boolean fresh;final long at;
+        MapStation(String n,double a,double o,double l,double w,double d,boolean f,String st,long t){
+            name=n;lat=a;lon=o;level=l;rainfallMm=Double.NaN;
+            warning=w;danger=d;fresh=f;stage=st;at=t;
         }
     }
     @Override protected void onPause(){if(nativeMap!=null)nativeMap.onHostPause();super.onPause();}

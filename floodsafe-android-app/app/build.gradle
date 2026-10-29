@@ -22,8 +22,8 @@ android {
         applicationId 'io.github.pujan1234hub.floodsafe.app'
         minSdk 26
         targetSdk 36
-        versionCode 110
-        versionName '0.8.90-native'
+        versionCode 121
+        versionName '0.9.21-repair-preview'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
@@ -40,6 +40,9 @@ android {
 
     buildTypes {
         debug {
+            // Separate install: never overwrite the user's stable signed v0.9.21.
+            applicationIdSuffix '.preview'
+            versionNameSuffix '-test'
             minifyEnabled false
         }
         release {

@@ -34,6 +34,10 @@ final class SathiKnowledge {
             "kasari bachne","kasari bachne","kasari jogine","bachaune","bachau",
             "बच्ने उपाय","आपतकालीन झोला");
         if(floodSafetyQ)return floodSafetyAnswer(en,lessonOffset);
+        // Only explicitly matched curated help text is eligible for OTA.
+        // Live weather, river, official notices and news retain built-in verified routing.
+        String remoteFAQ=FloodSafeRemoteConfig.answerFAQ(q,en);
+        if(remoteFAQ!=null&&!weatherQ&&!newsQ&&!govtQ&&!riverQ)return remoteFAQ;
         // Weather and news intents MUST win over river name substring matches.
         // Follow-up turns should add context instead of repeating the exact same answer.
         if(lessonOffset>0 && !knowledgeQ) {
@@ -46,8 +50,8 @@ final class SathiKnowledge {
                 return en?"Weather changes over time. Please compare the model update time with the current reading and check official DHM alerts for hazards."
                           :"मौसम बदलिरहन्छ। अनुमानको अपडेट समय जाँच्नुहोस् र जोखिमका लागि आधिकारिक DHM चेतावनी हेर्नुहोस्।";
             }
-            if(newsQ)return en?"SATHI shows only headlines delivered by the existing three-source feed. If there are no fresh verified items, tap Refresh News to check source availability; it does not mean Nepal has no news."
-                                :"SATHI ले उपलब्ध तीन स्रोतको समाचार मात्र देखाउँछ। नयाँ खबर नदेखिए News Refresh गरेर स्रोत जाँच्नुहोस्; नेपालमा खबर नै छैन भन्ने होइन।";
+            if(newsQ)return en?"SATHI shows only headlines delivered by the existing three-source feed. If no fresh verified items arrive in the past 30 minutes, the News slot automatically shows Knowledge. The app checks the sources again while Home is open."
+                                :"SATHI ले उपलब्ध तीन स्रोतको समाचार मात्र देखाउँछ। पछिल्लो ३० मिनेटमा ताजा खबर नभए News खण्डमा आफैँ ज्ञानका कुरा आउँछन्। Home खुला हुँदा एपले स्रोत पुनः जाँचिरहन्छ।";
             if(govtQ || (alertQ&&!riverQ))return en?"Only government DHM/NDRRMA bulletins within validFrom–validUntil count as active; app refreshes while open. The absence of a verified notice does not prove that river conditions are safe."
                                                     :"validFrom–validUntil भित्रका DHM/NDRRMA सूचना मात्र लागू मानिन्छन्। एप खुला हुँदा पुनः जाँचिन्छ। सूचना नभेटिनु नदी सुरक्षित छ भन्ने प्रमाण होइन।";
             if(riverQ)return en?"River levels are station-specific: compare the measured level, warning/danger threshold, observation timestamp and station location. An old reading cannot establish a live emergency."

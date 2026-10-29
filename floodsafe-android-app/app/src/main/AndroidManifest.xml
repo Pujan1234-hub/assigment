@@ -25,6 +25,7 @@
         <activity android:name=".NativeHomeActivity" android:exported="false" android:launchMode="singleTop" />
         <activity android:name=".NativeFullActivity" android:exported="false" android:launchMode="singleTop" />
         <activity android:name=".FloodSafeNativeActivity" android:exported="false" android:launchMode="singleTop" />
+        <activity android:name=".FloodSafeNasaSatelliteActivity" android:exported="false" android:launchMode="singleTop" />
         <activity android:name=".PJBuiltsSplashActivity" android:exported="true" android:theme="@style/PJBuiltsSplashTheme"><intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter></activity>
     </application>
 </manifest>

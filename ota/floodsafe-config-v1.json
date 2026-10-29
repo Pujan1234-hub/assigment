@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 1,
+  "revision": 2,
   "enabled": true,
   "news": {
     "poll_seconds": 60,
@@ -33,6 +33,15 @@
       "body_ne": "स्रोत, लेखिएको मिति र स्वतन्त्र पुष्टि जाँच्नुहोस्। पुरानो समाचार फेरि शेयर हुँदा ताजा हो भनेर नमान्नुहोस्।",
       "body_en": "Check the source, original publication date and independent corroboration. A recirculated old story is not new.",
       "source": "Media literacy"
+    },
+    {
+      "id": "ota-practice",
+      "category": "life",
+      "title_ne": "आजको सानो अभ्यास",
+      "title_en": "One small daily practice",
+      "body_ne": "ठूलो लक्ष्य एकैदिन पूरा हुँदैन। आज गर्न सकिने एउटा काम छान्नुहोस्, पूरा भएपछि टिपोट गर्नुहोस् र भोलि त्यसलाई अलि सुधार्नुहोस्।",
+      "body_en": "Large goals are built from repeatable actions. Choose one useful step today, note what happened, and improve it tomorrow.",
+      "source": "Practical learning and reflection"
     }
   ],
   "sathi_faq": [

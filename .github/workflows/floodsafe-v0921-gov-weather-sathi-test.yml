@@ -9,6 +9,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: floodsafe-v0921-gov-weather-sathi-revised
+  cancel-in-progress: true
 jobs:
   android:
     runs-on: ubuntu-latest
@@ -74,13 +77,13 @@ jobs:
             unzip -Z -1 "$APK" | grep -Fxq "$asset"
           done
           test "$(stat -c %s "$APK")" -gt 85000000
-          cp "$APK" FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-TEST.apk
-          sha256sum FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-TEST.apk
-          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-TEST.apk
+          cp "$APK" FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-REVISED.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-REVISED.apk
+          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-REVISED.apk
       - uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-v0921-GOV-WEATHER-SATHI-native-test
-          path: FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-TEST.apk
+          path: FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-REVISED.apk
           retention-days: 14
           if-no-files-found: error
       - name: Create public prerelease with a DIRECT APK file link (website untouched)
@@ -89,10 +92,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="floodsafe-v0921-GOV-WEATHER-SATHI-TEST-20261029"
+          TAG="floodsafe-v0921-GOV-WEATHER-SATHI-REVISED-20261029"
           gh release view "$TAG" >/dev/null 2>&1 && {
-             gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-TEST.apk --clobber
-          } || gh release create "$TAG" FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-TEST.apk \
+             gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-REVISED.apk --clobber
+          } || gh release create "$TAG" FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-REVISED.apk \
             --target "$GITHUB_SHA" --prerelease \
             --title "FloodSafe Nepal v0.9.21 Govt Alerts Weather SATHI Native TEST" \
             --notes "Native Android test: relayed time-bounded DHM/NDRRMA government notices, all-77-district model weather, typed SATHI factual chat, district picker, no overseas nearby stations, performance update. Original MapLibre glow/flow lines preserved. This is a test, not production."
@@ -118,7 +121,7 @@ jobs:
           disable-animations: false
           script: |
             set +e
-            adb install -r ./test-apk/FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-TEST.apk
+            adb install -r ./test-apk/FloodSafe-Nepal-v0.9.21-GOV-WEATHER-SATHI-REVISED.apk
             adb logcat -c
             adb shell am start -n io.github.pujan1234hub.floodsafe.app.preview/io.github.pujan1234hub.floodsafe.app.PJBuiltsSplashActivity
             sleep 18

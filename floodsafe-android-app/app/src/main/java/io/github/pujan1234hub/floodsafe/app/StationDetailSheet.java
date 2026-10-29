@@ -23,6 +23,13 @@ final class StationDetailSheet {
     private StationDetailSheet(){}
     static void show(Context context,String name,String stage,double level,
                      boolean fresh,long observedAt,String details,boolean english,boolean riverSegment){
+        show(context,name,stage,level,fresh,observedAt,details,english,riverSegment,Double.NaN,Double.NaN);
+    }
+
+    /** Only supplied DHM/BIPAD gauge thresholds are displayed. Unknown limits stay unavailable. */
+    static void show(Context context,String name,String stage,double level,
+                     boolean fresh,long observedAt,String details,boolean english,boolean riverSegment,
+                     double warningLevel,double dangerLevel){
         if(context==null)return;
         final int ink=Color.rgb(28,49,72),muted=Color.rgb(95,111,126),gold=Color.rgb(176,126,54);
         final int pad=dp(context,18);
@@ -75,6 +82,43 @@ final class StationDetailSheet {
         String when=humanTime(observedAt,english);
         metric.addView(text(context,(english?"⏱ Observed: ":"⏱ मापन: ")+when,12,false,muted),params(context,0,9,0,0));
 
+        if(!riverSegment){
+            // Two compact fields right below the existing current-water-level card.
+            // 0/negative/NaN from official source are missing, not actual warning levels.
+            double warn=validThreshold(warningLevel),danger=validThreshold(dangerLevel);
+            LinearLayout thresholds=new LinearLayout(context);
+            thresholds.setOrientation(LinearLayout.HORIZONTAL);
+            LinearLayout warnBox=thresholdCard(context,
+                english?"🟠 WARNING LEVEL":"🟠 चेतावनी तह",warn,Color.rgb(222,135,61),ink,muted);
+            LinearLayout dangerBox=thresholdCard(context,
+                english?"🔴 DANGER LEVEL":"🔴 खतरा तह",danger,Color.rgb(213,72,83),ink,muted);
+            LinearLayout.LayoutParams warningParams=new LinearLayout.LayoutParams(0,-2,1f);
+            warningParams.setMargins(0,0,dp(context,5),0);
+            LinearLayout.LayoutParams dangerParams=new LinearLayout.LayoutParams(0,-2,1f);
+            dangerParams.setMargins(dp(context,5),0,0,0);
+            thresholds.addView(warnBox,warningParams);
+            thresholds.addView(dangerBox,dangerParams);
+            panel.addView(thresholds,params(context,0,0,0,12));
+
+            if(measured && (Double.isFinite(warn)||Double.isFinite(danger))){
+                // Exact difference only for this SAME official gauge; no model or borrowed threshold.
+                boolean overDanger=Double.isFinite(danger)&&level>=danger;
+                double target=overDanger?danger:Double.isFinite(warn)?warn:danger;
+                String which=overDanger?(english?"danger":"खतरा"):(Double.isFinite(warn)?(english?"warning":"चेतावनी"):(english?"danger":"खतरा"));
+                double gap=Math.abs(target-level);
+                String comparison=String.format(Locale.US,"%.2f m",gap)+" "+
+                    (english?(level>=target?"above ":"below "):(level>=target?"माथि · ":"तल · "))+which;
+                TextView delta=text(context,(english?"📏 ":"📏 ")+comparison,12,true,
+                    level>=target?Color.rgb(202,67,69):Color.rgb(56,103,134));
+                panel.addView(delta,params(context,0,0,0,12));
+            } else if(!Double.isFinite(warn)&&!Double.isFinite(danger)){
+                panel.addView(text(context,
+                    english?"Official warning/danger thresholds are unavailable for this station.":
+                    "यस स्टेशनको आधिकारिक चेतावनी/खतरा सीमा उपलब्ध छैन।",11,false,muted),
+                    params(context,0,0,0,12));
+            }
+        }
+
         if(details!=null&&!details.trim().isEmpty()){
             LinearLayout note=new LinearLayout(context);note.setOrientation(LinearLayout.VERTICAL);
             note.setPadding(dp(context,14),dp(context,13),dp(context,14),dp(context,13));
@@ -107,6 +151,20 @@ final class StationDetailSheet {
         // Keep text accessible on short mobile windows and foldable displays.
         scroll.setLayoutParams(new android.widget.FrameLayout.LayoutParams(-1,
             Math.min(dp(context,650),(int)(context.getResources().getDisplayMetrics().heightPixels*.78f))));
+    }
+    private static double validThreshold(double x){
+        return Double.isFinite(x)&&x>0d?x:Double.NaN;
+    }
+    private static LinearLayout thresholdCard(Context c,String title,double threshold,
+                                              int accent,int ink,int muted){
+        LinearLayout card=new LinearLayout(c);card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(c,11),dp(c,11),dp(c,9),dp(c,11));
+        card.setBackground(bg(c,Color.WHITE,accent,15));
+        card.addView(text(c,title,10,true,accent));
+        String value=Double.isFinite(threshold)?String.format(Locale.US,"%.2f m",threshold):"—";
+        card.addView(text(c,value,Double.isFinite(threshold)?19:16,true,
+            Double.isFinite(threshold)?ink:muted),params(c,0,5,0,0));
+        return card;
     }
     private static String humanTime(long ms,boolean en){
         if(ms<=0)return en?"Time unavailable":"मापन समय उपलब्ध छैन";

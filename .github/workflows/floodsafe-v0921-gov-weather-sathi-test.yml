@@ -1,8 +1,8 @@
-name: FloodSafe Nepal v0.9.21 Complete Map Insets SATHI News TEST
+name: FloodSafe Nepal v0.9.21 30min News Auto Gyan SATHI Premium Station TEST
 on:
   push:
     branches:
-      - test/floodsafe-v0921-map-ui-sathi-news-20261029
+      - test/floodsafe-v0921-30min-gyan-station-sathi-20261029
     paths:
       - '.github/workflows/floodsafe-v0921-gov-weather-sathi-test.yml'
       - 'floodsafe-android-app/**'
@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: floodsafe-v0921-map-ui-sathi-news-isolated-test
+  group: floodsafe-v0921-30min-gyan-station-sathi-isolated-test
   cancel-in-progress: true
 jobs:
   android:
@@ -89,6 +89,13 @@ jobs:
           grep -Fq 'NewsFeedParser.parse' "$JAVA/NativeFullActivity.java"
           test -s "$JAVA/NewsFeedParser.java"
           test -s "$JAVA/SafeInsets.java"
+          grep -Fq 'static final long RECENT_MS=30L*60L*1000L' "$JAVA/NewsFeedParser.java"
+          grep -Fq 'showNewsKnowledgeFallback(false)' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'main.postDelayed(newsKnowledgeTick,10500L)' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'floodSafetyAnswer' "$JAVA/SathiKnowledge.java"
+          grep -Fq 'StationDetailSheet.show' "$JAVA/FloodSafeNativeMapView.java"
+          grep -Fq 'StationDetailSheet.show' "$JAVA/FloodSafeMapActivity.java"
+          test -s "$JAVA/StationDetailSheet.java"
       - name: Android native unit tests and compile
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon
       - name: Validate complete APK file and original river geometry
@@ -101,13 +108,13 @@ jobs:
             unzip -Z -1 "$APK" | grep -Fxq "$asset"
           done
           test "$(stat -c %s "$APK")" -gt 85000000
-          cp "$APK" FloodSafe-Nepal-v0.9.21-MAP-UI-SATHI-NEWS-TEST.apk
-          sha256sum FloodSafe-Nepal-v0.9.21-MAP-UI-SATHI-NEWS-TEST.apk
-          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-MAP-UI-SATHI-NEWS-TEST.apk
+          cp "$APK" FloodSafe-Nepal-v0.9.21-30MIN-GYAN-STATION-SATHI-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-30MIN-GYAN-STATION-SATHI-TEST.apk
+          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-30MIN-GYAN-STATION-SATHI-TEST.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0921-Map-UI-Sathi-News-TEST
-          path: FloodSafe-Nepal-v0.9.21-MAP-UI-SATHI-NEWS-TEST.apk
+          name: FloodSafe-v0921-30min-Gyan-Station-Sathi-TEST
+          path: FloodSafe-Nepal-v0.9.21-30MIN-GYAN-STATION-SATHI-TEST.apk
           retention-days: 14
           if-no-files-found: error
 
@@ -119,7 +126,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: FloodSafe-v0921-Map-UI-Sathi-News-TEST
+          name: FloodSafe-v0921-30min-Gyan-Station-Sathi-TEST
           path: ./test-apk
       - name: Install native debug and record startup evidence
         uses: reactivecircus/android-emulator-runner@v2
@@ -132,7 +139,7 @@ jobs:
           disable-animations: false
           script: |
             set +e
-            adb install -r ./test-apk/FloodSafe-Nepal-v0.9.21-MAP-UI-SATHI-NEWS-TEST.apk
+            adb install -r ./test-apk/FloodSafe-Nepal-v0.9.21-30MIN-GYAN-STATION-SATHI-TEST.apk
             adb logcat -c
             adb shell am start -n io.github.pujan1234hub.floodsafe.app.preview/io.github.pujan1234hub.floodsafe.app.PJBuiltsSplashActivity
             sleep 18
@@ -150,7 +157,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0921-Map-UI-Sathi-News-Diagnostics
+          name: FloodSafe-v0921-30min-Gyan-Station-Sathi-Diagnostics
           path: |
             native-screen.png
             activity-state.txt
@@ -165,7 +172,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: FloodSafe-v0921-Map-UI-Sathi-News-TEST
+          name: FloodSafe-v0921-30min-Gyan-Station-Sathi-TEST
           path: ./apk
       - name: Publish direct TEST APK without changing production
         shell: bash
@@ -173,17 +180,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          APK=./apk/FloodSafe-Nepal-v0.9.21-MAP-UI-SATHI-NEWS-TEST.apk
+          APK=./apk/FloodSafe-Nepal-v0.9.21-30MIN-GYAN-STATION-SATHI-TEST.apk
           test -s "$APK"
           test "$(stat -c %s "$APK")" -gt 85000000
           unzip -t "$APK" >/dev/null
           unzip -Z -1 "$APK" | grep -Fqx 'assets/pjbuilts-original-splash.html'
           unzip -Z -1 "$APK" | grep -Fqx 'assets/floodsafe-nepal/v25/index.html'
           sha256sum "$APK" > STABILITY-GYAN-SHA256.txt
-          TAG=floodsafe-v0921-map-ui-sathi-news-test-20261029
-          NOTES='TEST ONLY. v0.9.21 native full assets, PJBUILTS cream/gold intro, flood risk, notifications, government notices and district search preserved. Fix Android 16 API36 forced edge-to-edge status/gesture overlap in Home, map, advanced, NASA and knowledge. Expand bounded national map overview from 500 to 2200 rivers with balanced longitude coverage, preserving full bundled source. SATHI routes Kathmandu Romanized Nepali weather before river matches and rotates subsequent Gita lessons. News feed now handles source variations, last 24-hour articles and separately labels empty feed versus API outage; manual and 15m auto refresh. Preview test app only; no production changes. Verify on the actual device.'
+          TAG=floodsafe-v0921-30min-gyan-station-sathi-test-20261029
+          NOTES='TEST ONLY. Native full 0.9.21 assets and PUJAN/PJBUILTS cream-gold intro kept. Strict 30-minute published-at news lock restored: older and undated news are never displayed. When no fresh news is available or the feed is unavailable, automatically cycle existing curated Knowledge lessons inside the same news section; restore fresh news automatically. SATHI now recognizes Romanised Nepali flood emergency questions with practical multi-step guidance and non-repeating answers, and Kathmandu river questions use district records. Map official gauge and river details use an attractive immediate native bottom sheet with source, freshness and measured water level, and nearest river tap uses a cached bounding box to reduce delay. Preview APK only, no production edits. APK compile and package tests do not certify device runtime.'
           if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$TAG" "$APK" STABILITY-GYAN-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" "$APK" STABILITY-GYAN-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 Full Rivers + Safe Screen + SATHI + News TEST' --notes "$NOTES" --prerelease --latest=false
+            gh release create "$TAG" "$APK" STABILITY-GYAN-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 30-Minute News Gyan Auto Fallback + SATHI + Station Details TEST' --notes "$NOTES" --prerelease --latest=false
           fi

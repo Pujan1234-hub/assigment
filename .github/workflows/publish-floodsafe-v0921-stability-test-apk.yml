@@ -1,0 +1,48 @@
+name: Publish FloodSafe v0.9.21 Stability APK for private field testing
+
+on:
+  push:
+    branches:
+      - test/floodsafe-v0921-stability-20261029
+    paths:
+      - '.github/workflows/publish-floodsafe-v0921-stability-test-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve already compiled v0.9.21 Stability APK
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 40862892899 -R "$GITHUB_REPOSITORY" -n FloodSafe-v0921-Border-Cloud-Stability-TEST -D .
+          APK=FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk
+          test -s "$APK"
+          test "$(stat -c %s "$APK")" -gt 85000000
+          unzip -t "$APK" >/dev/null
+          unzip -Z -1 "$APK" | grep -Fqx 'assets/floodsafe-nepal/v25/index.html'
+          unzip -Z -1 "$APK" | grep -Fqx 'assets/pjbuilts-original-splash.html'
+          unzip -Z -1 "$APK" | grep -Fqx 'assets/data/nepal-waterways-snapshot.json'
+          sha256sum "$APK" | tee STABILITY-TEST-SHA256.txt
+      - name: Publish TEST-ONLY release direct APK (no production deployment)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=floodsafe-v0921-stability-test-20261029
+          NOTES='v0.9.21 full-asset native stability TEST. APK compiled and packaged successfully. Fixes target Nepal river/station boundary, smoother map/cloud overlays, official warning expiry, SATHI routing, and map lifecycle during Advanced/NASA. Not fully emulator verified (emulator screenshot connection abort). Keep your existing release installed until you test. This APK has isolated preview package identity, so it does not overwrite production.'
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+             gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk STABILITY-TEST-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
+          else
+             gh release create "$TAG" FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk STABILITY-TEST-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 Stability TEST APK' --notes "$NOTES" --prerelease --latest=false
+          fi

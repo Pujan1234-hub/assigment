@@ -150,6 +150,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private boolean newsRefreshing=false;
     // Default 60 seconds; safe remote config may adjust within 60..900 seconds.
     private static final long NEWS_POLL_INTERVAL_MS=60_000L;
+    private PlayStoreUpdateBridge playUpdates;
     private final Runnable onOtaContentChanged=()->{
         if(isFinishing()||isDestroyed())return;
         if(newsShowingKnowledge)showNextNewsKnowledge();
@@ -207,6 +208,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         getWindow().setNavigationBarColor(Color.WHITE);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         FloodSafeRemoteConfig.init(getApplicationContext());
+        playUpdates=new PlayStoreUpdateBridge(this);
         SharedPreferences p=getSharedPreferences(PREFS,MODE_PRIVATE);english=p.getBoolean(KEY_LANG,false);
         lat=Double.longBitsToDouble(p.getLong(KEY_LAT,Double.doubleToRawLongBits(Double.NaN)));
         lon=Double.longBitsToDouble(p.getLong(KEY_LON,Double.doubleToRawLongBits(Double.NaN)));
@@ -903,8 +905,9 @@ public final class NativeFullActivity extends Activity implements LocationListen
         main.removeCallbacks(governmentAutoRefresh);main.postDelayed(governmentAutoRefresh,GOVERNMENT_FOREGROUND_REFRESH_MS);
         if(newsList!=null&&System.currentTimeMillis()-newsLastFetchedAt>=FloodSafeRemoteConfig.newsPollMillis())refreshNews();
         FloodSafeRemoteConfig.refreshAsync(getApplicationContext(),onOtaContentChanged);
+        if(playUpdates!=null)playUpdates.check();
         main.removeCallbacks(newsAutoRefreshTick);main.postDelayed(newsAutoRefreshTick,20000L);
         if(newsShowingKnowledge){main.removeCallbacks(newsKnowledgeTick);main.postDelayed(newsKnowledgeTick,FloodSafeRemoteConfig.knowledgeRotateMillis());}
     }
-    @Override protected void onDestroy(){main.removeCallbacksAndMessages(null);if(speech!=null){try{speech.destroy();}catch(Exception ignored){}}if(tts!=null){tts.stop();tts.shutdown();}io.shutdownNow();super.onDestroy();}
+    @Override protected void onDestroy(){if(playUpdates!=null)playUpdates.close();main.removeCallbacksAndMessages(null);if(speech!=null){try{speech.destroy();}catch(Exception ignored){}}if(tts!=null){tts.stop();tts.shutdown();}io.shutdownNow();super.onDestroy();}
 }

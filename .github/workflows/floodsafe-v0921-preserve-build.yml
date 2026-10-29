@@ -30,7 +30,7 @@ jobs:
           cp -a data/. "$ASSETS/data/"
           cp -a floodsafe-nepal/. "$ASSETS/floodsafe-nepal/"
           test -s "$ASSETS/data/nepal-waterways-snapshot.json"
-          test -s "$ASSETS/data/nepal-districts.geojson"
+          test -s "$ASSETS/floodsafe-nepal/v24/nepal-districts.geojson"
           test -s "$ASSETS/pjbuilts-original-splash.html"
           test -s "$ASSETS/floodsafe-nepal/v25/index.html"
       - name: Firebase preview client for separate test installation (worktree only)
@@ -53,7 +53,7 @@ jobs:
           set -euo pipefail
           APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
           unzip -t "$APK" >/dev/null
-          for asset in assets/pjbuilts-original-splash.html assets/data/nepal-waterways-snapshot.json assets/data/nepal-districts.geojson assets/floodsafe-nepal/v25/index.html; do
+          for asset in assets/pjbuilts-original-splash.html assets/data/nepal-waterways-snapshot.json assets/floodsafe-nepal/v24/nepal-districts.geojson assets/floodsafe-nepal/v25/index.html; do
             unzip -Z -1 "$APK" | grep -Fqx "$asset"
           done
           grep -Fq 'NativeFullActivity.class' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java

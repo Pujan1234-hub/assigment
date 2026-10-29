@@ -679,7 +679,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         Object original; String name, stage; double lat, lon, level, rainfallMm; boolean fresh;
     }
     private static final class RiverWay {
-        String name, type, volatileStage = "normal";
+        String name, type;
         volatile String stage = "normal";
         double minLat=Double.POSITIVE_INFINITY,maxLat=Double.NEGATIVE_INFINITY;
         double minLon=Double.POSITIVE_INFINITY,maxLon=Double.NEGATIVE_INFINITY;

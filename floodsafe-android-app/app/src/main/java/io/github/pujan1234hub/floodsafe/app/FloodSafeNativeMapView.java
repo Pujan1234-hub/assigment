@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.os.Looper;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
@@ -221,7 +222,8 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 rivers.clear();
                 rivers.addAll(all);
                 riversGeoJson = makeRiversGeoJson(all);
-            } catch (Exception ignored) {}
+                Log.i("FloodSafeNativeMap","Prepared Nepal rivers loaded: "+all.size());
+            } catch (Exception e) { Log.e("FloodSafeNativeMap","River geometry could not load",e); }
             main.post(() -> {
                 installGeoLayers();
                 refreshRiverRiskSources();
@@ -265,7 +267,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
             refreshStationSources();
             refreshRiverRiskSources();
             refreshUserSource();
-        } catch (Exception ignored) {}
+        } catch (Exception e) { Log.e("FloodSafeNativeMap","MapLibre style river layers failed",e); }
     }
 
     private void ensureRiverRiskSource(String sourceId, String glowId, String layerId, String color) {

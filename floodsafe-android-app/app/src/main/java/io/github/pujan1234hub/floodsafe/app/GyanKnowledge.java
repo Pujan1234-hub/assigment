@@ -155,7 +155,8 @@ final class GyanKnowledge {
         String x=q.toLowerCase(Locale.ROOT);
         return has(x,"ज्ञान","gyan","gyaan","gita","गीता","कृष्ण","krishna","karma","कर्म","जीवन","जिन्दगी","life advice","motivation","study","पढाइ","पुस्तक","book","सामान्य ज्ञान","general knowledge","science","विज्ञान","पासवर्ड","password","phishing","फिसिङ","water cycle","जलचक्र","बाढीमा के","flood safety","बाढी सुरक्षा","आपतकालीन तयारी","कसरी जोगिने","सुरक्षा उपाय");
     }
-    static String answer(String question,boolean en){
+    static String answer(String question,boolean en){return answerWithOffset(question,en,0);}
+    static String answerWithOffset(String question,boolean en,int offset){
         if(question==null)return "";
         String q=question.toLowerCase(Locale.ROOT);
         Entry chosen=null;
@@ -163,18 +164,19 @@ final class GyanKnowledge {
             if(q.contains(e.neTitle.toLowerCase(Locale.ROOT))||q.contains(e.enTitle.toLowerCase(Locale.ROOT))){chosen=e;break;}
         }
         if(chosen==null){
-            String category=has(q,"gita","गीता","कृष्ण","krishna","कर्म")?"gita":
-                has(q,"ज्ञान","gyan","gyaan","general knowledge","सामान्य ज्ञान")?"general":
+            String category=has(q,"gita","geeta","गीता","कृष्ण","krishna","कर्म")?"gita":
                 has(q,"बाढी","flood","आपतकालीन तयारी","कसरी जोगिने")?"flood":
                 has(q,"study","पढाइ")?"life":
                 has(q,"पासवर्ड","password","phishing","फिसिङ")?"digital":
                 has(q,"science","विज्ञान","जलचक्र","water cycle")?"science":
-                has(q,"पुस्तक","book")?"books":"life";
-            for(Entry e:ITEMS){if(category.equals(e.category)){chosen=e;break;}}
+                has(q,"पुस्तक","book")?"books":
+                has(q,"ज्ञान","gyan","gyaan","general knowledge","सामान्य ज्ञान")?"general":"life";
+            java.util.ArrayList<Entry> lessons=new java.util.ArrayList<>();
+            for(Entry e:ITEMS)if(category.equals(e.category))lessons.add(e);
+            if(!lessons.isEmpty())chosen=lessons.get(Math.floorMod(offset,lessons.size()));
         }
         if(chosen==null)return en?"No curated lesson found.":"उपयुक्त पाठ भेटिएन।";
-        return "📚 "+chosen.title(en)+"\n"+chosen.body(en)+"\n"+(en?"Reading: ":"सन्दर्भ: ")+chosen.source+
-            (en?"\nExplore the Knowledge section for more lessons.":"\nथप पढ्न 'ज्ञानका कुरा' खोल्नुहोस्।");
+        return "📚 "+chosen.title(en)+"\n"+chosen.body(en)+"\n"+(en?"Reference: ":"सन्दर्भ: ")+chosen.source;
     }
     private static boolean has(String q,String...terms){for(String t:terms)if(q.contains(t))return true;return false;}
 }

@@ -148,7 +148,13 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private JSONArray currentNewsForSathi=new JSONArray();
     private long newsLastFetchedAt=0L;
     private boolean newsRefreshing=false;
+    // Default 60 seconds; safe remote config may adjust within 60..900 seconds.
     private static final long NEWS_POLL_INTERVAL_MS=60_000L;
+    private final Runnable onOtaContentChanged=()->{
+        if(isFinishing()||isDestroyed())return;
+        if(newsShowingKnowledge)showNextNewsKnowledge();
+        // Only content and safe presentation intervals update here; no alert thresholds.
+    };
     private final List<NewsItem> freshNewsOnScreen=new ArrayList<>();
     private TextView newsKnowledgeCategory,newsKnowledgeText;
     private int newsKnowledgeIndex=4;
@@ -157,7 +163,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         @Override public void run(){
             if(isFinishing()||isDestroyed()||!newsShowingKnowledge)return;
             showNextNewsKnowledge();
-            main.postDelayed(this,10500L);
+            main.postDelayed(this,FloodSafeRemoteConfig.knowledgeRotateMillis());
         }
     };
     private final Runnable newsAutoRefreshTick=new Runnable(){
@@ -172,7 +178,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 }
                 if(active.size()!=freshNewsOnScreen.size())renderNews(active);
             }
-            if(System.currentTimeMillis()-newsLastFetchedAt>=NEWS_POLL_INTERVAL_MS)refreshNews();
+            if(System.currentTimeMillis()-newsLastFetchedAt>=FloodSafeRemoteConfig.newsPollMillis())refreshNews();
+            FloodSafeRemoteConfig.refreshAsync(getApplicationContext(),onOtaContentChanged);
             main.postDelayed(this,20000L);
         }
     };
@@ -199,6 +206,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         getWindow().setStatusBarColor(Color.rgb(223,242,251));
         getWindow().setNavigationBarColor(Color.WHITE);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        FloodSafeRemoteConfig.init(getApplicationContext());
         SharedPreferences p=getSharedPreferences(PREFS,MODE_PRIVATE);english=p.getBoolean(KEY_LANG,false);
         lat=Double.longBitsToDouble(p.getLong(KEY_LAT,Double.doubleToRawLongBits(Double.NaN)));
         lon=Double.longBitsToDouble(p.getLong(KEY_LON,Double.doubleToRawLongBits(Double.NaN)));
@@ -538,7 +546,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         c.addView(newsList,lp(-1,-2,0,dp(8),0,0));return c;}
     private View privacyCard(){LinearLayout c=card();privacyTitle=text("",20,true,Color.rgb(16,39,70));privacySub=text("",12,true,Color.rgb(100,130,151));c.addView(privacyTitle);c.addView(privacySub);Button b=smallButton(t("गोपनीयता नीति हेर्नुहोस् →","View privacy policy →"));b.setOnClickListener(v->showPrivacy());c.addView(b,lp(-1,dp(48),0,dp(10),0,0));return c;}
 
-    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.argb(246,255,255,255),24,Color.rgb(208,227,237),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->openMapScreen());a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->{smoothTo(newsAnchor);if(System.currentTimeMillis()-newsLastFetchedAt>=NEWS_POLL_INTERVAL_MS)refreshNews();});return nav;}
+    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.argb(246,255,255,255),24,Color.rgb(208,227,237),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->openMapScreen());a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->{smoothTo(newsAnchor);if(System.currentTimeMillis()-newsLastFetchedAt>=FloodSafeRemoteConfig.newsPollMillis())refreshNews();});return nav;}
     private FrameLayout.LayoutParams bottomParams(){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(-1,dp(72),Gravity.BOTTOM);p.setMargins(dp(9),0,dp(9),dp(9));return p;}
     private void smoothTo(View v){if(v==null)return;scroll.post(()->scroll.smoothScrollTo(0,Math.max(0,v.getTop()-dp(8))));}
 
@@ -737,11 +745,11 @@ public final class NativeFullActivity extends Activity implements LocationListen
         newsList.addView(panel);
         showNextNewsKnowledge();
         main.removeCallbacks(newsKnowledgeTick);
-        main.postDelayed(newsKnowledgeTick,10500L);
+        main.postDelayed(newsKnowledgeTick,FloodSafeRemoteConfig.knowledgeRotateMillis());
     }
     private void showNextNewsKnowledge(){
         if(newsKnowledgeCategory==null||newsKnowledgeText==null||GyanKnowledge.ITEMS.isEmpty())return;
-        GyanKnowledge.Entry entry=GyanKnowledge.ITEMS.get(Math.floorMod(newsKnowledgeIndex,GyanKnowledge.ITEMS.size()));
+        GyanKnowledge.Entry entry=FloodSafeRemoteConfig.newsLessonAt(newsKnowledgeIndex);
         newsKnowledgeIndex+=7;
         newsKnowledgeCategory.setText("✦ "+GyanKnowledge.categoryName(entry.category,english)+" · "+entry.title(english));
         newsKnowledgeText.setText(entry.body(english));
@@ -893,9 +901,10 @@ public final class NativeFullActivity extends Activity implements LocationListen
     @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();
         main.post(mapVisibilityTick);
         main.removeCallbacks(governmentAutoRefresh);main.postDelayed(governmentAutoRefresh,GOVERNMENT_FOREGROUND_REFRESH_MS);
-        if(newsList!=null&&System.currentTimeMillis()-newsLastFetchedAt>=NEWS_POLL_INTERVAL_MS)refreshNews();
+        if(newsList!=null&&System.currentTimeMillis()-newsLastFetchedAt>=FloodSafeRemoteConfig.newsPollMillis())refreshNews();
+        FloodSafeRemoteConfig.refreshAsync(getApplicationContext(),onOtaContentChanged);
         main.removeCallbacks(newsAutoRefreshTick);main.postDelayed(newsAutoRefreshTick,20000L);
-        if(newsShowingKnowledge){main.removeCallbacks(newsKnowledgeTick);main.postDelayed(newsKnowledgeTick,10500L);}
+        if(newsShowingKnowledge){main.removeCallbacks(newsKnowledgeTick);main.postDelayed(newsKnowledgeTick,FloodSafeRemoteConfig.knowledgeRotateMillis());}
     }
     @Override protected void onDestroy(){main.removeCallbacksAndMessages(null);if(speech!=null){try{speech.destroy();}catch(Exception ignored){}}if(tts!=null){tts.stop();tts.shutdown();}io.shutdownNow();super.onDestroy();}
 }

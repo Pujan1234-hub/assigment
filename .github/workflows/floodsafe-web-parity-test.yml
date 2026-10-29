@@ -1,0 +1,112 @@
+name: FloodSafe v0.9.21 EXACT WEB PARITY - TEST ONLY
+on:
+  push:
+    branches:
+      - repair/floodsafe-v0921-live-web-parity-20261029
+    paths:
+      - '.github/workflows/floodsafe-web-parity-test.yml'
+      - 'floodsafe-android-app/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Retain original v0.9.21 resources and shiny cream-gold intro
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSETS=floodsafe-android-app/app/src/main/assets
+          mkdir -p "$ASSETS/data" "$ASSETS/floodsafe-nepal"
+          cp -a data/. "$ASSETS/data/"
+          cp -a floodsafe-nepal/. "$ASSETS/floodsafe-nepal/"
+          test -s "$ASSETS/pjbuilts-original-splash.html"
+          test -s "$ASSETS/data/nepal-waterways-snapshot.json"
+          test -s "$ASSETS/floodsafe-nepal/v24/nepal-districts.geojson"
+      - name: Keep preview install independent of signed existing v0.9.21
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,copy,pathlib
+          p=pathlib.Path('floodsafe-android-app/app/google-services.json')
+          x=json.loads(p.read_text());client=copy.deepcopy(x['client'][0])
+          client['client_info']['android_client_info']['package_name']='io.github.pujan1234hub.floodsafe.app.preview'
+          x['client'].append(client);p.write_text(json.dumps(x))
+          PY
+      - name: Verify no imitation dashboard in launcher
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAVA=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app
+          grep -Fq 'new Intent(this, MainActivity.class)' "$JAVA/PJBuiltsSplashActivity.java"
+          grep -Fq 'webView.loadUrl(NavigationPolicy.LIVE_HOME)' "$JAVA/MainActivity.java"
+          grep -Fq 'https://pjbuilts.com/floodsafe-nepal/' "$JAVA/NavigationPolicy.java"
+          grep -Fq 'NavigationPolicy.assetOrigin(request.getUrl().toString())' "$JAVA/MainActivity.java"
+          grep -Fq 'onGeolocationPermissionsShowPrompt' "$JAVA/MainActivity.java"
+          grep -Fq 'POST_NOTIFICATIONS' floodsafe-android-app/app/src/main/AndroidManifest.xml
+      - name: Compile + unit test the real live-web hybrid
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+      - name: Check APK size, ZIP, source and original animation
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          unzip -t "$APK" >/dev/null
+          unzip -Z -1 "$APK" | grep -Fxq 'assets/pjbuilts-original-splash.html'
+          unzip -Z -1 "$APK" | grep -Fxq 'assets/data/nepal-waterways-snapshot.json'
+          test "$(stat -c %s "$APK")" -gt 85000000
+          stat -c 'REAL_WEB_PARITY_APK_BYTES=%s' "$APK"
+          sha256sum "$APK"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0921-EXACT-WEB-Android-TEST
+          path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+          if-no-files-found: error
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: FloodSafe-v0921-EXACT-WEB-Android-TEST
+          path: ./apk
+      - name: Android emulator full WebView parity startup
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-boot-timeout: 600
+          disable-animations: false
+          script: |
+            adb install -r ./apk/app-debug.apk
+            adb logcat -c
+            adb shell am start -W -n io.github.pujan1234hub.floodsafe.app.preview/io.github.pujan1234hub.floodsafe.app.PJBuiltsSplashActivity
+            sleep 12
+            adb shell dumpsys activity activities | grep -F MainActivity
+            adb shell pidof io.github.pujan1234hub.floodsafe.app.preview
+            adb shell screencap -p /sdcard/floodsafe-web-parity.png
+            adb pull /sdcard/floodsafe-web-parity.png ./apk/floodsafe-web-parity.png
+            sh -c 'if adb logcat -d -v brief | grep -A 9 -F "FATAL EXCEPTION" | grep -Fq "io.github.pujan1234hub.floodsafe.app"; then echo "APP_CRASH"; exit 1; else echo "WEB_PARITY_STARTUP_PASS"; fi'
+      - name: Save Android screenshot for design comparison
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FloodSafe-WEB-PARITY-emulator-screenshot
+          path: ./apk/floodsafe-web-parity.png
+          if-no-files-found: ignore
+          retention-days: 14

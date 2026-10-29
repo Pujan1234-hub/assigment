@@ -190,7 +190,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
         feed.setText("BIPAD/DHM river feed refresh हुँदैछ…");
         io.execute(() -> {
             try {
-                JSONObject root = getJson(RIVER_ENDPOINT + "?_native=" + System.currentTimeMillis());
+                JSONObject root = OfficialStationFeeds.rivers();
                 JSONArray rows = arrayFrom(root);
                 List<LiveStation> out = new ArrayList<>();
                 long now = System.currentTimeMillis();
@@ -213,7 +213,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
     private void refreshRain() {
         io.execute(() -> {
             try {
-                JSONObject root = getJson(BIPAD_RAIN_ENDPOINT + "&_fs=" + System.currentTimeMillis());
+                JSONObject root = OfficialStationFeeds.rainfall();
                 JSONArray rows = arrayFrom(root);
                 List<RainStation> out = new ArrayList<>();
                 for (int i = 0; i < rows.length(); i++) {

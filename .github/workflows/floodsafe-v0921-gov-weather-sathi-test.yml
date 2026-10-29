@@ -60,7 +60,7 @@ jobs:
           test -s floodsafe-android-app/app/src/main/assets/district-weather-points.json
           grep -Fq 'content.addView(governmentCard()' "$JAVA/NativeFullActivity.java"
           grep -Fq 'new DistrictWeatherOverlay(this' "$JAVA/NativeFullActivity.java"
-          grep -Fq 'new Spinner(this)' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'new AutoCompleteTextView(this)' "$JAVA/NativeFullActivity.java"
           grep -Fq 'SathiKnowledge.answer' "$JAVA/NativeFullActivity.java"
           grep -Fq 'GovernmentWarningWorker.class' "$JAVA/NativeFullActivity.java"
           grep -Fq 'private void refreshRiverRiskSources()' "$JAVA/FloodSafeNativeMapView.java"

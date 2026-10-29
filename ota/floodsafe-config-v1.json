@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "revision": 1,
+  "enabled": true,
+  "news": {
+    "poll_seconds": 60,
+    "knowledge_rotate_seconds": 11
+  },
+  "knowledge": [
+    {
+      "id": "ota-karma",
+      "category": "gita",
+      "title_ne": "कर्म र परिणाम",
+      "title_en": "Effort and outcome",
+      "body_ne": "भगवद्गीता २.४७ को व्यावहारिक भाव: जिम्मेवारीपूर्ण काममा ध्यान दिनुहोस्। परिणाम धेरै कारणले बदलिन्छ, त्यसैले आजको सही काम प्राथमिकता बनाउनुहोस्।",
+      "body_en": "A practical reading of Gita 2.47: focus on thoughtful effort. Outcomes have many causes, so choose one good action today.",
+      "source": "Bhagavad Gita 2.47 (interpretation)"
+    },
+    {
+      "id": "ota-flood",
+      "category": "flood",
+      "title_ne": "बाढी आएमा तुरुन्त के गर्ने?",
+      "title_en": "What to do when flooding starts",
+      "body_ne": "नदी किनारबाट टाढा सुरक्षित अग्लो ठाउँतिर जानुहोस्। बाढीको पानी पार नगर्नुहोस्। ताजा DHM चेतावनी र स्थानीय प्रशासनको निर्देशन जाँच्नुहोस्।",
+      "body_en": "Move away from rivers toward designated safe higher ground. Never cross floodwater. Check current DHM and local authority directions.",
+      "source": "General flood preparedness; not a live warning"
+    },
+    {
+      "id": "ota-learn",
+      "category": "general",
+      "title_ne": "कुनै जानकारी साँचो हो कि होइन?",
+      "title_en": "How to verify information",
+      "body_ne": "स्रोत, लेखिएको मिति र स्वतन्त्र पुष्टि जाँच्नुहोस्। पुरानो समाचार फेरि शेयर हुँदा ताजा हो भनेर नमान्नुहोस्।",
+      "body_en": "Check the source, original publication date and independent corroboration. A recirculated old story is not new.",
+      "source": "Media literacy"
+    }
+  ],
+  "sathi_faq": [
+    {
+      "id": "ota-explain",
+      "triggers": [
+        "ota update",
+        "auto update system",
+        "remote update",
+        "ओटिए अपडेट",
+        "अपडेट प्रणाली"
+      ],
+      "answer_ne": "FloodSafe का ज्ञान, News/ज्ञान परिवर्तनको समय र केही SATHI सामग्री server बाट सुरक्षित रूपमा अपडेट गर्न मिल्छ। तर native map engine, GPS र Android code परिवर्तन भने Play Store update मार्फत आउँछ।",
+      "answer_en": "FloodSafe can update curated lessons, News/Knowledge timing and some SATHI help content over HTTPS. Native Android code, GPS and map engine changes still need a Play Store update."
+    }
+  ]
+}

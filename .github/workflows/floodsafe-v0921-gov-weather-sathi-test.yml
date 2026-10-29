@@ -1,16 +1,16 @@
-name: FloodSafe Nepal v0.9.21 Crash Map Cloud Stability Isolated Test
+name: FloodSafe Nepal v0.9.21 Knowledge District SATHI Isolated Test
 on:
   push:
     branches:
-      - test/floodsafe-v0921-stability-20261029
+      - test/floodsafe-v0921-gyan-district-sathi-20261029
     paths:
       - '.github/workflows/floodsafe-v0921-gov-weather-sathi-test.yml'
       - 'floodsafe-android-app/**'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 concurrency:
-  group: floodsafe-v0921-stability-isolated-test
+  group: floodsafe-v0921-gyan-district-isolated-test
   cancel-in-progress: true
 jobs:
   android:
@@ -68,6 +68,11 @@ jobs:
           grep -Fq 'data/nepal-waterways-tiles/overview.json' "$JAVA/FloodSafeNativeMapView.java"
           grep -Fq 'setWeatherOverlayInvalidator' "$JAVA/NativeFullActivity.java"
           grep -Fq 'GovernmentNotices.valid' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'new Intent(this,GyanActivity.class)' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'AutoCompleteTextView' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'GyanKnowledge.answer' "$JAVA/SathiKnowledge.java"
+          test -s "$JAVA/GyanKnowledge.java"
+          test -s "$JAVA/GyanActivity.java"
           grep -Fq 'polygon.contains(o,a)' "$JAVA/NativeFullActivity.java"
       - name: Android native unit tests and compile
         run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon
@@ -81,12 +86,12 @@ jobs:
             unzip -Z -1 "$APK" | grep -Fxq "$asset"
           done
           test "$(stat -c %s "$APK")" -gt 85000000
-          cp "$APK" FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk
+          cp "$APK" FloodSafe-Nepal-v0.9.21-GYAN-DISTRICT-SATHI-TEST.apk
           sha256sum FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk
           stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0921-Border-Cloud-Stability-TEST
+          name: FloodSafe-v0921-Gyan-District-Sathi-TEST
           path: FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk
           retention-days: 14
           if-no-files-found: error
@@ -130,10 +135,40 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0921-Stability-Diagnostics
+          name: FloodSafe-v0921-Gyan-District-Diagnostics
           path: |
             native-screen.png
             activity-state.txt
             android-logcat.txt
           if-no-files-found: ignore
           retention-days: 14
+
+  publish-test:
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: FloodSafe-v0921-Gyan-District-Sathi-TEST
+          path: ./apk
+      - name: Publish direct TEST APK without changing production
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          APK=./apk/FloodSafe-Nepal-v0.9.21-GYAN-DISTRICT-SATHI-TEST.apk
+          test -s "$APK"
+          test "$(stat -c %s "$APK")" -gt 85000000
+          unzip -t "$APK" >/dev/null
+          unzip -Z -1 "$APK" | grep -Fqx 'assets/pjbuilts-original-splash.html'
+          unzip -Z -1 "$APK" | grep -Fqx 'assets/floodsafe-nepal/v25/index.html'
+          sha256sum "$APK" > STABILITY-GYAN-SHA256.txt
+          TAG=floodsafe-v0921-gyan-district-sathi-test-20261029
+          NOTES='TEST ONLY. Native v0.9.21 complete assets with search/select 77 districts (stations hidden until selected), full Knowledge reading library, improved SATHI curated answers and offscreen map particle optimization. Original cream/gold splash preserved. Separate preview package, does not overwrite production. Native compile and APK packaging are checked. Device stability still needs user verification; do not assume automatic warnings are error-free. No live production release.'
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK" STABILITY-GYAN-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" "$APK" STABILITY-GYAN-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 Knowledge District SATHI TEST' --notes "$NOTES" --prerelease --latest=false
+          fi

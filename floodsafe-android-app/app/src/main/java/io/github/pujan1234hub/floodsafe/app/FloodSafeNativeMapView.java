@@ -145,9 +145,11 @@ final class FloodSafeNativeMapView extends FrameLayout {
      */
     android.graphics.PointF weatherPoint(double lat,double lon) {
         if(map==null||!Double.isFinite(lat)||!Double.isFinite(lon))return null;
-        return map.getProjection().toScreenLocation(new LatLng(lat,lon));
+        try{return map.getProjection().toScreenLocation(new LatLng(lat,lon));}
+        catch(Exception ignored){return null;}
     }
     double weatherZoom() {return map==null?5.4:map.getCameraPosition().zoom;}
+    void updateUserLocation(double lat,double lon){userLat=lat;userLon=lon;refreshUserSource();}
 
     void setBase(Bitmap ignored) { }
 

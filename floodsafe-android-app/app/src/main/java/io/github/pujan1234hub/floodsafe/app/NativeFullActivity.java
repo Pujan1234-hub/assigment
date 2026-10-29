@@ -148,6 +148,33 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private JSONArray currentNewsForSathi=new JSONArray();
     private long newsLastFetchedAt=0L;
     private boolean newsRefreshing=false;
+    private final List<NewsItem> freshNewsOnScreen=new ArrayList<>();
+    private TextView newsKnowledgeCategory,newsKnowledgeText;
+    private int newsKnowledgeIndex=4;
+    private boolean newsShowingKnowledge=false;
+    private final Runnable newsKnowledgeTick=new Runnable(){
+        @Override public void run(){
+            if(isFinishing()||isDestroyed()||!newsShowingKnowledge)return;
+            showNextNewsKnowledge();
+            main.postDelayed(this,10500L);
+        }
+    };
+    private final Runnable newsAutoRefreshTick=new Runnable(){
+        @Override public void run(){
+            if(isFinishing()||isDestroyed())return;
+            // Hide any news immediately when its 30-minute publication window closes.
+            if(!newsShowingKnowledge && !freshNewsOnScreen.isEmpty()){
+                long now=System.currentTimeMillis();
+                List<NewsItem> active=new ArrayList<>();
+                for(NewsItem n:freshNewsOnScreen){
+                    if(n.at>0 && n.at<=now+300000L && now-n.at<=NewsFeedParser.RECENT_MS)active.add(n);
+                }
+                if(active.size()!=freshNewsOnScreen.size())renderNews(active);
+            }
+            if(System.currentTimeMillis()-newsLastFetchedAt>5L*60L*1000L)refreshNews();
+            main.postDelayed(this,30000L);
+        }
+    };
     private TextView governmentStatus;
     private boolean expandedGovernment=false;
     private long governmentCheckedAt=0L;
@@ -512,7 +539,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         c.addView(newsList,lp(-1,-2,0,dp(8),0,0));return c;}
     private View privacyCard(){LinearLayout c=card();privacyTitle=text("",20,true,Color.rgb(16,39,70));privacySub=text("",12,true,Color.rgb(100,130,151));c.addView(privacyTitle);c.addView(privacySub);Button b=smallButton(t("गोपनीयता नीति हेर्नुहोस् →","View privacy policy →"));b.setOnClickListener(v->showPrivacy());c.addView(b,lp(-1,dp(48),0,dp(10),0,0));return c;}
 
-    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.argb(246,255,255,255),24,Color.rgb(208,227,237),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->openMapScreen());a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->{smoothTo(newsAnchor);if(System.currentTimeMillis()-newsLastFetchedAt>15L*60L*1000L)refreshNews();});return nav;}
+    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.argb(246,255,255,255),24,Color.rgb(208,227,237),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->openMapScreen());a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->{smoothTo(newsAnchor);if(System.currentTimeMillis()-newsLastFetchedAt>5L*60L*1000L)refreshNews();});return nav;}
     private FrameLayout.LayoutParams bottomParams(){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(-1,dp(72),Gravity.BOTTOM);p.setMargins(dp(9),0,dp(9),dp(9));return p;}
     private void smoothTo(View v){if(v==null)return;scroll.post(()->scroll.smoothScrollTo(0,Math.max(0,v.getTop()-dp(8))));}
 
@@ -629,11 +656,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 if(isFinishing()||isDestroyed()||newsList==null)return;
                 newsLastFetchedAt=System.currentTimeMillis();
                 if(!reached){
-                    newsList.removeAllViews();
-                    newsList.addView(empty(t("समाचार API हाल उपलब्ध छैन। समाचार नभएको होइन—source connection असफल भएको हो। पछि पुनः जाँच्नुहोस्।",
-                        "News API is unreachable. This does not mean there is no news. Retry later.")));
-                    newsSub.setText(t("RONB • Radio Nepal • News24 · स्रोत जडान असफल",
-                                      "RONB • Radio Nepal • News24 · feed unavailable"));
+                    showNewsKnowledgeFallback(true);
                     return;
                 }
                 renderNews(out);
@@ -642,18 +665,26 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
     private void renderNews(List<NewsItem> out){
         currentNewsForSathi=new JSONArray();
+        long now=System.currentTimeMillis();
+        List<NewsItem> valid=new ArrayList<>();
+        for(NewsItem n:out)if(n.at>0 && n.at<=now+300000L && now-n.at<=NewsFeedParser.RECENT_MS)valid.add(n);
+        out=valid;
+        freshNewsOnScreen.clear();freshNewsOnScreen.addAll(out);
         for(NewsItem item:out){
             try{currentNewsForSathi.put(new JSONObject().put("title",item.title).put("source",item.source));}
             catch(Exception ignored){}
         }
-        newsList.removeAllViews();
-        newsSub.setText(t("RONB Post • Radio Nepal • News24 Nepal · पछिल्लो २४ घण्टा",
-                          "RONB Post • Radio Nepal • News24 Nepal · latest 24 hours"));
         if(out.isEmpty()){
-            newsList.addView(empty(t("जडान भयो, तर पछिल्लो २४ घण्टाको जाँचिएको खबर feed ले दिएन। समाचार नै छैन भन्ने होइन।",
-                        "Feed connected but provided no matching recent article. This does not mean no news was published.")));
+            showNewsKnowledgeFallback(false);
             return;
         }
+        newsShowingKnowledge=false;
+        main.removeCallbacks(newsKnowledgeTick);
+        newsKnowledgeCategory=null;newsKnowledgeText=null;
+        newsList.removeAllViews();
+        newsTitle.setText(t("📰 नेपालका ताजा समाचार","📰 Fresh Nepal news"));
+        newsSub.setText(t("RONB • Radio Nepal • News24 · ३० मिनेटभित्रका समाचार मात्र",
+                          "RONB • Radio Nepal • News24 · published within 30 minutes"));
         for(NewsItem n:out){
             LinearLayout c=new LinearLayout(this);c.setOrientation(LinearLayout.VERTICAL);
             c.setPadding(dp(12),dp(11),dp(12),dp(11));
@@ -669,6 +700,40 @@ public final class NativeFullActivity extends Activity implements LocationListen
             c.addView(title);c.addView(meta);c.addView(open);
             newsList.addView(c,lp(-1,-2,0,0,0,dp(8)));
         }
+    }
+
+    private void showNewsKnowledgeFallback(boolean disconnected){
+        if(newsList==null)return;
+        freshNewsOnScreen.clear();
+        currentNewsForSathi=new JSONArray();
+        newsShowingKnowledge=true;
+        newsTitle.setText(t("📚 ज्ञानका कुरा","📚 Knowledge for Life"));
+        newsSub.setText(disconnected?
+            t("समाचार स्रोत जोडिएन • नयाँ खबर आएपछि आफैँ देखिन्छ","News feed unavailable • Fresh stories return automatically"):
+            t("३० मिनेटभित्र नयाँ समाचार छैन • जीवनोपयोगी ज्ञान",
+              "No news published in the last 30 minutes • Life lessons"));
+        newsList.removeAllViews();
+        LinearLayout panel=new LinearLayout(this);
+        panel.setOrientation(LinearLayout.VERTICAL);
+        panel.setPadding(dp(15),dp(14),dp(15),dp(16));
+        panel.setBackground(round(Color.rgb(255,251,241),18,Color.rgb(230,207,169),1));
+        newsKnowledgeCategory=text("",12,true,Color.rgb(170,123,62));
+        newsKnowledgeText=text("",15,false,Color.rgb(52,59,73));
+        newsKnowledgeText.setMaxLines(5);
+        newsKnowledgeText.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        panel.addView(newsKnowledgeCategory);
+        panel.addView(newsKnowledgeText,lp(-1,-2,0,dp(8),0,0));
+        newsList.addView(panel);
+        showNextNewsKnowledge();
+        main.removeCallbacks(newsKnowledgeTick);
+        main.postDelayed(newsKnowledgeTick,10500L);
+    }
+    private void showNextNewsKnowledge(){
+        if(newsKnowledgeCategory==null||newsKnowledgeText==null||GyanKnowledge.ITEMS.isEmpty())return;
+        GyanKnowledge.Entry entry=GyanKnowledge.ITEMS.get(Math.floorMod(newsKnowledgeIndex,GyanKnowledge.ITEMS.size()));
+        newsKnowledgeIndex+=7;
+        newsKnowledgeCategory.setText("✦ "+GyanKnowledge.categoryName(entry.category,english)+" · "+entry.title(english));
+        newsKnowledgeText.setText(entry.body(english));
     }
 
     private void showPrivacy(){new AlertDialog.Builder(this).setTitle(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety")).setMessage(t("FloodSafe ले location स्थानीय मौसम र 2 km verified river warning मिलाउन प्रयोग गर्छ। Background location user-enabled monitoring का लागि मात्र हो। Microphone SATHI voice का लागि मात्र प्रयोग हुन्छ। FCM notification delivery का लागि device token प्रयोग हुन सक्छ। Force stop पछि Android ले background काम रोक्न सक्छ।","FloodSafe uses location for local weather and verified river warnings within 2 km. Background location is used only for user-enabled monitoring. Microphone is used for SATHI voice. FCM may process a device token for notification delivery. Android can stop background work after an explicit Force stop.")).setPositiveButton("OK",null).show();}
@@ -785,11 +850,13 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private LinearLayout.LayoutParams lp(int w,int h,int l,int t,int r,int b){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(w,h);p.setMargins(dp(l),dp(t),dp(r),dp(b));return p;}private LinearLayout.LayoutParams weight(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-1,1f);p.setMargins(dp(2),0,dp(2),0);return p;}private int dp(int v){return Math.round(v*getResources().getDisplayMetrics().density);}
     private static final class RiverStation{final String name,district,stage;final double lat,lon,level,warning,danger;final long at;final boolean fresh;final int rank;RiverStation(String n,String di,double a,double o,double l,double w,double d,long tm,boolean f,String s,int r){name=n;district=di;lat=a;lon=o;level=l;warning=w;danger=d;at=tm;fresh=f;stage=s;rank=r;}}
     private static final class NewsItem{final String title,source,url;final long at;NewsItem(String t,String s,String u,long a){title=t;source=s;url=u;at=a;}}
-    @Override protected void onPause(){main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(gyanTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
+    @Override protected void onPause(){main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(newsAutoRefreshTick);main.removeCallbacks(newsKnowledgeTick);main.removeCallbacks(gyanTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
     @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();
         main.post(mapVisibilityTick);main.removeCallbacks(gyanTick);main.post(gyanTick);
         main.removeCallbacks(governmentAutoRefresh);main.postDelayed(governmentAutoRefresh,GOVERNMENT_FOREGROUND_REFRESH_MS);
-        if(newsList!=null&&System.currentTimeMillis()-newsLastFetchedAt>15L*60L*1000L)refreshNews();
+        if(newsList!=null&&System.currentTimeMillis()-newsLastFetchedAt>5L*60L*1000L)refreshNews();
+        main.removeCallbacks(newsAutoRefreshTick);main.postDelayed(newsAutoRefreshTick,30000L);
+        if(newsShowingKnowledge){main.removeCallbacks(newsKnowledgeTick);main.postDelayed(newsKnowledgeTick,10500L);}
     }
     @Override protected void onDestroy(){main.removeCallbacksAndMessages(null);if(speech!=null){try{speech.destroy();}catch(Exception ignored){}}if(tts!=null){tts.stop();tts.shutdown();}io.shutdownNow();super.onDestroy();}
 }

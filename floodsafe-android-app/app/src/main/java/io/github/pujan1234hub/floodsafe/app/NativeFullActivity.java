@@ -475,7 +475,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(dp(14),dp(8),dp(14),0);
         ScrollView messages=new ScrollView(this);messages.setFillViewport(false);
-        TextView history=text(t("SATHI · FloodSafe का नदी, जिल्ला, मौसम र सरकारी सूचना सोध्नुहोस्।","SATHI · Ask about FloodSafe rivers, districts, weather and government advisories."),14,false,Color.rgb(30,52,72));
+        TextView history=text(t("SATHI · नदी/मौसम/चेतावनीसँगै गीता, जीवन, विज्ञान र बाढी सुरक्षाको ज्ञान पनि सोध्नुहोस्।","SATHI · Ask about river gauges, warnings, Gita, life skills, science or flood safety."),14,false,Color.rgb(30,52,72));
         history.setTextIsSelectable(true);
         messages.addView(history);
         box.addView(messages,lp(-1,dp(300),0,0,0,dp(8)));
@@ -488,15 +488,26 @@ public final class NativeFullActivity extends Activity implements LocationListen
         actions.addView(send,new LinearLayout.LayoutParams(0,dp(48),1));
         actions.addView(mic,new LinearLayout.LayoutParams(0,dp(48),1));
         box.addView(actions);
+        final String[] lastSubject={""};
         Runnable sendQuestion=()->{
             String q=question.getText().toString().trim();if(q.isEmpty())return;
-            String a=answerSathi(q);
+            String normalized=q.toLowerCase(Locale.ROOT);
+            boolean followUp=q.length()<36&&(normalized.contains("त्यस")||normalized.contains("अझ")||normalized.contains("अरू")||normalized.contains("more")||normalized.contains("explain")||normalized.contains("further")||normalized.contains("why"));
+            String effective=followUp&&!lastSubject[0].isEmpty()?lastSubject[0]+" "+q:q;
+            if(!followUp)lastSubject[0]=q;
+            String a=answerSathi(effective);
             String old=history.getText().toString(),next=old+"\n\n👤 "+q+"\n🤖 SATHI: "+a;
             history.setText(next.length()>13000?next.substring(next.length()-12000):next);
             question.setText("");messages.post(()->messages.fullScroll(View.FOCUS_DOWN));
         };
         send.setOnClickListener(v->sendQuestion.run());
         mic.setOnClickListener(v->startVoice(history));
+        LinearLayout topics=new LinearLayout(this);topics.setOrientation(LinearLayout.HORIZONTAL);
+        String[] prompts={t("गीता जीवन ज्ञान","Gita life lesson"),t("बाढीमा के गर्ने","Flood safety"),t("नदीको अवस्था","River status")};
+        for(String prompt:prompts){Button quick=smallButton(prompt);quick.setTextSize(10);
+           LinearLayout.LayoutParams qp=new LinearLayout.LayoutParams(0,dp(47),1f);qp.setMargins(dp(2),dp(7),dp(2),0);
+           topics.addView(quick,qp);quick.setOnClickListener(v->{question.setText(prompt);sendQuestion.run();});}
+        box.addView(topics);
         AlertDialog dialog=new AlertDialog.Builder(this).setTitle("🤖 SATHI · Chat + Voice")
             .setView(box).setPositiveButton(t("बन्द","Close"),null).create();
         dialog.getWindow();

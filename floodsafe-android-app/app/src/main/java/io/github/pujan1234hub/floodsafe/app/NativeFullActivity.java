@@ -35,6 +35,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
@@ -109,6 +110,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private View homeAnchor,mapAnchor,newsAnchor;
     private String currentWeather="";
     private JSONArray currentGovernmentNotices=new JSONArray();
+    private JSONArray currentNewsForSathi=new JSONArray();
     private TextView governmentStatus;
     private boolean expandedGovernment=false;
     private long governmentCheckedAt=0L;
@@ -387,13 +389,60 @@ public final class NativeFullActivity extends Activity implements LocationListen
 
     private void refreshHuman(){io.execute(()->{try{JSONObject inc=getJson(BIPAD+"incident/?limit=500&ordering=-incidentOn"),loss=getJson(BIPAD+"loss-people/?limit=1000&ordering=-createdOn");JSONArray ir=rows(inc),lr=rows(loss);long cutoff=System.currentTimeMillis()-10L*24*60*60*1000;List<String> ids=new ArrayList<>();int incidents=0;for(int i=0;i<ir.length();i++){JSONObject o=ir.optJSONObject(i);if(o==null)continue;long tm=parseTime(str(o,"incidentOn","incident_on","createdOn","created_at","modifiedOn","updated_at","date"));String tx=o.toString().toLowerCase(Locale.ROOT);if(tm>=cutoff&&isDisaster(tx)){incidents++;ids.add(String.valueOf(o.opt("id")));}}int dead=0,inj=0,miss=0,res=0;boolean ds=false,is=false,ms=false,rs=false;for(int i=0;i<lr.length();i++){JSONObject o=lr.optJSONObject(i);if(o==null)continue;String id=str(o,"incident_id","incidentId");if(!id.isEmpty()&&!ids.contains(id))continue;String tx=o.toString().toLowerCase(Locale.ROOT);int q=(int)Math.max(0,numOr(o,"count","people","peopleCount","people_count","number","total","value","noOfPeople","no_of_people"));if(tx.matches(".*(dead|death|deceased|fatal|मृत|मृत्यु).*")){dead+=q;ds=true;}else if(tx.matches(".*(injur|घाइते).*")){inj+=q;is=true;}else if(tx.matches(".*(missing|बेपत्ता).*")){miss+=q;ms=true;}else if(tx.matches(".*(rescued|rescue|उद्धार).*")){res+=q;rs=true;}}final int fi=incidents,fd=dead,fj=inj,fm=miss,fr=res;final boolean fds=ds,fis=is,fms=ms,frs=rs;runOnUiThread(()->{humanCard.setVisibility(fi>0?View.VISIBLE:View.GONE);if(fi>0){humanFresh.setText(t("BIPAD official • पछिल्लो १० दिन • "+fi+" घटना","BIPAD official • last 10 days • "+fi+" incidents"));humanDeaths.setText(fds?String.valueOf(fd):"—");humanInjured.setText(fis?String.valueOf(fj):"—");humanMissing.setText(fms?String.valueOf(fm):"—");humanRescued.setText(frs?String.valueOf(fr):"—");humanDetail.setText(t("अनुमानित संख्या देखाइँदैन। Official loss records मात्र।","No estimated counts. Official loss records only."));}});}catch(Exception ignored){}});}
     private void refreshNews(){newsList.removeAllViews();newsList.addView(empty(t("नयाँ समाचार जाँच हुँदैछ…","Checking latest news…")));io.execute(()->{try{JSONObject j=getJson(NEWS_ENDPOINT+"?_native="+System.currentTimeMillis());JSONArray arr=j.optJSONArray("items");if(arr==null)arr=j.optJSONArray("results");if(arr==null)arr=j.optJSONArray("news");if(arr==null)arr=new JSONArray();final List<NewsItem> out=new ArrayList<>();long now=System.currentTimeMillis();for(int i=0;i<arr.length()&&out.size()<12;i++){JSONObject o=arr.optJSONObject(i);if(o==null)continue;String source=str(o,"source"),title=str(o,"title"),url=str(o,"url","link");long at=parseTime(str(o,"published_at","publishedAt","date"));if(title.isEmpty()||url.isEmpty()||!(source.equals("RONB Post")||source.equals("Radio Nepal")||source.equals("News24 Nepal")))continue;if(at>0&&now-at>30L*60*1000)continue;out.add(new NewsItem(title,source,url,at));}runOnUiThread(()->renderNews(out));}catch(Exception e){runOnUiThread(()->{newsList.removeAllViews();newsList.addView(empty(t("Live news अहिले उपलब्ध छैन।","Live news is currently unavailable.")));});}});}
-    private void renderNews(List<NewsItem> out){newsList.removeAllViews();if(out.isEmpty()){newsList.addView(empty(t("नयाँ live समाचार भेटिएन।","No fresh live stories found.")));return;}for(NewsItem n:out){LinearLayout c=new LinearLayout(this);c.setOrientation(LinearLayout.VERTICAL);c.setPadding(dp(12),dp(11),dp(12),dp(11));c.setBackground(round(Color.rgb(248,252,254),17,Color.rgb(216,234,243),1));TextView title=text(n.title,15,true,Color.rgb(16,39,70));TextView meta=text(n.source+(n.at>0?" • "+Math.max(0,(System.currentTimeMillis()-n.at)/60000)+" min ago":""),11,false,Color.rgb(102,131,153));TextView open=text(t("खोल्नुहोस् ↗","Open ↗"),12,true,Color.rgb(20,119,184));open.setPadding(0,dp(5),0,0);open.setOnClickListener(v->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(n.url)));}catch(Exception ignored){}});c.addView(title);c.addView(meta);c.addView(open);LinearLayout.LayoutParams p=lp(-1,-2,0,0,0,dp(8));newsList.addView(c,p);}}
+    private void renderNews(List<NewsItem> out){currentNewsForSathi=new JSONArray();for(NewsItem item:out){try{currentNewsForSathi.put(new JSONObject().put("title",item.title).put("source",item.source));}catch(Exception ignored){}}newsList.removeAllViews();if(out.isEmpty()){newsList.addView(empty(t("नयाँ live समाचार भेटिएन।","No fresh live stories found.")));return;}for(NewsItem n:out){LinearLayout c=new LinearLayout(this);c.setOrientation(LinearLayout.VERTICAL);c.setPadding(dp(12),dp(11),dp(12),dp(11));c.setBackground(round(Color.rgb(248,252,254),17,Color.rgb(216,234,243),1));TextView title=text(n.title,15,true,Color.rgb(16,39,70));TextView meta=text(n.source+(n.at>0?" • "+Math.max(0,(System.currentTimeMillis()-n.at)/60000)+" min ago":""),11,false,Color.rgb(102,131,153));TextView open=text(t("खोल्नुहोस् ↗","Open ↗"),12,true,Color.rgb(20,119,184));open.setPadding(0,dp(5),0,0);open.setOnClickListener(v->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(n.url)));}catch(Exception ignored){}});c.addView(title);c.addView(meta);c.addView(open);LinearLayout.LayoutParams p=lp(-1,-2,0,0,0,dp(8));newsList.addView(c,p);}}
 
     private void showPrivacy(){new AlertDialog.Builder(this).setTitle(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety")).setMessage(t("FloodSafe ले location स्थानीय मौसम र 2 km verified river warning मिलाउन प्रयोग गर्छ। Background location user-enabled monitoring का लागि मात्र हो। Microphone SATHI voice का लागि मात्र प्रयोग हुन्छ। FCM notification delivery का लागि device token प्रयोग हुन सक्छ। Force stop पछि Android ले background काम रोक्न सक्छ।","FloodSafe uses location for local weather and verified river warnings within 2 km. Background location is used only for user-enabled monitoring. Microphone is used for SATHI voice. FCM may process a device token for notification delivery. Android can stop background work after an explicit Force stop.")).setPositiveButton("OK",null).show();}
 
-    private void showSathiDialog(String initial){LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(18),dp(8),dp(18),0);TextView answer=text(initial==null?t("मौसम, नदी, warning वा app status सोध्नुहोस्।","Ask about weather, rivers, warnings or app status."):answerSathi(initial),14,false,Color.rgb(30,52,72));box.addView(answer);Button mic=button(t("🎙️ माइकबाट सोध्नुहोस्","🎙️ Ask by voice"));box.addView(mic,lp(-1,dp(52),0,dp(12),0,0));AlertDialog d=new AlertDialog.Builder(this).setTitle("🤖 SATHI").setView(box).setNegativeButton(t("बन्द","Close"),null).create();mic.setOnClickListener(v->startVoice(answer));d.show();}
-    private void startVoice(TextView out){if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},REQ_MIC);return;}if(!SpeechRecognizer.isRecognitionAvailable(this)){out.setText(t("यो फोनमा voice recognition उपलब्ध छैन।","Voice recognition is unavailable on this phone."));return;}if(speech!=null)try{speech.destroy();}catch(Exception ignored){}speech=SpeechRecognizer.createSpeechRecognizer(this);speech.setRecognitionListener(new RecognitionListener(){public void onReadyForSpeech(Bundle b){out.setText(t("🎙 सुन्दैछु…","🎙 Listening…"));}public void onBeginningOfSpeech(){}public void onRmsChanged(float x){}public void onBufferReceived(byte[]b){}public void onEndOfSpeech(){}public void onError(int e){out.setText(t("आवाज बुझिएन। फेरि प्रयास गर्नुहोस्।","Could not understand. Try again."));}public void onPartialResults(Bundle b){}public void onEvent(int t,Bundle b){}public void onResults(Bundle b){ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);String q=r==null||r.isEmpty()?"":r.get(0);String a=answerSathi(q);out.setText("तपाईं: "+q+"\n\nSATHI: "+a);speak(a);}});speech.startListening(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,english?"en-GB":"ne-NP").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5));}
-    private String answerSathi(String q){String x=q==null?"":q.toLowerCase(Locale.ROOT);if(x.contains("weather")||x.contains("मौसम")||x.contains("rain")||x.contains("वर्षा"))return currentWeather.isEmpty()?t("मौसम data refresh हुँदैछ।","Weather data is refreshing."):currentWeather;if(x.contains("river")||x.contains("नदी")||x.contains("खोला")||x.contains("flood")||x.contains("बाढी")){int d=0,w=0,a=0;synchronized(stations){for(RiverStation s:stations){if(s.stage.equals("danger"))d++;else if(s.stage.equals("warning"))w++;else if(s.stage.equals("alert"))a++;}}return t("Fresh official river status: danger "+d+", warning "+w+", alert "+a+"।","Fresh official river status: danger "+d+", warning "+w+", alert "+a+".");}if(x.contains("notification")||x.contains("alert")||x.contains("warning"))return t("२ घण्टाको weather digest र verified Warning/Danger २ km भित्रको emergency river alert सक्रिय छन्।","Two-hour weather digests and verified Warning/Danger river alerts within 2 km are enabled.");return t("मौसम, नदी, flood warning, location वा notification बारे सोध्नुहोस्।","Ask about weather, rivers, flood warnings, location or notifications.");}
+    private void showSathiDialog(String initial){
+        LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(dp(14),dp(8),dp(14),0);
+        ScrollView messages=new ScrollView(this);messages.setFillViewport(false);
+        TextView history=text(t("SATHI · FloodSafe का नदी, जिल्ला, मौसम र सरकारी सूचना सोध्नुहोस्।","SATHI · Ask about FloodSafe rivers, districts, weather and government advisories."),14,false,Color.rgb(30,52,72));
+        history.setTextIsSelectable(true);
+        messages.addView(history);
+        box.addView(messages,lp(-1,dp(300),0,0,0,dp(8)));
+        EditText question=new EditText(this);question.setSingleLine(true);
+        question.setTextSize(15);question.setHint(t("यहाँ प्रश्न लेख्नुहोस्…","Type your question…"));
+        box.addView(question,lp(-1,dp(54),0,0,0,dp(5)));
+        LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
+        Button send=smallButton(t("पठाउनुहोस् ↗","Send ↗"));
+        Button mic=smallButton(t("🎙️ बोल्नुहोस्","🎙️ Voice"));
+        actions.addView(send,new LinearLayout.LayoutParams(0,dp(48),1));
+        actions.addView(mic,new LinearLayout.LayoutParams(0,dp(48),1));
+        box.addView(actions);
+        Runnable sendQuestion=()->{
+            String q=question.getText().toString().trim();if(q.isEmpty())return;
+            String a=answerSathi(q);
+            String old=history.getText().toString(),next=old+"\n\n👤 "+q+"\n🤖 SATHI: "+a;
+            history.setText(next.length()>13000?next.substring(next.length()-12000):next);
+            question.setText("");messages.post(()->messages.fullScroll(View.FOCUS_DOWN));
+        };
+        send.setOnClickListener(v->sendQuestion.run());
+        mic.setOnClickListener(v->startVoice(history));
+        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("🤖 SATHI · Chat + Voice")
+            .setView(box).setPositiveButton(t("बन्द","Close"),null).create();
+        dialog.getWindow();
+        dialog.show();
+        if(initial!=null&&!initial.trim().isEmpty()){
+            String a=answerSathi(initial);
+            history.append("\n\n👤 "+initial+"\n🤖 SATHI: "+a);
+        }
+    }
+    private void startVoice(TextView out){if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},REQ_MIC);return;}if(!SpeechRecognizer.isRecognitionAvailable(this)){out.setText(t("यो फोनमा voice recognition उपलब्ध छैन।","Voice recognition is unavailable on this phone."));return;}if(speech!=null)try{speech.destroy();}catch(Exception ignored){}speech=SpeechRecognizer.createSpeechRecognizer(this);speech.setRecognitionListener(new RecognitionListener(){public void onReadyForSpeech(Bundle b){out.setText(t("🎙 सुन्दैछु…","🎙 Listening…"));}public void onBeginningOfSpeech(){}public void onRmsChanged(float x){}public void onBufferReceived(byte[]b){}public void onEndOfSpeech(){}public void onError(int e){out.setText(t("आवाज बुझिएन। फेरि प्रयास गर्नुहोस्।","Could not understand. Try again."));}public void onPartialResults(Bundle b){}public void onEvent(int t,Bundle b){}public void onResults(Bundle b){ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);String q=r==null||r.isEmpty()?"":r.get(0);String a=answerSathi(q);out.append("\n\n👤 "+q+"\n🤖 SATHI: "+a);speak(a);}});speech.startListening(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,english?"en-GB":"ne-NP").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5));}
+    private String answerSathi(String q){
+        JSONArray rs=new JSONArray();
+        synchronized(stations){
+            for(RiverStation s:stations){
+                JSONObject j=new JSONObject();
+                try{j.put("name",s.name);j.put("district",s.district);j.put("stage",s.stage);
+                    if(Double.isFinite(s.level))j.put("level",s.level);
+                    j.put("fresh",s.fresh);j.put("observedAt",s.at);
+                    rs.put(j);}catch(Exception ignored){}
+            }
+        }
+        return SathiKnowledge.answer(q,english,rs,currentGovernmentNotices,districtWeather,
+            currentNewsForSathi,currentWeather,isNepal(lat,lon));
+    }
     private void consumeSathiIntent(Intent i){if(i==null)return;String q=i.getStringExtra(SathiWakeService.EXTRA_QUERY);if(q!=null&&!q.trim().isEmpty()){showSathiDialog(q.trim());i.removeExtra(SathiWakeService.EXTRA_QUERY);}}
 
     private void enableMonitoring(){getSharedPreferences(RainAlertWorker.PREFS,MODE_PRIVATE).edit().putBoolean("enabled",true).apply();Constraints c=new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();WorkManager wm=WorkManager.getInstance(getApplicationContext());wm.enqueueUniquePeriodicWork("floodsafe-local-rain-alerts",ExistingPeriodicWorkPolicy.UPDATE,new PeriodicWorkRequest.Builder(RainAlertWorker.class,15,TimeUnit.MINUTES).setConstraints(c).build());wm.enqueueUniquePeriodicWork("floodsafe-local-river-alerts",ExistingPeriodicWorkPolicy.UPDATE,new PeriodicWorkRequest.Builder(RiverAlertWorker.class,15,TimeUnit.MINUTES).setConstraints(c).build());wm.enqueueUniquePeriodicWork("floodsafe-government-bulletins",ExistingPeriodicWorkPolicy.KEEP,new PeriodicWorkRequest.Builder(GovernmentWarningWorker.class,30,TimeUnit.MINUTES).setConstraints(c).build());FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},REQ_NOTIFY);}

@@ -41,6 +41,7 @@ public final class FloodSafeMapActivity extends Activity {
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         FrameLayout root=new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(228,243,252));
+        SafeInsets.apply(root);
         setContentView(root);
 
         // Full-screen MapLibre never participates in Home dashboard scrolling.

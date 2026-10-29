@@ -23,8 +23,8 @@ public final class PJBuiltsSplashActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         Window window = getWindow();
-        window.setStatusBarColor(Color.rgb(2, 7, 18));
-        window.setNavigationBarColor(Color.rgb(2, 7, 18));
+        window.setStatusBarColor(Color.rgb(252, 247, 236));
+        window.setNavigationBarColor(Color.rgb(252, 247, 236));
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         setContentView(buildSplash());
         handler.postDelayed(launchTask, 1450L);
@@ -32,14 +32,14 @@ public final class PJBuiltsSplashActivity extends Activity {
 
     private View buildSplash() {
         FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(Color.rgb(2, 7, 18));
+        root.setBackgroundColor(Color.rgb(252, 247, 236));
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setGravity(Gravity.CENTER);
-        TextView pujan = label("PUJAN", 42f, Color.rgb(232,251,255));
-        TextView pj = label("PJ", 88f, Color.rgb(232,251,255));
-        TextView builts = label("BUILTS", 24f, Color.rgb(184,241,255));
-        TextView tag = label("IDEA  •  BUILD  •  INNOVATE", 10f, Color.rgb(135,215,237));
+        TextView pujan = label("PUJAN", 43f, Color.rgb(150,105,35));
+        TextView pj = label("PJ", 85f, Color.rgb(183,135,45));
+        TextView builts = label("BUILTS", 25f, Color.rgb(150,105,35));
+        TextView tag = label("IDEA  •  BUILD  •  INNOVATE", 10f, Color.rgb(161,125,63));
         pj.setAlpha(0f); builts.setAlpha(0f); tag.setAlpha(0f);
         box.addView(pujan); box.addView(pj); box.addView(builts); box.addView(tag);
         root.addView(box, new FrameLayout.LayoutParams(-1,-1));
@@ -55,7 +55,7 @@ public final class PJBuiltsSplashActivity extends Activity {
         TextView v = new TextView(this);
         v.setText(s); v.setTextSize(sp); v.setTextColor(color); v.setGravity(Gravity.CENTER);
         v.setTypeface(android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.BOLD));
-        v.setShadowLayer(18f,0,0,Color.rgb(35,217,255));
+        v.setShadowLayer(7f,0,1,Color.rgb(221,192,130));
         v.setPadding(8,8,8,8);
         return v;
     }
@@ -65,7 +65,7 @@ public final class PJBuiltsSplashActivity extends Activity {
         launched = true;
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
-        Intent app = new Intent(this, FloodSafeNativeActivity.class);
+        Intent app = new Intent(this, NativeFullActivity.class);
         app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (source != null) {
             app.setData(source.getData());

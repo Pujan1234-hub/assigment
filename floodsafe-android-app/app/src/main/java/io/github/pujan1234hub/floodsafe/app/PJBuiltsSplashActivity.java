@@ -15,7 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.webkit.WebView;
 
-/** Network-independent PJBUILTS launch intro. Launches the native Android UI only. */
+/** Original offline shiny cream-gold PJBUILTS intro then exact FloodSafe web in its native Android shell. */
 public final class PJBuiltsSplashActivity extends Activity {
     private boolean launched;
     private WebView originalIntro;
@@ -26,7 +26,7 @@ public final class PJBuiltsSplashActivity extends Activity {
         super.onCreate(state);
         Window window = getWindow();
         window.setStatusBarColor(Color.rgb(255, 249, 239));
-        window.setNavigationBarColor(Color.rgb(2, 7, 18));
+        window.setNavigationBarColor(Color.rgb(255, 249, 239));
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         setContentView(buildSplash());
         handler.postDelayed(launchTask, 2870L);
@@ -57,7 +57,7 @@ public final class PJBuiltsSplashActivity extends Activity {
         launched = true;
         handler.removeCallbacks(launchTask);
         Intent source = getIntent();
-        Intent app = new Intent(this, NativeFullActivity.class);
+        Intent app = new Intent(this, MainActivity.class);
         app.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (source != null) {
             app.setData(source.getData());

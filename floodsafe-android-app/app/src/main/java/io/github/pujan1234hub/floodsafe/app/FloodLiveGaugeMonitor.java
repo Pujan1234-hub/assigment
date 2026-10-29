@@ -132,6 +132,11 @@ final class FloodLiveGaugeMonitor {
         long now=System.currentTimeMillis();int shown=0;
         for(int i=0;i<rows.length()&&shown<3;i++){
             JSONObject row=rows.optJSONObject(i);if(row==null)continue;JSONObject f=row.optJSONObject("fields");double[] p=coord(row,f);double la=p[0],lo=p[1];double distance=haversineKm(homeLat,homeLon,la,lo);if(!insideNepal(la,lo)||distance>RADIUS_KM)continue;
+            // A change in old status or delayed BIPAD/DHM cache MUST NOT issue a new emergency alert.
+            String atText=str(row,f,"waterLevelOn","water_level_on","observedAt","observed_at","observationTime","measurementTime","measurement_time","measuredOn","measured_on","timestamp");
+            long measured=measurementMillis(atText);
+            if(measured<=0||now-measured>10L*60L*1000L||measured-now>5L*60L*1000L)continue;
+            if(!Double.isFinite(num(row,f,"waterLevel","water_level","currentWaterLevel","current_water_level","_lastWaterLevel","level")))continue;
             double level=num(row,f,"_lastWaterLevel","waterLevel","water_level","currentWaterLevel","current_water_level","currentLevel","current_level","level","value");
             double warning=num(row,f,"_lastWarningLevel","warningLevel","warning_level","warningThreshold","warning_threshold"),danger=num(row,f,"_lastDangerLevel","dangerLevel","danger_level","dangerThreshold","danger_threshold");
             String raw=str(row,f,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT),stage=stage(level,warning,danger,raw);if(!"warning".equals(stage)&&!"danger".equals(stage))continue;
@@ -144,6 +149,12 @@ final class FloodLiveGaugeMonitor {
 
     private void notifyHazard(String id,String name,String stage,double distance,double level){NotificationManager nm=app.getSystemService(NotificationManager.class);if(nm==null)return;if(Build.VERSION.SDK_INT>=26){NotificationChannel ch=new NotificationChannel(ALERT_CHANNEL,"Nearby river and Nepal alerts",NotificationManager.IMPORTANCE_HIGH);ch.enableVibration(true);Uri sound=android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;AudioAttributes aa=new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();ch.setSound(sound,aa);nm.createNotificationChannel(ch);}String title="danger".equals(stage)?"🚨 नजिकको जलस्रोत खतरा चेतावनी":"⚠️ नजिकको जलस्रोत चेतावनी";String text=name+String.format(Locale.US," • %.1f km",distance)+(Double.isFinite(level)?String.format(Locale.US," • %.3f m",level):"")+" • BIPAD/DHM official";Intent launch=new Intent(app,NativeFullActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);int rc=7600+Math.abs(id.hashCode()%300);PendingIntent pi=PendingIntent.getActivity(app,rc,launch,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);Notification.Builder nb=Build.VERSION.SDK_INT>=26?new Notification.Builder(app,ALERT_CHANNEL):new Notification.Builder(app);Notification n=nb.setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(title).setContentText(text).setStyle(new Notification.BigTextStyle().bigText(text)).setAutoCancel(true).setContentIntent(pi).build();nm.notify(rc,n);}
 
+    private static long measurementMillis(String source){
+        if(source==null||source.isEmpty())return 0L;
+        try{return java.time.Instant.parse(source).toEpochMilli();}catch(Exception ignored){}
+        try{return java.time.OffsetDateTime.parse(source).toInstant().toEpochMilli();}catch(Exception ignored){}
+        return 0L;
+    }
     private static JSONArray array(JSONObject root,String... keys){for(String k:keys){Object v=root.opt(k);if(v instanceof JSONArray)return(JSONArray)v;if(v instanceof JSONObject){JSONArray a=((JSONObject)v).optJSONArray("results");if(a!=null)return a;}}return null;}
     private static double[] coord(JSONObject r,JSONObject f){double la=num(r,f,"latitude","lat","stationLatitude","station_latitude","stationLat"),lo=num(r,f,"longitude","lon","lng","stationLongitude","station_longitude","stationLon");if(Double.isFinite(la)&&Double.isFinite(lo))return new double[]{la,lo};Object p=r.opt("point");if((p==null||p==JSONObject.NULL)&&f!=null)p=f.opt("point");try{JSONObject po=p instanceof JSONObject?(JSONObject)p:null;JSONArray a=p instanceof JSONArray?(JSONArray)p:null;if(po!=null)a=po.optJSONArray("coordinates");if(a!=null&&a.length()>=2){lo=a.optDouble(0,Double.NaN);la=a.optDouble(1,Double.NaN);}}catch(Exception ignored){}return new double[]{la,lo};}
     private static double num(JSONObject r,JSONObject f,String... keys){for(String k:keys){double n=toNum(r==null?null:r.opt(k));if(Double.isFinite(n))return n;n=toNum(f==null?null:f.opt(k));if(Double.isFinite(n))return n;}return Double.NaN;}

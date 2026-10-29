@@ -81,6 +81,9 @@ final class FloodSafeNativeMapView extends FrameLayout {
     private Runnable weatherOverlayInvalidator;
     private String riversGeoJson = null;
     private long particleStart = 0L;
+    private int riskRevision = 0;
+    private long weatherFrameAt = 0L;
+    private volatile boolean disposed = false;
     private boolean animationRunning = false;
     private boolean particlesEnabled = true;
     /** Stop frequent MapLibre source updates while the river map is offscreen. */
@@ -123,8 +126,14 @@ final class FloodSafeNativeMapView extends FrameLayout {
             map.addOnMapClickListener(this::onMapClick);
             // Weather icons must redraw during every camera movement, not jump to a cached location.
             map.addOnCameraMoveListener(() -> {
-                Runnable notify = weatherOverlayInvalidator;
-                if (notify != null) notify.run();
+                if (!particlesEnabled || hostPaused || disposed) return;
+                long now = android.os.SystemClock.uptimeMillis();
+                // 20Hz keeps weather symbols anchored without projecting 77 points at 60fps.
+                if (now-weatherFrameAt >= 50L) {
+                    weatherFrameAt=now;
+                    Runnable notify = weatherOverlayInvalidator;
+                    if (notify != null) notify.run();
+                }
             });
         });
         loadBundledGeometry();
@@ -149,6 +158,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         resumeRenderer();
     }
     @Override protected void onDetachedFromWindow(){
+        disposed=true;
         hostPaused=true;pauseRenderer();
         main.removeCallbacksAndMessages(null);
         try{mapView.onDestroy();}catch(Exception ignored){}
@@ -351,19 +361,33 @@ final class FloodSafeNativeMapView extends FrameLayout {
     }
 
     private void refreshRiverRiskSources() {
-        if (!styleReady || style == null || rivers.isEmpty()) return;
-        List<StationDot> snapshot;
+        if (!styleReady || style == null || rivers.isEmpty() || disposed) return;
+        // The old version did 1400 rivers x every station x hundreds of points,
+        // plus JSON serialization ON THE UI THREAD. This could freeze Android and cause ANR.
+        final int version = ++riskRevision;
+        final List<RiverWay> geometry = new ArrayList<>(rivers);
+        final List<StationDot> snapshot;
         synchronized (stations) { snapshot = new ArrayList<>(stations); }
-        for (RiverWay river : rivers) river.stage = riverStage(river, snapshot);
-        setGeo("fs-river-alert", riverGeoByStage(rivers, "alert"));
-        setGeo("fs-river-warning", riverGeoByStage(rivers, "warning"));
-        setGeo("fs-river-danger", riverGeoByStage(rivers, "danger"));
+        io.execute(() -> {
+            try {
+                for (RiverWay river : geometry) river.stage = riverStage(river, snapshot);
+                final String yellow = riverGeoByStage(geometry, "alert");
+                final String orange = riverGeoByStage(geometry, "warning");
+                final String red = riverGeoByStage(geometry, "danger");
+                main.post(() -> {
+                    if (disposed || version != riskRevision || !styleReady || style == null) return;
+                    setGeo("fs-river-alert", yellow);
+                    setGeo("fs-river-warning", orange);
+                    setGeo("fs-river-danger", red);
+                });
+            } catch (Exception ignored) {}
+        });
     }
 
     private static String riverStage(RiverWay river, List<StationDot> snapshot) {
         int best = 0;
         for (StationDot s : snapshot) {
-            if (!s.fresh) continue;
+            if (!s.fresh || !withinRiverEnvelope(s, river, 0.06)) continue;
             String stage = normalizeStage(s.stage);
             int severity = severity(stage);
             if (severity <= best || severity == 0) continue;
@@ -375,6 +399,17 @@ final class FloodSafeNativeMapView extends FrameLayout {
         return "normal";
     }
 
+    private static boolean withinRiverEnvelope(StationDot s, RiverWay r, double pad) {
+        if (r.points.isEmpty()) return false;
+        // Cheap bounding check avoids expensive distance loops for unrelated gauges.
+        double minLat=Double.POSITIVE_INFINITY,maxLat=Double.NEGATIVE_INFINITY;
+        double minLon=Double.POSITIVE_INFINITY,maxLon=Double.NEGATIVE_INFINITY;
+        for (double[] p : r.points) {
+            minLat=Math.min(minLat,p[1]);maxLat=Math.max(maxLat,p[1]);
+            minLon=Math.min(minLon,p[0]);maxLon=Math.max(maxLon,p[0]);
+        }
+        return s.lat>=minLat-pad&&s.lat<=maxLat+pad&&s.lon>=minLon-pad&&s.lon<=maxLon+pad;
+    }
     private static boolean stationNearRiver(StationDot s, RiverWay r, double maxKm) {
         int stride = Math.max(1, r.points.size() / 100);
         double best = Double.MAX_VALUE;

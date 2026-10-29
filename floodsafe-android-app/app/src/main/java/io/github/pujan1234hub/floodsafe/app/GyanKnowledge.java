@@ -153,7 +153,7 @@ final class GyanKnowledge {
     static boolean isKnowledgeQuestion(String q){
         if(q==null)return false;
         String x=q.toLowerCase(Locale.ROOT);
-        return has(x,"ज्ञान","gyan","gyaan","gita","गीता","कृष्ण","krishna","karma","कर्म","जीवन","जिन्दगी","life advice","motivation","study","पढाइ","पुस्तक","book","सामान्य ज्ञान","general knowledge","science","विज्ञान","पासवर्ड","password","phishing","फिसिङ","water cycle","जलचक्र");
+        return has(x,"ज्ञान","gyan","gyaan","gita","गीता","कृष्ण","krishna","karma","कर्म","जीवन","जिन्दगी","life advice","motivation","study","पढाइ","पुस्तक","book","सामान्य ज्ञान","general knowledge","science","विज्ञान","पासवर्ड","password","phishing","फिसिङ","water cycle","जलचक्र","बाढीमा के","flood safety","बाढी सुरक्षा","आपतकालीन तयारी","कसरी जोगिने","सुरक्षा उपाय");
     }
     static String answer(String question,boolean en){
         if(question==null)return "";
@@ -165,6 +165,7 @@ final class GyanKnowledge {
         if(chosen==null){
             String category=has(q,"gita","गीता","कृष्ण","krishna","कर्म")?"gita":
                 has(q,"ज्ञान","gyan","gyaan","general knowledge","सामान्य ज्ञान")?"general":
+                has(q,"बाढी","flood","आपतकालीन तयारी","कसरी जोगिने")?"flood":
                 has(q,"study","पढाइ")?"life":
                 has(q,"पासवर्ड","password","phishing","फिसिङ")?"digital":
                 has(q,"science","विज्ञान","जलचक्र","water cycle")?"science":

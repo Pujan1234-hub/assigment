@@ -77,28 +77,28 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface public void allowLocationPrompt() {
-            if(allowed())runOnUiThread(MainActivity.this::beginLocationFromTap);
+            runOnUiThread(() -> {if(allowed())beginLocationFromTap();});
         }
         @JavascriptInterface public void enableRainAlerts() {
-            if(allowed())runOnUiThread(() -> setRainAlerts(true));
+            runOnUiThread(() -> {if(allowed())setRainAlerts(true);});
         }
         @JavascriptInterface public void setRainAlerts(boolean enabled) {
-            if(allowed())runOnUiThread(() -> MainActivity.this.setRainAlerts(enabled));
+            runOnUiThread(() -> {if(allowed())MainActivity.this.setRainAlerts(enabled);});
         }
         @JavascriptInterface public void syncRainAlertsStatus() {
-            if(allowed())runOnUiThread(MainActivity.this::syncRainAlertsStatus);
+            runOnUiThread(() -> {if(allowed())syncRainAlertsStatus();});
         }
         @JavascriptInterface public void setBackgroundRainAlerts(double lat, double lon) {
-            if(allowed())runOnUiThread(() -> enableBackgroundRainAlerts(lat, lon));
+            runOnUiThread(() -> {if(allowed())enableBackgroundRainAlerts(lat, lon);});
         }
         @JavascriptInterface public void disableBackgroundRainAlerts() {
-            if(allowed())runOnUiThread(MainActivity.this::disableBackgroundRainAlerts);
+            runOnUiThread(() -> {if(allowed())disableBackgroundRainAlerts();});
         }
         @JavascriptInterface public void syncBackgroundRainAlerts() {
-            if(allowed())runOnUiThread(MainActivity.this::syncBackgroundRainAlerts);
+            runOnUiThread(() -> {if(allowed())syncBackgroundRainAlerts();});
         }
         @JavascriptInterface public void requestBackgroundLocationForAlerts() {
-            if(allowed())runOnUiThread(MainActivity.this::requestBackgroundLocationForAlerts);
+            runOnUiThread(() -> {if(allowed())requestBackgroundLocationForAlerts();});
         }
     }
 
@@ -178,7 +178,7 @@ public class MainActivity extends Activity {
                 if(NavigationPolicy.liveOrigin(url)&&NavigationPolicy.internalPage(url)){
                     // Click activates Android location permission only when the user
                     // requests current location. All actual weather/map UI is from web.
-                    view.evaluateJavascript("(function(){var el=document.getElementById('locateBtn');if(el&&!el.dataset.fsAndroidGps){el.dataset.fsAndroidGps='1';el.addEventListener('click',function(){window.FloodSafeNative?.allowLocationPrompt?.()},true)}})()",null);
+                    view.evaluateJavascript("(function(){\n  var gps=document.getElementById('locateBtn');\n  if(gps&&!gps.dataset.fsnativeGps){\n    gps.dataset.fsnativeGps='1';\n    gps.addEventListener('click',function(){\n      window.FloodSafeNative&&window.FloodSafeNative.allowLocationPrompt();\n    },true);\n  }\n  var alarm=document.getElementById('fsAlertSoundBtn');\n  if(alarm&&!alarm.dataset.fsnativeAlarm){\n    alarm.dataset.fsnativeAlarm='1';\n    alarm.addEventListener('click',function(){\n      var isEnabling=alarm.getAttribute('aria-pressed')!=='true';\n      if(!window.FloodSafeNative)return;\n      if(!isEnabling){window.FloodSafeNative.disableBackgroundRainAlerts();return;}\n      if(!navigator.geolocation)return;\n      navigator.geolocation.getCurrentPosition(function(p){\n        var la=p.coords.latitude,lo=p.coords.longitude;\n        if(la>=26.2&&la<=30.5&&lo>=80&&lo<=88.35){\n          window.FloodSafeNative.setBackgroundRainAlerts(la,lo);\n          window.FloodSafeNative.requestBackgroundLocationForAlerts();\n        }else{\n          window.FloodSafeNative.disableBackgroundRainAlerts();\n        }\n      },function(){},{enableHighAccuracy:true,timeout:15000,maximumAge:30000});\n    },true);\n  }\n})()",null);
                 }
             }
             @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {

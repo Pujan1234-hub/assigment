@@ -26,6 +26,14 @@ final class SathiKnowledge {
         boolean govtQ=has(q,"सरकार","सरकारी","government","official alert","dhm notice","ndrrma","सूचना","notice","bulletin");
         boolean alertQ=has(q,"चेतावनी","chetauni","warning");
         boolean regional=has(q,"kathmandu","katmandu","ktm","काठमाडौं","काठमाडौँ");
+        boolean floodSafetyQ=has(q,
+            "बाढीमा","बाढीबाट","बाढी आए","बाढी आयो","बाढी सुरक्षा","बाढीमा के गर्ने",
+            "badhima","badhi ma","badhi aayo","badhi ayo","badhima ke",
+            "baadhima","baadhi ma","baadi ma","badi ma","badi ayo",
+            "flood safety","flood ma","flood emergency","flood aayo","emergency bag",
+            "kasari bachne","kasari bachne","kasari jogine","bachaune","bachau",
+            "बच्ने उपाय","आपतकालीन झोला");
+        if(floodSafetyQ)return floodSafetyAnswer(en,lessonOffset);
         // Weather and news intents MUST win over river name substring matches.
         // Follow-up turns should add context instead of repeating the exact same answer.
         if(lessonOffset>0 && !knowledgeQ) {
@@ -64,6 +72,23 @@ final class SathiKnowledge {
         return en?"I cannot identify the topic yet. For example ask ‘KTM weather k cha?’, ‘Bagmati river level?’, ‘government notice?’, ‘Gita advice?’ or ‘news?’"
                  :"प्रश्नको विषय स्पष्ट भएन। उदाहरण: ‘ktm weather k cha?’, ‘बागमती नदीको सतह?’, ‘सरकारी सूचना?’, ‘गीता ज्ञान?’ वा ‘समाचार?’";
     }
+    private static String floodSafetyAnswer(boolean en,int offset){
+        switch(Math.floorMod(offset,4)){
+            case 0:
+                return en?"🌊 FLOOD SAFETY · FIRST ACTIONS\n• Move away from riverbanks and towards officially designated higher ground.\n• Never enter or drive through flowing floodwater.\n• Follow dated DHM and local authority instructions.\n• Keep children and anyone needing help with you.\n⚠️ This is general guidance, not a live local alert."
+                         :"🌊 बाढी आएमा पहिलो काम\n• नदी किनार छोडेर स्थानीय निकायले तोकेको सुरक्षित अग्लो स्थानतिर जानुहोस्।\n• बाढीको पानीमा पैदल वा गाडीले पार नगर्नुहोस्।\n• DHM र स्थानीय प्रशासनको पछिल्लो चेतावनी मान्नुहोस्।\n• बालबालिका र सहयोग चाहिनेलाई साथमा राख्नुहोस्।\n⚠️ यो सामान्य सुरक्षा शिक्षा हो, live स्थानीय चेतावनी होइन।";
+            case 1:
+                return en?"🎒 FLOOD PREPAREDNESS CHECKLIST\n• Water, dry food, torch and charged power bank.\n• Essential medicines and first-aid supplies.\n• Waterproof copies of documents and emergency contacts.\n• A family meeting point and two safe routes.\n• Plan for children, older people and pets."
+                         :"🎒 बाढी तयारीको सूची\n• पिउने पानी, सुक्खा खाना, टर्च र चार्ज पावर बैंक।\n• औषधि र प्राथमिक उपचार सामग्री।\n• कागजातको जलरोधी प्रतिलिपि र आपतकालीन नम्बर।\n• परिवार भेट्ने स्थान र दुई सुरक्षित बाटा।\n• बालबालिका, ज्येष्ठ नागरिक र पशुको छुट्टै योजना।";
+            case 2:
+                return en?"⚡ IF THE WATER IS RISING\n• Do not approach submerged electric equipment.\n• Do not cross bridges or roads under fast-flowing water.\n• Avoid landslide-prone slopes after heavy rain.\n• Inform local responders if anyone is stranded.\n• Never rely on one old river-gauge reading."
+                         :"⚡ पानी बढ्दै गएमा\n• डुबेको बिजुलीको तार वा उपकरण नछुनुहोस्।\n• तीव्र बहाव भएको पुल र सडक पार नगर्नुहोस्।\n• धेरै पानीपछि पहिरो जान सक्ने भिरालो ठाउँबाट टाढा बस्नुहोस्।\n• कोही फसेको भए स्थानीय उद्धारकर्मीलाई खबर गर्नुहोस्।\n• पुरानो नदी मापनलाई अहिलेको सुरक्षा प्रमाण नठान्नुहोस्।";
+            default:
+                return en?"🏠 AFTER A FLOOD\n• Return only after authorities say it is safe.\n• Inspect structures and electrical risks before entering.\n• Do not consume untreated floodwater.\n• Follow local health and sanitation advice.\n• For today's actual risk check official DHM bulletins and current gauge time."
+                         :"🏠 बाढीपछि के गर्ने?\n• प्रशासनले सुरक्षित भनेपछि मात्र घर फर्कनुहोस्।\n• घरको संरचना र बिजुलीको जोखिम जाँच्नुहोस्।\n• दूषित पानी नपिउनुहोस्।\n• स्थानीय स्वास्थ्य र सरसफाइ निर्देशन मान्नुहोस्।\n• आजको जोखिमका लागि DHM सूचना र नदी मापनको समय जाँच्नुहोस्।";
+        }
+    }
+
     private static String weatherAnswer(String q,boolean en,JSONArray weather,String localWeather,boolean ktm,boolean nepalGps){
         String district=ktm?"Kathmandu":"";
         JSONObject found=null;
@@ -133,6 +158,26 @@ final class SathiKnowledge {
             if(same)matched.add(r);
         }
         if(matched.isEmpty()){
+            boolean ktm=has(q,"ktm","kathmandu","katmandu","काठमाडौं","काठमाडौँ");
+            if(ktm && rivers!=null){
+                int districtStations=0,latest=0;
+                StringBuilder names=new StringBuilder();
+                for(int i=0;i<rivers.length();i++){
+                    JSONObject o=rivers.optJSONObject(i);if(o==null)continue;
+                    String district=o.optString("district","").toLowerCase(Locale.ROOT);
+                    if(district.contains("kathmandu")||district.contains("काठमाडौं")||district.contains("काठमाडौँ")){
+                        districtStations++;
+                        if(o.optBoolean("fresh"))latest++;
+                        if(names.length()<180)names.append("\n• ").append(o.optString("name","River gauge"));
+                    }
+                }
+                if(districtStations>0){
+                    return en?"Kathmandu district has "+districtStations+" loaded river stations ("+latest+" recent readings)."+names+"\nCheck station time before interpreting risk."
+                             :"काठमाडौँ जिल्लामा "+districtStations+" वटा नदी स्टेशन छन् (ताजा मापन "+latest+")."+names+"\nजोखिम बुझ्दा स्टेशनको समय र सीमा जाँच्नुहोस्।";
+                }
+                return en?"No Kathmandu river-gauge match was found in the loaded DHM catalogue. This does NOT mean Kathmandu rivers are safe. Try the Advanced district search."
+                         :"हालको DHM डेटामा काठमाडौँको नदी स्टेशन मिलेन। यसको अर्थ त्यहाँका नदी सुरक्षित छन् भन्ने होइन। उन्नतमा जिल्ला खोजेर जाँच्नुहोस्।";
+            }
             int danger=0,warning=0,alert=0,normal=0,stale=0;
             if(rivers!=null)for(int i=0;i<rivers.length();i++){
                 JSONObject r=rivers.optJSONObject(i);if(r==null)continue;

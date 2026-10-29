@@ -13,6 +13,15 @@ final class SathiKnowledge {
  static String answer(String prompt,boolean en,JSONArray rivers,JSONArray govt,JSONArray weather,JSONArray news,String localWeather,boolean nepalGps){
   String q=prompt==null?"":prompt.trim().toLowerCase(Locale.ROOT);
   if(q.isEmpty())return en?"Ask about a district, river station, weather, government bulletin or app.":"जिल्ला, नदी स्टेशन, मौसम, सरकारी सूचना वा app बारे सोध्नुहोस्।";
+  // Curated life knowledge is explicitly separate from live, official river data.
+  if(GyanKnowledge.isKnowledgeQuestion(q))return GyanKnowledge.answer(prompt,en);
+  if(contains(q,"flood safety","बाढीबाट बच्न","बाढीमा के गर्ने","बाढी आयो","emergency kit","आपतकालीन झोला")){
+      return GyanKnowledge.answer("बाढी सुरक्षा",en);
+  }
+  if(contains(q,"what can you do","के के सक्छ","कुन कुन प्रश्न","तिम्रो काम","who are you","को हौ")){
+      return en?"I am SATHI, an offline data-aware helper inside FloodSafe. I can explain loaded river-gauge status, timestamps, nearby risk, government notices, district weather, recent news and curated Gita, science and safety lessons. I do not independently verify live alerts or invent predictions."
+               :"म FloodSafe भित्रको डेटा बुझाएर सहयोग गर्ने SATHI हुँ। उपलब्ध नदी मापन, मापन समय, नजिकको जोखिम, लागू सरकारी सूचना, जिल्लाको मौसम, समाचार र गीता/विज्ञान/सुरक्षा ज्ञान बुझाउन सक्छु। म आफैँ नयाँ सरकारी चेतावनी वा भविष्यवाणी बनाउँदिनँ।";
+  }
   boolean riverQ=contains(q,"नदी","खोला","river","khola","flood","बाढी","level","पानीको सतह","station","स्टेशन");
   boolean explicitGovt=contains(q,"सरकार","सरकारी","government","official alert","dhm","ndrrma","सूचना","notice","bulletin");
   // A river-warning question must consult river gauges, not jump to the government bulletin screen.
@@ -51,7 +60,7 @@ final class SathiKnowledge {
     if(r.optBoolean("fresh",false))b.append(en?" · recent reading":" · हालको मापन");
     else b.append(en?" · older/unverified":" · पुरानो/अपुष्ट");
    }
-   if(matched.size()>5)b.append(en?"\nSelect a district to see more.":"\nथप हेर्न जिल्ला छान्नुहोस्।");
+   if(matched.size()>5)b.append(en?"\nSearch and select the district to see every relevant station.":"\nत्यस जिल्लाका सबै स्टेशन हेर्न जिल्लाको नाम खोजेर छान्नुहोस्।");
    return b.toString();
   }
   if(weather!=null)for(int i=0;i<weather.length();i++){

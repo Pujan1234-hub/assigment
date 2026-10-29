@@ -5,6 +5,7 @@ on:
       - repair/floodsafe-v0921-preserve-native-20261029
     paths:
       - .github/workflows/floodsafe-v0921-preserve-build.yml
+      - 'floodsafe-android-app/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -94,6 +95,17 @@ jobs:
             adb logcat -c
             adb shell am start -W -n io.github.pujan1234hub.floodsafe.app.preview/io.github.pujan1234hub.floodsafe.app.PJBuiltsSplashActivity
             sleep 9
-            adb shell dumpsys activity activities | grep -F NativeFullActivity
+            adb shell screencap -p /sdcard/floodsafe-dashboard.png
+            adb pull /sdcard/floodsafe-dashboard.png ./test-apk/dashboard-emulator.png
+            adb shell dumpsys activity activities | grep -E 'topResumedActivity|mResumedActivity|ResumedActivity' | grep -F NativeFullActivity
             adb shell pidof io.github.pujan1234hub.floodsafe.app.preview
             sh -c 'if adb logcat -d -v brief | grep -A 9 -F "FATAL EXCEPTION" | grep -Fq "io.github.pujan1234hub.floodsafe.app"; then echo "APP_CRASH"; exit 1; else echo "SPLASH_TO_FULL_DASHBOARD_PASS"; fi'
+
+      - name: Keep native dashboard emulator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0921-Android-emulator-dashboard-screenshot
+          path: ./test-apk/dashboard-emulator.png
+          if-no-files-found: ignore
+          retention-days: 14

@@ -187,7 +187,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
     private void loadBundledGeometry() {
         io.execute(() -> {
             try {
-                districtGeoJson = readAsset("floodsafe-nepal/v24/nepal-districts.geojson");
+                districtGeoJson = readAsset("data/nepal-districts.geojson");
             } catch (Exception ignored) {
                 try { districtGeoJson = readAsset("floodsafe-nepal/v24/nepal-districts.json"); } catch (Exception ignored2) {}
             }
@@ -197,23 +197,30 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 catch (Exception e) { raw = readAsset("data/nepal-waterways-tiles/overview.json"); }
                 JSONObject root = new JSONObject(raw);
                 JSONArray ways = root.optJSONArray("waterways");
-                if (ways != null) {
+                // Use the genuine Nepal border, not the old rectangular bounding box.
+                // If the district boundary is absent, fail closed rather than draw
+                // waterways across another country.
+                NepalRiverBoundary nepalClip = districtGeoJson == null
+                        ? null : new NepalRiverBoundary(districtGeoJson);
+                if (ways != null && nepalClip != null) {
                     List<RiverWay> all = new ArrayList<>();
                     for (int i = 0; i < ways.length(); i++) {
                         JSONObject w = ways.optJSONObject(i);
                         if (w == null) continue;
                         JSONArray pts = w.optJSONArray("pts");
                         if (pts == null || pts.length() < 2) continue;
-                        RiverWay rw = new RiverWay();
-                        rw.name = firstNonEmpty(w.optString("name_ne"), w.optString("name"), w.optString("name_en"), "नदी / खोला");
-                        rw.type = w.optString("type", "stream");
-                        for (int j = 0; j < pts.length(); j++) {
-                            JSONArray p = pts.optJSONArray(j);
-                            if (p == null || p.length() < 2) continue;
-                            double lo = p.optDouble(0, Double.NaN), la = p.optDouble(1, Double.NaN);
-                            if (Double.isFinite(la) && Double.isFinite(lo) && isNepalish(la, lo)) rw.points.add(new double[]{lo, la});
+                        String name = firstNonEmpty(w.optString("name_ne"),
+                                w.optString("name"), w.optString("name_en"), "नदी / खोला");
+                        String type = w.optString("type", "stream");
+                        // Every crossing is split at Nepal's actual boundary;
+                        // risk colours and particles reuse only these clipped lines.
+                        for (List<double[]> clipped : nepalClip.clip(pts)) {
+                            RiverWay rw = new RiverWay();
+                            rw.name = name;
+                            rw.type = type;
+                            rw.points.addAll(clipped);
+                            if (rw.points.size() >= 2) all.add(rw);
                         }
-                        if (rw.points.size() >= 2) all.add(rw);
                     }
                     all.sort(Comparator.comparingInt(FloodSafeNativeMapView::riverScore).reversed());
                     if (all.size() > 1400) all = new ArrayList<>(all.subList(0, 1400));

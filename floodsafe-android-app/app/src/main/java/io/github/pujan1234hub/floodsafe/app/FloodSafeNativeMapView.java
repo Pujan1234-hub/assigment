@@ -287,12 +287,31 @@ final class FloodSafeNativeMapView extends FrameLayout {
                     // Keep the full verified waterways asset for future zoom-tile detail, but
                     // only render a screen-friendly national overview here. 1400 complex
                     // GeoJSON lines and 3 risk layers overwhelmed some phones.
-                    if (all.size() > 500) all = new ArrayList<>(all.subList(0, 500));
+                    // The earlier 500-river cap discarded most of Nepal's real
+                    // overview network. Spread the available line budget across
+                    // longitude bands (far west -> far east), not just top score.
+                    final int MAX_RIVERS=2200;
+                    List<RiverWay> balanced=new ArrayList<>(Math.min(MAX_RIVERS,all.size()));
+                    int[] bandCounts=new int[9];
+                    for(RiverWay rw:all){
+                        if(balanced.size()>=MAX_RIVERS)break;
+                        int band=(int)Math.floor((rw.minLon+rw.maxLon)/2d)-80;
+                        band=Math.max(0,Math.min(8,band));
+                        if(bandCounts[band]>=260)continue;
+                        balanced.add(rw);bandCounts[band]++;
+                    }
+                    // Fill any remaining capacity without duplicating selected rivers.
+                    if(balanced.size()<MAX_RIVERS)for(RiverWay rw:all){
+                        if(balanced.size()>=MAX_RIVERS)break;
+                        if(!balanced.contains(rw))balanced.add(rw);
+                    }
+                    all=balanced;
+                    // More lines, fewer vertices per line, keeping responsive pinch/pan.
                     for (RiverWay rw : all) {
-                        if (rw.points.size() <= 110) continue;
-                        List<double[]> sampled = new ArrayList<>(110);
-                        for (int k=0;k<110;k++) {
-                            int at=(int)Math.round((rw.points.size()-1)*k/109d);
+                        if (rw.points.size() <= 65) continue;
+                        List<double[]> sampled = new ArrayList<>(65);
+                        for (int k=0;k<65;k++) {
+                            int at=(int)Math.round((rw.points.size()-1)*k/64d);
                             sampled.add(rw.points.get(at));
                         }
                         rw.points.clear();

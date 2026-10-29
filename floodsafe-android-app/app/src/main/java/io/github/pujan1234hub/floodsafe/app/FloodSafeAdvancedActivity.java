@@ -80,6 +80,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
     @Override public void onTextChanged(CharSequence s,int start,int before,int count){if(entries!=null)renderEntries();}
     @Override public void afterTextChanged(Editable e){}
   });
+  SafeInsets.apply(page);
   setContentView(page);
   showMode("river");
  }

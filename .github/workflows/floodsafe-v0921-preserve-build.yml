@@ -1,0 +1,99 @@
+name: FloodSafe v0.9.21 Preserve Original - PREVIEW ONLY
+on:
+  push:
+    branches:
+      - repair/floodsafe-v0921-preserve-native-20261029
+    paths:
+      - .github/workflows/floodsafe-v0921-preserve-build.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Preserve original full assets and NASA data
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSETS=floodsafe-android-app/app/src/main/assets
+          mkdir -p "$ASSETS/data" "$ASSETS/floodsafe-nepal"
+          cp -a data/. "$ASSETS/data/"
+          cp -a floodsafe-nepal/. "$ASSETS/floodsafe-nepal/"
+          test -s "$ASSETS/data/nepal-waterways-snapshot.json"
+          test -s "$ASSETS/data/nepal-districts.geojson"
+          test -s "$ASSETS/pjbuilts-original-splash.html"
+          test -s "$ASSETS/floodsafe-nepal/v25/index.html"
+      - name: Firebase preview client for separate test installation (worktree only)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,copy,pathlib
+          path=pathlib.Path('floodsafe-android-app/app/google-services.json')
+          j=json.loads(path.read_text())
+          client=copy.deepcopy(j['client'][0])
+          client['client_info']['android_client_info']['package_name']='io.github.pujan1234hub.floodsafe.app.preview'
+          j['client'].append(client)
+          path.write_text(json.dumps(j))
+          PY
+      - name: Unit tests and compile restored original full app
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+      - name: Validate full APK, correct launcher, intro, map geometry and background checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          unzip -t "$APK" >/dev/null
+          for asset in assets/pjbuilts-original-splash.html assets/data/nepal-waterways-snapshot.json assets/data/nepal-districts.geojson assets/floodsafe-nepal/v25/index.html; do
+            unzip -Z -1 "$APK" | grep -Fqx "$asset"
+          done
+          grep -Fq 'NativeFullActivity.class' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/PJBuiltsSplashActivity.java
+          grep -Fq 'EMERGENCY_FRESH_MS=10L' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java
+          grep -Fq 'RADIUS_KM = 2d' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RiverAlertWorker.java
+          grep -Fq 'new NepalRiverBoundary' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeNativeMapView.java
+          test "$(stat -c %s "$APK")" -gt 85000000
+          sha256sum "$APK"
+          stat -c 'FULL_PREVIEW_BYTES=%s' "$APK"
+      - name: Upload TEST APK without touching production
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0921-RESTORED-Original-Advanced-Native-PREVIEW
+          path: floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+          if-no-files-found: error
+  android-smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: FloodSafe-v0921-RESTORED-Original-Advanced-Native-PREVIEW
+          path: ./test-apk
+      - name: Android 14 install splash to dashboard smoke
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-boot-timeout: 600
+          disable-animations: false
+          script: |
+            adb install -r test-apk/app-debug.apk
+            adb logcat -c
+            adb shell am start -W -n io.github.pujan1234hub.floodsafe.app.preview/io.github.pujan1234hub.floodsafe.app.PJBuiltsSplashActivity
+            sleep 9
+            adb shell dumpsys activity activities | grep -F NativeFullActivity
+            adb shell pidof io.github.pujan1234hub.floodsafe.app.preview
+            sh -c 'if adb logcat -d -v brief | grep -A 9 -F "FATAL EXCEPTION" | grep -Fq "io.github.pujan1234hub.floodsafe.app"; then echo "APP_CRASH"; exit 1; else echo "SPLASH_TO_FULL_DASHBOARD_PASS"; fi'

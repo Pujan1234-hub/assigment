@@ -603,7 +603,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         TextView history=text(t("SATHI · नदी/मौसम/चेतावनीसँगै गीता, जीवन, विज्ञान र बाढी सुरक्षाको ज्ञान पनि सोध्नुहोस्।","SATHI · Ask about river gauges, warnings, Gita, life skills, science or flood safety."),14,false,Color.rgb(30,52,72));
         history.setTextIsSelectable(true);
         messages.addView(history);
-        box.addView(messages,lp(-1,dp(300),0,0,0,dp(8)));
+        box.addView(messages,lp(-1,Math.min(dp(300),getResources().getDisplayMetrics().heightPixels/3),0,0,0,dp(8)));
         EditText question=new EditText(this);question.setSingleLine(true);
         question.setTextSize(15);question.setHint(t("यहाँ प्रश्न लेख्नुहोस्…","Type your question…"));
         box.addView(question,lp(-1,dp(54),0,0,0,dp(5)));
@@ -614,13 +614,22 @@ public final class NativeFullActivity extends Activity implements LocationListen
         actions.addView(mic,new LinearLayout.LayoutParams(0,dp(48),1));
         box.addView(actions);
         final String[] lastSubject={""};
+        final int[] lessonStep={0};
         Runnable sendQuestion=()->{
             String q=question.getText().toString().trim();if(q.isEmpty())return;
             String normalized=q.toLowerCase(Locale.ROOT);
-            boolean followUp=q.length()<36&&(normalized.contains("त्यस")||normalized.contains("अझ")||normalized.contains("अरू")||normalized.contains("more")||normalized.contains("explain")||normalized.contains("further")||normalized.contains("why"));
-            String effective=followUp&&!lastSubject[0].isEmpty()?lastSubject[0]+" "+q:q;
-            if(!followUp)lastSubject[0]=q;
-            String a=answerSathi(effective);
+            boolean followUp=q.length()<50&&(normalized.contains("त्यस")||normalized.contains("अझ")||normalized.contains("अरू")
+                ||normalized.contains("more")||normalized.contains("next")||normalized.contains("another")
+                ||normalized.contains("explain")||normalized.contains("further")||normalized.contains("aru")
+                ||normalized.contains("अर्को")||normalized.contains("फेरि"));
+            String effective=followUp&&!lastSubject[0].isEmpty()?lastSubject[0]:q;
+            if(!followUp){
+                if(q.equalsIgnoreCase(lastSubject[0]))lessonStep[0]++;
+                else if(GyanKnowledge.isKnowledgeQuestion(q))lessonStep[0]=0;
+                else lessonStep[0]=0;
+                lastSubject[0]=q;
+            } else if(!lastSubject[0].isEmpty())lessonStep[0]++;
+            String a=answerSathi(effective,lessonStep[0]);
             String old=history.getText().toString(),next=old+"\n\n👤 "+q+"\n🤖 SATHI: "+a;
             history.setText(next.length()>13000?next.substring(next.length()-12000):next);
             question.setText("");messages.post(()->messages.fullScroll(View.FOCUS_DOWN));
@@ -637,13 +646,15 @@ public final class NativeFullActivity extends Activity implements LocationListen
             .setView(box).setPositiveButton(t("बन्द","Close"),null).create();
         dialog.getWindow();
         dialog.show();
+        dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         if(initial!=null&&!initial.trim().isEmpty()){
             String a=answerSathi(initial);
             history.append("\n\n👤 "+initial+"\n🤖 SATHI: "+a);
         }
     }
     private void startVoice(TextView out){if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},REQ_MIC);return;}if(!SpeechRecognizer.isRecognitionAvailable(this)){out.setText(t("यो फोनमा voice recognition उपलब्ध छैन।","Voice recognition is unavailable on this phone."));return;}if(speech!=null)try{speech.destroy();}catch(Exception ignored){}speech=SpeechRecognizer.createSpeechRecognizer(this);speech.setRecognitionListener(new RecognitionListener(){public void onReadyForSpeech(Bundle b){out.append("\n"+t("🎙 सुन्दैछु…","🎙 Listening…"));}public void onBeginningOfSpeech(){}public void onRmsChanged(float x){}public void onBufferReceived(byte[]b){}public void onEndOfSpeech(){}public void onError(int e){out.append("\n"+t("आवाज बुझिएन। फेरि प्रयास गर्नुहोस्।","Could not understand. Try again."));}public void onPartialResults(Bundle b){}public void onEvent(int t,Bundle b){}public void onResults(Bundle b){ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);String q=r==null||r.isEmpty()?"":r.get(0);String a=answerSathi(q);out.append("\n\n👤 "+q+"\n🤖 SATHI: "+a);speak(a);}});speech.startListening(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,english?"en-GB":"ne-NP").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5));}
-    private String answerSathi(String q){
+    private String answerSathi(String q){return answerSathi(q,0);}
+    private String answerSathi(String q,int lessonOffset){
         JSONArray rs=new JSONArray();
         synchronized(stations){
             for(RiverStation s:stations){
@@ -655,7 +666,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
             }
         }
         return SathiKnowledge.answer(q,english,rs,currentGovernmentNotices,districtWeather,
-            currentNewsForSathi,currentWeather,isNepal(lat,lon));
+            currentNewsForSathi,currentWeather,isNepal(lat,lon),lessonOffset);
     }
     private void consumeSathiIntent(Intent i){if(i==null)return;String q=i.getStringExtra(SathiWakeService.EXTRA_QUERY);if(q!=null&&!q.trim().isEmpty()){showSathiDialog(q.trim());i.removeExtra(SathiWakeService.EXTRA_QUERY);}}
 

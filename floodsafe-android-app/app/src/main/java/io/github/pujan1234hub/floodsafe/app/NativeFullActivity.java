@@ -213,7 +213,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         content.addView(privacyCard());
         root.addView(bottomNav(),bottomParams());
         Button sathi=button("🤖 SATHI");sathi.setTextSize(13);sathi.setOnClickListener(v->showSathiDialog(null));FrameLayout.LayoutParams fp=new FrameLayout.LayoutParams(dp(104),dp(48),Gravity.END|Gravity.BOTTOM);fp.setMargins(0,0,dp(18),dp(82));root.addView(sathi,fp);
-        applyLanguage();root.post(mapVisibilityTick);return root;
+        applyLanguage();SafeInsets.apply(root);root.post(mapVisibilityTick);return root;
     }
 
     private View header(){

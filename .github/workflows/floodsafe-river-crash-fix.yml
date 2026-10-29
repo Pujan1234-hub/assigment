@@ -1,0 +1,133 @@
+name: FloodSafe v0.9.21 river glow crash fix native QA
+on:
+  push:
+    branches:
+      - repair/floodsafe-v0921-river-glow-crash-20261029
+    paths:
+      - '.github/workflows/floodsafe-river-crash-fix.yml'
+      - 'floodsafe-android-app/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Precompute bounded Nepal rivers and preserve original native assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet shapely==2.1.2
+          ASSETS=floodsafe-android-app/app/src/main/assets
+          mkdir -p "$ASSETS/data" "$ASSETS/floodsafe-nepal"
+          cp -a data/. "$ASSETS/data/"
+          cp -a floodsafe-nepal/. "$ASSETS/floodsafe-nepal/"
+          python3 floodsafe-android-app/scripts/prepare_native_rivers.py data/nepal-waterways-snapshot.json data/nepal-districts.geojson "$ASSETS/data/nepal-rivers-native.json"
+          test -s "$ASSETS/data/nepal-rivers-native.json"
+          test -s "$ASSETS/pjbuilts-original-splash.html"
+          python3 - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('floodsafe-android-app/app/google-services.json')
+          d=json.loads(p.read_text())
+          z=json.loads(json.dumps(d['client'][0]))
+          z['client_info']['android_client_info']['package_name']='io.github.pujan1234hub.floodsafe.app.preview'
+          d['client'].append(z);p.write_text(json.dumps(d))
+          geo=json.loads(pathlib.Path('floodsafe-android-app/app/src/main/assets/data/nepal-rivers-native.json').read_text())
+          assert len(geo['waterways'])>=75
+          PY
+      - name: Verify native map and advanced navigation, no web hybrid
+        shell: bash
+        run: |
+          JAVA=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app
+          grep -Fq 'new Intent(this, NativeFullActivity.class)' "$JAVA/PJBuiltsSplashActivity.java"
+          grep -Fq 'new FloodSafeNativeMapView(this' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'new Intent(this,FloodSafeAdvancedActivity.class)' "$JAVA/NativeFullActivity.java"
+          grep -Fq 'data/nepal-rivers-native.json' "$JAVA/FloodSafeNativeMapView.java"
+          grep -Fq 'fs-river-glow' "$JAVA/FloodSafeNativeMapView.java"
+          grep -Fq 'fs-flow-particles' "$JAVA/FloodSafeNativeMapView.java"
+          grep -Fq 'alertCount.setText' "$JAVA/NativeFullActivity.java"
+          ! grep -Fq 'new NativeRiverMap()' "$JAVA/NativeFullActivity.java"
+      - name: Compile tests and native APK
+        run: gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon
+      - name: Verify complete APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          unzip -t "$APK" >/dev/null
+          unzip -Z -1 "$APK" | grep -Fxq assets/data/nepal-rivers-native.json
+          unzip -Z -1 "$APK" | grep -Fxq assets/pjbuilts-original-splash.html
+          test "$(stat -c %s "$APK")" -gt 85000000
+          cp "$APK" FloodSafe-Nepal-v0.9.21-NATIVE-RIVER-GLOW-TEST.apk
+          stat -c 'APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-NATIVE-RIVER-GLOW-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-NATIVE-RIVER-GLOW-TEST.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-NATIVE-RIVER-GLOW-APK-unverified-device
+          path: FloodSafe-Nepal-v0.9.21-NATIVE-RIVER-GLOW-TEST.apk
+          retention-days: 14
+          if-no-files-found: error
+  device-test:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: FloodSafe-NATIVE-RIVER-GLOW-APK-unverified-device
+          path: ./apk
+      - name: Android 14 real app startup and map smoke
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-boot-timeout: 600
+          script: |
+            adb install -r apk/FloodSafe-Nepal-v0.9.21-NATIVE-RIVER-GLOW-TEST.apk
+            adb logcat -c
+            adb shell am start -W -n io.github.pujan1234hub.floodsafe.app.preview/io.github.pujan1234hub.floodsafe.app.PJBuiltsSplashActivity
+            sleep 12
+            adb shell dumpsys activity activities | grep -F NativeFullActivity
+            adb shell input swipe 400 1750 400 500 460
+            sleep 12
+            adb shell screencap -p /sdcard/floodsafe-map.png
+            adb pull /sdcard/floodsafe-map.png .
+            adb shell pidof io.github.pujan1234hub.floodsafe.app.preview
+            adb logcat -d -v brief > android-logcat.txt
+            if grep -A 12 -F 'FATAL EXCEPTION' android-logcat.txt | grep -Fq 'io.github.pujan1234hub.floodsafe.app'; then echo 'NATIVE_APP_CRASH'; exit 1; fi
+            echo 'NATIVE_NO_CRASH_SMOKE_PASS'
+      - name: Upload screenshots and crash logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-native-map-android14-qa
+          path: |
+            floodsafe-map.png
+            android-logcat.txt
+          if-no-files-found: ignore
+          retention-days: 7
+  release:
+    needs: [build,device-test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: FloodSafe-NATIVE-RIVER-GLOW-APK-unverified-device
+      - name: Publish direct GitHub APK only after emulator smoke test
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create floodsafe-v0921-native-glow-crashfix-20261029 FloodSafe-Nepal-v0.9.21-NATIVE-RIVER-GLOW-TEST.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --title 'FloodSafe Nepal v0.9.21 Native River Map Test' --notes 'Native test build only. Single interactive MapLibre map, prepared Nepal-only river glow, native advanced tab, 4-level status. Production download link unchanged.'

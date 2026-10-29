@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-29T00:16:32.164869Z",
-  "commit": "0c72ee78c3d4",
+  "generatedAt": "2026-10-29T00:32:50.203726Z",
+  "commit": "e69362ace185",
   "projects": {
     "teamtracker": {
       "updatedAt": "2026-08-25T15:52:57+01:00",
@@ -15,7 +15,7 @@
       "source": "GitHub source"
     },
     "floodsafe": {
-      "updatedAt": "2026-10-29T00:15:15Z",
+      "updatedAt": "2026-10-29T00:32:38Z",
       "source": "PJBUILTS web mirror",
       "version": "0.9.11"
     },

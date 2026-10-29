@@ -530,7 +530,13 @@ final class FloodSafeNativeMapView extends FrameLayout {
 
     private RiverWay nearestRiver(double la, double lo, double thresholdKm) {
         RiverWay best = null; double d = Double.MAX_VALUE;
+        double latitudePad=thresholdKm/111d+.012d;
+        double longitudePad=thresholdKm/(111d*Math.max(.4d,Math.cos(Math.toRadians(la))))+.012d;
         for (RiverWay r : rivers) {
+            // Precomputed bounding boxes discard nearly every distant river before
+            // the CPU-intensive distance test. This keeps tap responses immediate.
+            if(la<r.minLat-latitudePad || la>r.maxLat+latitudePad ||
+               lo<r.minLon-longitudePad || lo>r.maxLon+longitudePad)continue;
             int stride = Math.max(1, r.points.size() / 140);
             for (int i = 0; i < r.points.size(); i += stride) {
                 double[] p = r.points.get(i);
@@ -541,22 +547,22 @@ final class FloodSafeNativeMapView extends FrameLayout {
         return d <= thresholdKm ? best : null;
     }
 
-    private void showRiver(RiverWay r, double la, double lo) {
-        StationDot gauge = nearestStation(la, lo);
-        StringBuilder msg = new StringBuilder();
-        msg.append("River status: ").append(r.stage.toUpperCase(Locale.ROOT));
-        if (gauge != null) {
-            double d = km(la, lo, gauge.lat, gauge.lon);
-            msg.append("\n\nनजिकको official gauge: ").append(gauge.name)
-                    .append(String.format(Locale.US, " • %.1f km", d));
-            if (Double.isFinite(gauge.level)) msg.append(String.format(Locale.US, "\nपानीको सतह: %.2f m", gauge.level));
-            msg.append("\nStatus: ").append(gauge.fresh ? gauge.stage.toUpperCase(Locale.ROOT) : "STALE / UNKNOWN");
-            if (Double.isFinite(gauge.rainfallMm)) {
-                msg.append(String.format(Locale.US, "\nवर्षा: %.1f mm", gauge.rainfallMm));
-            }
-        } else msg.append("\n\nयो नदी segment नजिक direct official gauge reference भेटिएन।");
-        msg.append("\n\nRainfall station markers map मा देखाइँदैनन्; उपलब्ध rainfall detail station/river detail भित्र मात्र देखाइन्छ।");
-        new AlertDialog.Builder(getContext()).setTitle(r.name).setMessage(msg.toString()).setPositiveButton("ठीक छ", null).show();
+    private void showRiver(RiverWay r,double la,double lo){
+        StationDot gauge=nearestStation(la,lo);
+        String status=gauge!=null&&gauge.fresh?gauge.stage:"stale";
+        double measuredLevel=gauge!=null&&gauge.fresh?gauge.level:Double.NaN;
+        StringBuilder extra=new StringBuilder();
+        extra.append("🗺️ ").append(r.name).append("\n");
+        if(gauge!=null){
+            double d=km(la,lo,gauge.lat,gauge.lon);
+            extra.append("📍 ").append("नजिकको DHM/BIPAD स्टेशन: ").append(gauge.name)
+                 .append(String.format(Locale.US," · %.1f km",d));
+            if(!gauge.fresh)extra.append("\n⚠️ हालको आधिकारिक मापन उपलब्ध छैन।");
+            if(Double.isFinite(gauge.rainfallMm))extra.append(String.format(Locale.US,"\n🌧 %.1f mm",gauge.rainfallMm));
+        } else extra.append("यस खण्ड नजिक पुष्टि भएको DHM gauge भेटिएन।");
+        extra.append("\nयो नदी खण्डमा देखाइएको stage नजिकको स्टेशनबाट आएको सन्दर्भ हो, नदीका सबै बिन्दुको मापन होइन।");
+        StationDetailSheet.show(getContext(),r.name,status,measuredLevel,
+            gauge!=null&&gauge.fresh,0L,extra.toString(),false,true);
     }
 
     private void startParticles() {

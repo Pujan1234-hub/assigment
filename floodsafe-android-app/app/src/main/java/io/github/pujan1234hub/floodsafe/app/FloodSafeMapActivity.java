@@ -142,12 +142,11 @@ public final class FloodSafeMapActivity extends Activity {
         });
     }
     private void showStation(MapStation s){
-        String time=s.at<=0?"—":Instant.ofEpochMilli(s.at).atZone(ZoneId.of("Asia/Kathmandu")).toLocalDateTime().toString();
-        String level=Double.isFinite(s.level)?String.format(Locale.US,"%.2f m",s.level):"—";
-        new AlertDialog.Builder(this).setTitle(s.name).setMessage(
-            (english?"Level: ":"पानीको सतह: ")+level+"\n"+(english?"Status: ":"अवस्था: ")+s.stage+
-            "\n"+(english?"Observed: ":"मापन: ")+time+"\nDHM / BIPAD")
-            .setPositiveButton(english?"Close":"बन्द",null).show();
+        // Already loaded station measurement: open instantly, no extra network round-trip.
+        StationDetailSheet.show(this,s.name,s.stage,s.level,s.fresh,s.at,
+            english?"Verified DHM/BIPAD station. Tap a new marker to inspect that gauge.":
+                    "DHM/BIPAD स्टेशनको उपलब्ध मापन। अर्को स्टेशन हेर्न नक्साको बिन्दु थिच्नुहोस्।",
+            english,false);
     }
     private Button button(String s){
         Button b=new Button(this);b.setAllCaps(false);b.setText(s);b.setTextSize(13);

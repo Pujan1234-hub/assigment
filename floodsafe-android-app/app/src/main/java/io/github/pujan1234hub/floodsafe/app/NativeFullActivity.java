@@ -94,6 +94,9 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private boolean english;
     private double lat=Double.NaN,lon=Double.NaN;
     private long locAt;
+    // Only the manually tapped GPS button needs extra duplicate-callback protection.
+    private long lastLocationRenderAt=0L, lastLocateTapElapsed=0L;
+    private long weatherRequestVersion=0L, forecastRequestVersion=0L;
     private FrameLayout root;
     private ScrollView scroll;
     private LinearLayout content,nearList,nationalList,newsList,humanCard,alarmBanner,governmentList;
@@ -234,7 +237,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         scroll.setOnScrollChangeListener((v,x,y,oldX,oldY)->{main.removeCallbacks(mapVisibilityTick);main.postDelayed(mapVisibilityTick,160L);});
         homeAnchor=header(); content.addView(homeAnchor);
         content.addView(hero(),lp(-1,-2,0,0,0,dp(12)));
-        Button locate=button(t("◎ मेरो हालको स्थान","◎ My current location")); locate.setOnClickListener(v->requestLocation()); content.addView(locate,lp(-1,dp(54),0,0,0,dp(12)));
+        Button locate=button(t("◎ मेरो हालको स्थान","◎ My current location")); locate.setOnClickListener(v->requestLocation(true)); content.addView(locate,lp(-1,dp(54),0,0,0,dp(12)));
         TextView outside=text("",13,true,Color.rgb(40,85,111)); outside.setId(android.R.id.hint); outside.setPadding(dp(15),dp(13),dp(15),dp(13)); outside.setBackground(round(Color.rgb(239,249,255),22,Color.rgb(159,205,232),1)); content.addView(outside,lp(-1,-2,0,0,0,dp(10)));
         alarmBanner=new LinearLayout(this);alarmBanner.setOrientation(LinearLayout.VERTICAL);alarmBanner.setPadding(dp(16),dp(14),dp(16),dp(14));alarmBanner.setBackground(round(Color.rgb(255,235,239),22,Color.rgb(239,138,152),2));
         alarmTitle=text(t("⚠️ नदी चेतावनी","⚠️ River warning"),22,true,Color.rgb(146,34,56));alarmText=text("",14,true,Color.rgb(146,34,56));alarmBanner.addView(alarmTitle);alarmBanner.addView(alarmText);alarmBanner.setVisibility(View.GONE);content.addView(alarmBanner,lp(-1,-2,0,0,0,dp(12)));
@@ -559,18 +562,154 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private void restoreLocation(){if(Double.isFinite(lat)&&Double.isFinite(lon)){place.setText(isNepal(lat,lon)?t("📍 पछिल्लो GPS • Nepal","📍 Last GPS • Nepal"):t("🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो","🌍 GPS outside Nepal • weather follows this location"));updateOutsideNotice();}}
     private void updateOutsideNotice(){TextView v=root==null?null:root.findViewById(android.R.id.hint);if(v==null)return;boolean out=Double.isFinite(lat)&&Double.isFinite(lon)&&!isNepal(lat,lon);v.setVisibility(out?View.VISIBLE:View.GONE);v.setText(t("🇳🇵 FloodSafe Nepal-only monitoring\nतपाईं नेपाल बाहिर हुँदा नजिकको नदी चेतावनी पठाइँदैन। नेपालभित्र current GPS हुँदा २ km भित्रको verified Warning/Danger मात्र emergency alert आउँछ।","🇳🇵 FloodSafe Nepal-only monitoring\nOutside Nepal, nearby river warnings are not sent. In Nepal, only verified Warning/Danger within 2 km can trigger the emergency river alert."));}
 
-    private void requestLocation(){if(!hasLocationPermission()){requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},REQ_LOCATION);return;}if(lm==null)return;try{Location a=lm.getLastKnownLocation(LocationManager.GPS_PROVIDER),b=lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER),best=a==null?b:b==null?a:(a.getTime()>=b.getTime()?a:b);if(best!=null&&System.currentTimeMillis()-best.getTime()<24L*60*60*1000)onLocationChanged(best);if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))lm.requestSingleUpdate(LocationManager.GPS_PROVIDER,this,getMainLooper());else if(lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER))lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER,this,getMainLooper());}catch(Exception ignored){}}
-    @Override public void onLocationChanged(Location l){if(l==null)return;lat=l.getLatitude();lon=l.getLongitude();locAt=System.currentTimeMillis();getSharedPreferences(PREFS,MODE_PRIVATE).edit().putLong(KEY_LAT,Double.doubleToRawLongBits(lat)).putLong(KEY_LON,Double.doubleToRawLongBits(lon)).putLong(KEY_AT,locAt).apply();getSharedPreferences(RainAlertWorker.PREFS,MODE_PRIVATE).edit().putLong("lat",Double.doubleToRawLongBits(lat)).putLong("lon",Double.doubleToRawLongBits(lon)).putLong("location_time",locAt).putLong("device_lat",Double.doubleToRawLongBits(lat)).putLong("device_lon",Double.doubleToRawLongBits(lon)).putLong("device_location_time",locAt).putBoolean("follow_device",true).putBoolean("location_stale",false).putBoolean("enabled",true).apply();place.setText(isNepal(lat,lon)?t("📍 हालको GPS • Nepal","📍 Current GPS • Nepal"):t("🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो","🌍 GPS outside Nepal • local weather only"));updateOutsideNotice();reverseGeocode();fetchWeather(lat,lon);refreshNearbyRainGauge();refreshRiverUi();FloodMonitorService.startIfEnabled(this);}
-    private void reverseGeocode(){io.execute(()->{try{List<android.location.Address>a=new Geocoder(this,Locale.getDefault()).getFromLocation(lat,lon,1);if(a!=null&&!a.isEmpty()){String s=a.get(0).getLocality();if(s==null)s=a.get(0).getSubAdminArea();if(s==null)s=a.get(0).getCountryName();final String label=s;if(label!=null)runOnUiThread(()->place.setText("📍 "+label));}}catch(Exception ignored){}});}
-
-    private void fetchWeather(double a,double o){fetchSevenDay(a,o);io.execute(()->{try{String u=String.format(Locale.US,"https://api.open-meteo.com/v1/forecast?latitude=%.6f&longitude=%.6f&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,weather_code,wind_speed_10m&hourly=precipitation_probability,precipitation&forecast_hours=6&timezone=auto",a,o);JSONObject j=getJson(u);JSONObject c=j.getJSONObject("current");double te=c.optDouble("temperature_2m",Double.NaN),pr=c.optDouble("precipitation",0),hu=c.optDouble("relative_humidity_2m",Double.NaN),wi=c.optDouble("wind_speed_10m",Double.NaN),cloud=c.optDouble("cloud_cover",0);int code=c.optInt("weather_code",0);String ws=code>=95?t("⛈️ चट्याङ/हुरीको सम्भावना","⛈️ Thunderstorm"):pr>=.5?t("🌧️ वर्षा भइरहेको छ","🌧️ Rain now"):cloud>65?t("☁️ बादल","☁️ Cloudy"):cloud>25?t("⛅ आंशिक बादल","⛅ Partly cloudy"):t("☀️ सफा मौसम","☀️ Sunny");String timing=rainTiming(j);currentWeather=ws;runOnUiThread(()->{temp.setText(Double.isFinite(te)?Math.round(te)+"°":"—°");weatherText.setText(ws);rain.setText(String.format(Locale.US,"%.1f mm",pr));humidity.setText(Double.isFinite(hu)?Math.round(hu)+"%":"—");wind.setText(Double.isFinite(wi)?Math.round(wi)+" km/h":"—");rainTiming.setText(timing);if(mapWeather!=null)mapWeather.setConditions(cloud,pr,code);});}catch(Exception e){runOnUiThread(()->weatherText.setText(t("मौसम refresh हुन सकेन","Weather refresh failed")));}});}
-    private void fetchSevenDay(double a,double o){
+    private void requestLocation(){requestLocation(false);}
+    private void requestLocation(boolean fromTap){
+        if(!hasLocationPermission()){
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},REQ_LOCATION);
+            return;
+        }
+        if(lm==null)return;
+        if(fromTap){
+            long elapsed=android.os.SystemClock.elapsedRealtime();
+            // Prevent a double tap from queuing multiple GPS and weather refreshes.
+            if(lastLocateTapElapsed>0&&elapsed-lastLocateTapElapsed<1800L)return;
+            lastLocateTapElapsed=elapsed;
+        }
+        try{
+            Location a=lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location b=lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            Location best=a==null?b:b==null?a:(a.getTime()>=b.getTime()?a:b);
+            // Previously a tap processed a cached fix immediately, and then another GPS
+            // callback seconds later: two location labels, two requests and visible flicker.
+            // The button now waits for the fresh fix if we already have coordinates.
+            if((!fromTap||!Double.isFinite(lat)||!Double.isFinite(lon))&&best!=null
+                    &&System.currentTimeMillis()-best.getTime()<24L*60*60*1000)
+                onLocationChanged(best);
+            if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                lm.requestSingleUpdate(LocationManager.GPS_PROVIDER,this,getMainLooper());
+            else if(lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+                lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER,this,getMainLooper());
+        }catch(Exception ignored){}
+    }
+    @Override public void onLocationChanged(Location l){
+        if(l==null||!Double.isFinite(l.getLatitude())||!Double.isFinite(l.getLongitude()))return;
+        long now=System.currentTimeMillis();
+        float[] meters={Float.POSITIVE_INFINITY};
+        if(Double.isFinite(lat)&&Double.isFinite(lon)){
+            try{Location.distanceBetween(lat,lon,l.getLatitude(),l.getLongitude(),meters);}
+            catch(Exception ignored){}
+        }
+        // The cached fix and the live GPS fix can represent exactly the same place.
+        // Keep monitoring timestamps updated, but do not redraw/re-request the whole
+        // weather screen twice within the same 90-second window.
+        boolean sameRecentFix=meters[0]<65f&&lastLocationRenderAt>0
+                &&now-lastLocationRenderAt<90_000L;
+        lat=l.getLatitude();lon=l.getLongitude();locAt=now;
+        getSharedPreferences(PREFS,MODE_PRIVATE).edit()
+            .putLong(KEY_LAT,Double.doubleToRawLongBits(lat))
+            .putLong(KEY_LON,Double.doubleToRawLongBits(lon))
+            .putLong(KEY_AT,locAt).apply();
+        getSharedPreferences(RainAlertWorker.PREFS,MODE_PRIVATE).edit()
+            .putLong("lat",Double.doubleToRawLongBits(lat))
+            .putLong("lon",Double.doubleToRawLongBits(lon))
+            .putLong("location_time",locAt)
+            .putLong("device_lat",Double.doubleToRawLongBits(lat))
+            .putLong("device_lon",Double.doubleToRawLongBits(lon))
+            .putLong("device_location_time",locAt)
+            .putBoolean("follow_device",true)
+            .putBoolean("location_stale",false)
+            .putBoolean("enabled",true).apply();
+        if(!sameRecentFix){
+            lastLocationRenderAt=now;
+            String label=isNepal(lat,lon)?
+                t("📍 हालको GPS • Nepal","📍 Current GPS • Nepal"):
+                t("🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो",
+                  "🌍 GPS outside Nepal • local weather only");
+            if(!android.text.TextUtils.equals(place.getText(),label))place.setText(label);
+            updateOutsideNotice();
+            reverseGeocode();
+            fetchWeather(lat,lon);
+            refreshNearbyRainGauge();
+            refreshRiverUi();
+        }
+        FloodMonitorService.startIfEnabled(this);
+    }
+    private void reverseGeocode(){
+        final double requestedLat=lat,requestedLon=lon;
         io.execute(()->{
-          try{
-            String u=String.format(Locale.US,"https://pjbuilts.com/api/floodsafe-station-details?kind=hero&lat=%.6f&lon=%.6f",a,o);
-            JSONObject j=getJson(u);
-            runOnUiThread(()->{if(miniForecast!=null)miniForecast.setForecast(j);});
-          }catch(Exception e){runOnUiThread(()->{if(miniForecast!=null)miniForecast.setForecast(new JSONObject());});}
+            try{
+                List<android.location.Address> addresses=new Geocoder(this,Locale.getDefault())
+                    .getFromLocation(requestedLat,requestedLon,1);
+                if(addresses==null||addresses.isEmpty())return;
+                String label=addresses.get(0).getLocality();
+                if(label==null)label=addresses.get(0).getSubAdminArea();
+                if(label==null)label=addresses.get(0).getCountryName();
+                if(label==null||label.isEmpty())return;
+                final String visible="📍 "+label;
+                runOnUiThread(()->{
+                    if(isFinishing()||isDestroyed())return;
+                    // A slower response for an older location cannot replace a newer fix.
+                    if(Math.abs(lat-requestedLat)>0.00065||Math.abs(lon-requestedLon)>0.00065)return;
+                    if(!android.text.TextUtils.equals(place.getText(),visible))place.setText(visible);
+                });
+            }catch(Exception ignored){}
+        });
+    }
+
+    private void fetchWeather(double a,double o){
+        final long version=++weatherRequestVersion;
+        fetchSevenDay(a,o);
+        io.execute(()->{
+            try{
+                String u=String.format(Locale.US,
+                    "https://api.open-meteo.com/v1/forecast?latitude=%.6f&longitude=%.6f&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,weather_code,wind_speed_10m&hourly=precipitation_probability,precipitation&forecast_hours=6&timezone=auto",a,o);
+                JSONObject j=getJson(u),c=j.getJSONObject("current");
+                final double te=c.optDouble("temperature_2m",Double.NaN),
+                    pr=c.optDouble("precipitation",0),hu=c.optDouble("relative_humidity_2m",Double.NaN),
+                    wi=c.optDouble("wind_speed_10m",Double.NaN),cloud=c.optDouble("cloud_cover",0);
+                final int code=c.optInt("weather_code",0);
+                runOnUiThread(()->{
+                    if(isFinishing()||isDestroyed()||version!=weatherRequestVersion)return;
+                    // Translate only when displaying the completed result. Previous
+                    // background requests must not alternate Nepali and English text.
+                    String ws=code>=95?t("⛈️ चट्याङ/हुरीको सम्भावना","⛈️ Thunderstorm"):
+                        pr>=.5?t("🌧️ वर्षा भइरहेको छ","🌧️ Rain now"):
+                        cloud>65?t("☁️ बादल","☁️ Cloudy"):
+                        cloud>25?t("⛅ आंशिक बादल","⛅ Partly cloudy"):
+                        t("☀️ सफा मौसम","☀️ Sunny");
+                    currentWeather=ws;
+                    temp.setText(Double.isFinite(te)?Math.round(te)+"°":"—°");
+                    if(!android.text.TextUtils.equals(weatherText.getText(),ws))weatherText.setText(ws);
+                    rain.setText(String.format(Locale.US,"%.1f mm",pr));
+                    humidity.setText(Double.isFinite(hu)?Math.round(hu)+"%":"—");
+                    wind.setText(Double.isFinite(wi)?Math.round(wi)+" km/h":"—");
+                    String timing=rainTiming(j);
+                    if(!android.text.TextUtils.equals(rainTiming.getText(),timing))rainTiming.setText(timing);
+                    if(mapWeather!=null)mapWeather.setConditions(cloud,pr,code);
+                });
+            }catch(Exception e){
+                runOnUiThread(()->{
+                    if(version==weatherRequestVersion&&currentWeather.isEmpty())
+                        weatherText.setText(t("मौसम refresh हुन सकेन","Weather refresh failed"));
+                    // Keep the previous weather card visible on temporary request failures.
+                });
+            }
+        });
+    }
+    private void fetchSevenDay(double a,double o){
+        final long version=++forecastRequestVersion;
+        io.execute(()->{
+            try{
+                String u=String.format(Locale.US,
+                    "https://pjbuilts.com/api/floodsafe-station-details?kind=hero&lat=%.6f&lon=%.6f",a,o);
+                JSONObject j=getJson(u);
+                runOnUiThread(()->{
+                    if(version!=forecastRequestVersion||isFinishing()||isDestroyed())return;
+                    if(miniForecast!=null)miniForecast.setForecast(j);
+                });
+            }catch(Exception ignored){
+                // Preserve the last good chart rather than blanking it during a GPS tap.
+            }
         });
     }
     private String rainTiming(JSONObject j){try{JSONObject h=j.getJSONObject("hourly");JSONArray time=h.getJSONArray("time"),pp=h.getJSONArray("precipitation_probability"),pr=h.getJSONArray("precipitation");for(int i=0;i<Math.min(time.length(),6);i++){double mm=pr.optDouble(i,0);int p=pp.optInt(i,0);if(mm>=.2||p>=55)return t("🌧️ आगामी "+Math.max(1,i+1)+" घण्टाभित्र वर्षाको सम्भावना "+p+"%","🌧️ Rain chance "+p+"% within about "+Math.max(1,i+1)+"h");}return t("☁️ आगामी केही घण्टामा उल्लेख्य वर्षा संकेत छैन","☁️ No significant rain signal in the next few hours");}catch(Exception e){return t("वर्षा timing उपलब्ध छैन","Rain timing unavailable");}}

@@ -284,7 +284,20 @@ final class FloodSafeNativeMapView extends FrameLayout {
                         }
                     }
                     all.sort(Comparator.comparingInt(FloodSafeNativeMapView::riverScore).reversed());
-                    if (all.size() > 1400) all = new ArrayList<>(all.subList(0, 1400));
+                    // Keep the full verified waterways asset for future zoom-tile detail, but
+                    // only render a screen-friendly national overview here. 1400 complex
+                    // GeoJSON lines and 3 risk layers overwhelmed some phones.
+                    if (all.size() > 500) all = new ArrayList<>(all.subList(0, 500));
+                    for (RiverWay rw : all) {
+                        if (rw.points.size() <= 110) continue;
+                        List<double[]> sampled = new ArrayList<>(110);
+                        for (int k=0;k<110;k++) {
+                            int at=(int)Math.round((rw.points.size()-1)*k/109d);
+                            sampled.add(rw.points.get(at));
+                        }
+                        rw.points.clear();
+                        rw.points.addAll(sampled);
+                    }
                     rivers.clear();
                     rivers.addAll(all);
                     riversGeoJson = makeRiversGeoJson(all);
@@ -539,7 +552,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
             if (!animationRunning || !particlesEnabled || hostPaused || !rendererResumed || !styleReady || style == null) return;
             try {
                 JSONArray features = new JSONArray();
-                int n = Math.min(36, rivers.size());
+                int n = Math.min(24, rivers.size());
                 double phase = ((System.currentTimeMillis() - particleStart) % 6500L) / 6500.0;
                 for (int i = 0; i < n; i++) {
                     RiverWay r = rivers.get(i);
@@ -554,7 +567,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 JSONObject fc = new JSONObject().put("type", "FeatureCollection").put("features", features);
                 setGeo("fs-flow-particles", fc.toString());
             } catch (Exception ignored) {}
-            main.postDelayed(this, 160L);
+            main.postDelayed(this, 350L);
         }
     };
 

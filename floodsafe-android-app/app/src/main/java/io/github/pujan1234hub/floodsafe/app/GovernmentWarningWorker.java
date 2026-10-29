@@ -40,7 +40,7 @@ public final class GovernmentWarningWorker extends Worker {
    if(Build.VERSION.SDK_INT>=26)m.createNotificationChannel(new NotificationChannel(channel,"नेपाल सरकारका मौसम/बाढी सूचना",NotificationManager.IMPORTANCE_DEFAULT));
    PendingIntent open=PendingIntent.getActivity(app,1402,new Intent(Intent.ACTION_VIEW,Uri.parse(link)),
     PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
-   String title="DHM / NDRRMA · "+a.length()+" लागू सरकारी सूचना";
+   String title="DHM / NDRRMA · "+a.length()+" लागू/आगामी सरकारी सूचना";
    String body=first.optString("titleNe","सरकारी चेतावनी हेर्नुहोस्");
    Notification.Builder b=Build.VERSION.SDK_INT>=26?new Notification.Builder(app,channel):new Notification.Builder(app);
    b.setSmallIcon(android.R.drawable.ic_dialog_alert).setContentTitle(title).setContentText(body)

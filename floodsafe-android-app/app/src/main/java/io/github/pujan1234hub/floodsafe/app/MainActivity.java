@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/** Bundled hybrid app. No remote top-level page. */
+/** Original v0.9.21 hybrid Android shell displaying the exact current PJBUILTS web app. */
 public class MainActivity extends Activity {
     private static final int LOCATION_REQUEST = 40;
     private static final int NOTIFICATION_REQUEST = 41;
@@ -72,29 +72,33 @@ public class MainActivity extends Activity {
 
     /** A narrowly scoped signal from the bundled FloodSafe UI only. */
     private final class LocationTapBridge {
+        private boolean allowed() {
+            return webView!=null&&NavigationPolicy.internalPage(webView.getUrl());
+        }
+
         @JavascriptInterface public void allowLocationPrompt() {
-            runOnUiThread(MainActivity.this::beginLocationFromTap);
+            if(allowed())runOnUiThread(MainActivity.this::beginLocationFromTap);
         }
         @JavascriptInterface public void enableRainAlerts() {
-            runOnUiThread(() -> setRainAlerts(true));
+            if(allowed())runOnUiThread(() -> setRainAlerts(true));
         }
         @JavascriptInterface public void setRainAlerts(boolean enabled) {
-            runOnUiThread(() -> MainActivity.this.setRainAlerts(enabled));
+            if(allowed())runOnUiThread(() -> MainActivity.this.setRainAlerts(enabled));
         }
         @JavascriptInterface public void syncRainAlertsStatus() {
-            runOnUiThread(MainActivity.this::syncRainAlertsStatus);
+            if(allowed())runOnUiThread(MainActivity.this::syncRainAlertsStatus);
         }
         @JavascriptInterface public void setBackgroundRainAlerts(double lat, double lon) {
-            runOnUiThread(() -> enableBackgroundRainAlerts(lat, lon));
+            if(allowed())runOnUiThread(() -> enableBackgroundRainAlerts(lat, lon));
         }
         @JavascriptInterface public void disableBackgroundRainAlerts() {
-            runOnUiThread(MainActivity.this::disableBackgroundRainAlerts);
+            if(allowed())runOnUiThread(MainActivity.this::disableBackgroundRainAlerts);
         }
         @JavascriptInterface public void syncBackgroundRainAlerts() {
-            runOnUiThread(MainActivity.this::syncBackgroundRainAlerts);
+            if(allowed())runOnUiThread(MainActivity.this::syncBackgroundRainAlerts);
         }
         @JavascriptInterface public void requestBackgroundLocationForAlerts() {
-            runOnUiThread(MainActivity.this::requestBackgroundLocationForAlerts);
+            if(allowed())runOnUiThread(MainActivity.this::requestBackgroundLocationForAlerts);
         }
     }
 
@@ -154,7 +158,9 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 WebResourceResponse local = loader.shouldInterceptRequest(request.getUrl());
-                return local != null ? local : NavigationPolicy.trustedOrigin(request.getUrl().toString())
+                // Only the old appassets virtual host is bundled. Live PJBUILTS assets
+                // must reach the web, or animations/maps/NASA fail silently.
+                return local != null ? local : NavigationPolicy.assetOrigin(request.getUrl().toString())
                         ? BundledContent.missing() : null;
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -167,6 +173,13 @@ public class MainActivity extends Activity {
                 if (!androidLocationPromptOpen) finishLocation(false);
                 mainFrameError = false;
                 updateConnection();
+            }
+            @Override public void onPageFinished(WebView view, String url) {
+                if(NavigationPolicy.liveOrigin(url)&&NavigationPolicy.internalPage(url)){
+                    // Click activates Android location permission only when the user
+                    // requests current location. All actual weather/map UI is from web.
+                    view.evaluateJavascript("(function(){var el=document.getElementById('locateBtn');if(el&&!el.dataset.fsAndroidGps){el.dataset.fsAndroidGps='1';el.addEventListener('click',function(){window.FloodSafeNative?.allowLocationPrompt?.()},true)}})()",null);
+                }
             }
             @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (request.isForMainFrame()) { mainFrameError = true; updateConnection(); }
@@ -204,7 +217,7 @@ public class MainActivity extends Activity {
             }
         });
         webView.setDownloadListener((url, userAgent, disposition, mime, length) -> openSource(url));
-        webView.loadUrl(NavigationPolicy.HOME);
+        webView.loadUrl(NavigationPolicy.LIVE_HOME);
         connectivity = getSystemService(ConnectivityManager.class);
         networkCallback = new ConnectivityManager.NetworkCallback() {
             @Override public void onAvailable(Network network) { refreshConnection(); }
@@ -407,7 +420,8 @@ public class MainActivity extends Activity {
         if (!NavigationPolicy.trustedOrigin(origin) || !NavigationPolicy.internalPage(webView.getUrl())) {
             callback.invoke(origin, false, false); return;
         }
-        if (System.currentTimeMillis() > locationTapUntil) {
+        if (System.currentTimeMillis() > locationTapUntil
+                && !NavigationPolicy.liveOrigin(webView.getUrl())) {
             callback.invoke(origin, false, false); return;
         }
         if (hasLocation()) { callback.invoke(origin, true, false); return; }

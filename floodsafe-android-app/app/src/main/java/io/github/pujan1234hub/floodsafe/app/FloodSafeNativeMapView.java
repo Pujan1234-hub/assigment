@@ -77,6 +77,8 @@ final class FloodSafeNativeMapView extends FrameLayout {
     boolean terrain = true;
     private double userLat = Double.NaN, userLon = Double.NaN;
     private String districtGeoJson = null;
+    private volatile NepalRiverBoundary nationalBoundary;
+    private Runnable weatherOverlayInvalidator;
     private String riversGeoJson = null;
     private long particleStart = 0L;
     private boolean animationRunning = false;
@@ -110,6 +112,11 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 startParticles();
             });
             map.addOnMapClickListener(this::onMapClick);
+            // Weather icons must redraw during every camera movement, not jump to a cached location.
+            map.addOnCameraMoveListener(() -> {
+                Runnable notify = weatherOverlayInvalidator;
+                if (notify != null) notify.run();
+            });
         });
         loadBundledGeometry();
     }
@@ -149,6 +156,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         catch(Exception ignored){return null;}
     }
     double weatherZoom() {return map==null?5.4:map.getCameraPosition().zoom;}
+    void setWeatherOverlayInvalidator(Runnable invalidator) { weatherOverlayInvalidator = invalidator; }
     void updateUserLocation(double lat,double lon){userLat=lat;userLon=lon;refreshUserSource();}
 
     void setBase(Bitmap ignored) { }
@@ -204,8 +212,10 @@ final class FloodSafeNativeMapView extends FrameLayout {
             }
             try {
                 String raw;
-                try { raw = readAsset("data/nepal-waterways-snapshot.json"); }
-                catch (Exception e) { raw = readAsset("data/nepal-waterways-tiles/overview.json"); }
+                // National overview is the compact real river dataset; keep the full snapshot bundled for detailed future use.
+                // Parsing the 48MB snapshot in one pass causes large transient JSON allocations and slow startup.
+                try { raw = readAsset("data/nepal-waterways-tiles/overview.json"); }
+                catch (Exception e) { raw = readAsset("data/nepal-waterways-snapshot.json"); }
                 JSONObject root = new JSONObject(raw);
                 JSONArray ways = root.optJSONArray("waterways");
                 // Use the genuine Nepal border, not the old rectangular bounding box.
@@ -213,6 +223,11 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 // waterways across another country.
                 NepalRiverBoundary nepalClip = districtGeoJson == null
                         ? null : new NepalRiverBoundary(districtGeoJson);
+                nationalBoundary = nepalClip;
+                // A station received before the district polygons load must also be rechecked.
+                if (nepalClip != null) synchronized (stations) {
+                    stations.removeIf(station -> !nepalClip.contains(station.lon, station.lat));
+                }
                 if (ways != null && nepalClip != null) {
                     List<RiverWay> all = new ArrayList<>();
                     for (int i = 0; i < ways.length(); i++) {
@@ -495,6 +510,9 @@ final class FloodSafeNativeMapView extends FrameLayout {
             Class<?> c = o.getClass();
             double la = getDouble(c, o, "lat"), lo = getDouble(c, o, "lon");
             if (!Double.isFinite(la) || !Double.isFinite(lo)) return null;
+            // Rectangle checks alone allow stations in India/China: use Nepal's 77-district union.
+            NepalRiverBoundary boundary = nationalBoundary;
+            if (boundary != null && !boundary.contains(lo,la)) return null;
             StationDot s = new StationDot();
             s.original = o; s.lat = la; s.lon = lo;
             s.name = getString(c, o, "name", "Official river station");

@@ -754,8 +754,17 @@ public final class NativeFullActivity extends Activity implements LocationListen
         box.setPadding(dp(14),dp(8),dp(14),0);
         ScrollView messages=new ScrollView(this);messages.setFillViewport(false);
         TextView history=text(t("SATHI · नदी/मौसम/चेतावनीसँगै गीता, जीवन, विज्ञान र बाढी सुरक्षाको ज्ञान पनि सोध्नुहोस्।","SATHI · Ask about river gauges, warnings, Gita, life skills, science or flood safety."),14,false,Color.rgb(30,52,72));
-        history.setTextIsSelectable(true);
+        // Text selection previously grabbed focus and kept the old response in view.
+        history.setFocusable(false);
+        messages.setSmoothScrollingEnabled(true);
         messages.addView(history);
+        history.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{
+            if(b-t!=ob-ot)scrollSathiToLatest(messages,history);
+        });
+        messages.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{
+            // Keep the newest reply visible after the software keyboard resizes the dialog.
+            if(b-t!=ob-ot)scrollSathiToLatest(messages,history);
+        });
         box.addView(messages,lp(-1,Math.min(dp(300),getResources().getDisplayMetrics().heightPixels/3),0,0,0,dp(8)));
         EditText question=new EditText(this);question.setSingleLine(true);
         question.setTextSize(15);question.setHint(t("यहाँ प्रश्न लेख्नुहोस्…","Type your question…"));
@@ -785,10 +794,11 @@ public final class NativeFullActivity extends Activity implements LocationListen
             String a=answerSathi(effective,lessonStep[0]);
             String old=history.getText().toString(),next=old+"\n\n👤 "+q+"\n🤖 SATHI: "+a;
             history.setText(next.length()>13000?next.substring(next.length()-12000):next);
-            question.setText("");messages.post(()->messages.fullScroll(View.FOCUS_DOWN));
+            question.setText("");
+            scrollSathiToLatest(messages,history);
         };
         send.setOnClickListener(v->sendQuestion.run());
-        mic.setOnClickListener(v->startVoice(history));
+        mic.setOnClickListener(v->startVoice(history,messages));
         LinearLayout topics=new LinearLayout(this);topics.setOrientation(LinearLayout.HORIZONTAL);
         String[] prompts={t("गीता जीवन ज्ञान","Gita life lesson"),t("बाढीमा के गर्ने","Flood safety"),t("नदीको अवस्था","River status")};
         for(String prompt:prompts){Button quick=smallButton(prompt);quick.setTextSize(10);
@@ -800,12 +810,30 @@ public final class NativeFullActivity extends Activity implements LocationListen
         dialog.getWindow();
         dialog.show();
         dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        // A lower fixed maximum chat height leaves space for editor and reply on short phones.
+        scrollSathiToLatest(messages,history);
         if(initial!=null&&!initial.trim().isEmpty()){
             String a=answerSathi(initial);
             history.append("\n\n👤 "+initial+"\n🤖 SATHI: "+a);
+            scrollSathiToLatest(messages,history);
         }
     }
-    private void startVoice(TextView out){if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},REQ_MIC);return;}if(!SpeechRecognizer.isRecognitionAvailable(this)){out.setText(t("यो फोनमा voice recognition उपलब्ध छैन।","Voice recognition is unavailable on this phone."));return;}if(speech!=null)try{speech.destroy();}catch(Exception ignored){}speech=SpeechRecognizer.createSpeechRecognizer(this);speech.setRecognitionListener(new RecognitionListener(){public void onReadyForSpeech(Bundle b){out.append("\n"+t("🎙 सुन्दैछु…","🎙 Listening…"));}public void onBeginningOfSpeech(){}public void onRmsChanged(float x){}public void onBufferReceived(byte[]b){}public void onEndOfSpeech(){}public void onError(int e){out.append("\n"+t("आवाज बुझिएन। फेरि प्रयास गर्नुहोस्।","Could not understand. Try again."));}public void onPartialResults(Bundle b){}public void onEvent(int t,Bundle b){}public void onResults(Bundle b){ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);String q=r==null||r.isEmpty()?"":r.get(0);String a=answerSathi(q);out.append("\n\n👤 "+q+"\n🤖 SATHI: "+a);speak(a);}});speech.startListening(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,english?"en-GB":"ne-NP").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5));}
+    private void scrollSathiToLatest(ScrollView messages,TextView history){
+        if(messages==null||history==null)return;
+        messages.post(()->{
+            int bottom=Math.max(0,history.getBottom()+messages.getPaddingBottom()-messages.getHeight());
+            messages.scrollTo(0,bottom);
+            // Re-apply when Android finishes measuring after keyboard/IME animation.
+            messages.postDelayed(()->{
+                if(messages.isAttachedToWindow()){
+                    int currentBottom=Math.max(0,history.getBottom()+messages.getPaddingBottom()-messages.getHeight());
+                    messages.scrollTo(0,currentBottom);
+                }
+            },90L);
+        });
+    }
+    private void startVoice(TextView out){startVoice(out,null);}
+    private void startVoice(TextView out,ScrollView chatScroll){if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},REQ_MIC);return;}if(!SpeechRecognizer.isRecognitionAvailable(this)){out.setText(t("यो फोनमा voice recognition उपलब्ध छैन।","Voice recognition is unavailable on this phone."));return;}if(speech!=null)try{speech.destroy();}catch(Exception ignored){}speech=SpeechRecognizer.createSpeechRecognizer(this);speech.setRecognitionListener(new RecognitionListener(){public void onReadyForSpeech(Bundle b){out.append("\n"+t("🎙 सुन्दैछु…","🎙 Listening…"));}public void onBeginningOfSpeech(){}public void onRmsChanged(float x){}public void onBufferReceived(byte[]b){}public void onEndOfSpeech(){}public void onError(int e){out.append("\n"+t("आवाज बुझिएन। फेरि प्रयास गर्नुहोस्।","Could not understand. Try again."));}public void onPartialResults(Bundle b){}public void onEvent(int t,Bundle b){}public void onResults(Bundle b){ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);String q=r==null||r.isEmpty()?"":r.get(0);String a=answerSathi(q);out.append("\n\n👤 "+q+"\n🤖 SATHI: "+a);if(chatScroll!=null)scrollSathiToLatest(chatScroll,out);speak(a);}});speech.startListening(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,english?"en-GB":"ne-NP").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5));}
     private String answerSathi(String q){return answerSathi(q,0);}
     private String answerSathi(String q,int lessonOffset){
         JSONArray rs=new JSONArray();

@@ -27,6 +27,24 @@ final class SathiKnowledge {
         boolean alertQ=has(q,"चेतावनी","chetauni","warning");
         boolean regional=has(q,"kathmandu","katmandu","ktm","काठमाडौं","काठमाडौँ");
         // Weather and news intents MUST win over river name substring matches.
+        // Follow-up turns should add context instead of repeating the exact same answer.
+        if(lessonOffset>0 && !knowledgeQ) {
+            if(weatherQ && !riverQ) {
+                int variant=lessonOffset%3;
+                if(variant==1)return en?"More detail: the temperature/rain/cloud values in the district view come from the Open-Meteo representative-point model, not a nearby DHM rain gauge. For measured rain, check the Home DHM rain-gauge card."
+                                    :"थप जानकारी: जिल्लाको तापक्रम, बादल र वर्षा Open-Meteo को प्रतिनिधि स्थानको मोडेल हो। वास्तविक मापनका लागि Home मा DHM वर्षामापक हेर्नुहोस्।";
+                if(variant==2)return en?"For Kathmandu or another district, ask by name to see a loaded model. If it is unavailable, SATHI should not replace it with your phone's GPS weather."
+                                    :"काठमाडौँ वा अर्को जिल्लाको नामसहित सोध्दा उपलब्ध भए जिल्लाकै मौसम देखिन्छ। उपलब्ध नभए फोनको GPS मौसमलाई त्यस जिल्लाको भनेर देखाउँदैन।";
+                return en?"Weather changes over time. Please compare the model update time with the current reading and check official DHM alerts for hazards."
+                          :"मौसम बदलिरहन्छ। अनुमानको अपडेट समय जाँच्नुहोस् र जोखिमका लागि आधिकारिक DHM चेतावनी हेर्नुहोस्।";
+            }
+            if(newsQ)return en?"SATHI shows only headlines delivered by the existing three-source feed. If there are no fresh verified items, tap Refresh News to check source availability; it does not mean Nepal has no news."
+                                :"SATHI ले उपलब्ध तीन स्रोतको समाचार मात्र देखाउँछ। नयाँ खबर नदेखिए News Refresh गरेर स्रोत जाँच्नुहोस्; नेपालमा खबर नै छैन भन्ने होइन।";
+            if(govtQ || (alertQ&&!riverQ))return en?"Only government DHM/NDRRMA bulletins within validFrom–validUntil count as active; app refreshes while open. The absence of a verified notice does not prove that river conditions are safe."
+                                                    :"validFrom–validUntil भित्रका DHM/NDRRMA सूचना मात्र लागू मानिन्छन्। एप खुला हुँदा पुनः जाँचिन्छ। सूचना नभेटिनु नदी सुरक्षित छ भन्ने प्रमाण होइन।";
+            if(riverQ)return en?"River levels are station-specific: compare the measured level, warning/danger threshold, observation timestamp and station location. An old reading cannot establish a live emergency."
+                                  :"नदीको जोखिम बुझ्दा स्टेशनको जलस्तर, चेतावनी/खतरा सीमा, मापन समय र स्थान तुलना गर्नुपर्छ। पुरानो मापनलाई live खतरा मानिँदैन।";
+        }
         if(weatherQ && !riverQ)return weatherAnswer(q,en,weather,localWeather,regional,nepalGps);
         if(newsQ)return newsAnswer(en,news);
         if(govtQ || (alertQ&&!riverQ))return governmentAnswer(en,govt);

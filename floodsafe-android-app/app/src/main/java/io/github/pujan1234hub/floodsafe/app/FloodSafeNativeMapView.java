@@ -82,6 +82,14 @@ final class FloodSafeNativeMapView extends FrameLayout {
     private String riversGeoJson = null;
     private long particleStart = 0L;
     private boolean animationRunning = false;
+    private boolean particlesEnabled = true;
+    /** Stop frequent MapLibre source updates while the river map is offscreen. */
+    void setParticleAnimationEnabled(boolean enabled){
+        if(particlesEnabled==enabled)return;
+        particlesEnabled=enabled;
+        if(!enabled){animationRunning=false;main.removeCallbacks(particleTick);}
+        else if(rendererResumed&&!hostPaused&&styleReady)startParticles();
+    }
     private boolean rendererStarted = false, rendererResumed = false, hostPaused = false;
 
     FloodSafeNativeMapView(Context context, StationTapListener listener) {
@@ -485,7 +493,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
     }
 
     private void startParticles() {
-        if (animationRunning) return;
+        if (animationRunning || !particlesEnabled || hostPaused || !rendererResumed) return;
         animationRunning = true;
         particleStart = System.currentTimeMillis();
         main.post(particleTick);
@@ -493,7 +501,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
 
     private final Runnable particleTick = new Runnable() {
         @Override public void run() {
-            if (!animationRunning || !styleReady || style == null) return;
+            if (!animationRunning || !particlesEnabled || hostPaused || !rendererResumed || !styleReady || style == null) return;
             try {
                 JSONArray features = new JSONArray();
                 int n = Math.min(36, rivers.size());

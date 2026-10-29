@@ -46,6 +46,7 @@ public final class GyanActivity extends Activity {
         page.setOrientation(LinearLayout.VERTICAL);
         page.setPadding(dp(18),dp(18),dp(18),dp(36));
         scroll.addView(page);
+        SafeInsets.apply(scroll);
         setContentView(scroll);
 
         Button back=button(english?"← Back":"← फर्कनुहोस्");

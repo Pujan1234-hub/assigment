@@ -87,12 +87,12 @@ jobs:
           done
           test "$(stat -c %s "$APK")" -gt 85000000
           cp "$APK" FloodSafe-Nepal-v0.9.21-GYAN-DISTRICT-SATHI-TEST.apk
-          sha256sum FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk
-          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-GYAN-DISTRICT-SATHI-TEST.apk
+          stat -c 'NATIVE_APK_BYTES=%s' FloodSafe-Nepal-v0.9.21-GYAN-DISTRICT-SATHI-TEST.apk
       - uses: actions/upload-artifact@v4
         with:
           name: FloodSafe-v0921-Gyan-District-Sathi-TEST
-          path: FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk
+          path: FloodSafe-Nepal-v0.9.21-GYAN-DISTRICT-SATHI-TEST.apk
           retention-days: 14
           if-no-files-found: error
 
@@ -117,7 +117,7 @@ jobs:
           disable-animations: false
           script: |
             set +e
-            adb install -r ./test-apk/FloodSafe-Nepal-v0.9.21-STABILITY-TEST.apk
+            adb install -r ./test-apk/FloodSafe-Nepal-v0.9.21-GYAN-DISTRICT-SATHI-TEST.apk
             adb logcat -c
             adb shell am start -n io.github.pujan1234hub.floodsafe.app.preview/io.github.pujan1234hub.floodsafe.app.PJBuiltsSplashActivity
             sleep 18

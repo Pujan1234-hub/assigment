@@ -140,6 +140,15 @@ final class FloodSafeNativeMapView extends FrameLayout {
         return super.dispatchTouchEvent(ev);
     }
 
+    /** Read-only screen coordinate projection for the separate district weather layer.
+     * Does not mutate MapLibre river lines, flow particles, or stations.
+     */
+    android.graphics.PointF weatherPoint(double lat,double lon) {
+        if(map==null||!Double.isFinite(lat)||!Double.isFinite(lon))return null;
+        return map.getProjection().toScreenLocation(new LatLng(lat,lon));
+    }
+    double weatherZoom() {return map==null?5.4:map.getCameraPosition().zoom;}
+
     void setBase(Bitmap ignored) { }
 
     void setStations(List<?> source, double lat, double lon) {

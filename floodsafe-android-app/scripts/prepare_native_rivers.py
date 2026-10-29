@@ -14,7 +14,8 @@ def river_lines(g):
 def main(src,district_file,dest):
     districts=json.loads(Path(district_file).read_text())['features']
     if len(districts)<50:raise RuntimeError('Missing Nepal districts')
-    country=unary_union([shape(f['geometry']) for f in districts if f.get('geometry')])
+    country=unary_union([shape(f['geometry']).buffer(0) for f in districts if f.get('geometry')])
+    safe_country=country.buffer(.00001)
     source=json.loads(Path(src).read_text()).get('waterways',[])
     if len(source)<100:raise RuntimeError('Missing rivers')
     ranked=[]
@@ -41,7 +42,7 @@ def main(src,district_file,dest):
             if part.length<.008:continue
             simplified=part.simplify(.0009,preserve_topology=True)
             for segment in river_lines(simplified):
-                if not country.buffer(.00001).covers(segment):segment=part
+                if not safe_country.covers(segment):segment=part
                 xy=[[round(x,6),round(y,6)] for x,y in segment.coords]
                 if len(xy)<2:continue
                 name=r.get('name_ne') or r.get('name') or r.get('name_en') or 'नदी / खोला'

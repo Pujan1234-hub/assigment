@@ -15,7 +15,7 @@ import java.util.Set;
  */
 final class NewsFeedParser {
     private NewsFeedParser(){}
-    static final long RECENT_MS=24L*60L*60L*1000L;
+    static final long RECENT_MS=30L*60L*1000L;
     static final class Item {
         final String title,source,url;
         final long at;
@@ -40,9 +40,8 @@ final class NewsFeedParser {
             source=normalizeSource(source);
             if(source.isEmpty()||title.isEmpty()||!url.startsWith("https://"))continue;
             long timestamp=parseTime(value(row,"published_at","publishedAt","published","published_on","publishedOn","pubDate","created_at","createdAt","date","timestamp","time"));
-            if(timestamp>now+5L*60L*1000L)continue;
-            if(timestamp>0 && now-timestamp>RECENT_MS)continue;
-            // Missing timestamp can be shown only as undated, never 'live'.
+            if(timestamp<=0 || timestamp>now+5L*60L*1000L || now-timestamp>RECENT_MS)continue;
+            // Missing or stale timestamps are never eligible for the strictly live 30m news panel.
             String key=url.toLowerCase(Locale.ROOT).trim();
             if(!dedup.add(key))continue;
             out.add(new Item(title,source,url,timestamp));

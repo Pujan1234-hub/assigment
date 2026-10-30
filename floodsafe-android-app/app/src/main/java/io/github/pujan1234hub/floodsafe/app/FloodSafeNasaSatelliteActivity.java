@@ -74,6 +74,7 @@ public final class FloodSafeNasaSatelliteActivity extends Activity {
         });
         browser.setWebChromeClient(new WebChromeClient());
         root.addView(browser,new LinearLayout.LayoutParams(-1,0,1));
+        SafeInsets.apply(root);
         setContentView(root);
         if(savedInstanceState!=null)browser.restoreState(savedInstanceState);
         else browser.loadUrl(NASA_URL);

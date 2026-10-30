@@ -47,8 +47,19 @@ public final class MonitoringSafetyProvider extends ContentProvider {
                 "lat", Double.doubleToRawLongBits(Double.NaN)));
         double lon = Double.longBitsToDouble(prefs.getLong(
                 "lon", Double.doubleToRawLongBits(Double.NaN)));
+        long now = System.currentTimeMillis();
+        // Capture the last genuine GPS fix for ordinary weather updates only.
+        // Emergency river alerts still require the separately checked 5-minute GPS fix.
+        if (followDevice && MonitoringLocationPolicy.freshDeviceLocation(locationTime, now, lat, lon)
+                && locationTime > prefs.getLong("weather_last_fix_at", 0L)) {
+            prefs.edit()
+                    .putLong("weather_last_lat", Double.doubleToRawLongBits(lat))
+                    .putLong("weather_last_lon", Double.doubleToRawLongBits(lon))
+                    .putLong("weather_last_fix_at", locationTime)
+                    .apply();
+        }
         if (!MonitoringLocationPolicy.shouldClearFollowDevice(
-                followDevice, locationTime, System.currentTimeMillis(), lat, lon)) return;
+                followDevice, locationTime, now, lat, lon)) return;
 
         // Do not change "enabled": stale GPS pauses location-based matching until
         // a fresh service fix arrives; it must never silently turn the user's alerts off.

@@ -1,0 +1,205 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#fff9ef}
+/* PJBUILTS original Android cream/gold intro — faithful web adaptation.
+   Source: PJBUILTS-Creamy-Intro-Source.zip / IntroActivity.java.
+   Timings: PJ 0-650ms, BUILTS/tagline 420-940ms,
+   brand exits 1450-1790ms, PUJAN 1790-2210ms, fades 2350-2650ms.
+   All selectors exclusively target #pjbuilts-original-intro.
+*/
+#pjbuilts-original-intro{
+  position:fixed;inset:0;z-index:2147483000;
+  width:100%;height:100%;height:100dvh;
+  background:#fff9ef;color:#20201f;overflow:hidden;
+  display:grid;place-items:center;isolation:isolate;
+  font-family:Arial,Roboto,ui-sans-serif,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  box-sizing:border-box;
+  animation:pj-original-overlay-out 220ms ease 2650ms both;
+}
+#pjbuilts-original-intro *,#pjbuilts-original-intro *::before,
+#pjbuilts-original-intro *::after{box-sizing:border-box}
+#pjbuilts-original-intro .pj-orig-gold-streak{
+  position:absolute;pointer-events:none;display:block;
+  border-radius:0;transform:translateX(0);
+}
+#pjbuilts-original-intro .pj-orig-top{
+  height:3px;width:180px;
+  top:clamp(88px,17vh,155px);right:-120px;
+  background:#d8bb86;
+  animation:pj-original-top-sweep 650ms cubic-bezier(.18,.84,.42,1.2) both;
+}
+#pjbuilts-original-intro .pj-orig-bottom{
+  height:4px;width:220px;
+  bottom:clamp(100px,21vh,180px);left:-160px;
+  background:#b88a44;
+  animation:pj-original-bottom-sweep 650ms cubic-bezier(.18,.84,.42,1.2) both;
+}
+#pjbuilts-original-intro .pj-orig-brand{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;
+  padding:0 14px;
+  animation:pj-original-brand-out 340ms ease-out 1450ms both;
+}
+#pjbuilts-original-intro .pj-orig-pj{
+  color:#20201f;
+  font-size:clamp(65px,18vw,86px);
+  line-height:1.1;
+  font-weight:800;letter-spacing:.02em;
+  opacity:0;transform:scale(.7);
+  animation:pj-original-pj-in 650ms cubic-bezier(.175,.885,.32,1.16) both;
+}
+#pjbuilts-original-intro .pj-orig-builts{
+  margin-top:4px;
+  font-size:clamp(22px,6vw,26px);
+  line-height:1.22;
+  font-weight:800;letter-spacing:.16em;
+  color:#20201f;
+  opacity:0;transform:translateY(18px);
+  animation:pj-original-text-in 520ms ease-out 420ms both;
+}
+#pjbuilts-original-intro .pj-orig-tagline{
+  margin-top:18px;
+  color:#4a4742;
+  font-size:clamp(9px,2.7vw,12px);
+  line-height:1.5;font-weight:750;letter-spacing:.1em;
+  white-space:nowrap;
+  opacity:0;transform:translateY(10px);
+  animation:pj-original-text-in 520ms ease-out 420ms both;
+}
+#pjbuilts-original-intro .pj-orig-pujan{
+  position:absolute;inset:0;display:grid;place-items:center;
+  padding:0 18px;
+  color:#20201f;text-align:center;
+  font-weight:800;font-size:clamp(37px,11vw,52px);
+  letter-spacing:.1em;
+  opacity:0;transform:scale(.9);
+  animation:
+    pj-original-pujan-in 420ms cubic-bezier(.175,.885,.32,1.13) 1790ms both,
+    pj-original-pujan-out 300ms ease 2350ms forwards;
+}
+#pjbuilts-original-intro .pj-orig-skip{
+  appearance:none;position:absolute;top:max(19px,env(safe-area-inset-top));
+  right:max(18px,env(safe-area-inset-right));z-index:5;
+  padding:7px 10px;border:1px solid #dfd0b6;border-radius:4px;
+  background:rgba(255,249,239,.9);color:#74624e;
+  font-size:12px;letter-spacing:.04em;cursor:pointer;
+}
+#pjbuilts-original-intro .pj-orig-skip:focus-visible{
+  outline:2px solid #b88a44;outline-offset:3px;
+}
+#pjbuilts-original-intro.pj-orig-dismissed{
+  animation:none!important;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .18s ease,visibility .18s ease;
+}
+@keyframes pj-original-top-sweep{
+ from{transform:translateX(0)}
+ to{transform:translateX(-350px)}
+}
+@keyframes pj-original-bottom-sweep{
+ from{transform:translateX(0)}
+ to{transform:translateX(420px)}
+}
+@keyframes pj-original-pj-in{
+ from{opacity:0;transform:scale(.7)}
+ to{opacity:1;transform:scale(1)}
+}
+@keyframes pj-original-text-in{
+ from{opacity:0;transform:translateY(18px)}
+ to{opacity:1;transform:translateY(0)}
+}
+@keyframes pj-original-brand-out{
+ from{opacity:1;transform:translateY(0) scale(1)}
+ to{opacity:0;transform:translateY(-24px) scale(1.04)}
+}
+@keyframes pj-original-pujan-in{
+ from{opacity:0;transform:scale(.9)}
+ to{opacity:1;transform:scale(1)}
+}
+@keyframes pj-original-pujan-out{
+ from{opacity:1;transform:scale(1)}
+ to{opacity:0;transform:scale(1.05)}
+}
+@keyframes pj-original-overlay-out{
+ from{opacity:1;visibility:visible;pointer-events:auto}
+ to{opacity:0;visibility:hidden;pointer-events:none}
+}
+@media (prefers-reduced-motion:reduce){
+ #pjbuilts-original-intro{
+  animation:pj-original-overlay-out .12s both!important;
+ }
+ #pjbuilts-original-intro .pj-orig-gold-streak,
+ #pjbuilts-original-intro .pj-orig-brand,
+ #pjbuilts-original-intro .pj-orig-pj,
+ #pjbuilts-original-intro .pj-orig-builts,
+ #pjbuilts-original-intro .pj-orig-tagline,
+ #pjbuilts-original-intro .pj-orig-pujan{animation:none!important}
+}
+
+/* Restored FloodSafe Nepal reference splash:
+   metallic-gold light travels THROUGH PJ, BUILTS and PUJAN lettering,
+   with an animated gold underline beneath the brand and final name.
+   Timed to the user's original 2026-10-19 FloodSafe intro video. */
+#pjbuilts-original-intro .pj-orig-metal{
+  display:inline-block;
+  color:#20201f;
+  background-image:linear-gradient(110deg,
+    #20201f 0%,#20201f 24%,
+    #7b562a 35%,#b78c49 39%,
+    #fff0bf 44%,#d7ae64 49%,
+    #886028 54%,#20201f 65%,#20201f 100%);
+  background-size:260% 100%;
+  background-position:100% 50%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  will-change:background-position;
+}
+#pjbuilts-original-intro .pj-orig-metal-pj{
+  animation:pj-orig-gold-sheen 950ms cubic-bezier(.19,.69,.27,.99) 240ms both;
+}
+#pjbuilts-original-intro .pj-orig-metal-builts{
+  position:relative;
+  animation:pj-orig-gold-sheen 870ms cubic-bezier(.19,.69,.27,.99) 600ms both;
+}
+#pjbuilts-original-intro .pj-orig-metal-pujan{
+  position:relative;
+  animation:pj-orig-gold-sheen 680ms ease-in-out 1920ms both;
+}
+#pjbuilts-original-intro .pj-orig-metal-builts::after,
+#pjbuilts-original-intro .pj-orig-metal-pujan::after{
+  content:"";pointer-events:none;position:absolute;
+  left:50%;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,#8d652d,#f3db9b 42%,#aa7b35 100%);
+  box-shadow:0 0 7px rgba(195,149,70,.14);
+  transform-origin:center;
+  transform:translateX(-50%) scaleX(0);
+}
+#pjbuilts-original-intro .pj-orig-metal-builts::after{
+  bottom:-9px;width:112%;
+  animation:pj-orig-gold-underline 450ms ease-out 680ms both;
+}
+#pjbuilts-original-intro .pj-orig-metal-pujan::after{
+  bottom:-17px;width:74%;
+  animation:pj-orig-gold-underline 320ms ease-out 2000ms both;
+}
+@keyframes pj-orig-gold-sheen{
+  from{background-position:100% 50%}
+  to{background-position:0% 50%}
+}
+@keyframes pj-orig-gold-underline{
+  0%{transform:translateX(-50%) scaleX(0);opacity:.1}
+  100%{transform:translateX(-50%) scaleX(1);opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+ #pjbuilts-original-intro .pj-orig-metal{animation:none!important;background-position:100% 50%}
+ #pjbuilts-original-intro .pj-orig-metal-builts::after,
+ #pjbuilts-original-intro .pj-orig-metal-pujan::after{animation:none!important;transform:translateX(-50%) scaleX(1)}
+}
+
+#pjbuilts-original-intro .pj-orig-skip{display:none}
+</style></head><body><div id="pjbuilts-original-intro">
+<span class="pj-orig-gold-streak pj-orig-top"></span><span class="pj-orig-gold-streak pj-orig-bottom"></span>
+<div class="pj-orig-brand"><div class="pj-orig-pj"><span class="pj-orig-metal pj-orig-metal-pj">PJ</span></div><div class="pj-orig-builts"><span class="pj-orig-metal pj-orig-metal-builts">BUILTS</span></div><div class="pj-orig-tagline">IDEA &bull; BUILD &bull; INNOVATE</div></div>
+<div class="pj-orig-pujan"><span class="pj-orig-metal pj-orig-metal-pujan">PUJAN</span></div></div></body></html>

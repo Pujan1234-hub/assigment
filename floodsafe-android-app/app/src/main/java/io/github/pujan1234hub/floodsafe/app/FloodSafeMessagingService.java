@@ -24,6 +24,7 @@ import java.util.Map;
 /** Displays verified push messages while the app is closed, with local river filtering. */
 public final class FloodSafeMessagingService extends FirebaseMessagingService {
     private static final String CHANNEL_ID = "official_nepal_alerts_v3";
+    private static final String SERVICE_CHANNEL_ID = "floodsafe_service_notices_v1";
     private static final double DEFAULT_RIVER_RADIUS_KM = 2d;
     private static final String PUSH_PREFS = "floodsafe_push_guard";
     private static final long MAX_RIVER_AGE_MS = 10L * 60L * 1000L;
@@ -36,14 +37,30 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
 
     @Override public void onMessageReceived(RemoteMessage message) {
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return;
-        Map<String,String> data=message.getData(); boolean riverAlert="river_alert".equals(data.get("kind")); acceptedRiverDistanceKm=Double.NaN; acceptedByRiverGeometry=false; if(riverAlert&&!acceptNearbyRiver(data))return;
+        Map<String,String> data=message.getData(); boolean riverAlert="river_alert".equals(data.get("kind")); boolean serviceNotice="app_notice".equals(data.get("kind")); acceptedRiverDistanceKm=Double.NaN; acceptedByRiverGeometry=false; if(riverAlert&&!acceptNearbyRiver(data))return;
         String title="FloodSafe Nepal alert",body="Open FloodSafe Nepal for current official information.";
         if(message.getNotification()!=null){if(message.getNotification().getTitle()!=null)title=message.getNotification().getTitle();if(message.getNotification().getBody()!=null)body=message.getNotification().getBody();}
         if(data.containsKey("title"))title=data.get("title");if(data.containsKey("body"))body=data.get("body");
         if(riverAlert&&Double.isFinite(acceptedRiverDistanceKm)){String stage=safe(data.get("stage")),river=safe(data.get("river_name")),level=safe(data.get("water_level"));title="danger".equals(stage)?"🚨 नजिकको नदी खतरा चेतावनी":"⚠️ नजिकको नदी चेतावनी";body=(river.isEmpty()?"Official river station":river)+" • "+String.format(Locale.US,"%.1f km",acceptedRiverDistanceKm)+(acceptedByRiverGeometry?" नदी किनारबाट":"")+(level.isEmpty()?"":" • "+level+" m")+" • BIPAD/DHM official";}
         NotificationManager manager=getSystemService(NotificationManager.class);if(manager==null)return;
-        if(Build.VERSION.SDK_INT>=26){NotificationChannel channel=new NotificationChannel(CHANNEL_ID,"Nearby river and Nepal alerts",NotificationManager.IMPORTANCE_HIGH);channel.setDescription("Nearby official river warning/danger and verified Nepal alerts within 2 km");channel.enableVibration(true);Uri sound=android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;AudioAttributes audio=new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();channel.setSound(sound,audio);manager.createNotificationChannel(channel);}
-        Intent launch=new Intent(this,NativeFullActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);PendingIntent open=PendingIntent.getActivity(this,0,launch,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);android.app.Notification.Builder builder=Build.VERSION.SDK_INT>=26?new android.app.Notification.Builder(this,CHANNEL_ID):new android.app.Notification.Builder(this);android.app.Notification notification=builder.setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(title).setContentText(body).setStyle(new android.app.Notification.BigTextStyle().bigText(body)).setAutoCancel(true).setSound(Build.VERSION.SDK_INT<26?android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI:null).setContentIntent(open).build();manager.notify((int)(System.currentTimeMillis()&0x7fffffff),notification);
+        if(Build.VERSION.SDK_INT>=26){
+            if(serviceNotice){
+                NotificationChannel notice=new NotificationChannel(SERVICE_CHANNEL_ID,
+                    "FloodSafe Nepal app notices",NotificationManager.IMPORTANCE_DEFAULT);
+                notice.setDescription("Service updates and non-emergency announcements from FloodSafe Nepal");
+                manager.createNotificationChannel(notice);
+            }else{
+                NotificationChannel channel=new NotificationChannel(CHANNEL_ID,"Nearby river and Nepal alerts",NotificationManager.IMPORTANCE_HIGH);
+                channel.setDescription("Nearby official river warning/danger and verified Nepal alerts within 2 km");
+                channel.enableVibration(true);
+                Uri sound=android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;
+                AudioAttributes audio=new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();
+                channel.setSound(sound,audio);
+                manager.createNotificationChannel(channel);
+            }
+        }
+        Intent launch=new Intent(this,NativeFullActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);PendingIntent open=PendingIntent.getActivity(this,0,launch,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);android.app.Notification.Builder builder=Build.VERSION.SDK_INT>=26?new android.app.Notification.Builder(this,serviceNotice?SERVICE_CHANNEL_ID:CHANNEL_ID):new android.app.Notification.Builder(this);android.app.Notification notification=builder.setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(title).setContentText(body).setStyle(new android.app.Notification.BigTextStyle().bigText(body)).setAutoCancel(true).setSound(Build.VERSION.SDK_INT<26&&!serviceNotice?android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI:null).setContentIntent(open).build();manager.notify((int)(System.currentTimeMillis()&0x7fffffff),notification);
     }
 
     private boolean acceptNearbyRiver(Map<String,String> data){

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 2,
+  "revision": 3,
   "enabled": true,
   "news": {
     "poll_seconds": 60,
@@ -57,5 +57,15 @@
       "answer_ne": "FloodSafe का ज्ञान, News/ज्ञान परिवर्तनको समय र केही SATHI सामग्री server बाट सुरक्षित रूपमा अपडेट गर्न मिल्छ। तर native map engine, GPS र Android code परिवर्तन भने Play Store update मार्फत आउँछ।",
       "answer_en": "FloodSafe can update curated lessons, News/Knowledge timing and some SATHI help content over HTTPS. Native Android code, GPS and map engine changes still need a Play Store update."
     }
-  ]
+  ],
+  "app_notice": {
+    "enabled": false,
+    "type": "service",
+    "title_ne": "FloodSafe Nepal सेवा सूचना",
+    "title_en": "FloodSafe Nepal service notice",
+    "body_ne": "कुनै आधिकारिक स्रोत अस्थायी रूपमा उपलब्ध नभए यहाँ पुष्टि गरिएको जानकारी देखाइनेछ।",
+    "body_en": "Verified service updates are displayed here if an official feed is temporarily unavailable.",
+    "starts_at": "2026-10-30T00:00:00Z",
+    "expires_at": "2026-11-06T00:00:00Z"
+  }
 }

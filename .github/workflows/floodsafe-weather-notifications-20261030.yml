@@ -1,0 +1,104 @@
+name: FloodSafe v0.9.21 Weather Notifications ONLY test APK
+on:
+  push:
+    branches:
+      - fix/floodsafe-v0921-weather-sun-notifications-20261030
+    paths:
+      - '.github/workflows/floodsafe-weather-notifications-20261030.yml'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/RainAlertWorker.java'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MonitoringSafetyProvider.java'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: floodsafe-weather-notifications-20261030
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure Java 17 and Gradle
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Make native app content complete and keep original beta separate
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSETS=floodsafe-android-app/app/src/main/assets
+          mkdir -p "$ASSETS/data" "$ASSETS/floodsafe-nepal"
+          cp -a data/. "$ASSETS/data/"
+          cp -a floodsafe-nepal/. "$ASSETS/floodsafe-nepal/"
+          python3 - <<'PY'
+          import json,copy,pathlib
+          p=pathlib.Path('floodsafe-android-app/app/google-services.json')
+          data=json.loads(p.read_text())
+          pkg='io.github.pujan1234hub.floodsafe.app.preview'
+          if not any(c['client_info']['android_client_info'].get('package_name')==pkg for c in data['client']):
+              client=copy.deepcopy(data['client'][0])
+              client['client_info']['android_client_info']['package_name']=pkg
+              data['client'].append(client)
+          p.write_text(json.dumps(data))
+          PY
+      - name: Validate weather-only changes, no river-safety policy changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          J=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app
+          grep -Fq 'WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L' "$J/RainAlertWorker.java"
+          grep -Fq 'sunrise,sunset' "$J/RainAlertWorker.java"
+          grep -Fq 'maybeNotifySunEvents' "$J/RainAlertWorker.java"
+          grep -Fq 'weather_last_fix_at' "$J/RainAlertWorker.java"
+          grep -Fq 'weather_last_fix_at' "$J/FloodMonitorService.java"
+          grep -Fq 'floodsafe-weather-on-open' "$J/NativeFullActivity.java"
+          grep -Fq 'MAX_AGE_MS = 10L * 60L * 1000L' "$J/RiverAlertWorker.java"
+          grep -Fq "applicationIdSuffix '.preview'" floodsafe-android-app/app/build.gradle
+          grep -Fq "versionCode 121" floodsafe-android-app/app/build.gradle
+      - name: Compile and test Android weather notifications
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p floodsafe-android-app :app:testDebugUnitTest :app:assembleDebug --no-daemon --max-workers=2
+      - name: Verify installable full native APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          for asset in assets/pjbuilts-original-splash.html assets/data/nepal-waterways-snapshot.json assets/floodsafe-nepal/v25/index.html; do
+            unzip -Z -1 "$APK" | grep -Fxq "$asset"
+          done
+          test "$(stat -c %s "$APK")" -gt 85000000
+          cp "$APK" FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk > FloodSafe-Weather-Notifications-SHA256.txt
+          stat -c 'Weather test APK bytes=%s' FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-v0921-WEATHER-NOTIFICATIONS-TEST
+          path: |
+            FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk
+            FloodSafe-Weather-Notifications-SHA256.txt
+          retention-days: 14
+          if-no-files-found: error
+      - name: Publish separately installable TEST APK direct link
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=floodsafe-v0921-weather-notifications-test-20261030
+          NOTES='Weather notifications only test: 3-hour temperature/wind/humidity/rain forecasts, safe last-known weather GPS fallback, morning sunrise and evening sunset greetings. River alerts, BIPAD/DHM monitoring, original beta installation, native map, language and PJBUILTS splash unchanged. Android WorkManager timing can be delayed by OS battery settings. Separate preview package; no production rollout.'
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk FloodSafe-Weather-Notifications-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk FloodSafe-Weather-Notifications-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 WEATHER Notifications TEST' --notes "$NOTES" --prerelease --latest=false
+          fi

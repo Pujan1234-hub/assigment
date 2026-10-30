@@ -87,11 +87,15 @@ final class StationDetailSheet {
         String when=humanTime(observedAt,english);
         metric.addView(text(context,(historical?(english?"⏱ Last observed: ":"⏱ अन्तिम मापन: "):
             (english?"⏱ Observed: ":"⏱ मापन: "))+when,12,false,muted),params(context,0,9,0,0));
-        if(historical)
-            metric.addView(text(context,english?
-                "⚪ Old measurement (30+ minutes) · Not live · Waiting for a new official reading.":
-                "⚪ पुरानो मापन (३० मिनेटभन्दा पुरानो) · हालको अवस्था होइन · नयाँ आधिकारिक मापनको प्रतीक्षामा।",
-                12,true,muted),params(context,0,8,0,0));
+        if(historical){
+            boolean aged30=System.currentTimeMillis()-observedAt>30L*60L*1000L;
+            String warning=aged30?
+                (english?"⚪ Over 30 minutes old · Not live · Waiting for a new official reading.":
+                         "⚪ ३० मिनेटभन्दा पुरानो मापन · हालको अवस्था होइन · नयाँ आधिकारिक मापनको प्रतीक्षामा।"):
+                (english?"⚪ Source unavailable · Not live · Waiting for a new verified reading.":
+                         "⚪ स्रोत उपलब्ध छैन · हालको अवस्था होइन · नयाँ प्रमाणित मापनको प्रतीक्षामा।");
+            metric.addView(text(context,warning,12,true,muted),params(context,0,8,0,0));
+        }
 
         if(!riverSegment){
             // Two compact fields right below the existing current-water-level card.

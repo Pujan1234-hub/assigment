@@ -1,4 +1,4 @@
-name: FloodSafe v0.9.21 Weather Notifications ONLY test APK
+name: FloodSafe v0.9.21 Final RC - DHM + OTA + Sun timing test APK
 on:
   push:
     branches:
@@ -10,6 +10,8 @@ on:
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
       - 'floodsafe-android-app/app/src/debug/res/values/strings.xml'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeRemoteConfig.java'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java'
   workflow_dispatch:
 permissions:
   contents: write
@@ -63,6 +65,12 @@ jobs:
           grep -Fq 'RIVER_STATUS_EXPIRY_TICK_MS=30_000L' "$J/NativeFullActivity.java"
           grep -Fq 'riverAutoRefresh' "$J/NativeFullActivity.java"
           grep -Fq 'FloodSafe Nepal TEST' floodsafe-android-app/app/src/debug/res/values/strings.xml
+          grep -Fq 'untilSet > 0 && untilSet <= 45' "$J/RainAlertWorker.java"
+          grep -Fq 'untilRise > 0 && untilRise <= 45' "$J/RainAlertWorker.java"
+          grep -Fq 'static String activeNotice' "$J/FloodSafeRemoteConfig.java"
+          grep -Fq 'SERVICE_CHANNEL_ID' "$J/FloodSafeMessagingService.java"
+          grep -Fq 'riverAutoRefresh' "$J/NativeFullActivity.java"
+          grep -Fq 'RIVER_FOREGROUND_REFRESH_MS=30_000L' "$J/NativeFullActivity.java"
           grep -Fq 'MAX_AGE_MS = 10L * 60L * 1000L' "$J/RiverAlertWorker.java"
           grep -Fq "applicationIdSuffix '.preview'" floodsafe-android-app/app/build.gradle
           grep -Fq "versionCode 121" floodsafe-android-app/app/build.gradle
@@ -82,15 +90,15 @@ jobs:
             unzip -Z -1 "$APK" | grep -Fxq "$asset"
           done
           test "$(stat -c %s "$APK")" -gt 85000000
-          cp "$APK" FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk
-          sha256sum FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk > FloodSafe-Weather-Notifications-SHA256.txt
-          stat -c 'Weather test APK bytes=%s' FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk
+          cp "$APK" FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk > FloodSafe-Final-RC-SHA256.txt
+          stat -c 'Weather test APK bytes=%s' FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0921-WEATHER-NOTIFICATIONS-TEST
+          name: FloodSafe-v0921-FINAL-RC-TEST
           path: |
-            FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk
-            FloodSafe-Weather-Notifications-SHA256.txt
+            FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk
+            FloodSafe-Final-RC-SHA256.txt
           retention-days: 14
           if-no-files-found: error
       - name: Publish separately installable TEST APK direct link
@@ -99,10 +107,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG=floodsafe-v0921-weather-notifications-test-20261030
-          NOTES='Weather notifications only test: 3-hour temperature/wind/humidity/rain forecasts, safe last-known weather GPS fallback, morning sunrise and evening sunset greetings. River alerts, BIPAD/DHM monitoring, original beta installation, native map, language and PJBUILTS splash unchanged. Android WorkManager timing can be delayed by OS battery settings. Separate preview package; no production rollout.'
+          TAG=floodsafe-v0921-final-rc-test-20261030
+          NOTES='Preview-only release candidate: pre-sunrise and pre-sunset greetings (no late reminders); bounded 3-hour weather update and idle fallback; safe bilingual owner content notices from OTA; quiet admin service FCM separate from emergency river alarms; river status refresh while foreground and stale measurement protection. DHM primary/BIPAD fallback is a separately tested PJBUILTS backend change pending deployment. No map, language, splash, SATHI, or original production APK replacement. This is a debug preview, not a Play Store production rollout.'
           if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk FloodSafe-Weather-Notifications-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
+            gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk FloodSafe-Final-RC-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk FloodSafe-Weather-Notifications-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 WEATHER Notifications TEST' --notes "$NOTES" --prerelease --latest=false
+            gh release create "$TAG" FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk FloodSafe-Final-RC-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 Final RC Preview TEST' --notes "$NOTES" --prerelease --latest=false
           fi

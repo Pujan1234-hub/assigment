@@ -17,7 +17,8 @@ import java.nio.charset.StandardCharsets;
  */
 final class OfficialStationFeeds {
     private static final String ROOT = "https://pjbuilts.com/api/";
-    private static final long MAX_AGE_MS = 2L * 60L * 60L * 1000L;
+    private static final long MAX_AGE_MS = 2L * 60L * 60L * 1000L; // DHM rainfall remains strict.
+    private static final long RIVER_DISPLAY_MAX_AGE_MS = 30L * 60L * 1000L; // Display only, emergency alerts still require <=10 min.
     private OfficialStationFeeds() {}
 
     static JSONObject rivers() throws Exception {
@@ -42,7 +43,7 @@ final class OfficialStationFeeds {
             putFinite(out,"dangerLevel",s,"danger");
             long when=timestamp(s.optString("observed",""));
             boolean recent="observed".equals(s.optString("status"))&&when>0&&
-                 now-when<=MAX_AGE_MS&&when-now<5L*60L*1000L;
+                 now-when<=RIVER_DISPLAY_MAX_AGE_MS&&when-now<5L*60L*1000L;
             if(recent&&Double.isFinite(s.optDouble("level",Double.NaN))) {
                 out.put("waterLevel",s.optDouble("level"));
                 out.put("waterLevelOn",s.optString("observed"));

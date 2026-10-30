@@ -38,6 +38,7 @@ public final class BootReceiver extends BroadcastReceiver {
         manager.enqueueUniquePeriodicWork("floodsafe-local-river-alerts",
                 ExistingPeriodicWorkPolicy.UPDATE, riverWork);
         FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");
+        WeatherWakeScheduler.ensureScheduled(context, true);
 
         // Android 14+ will not let a boot receiver create a location FGS from a
         // while-in-use-only grant. Restart continuous following only when the user

@@ -1,0 +1,47 @@
+name: Publish verified FloodSafe v0.9.21 official Watch fix TEST APK
+on:
+  push:
+    branches:
+      - fix/floodsafe-v0921-weather-sun-notifications-20261030
+    paths:
+      - '.github/workflows/publish-floodsafe-v0921-official-watch-fix-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download tested APK from exact build
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p verified
+          gh run download 41119053456 -R "$GITHUB_REPOSITORY" -n FloodSafe-v0921-WEATHER-NOTIFICATIONS-TEST -D verified
+          ORIGINAL=verified/FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk
+          (cd verified && sha256sum -c FloodSafe-Weather-Notifications-SHA256.txt)
+          test "$(stat -c %s "$ORIGINAL")" -gt 85000000
+          unzip -t "$ORIGINAL" >/dev/null
+          for a in assets/pjbuilts-original-splash.html assets/data/nepal-waterways-snapshot.json assets/floodsafe-nepal/v25/index.html; do
+            unzip -Z -1 "$ORIGINAL" | grep -Fxq "$a"
+          done
+          cp "$ORIGINAL" FloodSafe-Nepal-v0.9.21-OFFICIAL-WATCH-FIX-TEST.apk
+          cmp "$ORIGINAL" FloodSafe-Nepal-v0.9.21-OFFICIAL-WATCH-FIX-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-OFFICIAL-WATCH-FIX-TEST.apk > FloodSafe-Watch-Fix-SHA256.txt
+      - name: Publish a distinct preview release, leave original Beta unchanged
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=floodsafe-v0921-official-watch-fix-test-20261030
+          NOTES='Official station alert correction in separate FloodSafe Nepal TEST APK. Removes the app-created 80%-of-warning Alert heuristic from official count; shows Watch only if verified current upstream status explicitly says Watch/Alert. Verified level-based Warning/Danger rules, 2 km emergency notifications, stale/unknown freshness, 2-minute foreground refresh, weather notifications, NASA map, SATHI, language and PJBUILTS splash unchanged. Debug launcher is labeled FloodSafe Nepal TEST to distinguish from stable app. Live API audit (2026-10-30): 149 observed stations officially BELOW WARNING LEVEL; previously 16 were incorrectly labelled Alert by the 80% heuristic. Test only; original production beta and website download remain unchanged.'
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-OFFICIAL-WATCH-FIX-TEST.apk FloodSafe-Watch-Fix-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" FloodSafe-Nepal-v0.9.21-OFFICIAL-WATCH-FIX-TEST.apk FloodSafe-Watch-Fix-SHA256.txt -R "$GITHUB_REPOSITORY" --target 41b956abecb76f9f4f46f069a1ecda56a3e21598 --title 'FloodSafe Nepal v0.9.21 Official Watch Count Fix TEST' --notes "$NOTES" --prerelease --latest=false
+          fi

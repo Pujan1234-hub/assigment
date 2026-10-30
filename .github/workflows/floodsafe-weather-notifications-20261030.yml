@@ -1,4 +1,4 @@
-name: FloodSafe v0.9.21 Final RC - DHM + OTA + Sun timing test APK
+name: FloodSafe v0.9.21 Map Watch Consistency TEST APK
 on:
   push:
     branches:
@@ -9,6 +9,7 @@ on:
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MonitoringSafetyProvider.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMapActivity.java'
       - 'floodsafe-android-app/app/src/debug/res/values/strings.xml'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeRemoteConfig.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java'
@@ -71,6 +72,12 @@ jobs:
           grep -Fq 'SERVICE_CHANNEL_ID' "$J/FloodSafeMessagingService.java"
           grep -Fq 'riverAutoRefresh' "$J/NativeFullActivity.java"
           grep -Fq 'RIVER_FOREGROUND_REFRESH_MS=30_000L' "$J/NativeFullActivity.java"
+          grep -Fq 'MAP_STATION_REFRESH_MS=30_000L' "$J/FloodSafeMapActivity.java"
+          grep -Fq 'MAP_READING_FRESH_MS=30L*60L*1000L' "$J/FloodSafeMapActivity.java"
+          grep -Fq 'raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW")' "$J/FloodSafeMapActivity.java"
+          ! grep -Fq 'warn*.8' "$J/FloodSafeMapActivity.java"
+          ! grep -Fq 'warning*.8' "$J/NativeFullActivity.java"
+          grep -Fq 'lastMapStations.clear()' "$J/FloodSafeMapActivity.java"
           grep -Fq 'MAX_AGE_MS = 10L * 60L * 1000L' "$J/RiverAlertWorker.java"
           grep -Fq "applicationIdSuffix '.preview'" floodsafe-android-app/app/build.gradle
           grep -Fq "versionCode 121" floodsafe-android-app/app/build.gradle
@@ -90,15 +97,15 @@ jobs:
             unzip -Z -1 "$APK" | grep -Fxq "$asset"
           done
           test "$(stat -c %s "$APK")" -gt 85000000
-          cp "$APK" FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk
-          sha256sum FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk > FloodSafe-Final-RC-SHA256.txt
-          stat -c 'Weather test APK bytes=%s' FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk
+          cp "$APK" FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk > FloodSafe-Map-Status-Fix-SHA256.txt
+          stat -c 'Weather test APK bytes=%s' FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0921-FINAL-RC-TEST
+          name: FloodSafe-v0921-MAP-STATUS-FIX-TEST
           path: |
-            FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk
-            FloodSafe-Final-RC-SHA256.txt
+            FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk
+            FloodSafe-Map-Status-Fix-SHA256.txt
           retention-days: 14
           if-no-files-found: error
       - name: Publish separately installable TEST APK direct link
@@ -107,10 +114,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG=floodsafe-v0921-final-rc-test-20261030
-          NOTES='Preview-only release candidate: pre-sunrise and pre-sunset greetings (no late reminders); bounded 3-hour weather update and idle fallback; safe bilingual owner content notices from OTA; quiet admin service FCM separate from emergency river alarms; river status refresh while foreground and stale measurement protection. DHM primary/BIPAD fallback is a separately tested PJBUILTS backend change pending deployment. No map, language, splash, SATHI, or original production APK replacement. This is a debug preview, not a Play Store production rollout.'
+          TAG=floodsafe-v0921-map-status-fix-test-20261030
+          NOTES='Preview-only surgical map status consistency fix for v0.9.21: separate River Map used an older invented 80-percent-of-warning threshold, causing yellow map dots even when Home reported zero official Watch. Removed this map-only heuristic; map and Home now classify only confirmed Watch/Warning/Danger on fresh readings. Map station layer refreshes while open at 30-second intervals and expired or unavailable observations turn stale/grey rather than appearing live. DHM-primary unified backend and existing GPS, weather overlay, river glow, 2-km emergency notifications, OTA, SATHI, language and original PJBUILTS intro preserved. Not production release; original stable download unchanged.'
           if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk FloodSafe-Final-RC-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
+            gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk FloodSafe-Map-Status-Fix-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" FloodSafe-Nepal-v0.9.21-FINAL-RC-TEST.apk FloodSafe-Final-RC-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 Final RC Preview TEST' --notes "$NOTES" --prerelease --latest=false
+            gh release create "$TAG" FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk FloodSafe-Map-Status-Fix-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 Map Status Consistency TEST' --notes "$NOTES" --prerelease --latest=false
           fi

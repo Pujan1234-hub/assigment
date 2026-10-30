@@ -200,6 +200,10 @@ public final class FloodMonitorService extends Service implements LocationListen
         if (!Double.isFinite(lat) || !Double.isFinite(lon)
                 || lat < -90d || lat > 90d || lon < -180d || lon > 180d) return;
         prefs.edit()
+                // Keep last verified GPS weather location independent of river safety freshness.
+                .putLong("weather_last_lat", Double.doubleToRawLongBits(lat))
+                .putLong("weather_last_lon", Double.doubleToRawLongBits(lon))
+                .putLong("weather_last_fix_at", now)
                 .putLong("device_lat", Double.doubleToRawLongBits(lat))
                 .putLong("device_lon", Double.doubleToRawLongBits(lon))
                 .putLong("device_location_time", now)

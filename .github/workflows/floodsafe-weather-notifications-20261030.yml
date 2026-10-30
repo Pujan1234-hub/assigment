@@ -9,6 +9,7 @@ on:
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/MonitoringSafetyProvider.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
+      - 'floodsafe-android-app/app/src/debug/res/values/strings.xml'
   workflow_dispatch:
 permissions:
   contents: write
@@ -59,6 +60,9 @@ jobs:
           grep -Fq 'weather_last_fix_at' "$J/RainAlertWorker.java"
           grep -Fq 'weather_last_fix_at' "$J/FloodMonitorService.java"
           grep -Fq 'floodsafe-weather-on-open' "$J/NativeFullActivity.java"
+          grep -Fq 'RIVER_STATUS_EXPIRY_TICK_MS=30_000L' "$J/NativeFullActivity.java"
+          grep -Fq 'riverAutoRefresh' "$J/NativeFullActivity.java"
+          grep -Fq 'FloodSafe Nepal TEST' floodsafe-android-app/app/src/debug/res/values/strings.xml
           grep -Fq 'MAX_AGE_MS = 10L * 60L * 1000L' "$J/RiverAlertWorker.java"
           grep -Fq "applicationIdSuffix '.preview'" floodsafe-android-app/app/build.gradle
           grep -Fq "versionCode 121" floodsafe-android-app/app/build.gradle

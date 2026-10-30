@@ -75,12 +75,23 @@ final class StationDetailSheet {
         metric.setPadding(dp(context,15),dp(context,14),dp(context,15),dp(context,13));
         metric.setBackground(bg(context,Color.WHITE,Color.rgb(218,226,235),19));
         panel.addView(metric,params(context,0,0,0,14));
-        metric.addView(text(context,english?"WATER LEVEL · DHM/BIPAD":"पानीको सतह · DHM/BIPAD",11,true,muted));
         boolean measured=Double.isFinite(level) && fresh;
-        metric.addView(text(context,measured?String.format(Locale.US,"%.2f m",level):
-            (english?"—  Not current":"—  ताजा मापन छैन"),measured?31:22,true,ink),params(context,0,4,0,0));
+        // Only for an official gauge: an old VERIFIED reading remains useful
+        // as history, but must never be displayed as the current river level.
+        boolean historical=!riverSegment&&!fresh&&Double.isFinite(level)&&observedAt>0;
+        metric.addView(text(context,historical?
+                (english?"LAST VERIFIED WATER LEVEL · NOT LIVE":"अन्तिम प्रमाणित पानीको सतह · हालको होइन"):
+                (english?"WATER LEVEL · DHM/BIPAD":"पानीको सतह · DHM/BIPAD"),11,true,muted));
+        metric.addView(text(context,(measured||historical)?String.format(Locale.US,"%.2f m",level):
+            (english?"—  Not current":"—  ताजा मापन छैन"),(measured||historical)?31:22,true,ink),params(context,0,4,0,0));
         String when=humanTime(observedAt,english);
-        metric.addView(text(context,(english?"⏱ Observed: ":"⏱ मापन: ")+when,12,false,muted),params(context,0,9,0,0));
+        metric.addView(text(context,(historical?(english?"⏱ Last observed: ":"⏱ अन्तिम मापन: "):
+            (english?"⏱ Observed: ":"⏱ मापन: "))+when,12,false,muted),params(context,0,9,0,0));
+        if(historical)
+            metric.addView(text(context,english?
+                "⚪ Old measurement (30+ minutes) · Not live · Waiting for a new official reading.":
+                "⚪ पुरानो मापन (३० मिनेटभन्दा पुरानो) · हालको अवस्था होइन · नयाँ आधिकारिक मापनको प्रतीक्षामा।",
+                12,true,muted),params(context,0,8,0,0));
 
         if(!riverSegment){
             // Two compact fields right below the existing current-water-level card.

@@ -881,6 +881,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 runOnUiThread(()->{
                     riverRefreshing=false;
                     if(isFinishing()||isDestroyed())return;
+                    riverObservationSource="none"; // Do not keep claiming the failed feed is live.
                     // Keep the station catalogue but expire old measurements.
                     refreshRiverUi();
                     String unavailable=t("River source उपलब्ध छैन • पुरानो मापन live होइन",

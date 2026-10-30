@@ -1,0 +1,35 @@
+name: FloodSafe one-time verified Beta APK filename
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/floodsafe-publish-tested-beta-alias-20261030.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish-same-binary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Publish tested APK under Beta filename without rebuilding
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG='floodsafe-v0921-last-reading-test-20261030'
+          SRC='FloodSafe-Nepal-v0.9.21-LAST-READING-TEST.apk'
+          DST='FloodSafe-Nepal-Android-Beta.apk'
+          mkdir -p /tmp/floodsafe-source /tmp/floodsafe-verify
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -D /tmp/floodsafe-source \
+            -p "$SRC" -p 'FloodSafe-Last-Reading-SHA256.txt'
+          cd /tmp/floodsafe-source
+          sha256sum -c FloodSafe-Last-Reading-SHA256.txt
+          test "$(stat -c %s "$SRC")" -eq 99361540
+          cp "$SRC" "$DST"
+          cmp "$SRC" "$DST"
+          gh release upload "$TAG" "$DST" -R "$GITHUB_REPOSITORY" --clobber
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -D /tmp/floodsafe-verify -p "$DST"
+          cmp "$SRC" /tmp/floodsafe-verify/"$DST"
+          echo 'PASS: identical verified source binary published as FloodSafe-Nepal-Android-Beta.apk'

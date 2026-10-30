@@ -134,6 +134,21 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private volatile NepalRiverBoundary nepalDistrictBorder;
     private long lastGovernmentExpiryCheckAt;
     private static final long GOVERNMENT_FOREGROUND_REFRESH_MS=10L*60L*1000L;
+    // Native river observations expire after 2 minutes. Recheck the official
+    // feed while visible and downgrade expired station classifications even
+    // when the network is offline; never relabel stale data as NORMAL.
+    private static final long RIVER_FOREGROUND_REFRESH_MS=2L*60L*1000L;
+    private static final long RIVER_STATUS_EXPIRY_TICK_MS=30_000L;
+    private long lastRiverFetchAt=0L;
+    private boolean riverRefreshing=false;
+    private final Runnable riverAutoRefresh=new Runnable(){
+        @Override public void run(){
+            if(isFinishing()||isDestroyed())return;
+            refreshRiverUi(); // Expire old classifications immediately, including offline.
+            if(System.currentTimeMillis()-lastRiverFetchAt>=RIVER_FOREGROUND_REFRESH_MS)refreshRivers();
+            main.postDelayed(this,RIVER_STATUS_EXPIRY_TICK_MS);
+        }
+    };
     private final Runnable governmentAutoRefresh=new Runnable(){
         @Override public void run(){
             if(isFinishing()||isDestroyed())return;
@@ -816,10 +831,63 @@ public final class NativeFullActivity extends Activity implements LocationListen
       districtWeatherInfo.setText(t("यस जिल्लाको ताजा मौसम अनुमान उपलब्ध छैन।","No verified current model for this district."));
     }
 
-    private void refreshRivers(){feedFresh.setText(t("Official नदी अवस्था refresh हुँदैछ…","Refreshing official river status…"));io.execute(()->{try{JSONObject root=OfficialStationFeeds.rivers();JSONArray rows=root.optJSONArray("results");if(rows==null)rows=root.optJSONArray("data");if(rows==null)rows=new JSONArray();List<RiverStation> out=new ArrayList<>();long now=System.currentTimeMillis();for(int i=0;i<rows.length();i++){RiverStation s=parseStation(rows.optJSONObject(i),now);if(s!=null)out.add(s);}out.sort(Comparator.comparingInt((RiverStation s)->s.rank).thenComparingDouble(s->distanceKm(s.lat,s.lon)));synchronized(stations){stations.clear();stations.addAll(out);}runOnUiThread(this::refreshRiverUi);}catch(Exception e){runOnUiThread(()->feedFresh.setText(t("River data refresh हुन सकेन • stale लाई live भनिएको छैन","River refresh failed • stale data is not live")));}});}
+    private void refreshRivers(){
+        if(riverRefreshing||isFinishing()||isDestroyed())return;
+        riverRefreshing=true;
+        lastRiverFetchAt=System.currentTimeMillis();
+        feedFresh.setText(t("Official नदी अवस्था refresh हुँदैछ…","Refreshing official river status…"));
+        io.execute(()->{
+            try{
+                JSONObject root=OfficialStationFeeds.rivers();
+                JSONArray rows=root.optJSONArray("results");
+                if(rows==null)rows=root.optJSONArray("data");
+                if(rows==null)rows=new JSONArray();
+                List<RiverStation> out=new ArrayList<>();
+                long now=System.currentTimeMillis();
+                for(int i=0;i<rows.length();i++){
+                    RiverStation station=parseStation(rows.optJSONObject(i),now);
+                    if(station!=null)out.add(station);
+                }
+                out.sort(Comparator.comparingInt((RiverStation station)->station.rank)
+                        .thenComparingDouble(station->distanceKm(station.lat,station.lon)));
+                runOnUiThread(()->{
+                    riverRefreshing=false;
+                    if(isFinishing()||isDestroyed())return;
+                    synchronized(stations){stations.clear();stations.addAll(out);}
+                    refreshRiverUi();
+                });
+            }catch(Exception e){
+                runOnUiThread(()->{
+                    riverRefreshing=false;
+                    if(isFinishing()||isDestroyed())return;
+                    // Keep the station catalogue but expire old measurements.
+                    refreshRiverUi();
+                    String unavailable=t("River source उपलब्ध छैन • पुरानो मापन live होइन",
+                            "River source unavailable • old measurements are not live");
+                    feedFresh.setText(unavailable);
+                    nationalFresh.setText(unavailable);
+                });
+            }
+        });
+    }
     private RiverStation parseStation(JSONObject r,long now){if(r==null)return null;double a=num(r,"latitude","lat","stationLatitude","station_latitude"),o=num(r,"longitude","lon","lng","stationLongitude","station_longitude");if(!Double.isFinite(a)||!Double.isFinite(o)||!isNepal(a,o))return null;NepalRiverBoundary polygon=nepalDistrictBorder();if(polygon==null||!polygon.contains(o,a))return null;double level=num(r,"waterLevel","water_level","currentWaterLevel","current_water_level","currentLevel","current_level","_lastWaterLevel"),warning=num(r,"warningLevel","warning_level","warningThreshold","warning_threshold","_lastWarningLevel"),danger=num(r,"dangerLevel","danger_level","dangerThreshold","danger_threshold","_lastDangerLevel");long at=parseTime(str(r,"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime"));boolean fresh=at>0&&now-at<=RIVER_FRESH_MS&&at-now<=5*60_000L;String raw=str(r,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT);String stage="unknown";int rank=4;if(fresh){if((Double.isFinite(level)&&Double.isFinite(danger)&&danger>0&&level>=danger)||(raw.contains("DANGER")&&!raw.contains("BELOW DANGER"))||raw.contains("RED")){stage="danger";rank=0;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning)||(raw.contains("WARNING")&&!raw.contains("BELOW WARNING"))||raw.contains("ORANGE")){stage="warning";rank=1;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning*.8)||raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW")){stage="alert";rank=2;}else if(Double.isFinite(level)||raw.contains("NORMAL")||raw.contains("BLUE")){stage="normal";rank=3;}}String name=str(r,"river_name","riverName","station_name","stationName","title","name");if(name.isEmpty())name="Official river station";String district=str(r,"districtName","district_name","district");return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank);}
     private void refreshRiverUi(){if(nearList==null||isFinishing()||isDestroyed())return;
-      List<RiverStation> copy;synchronized(stations){copy=new ArrayList<>(stations);}
+      List<RiverStation> copy;
+      long checkedAt=System.currentTimeMillis();
+      synchronized(stations){
+          // Re-evaluate cached readings on every UI tick: old WATCH/WARNING/DANGER
+          // must immediately become UNKNOWN, not a misleading live alert/normal.
+          for(int i=0;i<stations.size();i++){
+              RiverStation old=stations.get(i);
+              boolean stillFresh=old.at>0 && checkedAt-old.at<=RIVER_FRESH_MS
+                      && old.at-checkedAt<=5L*60L*1000L;
+              if(!stillFresh && (old.fresh || !"unknown".equals(old.stage))){
+                  stations.set(i,new RiverStation(old.name,old.district,old.lat,old.lon,
+                      old.level,old.warning,old.danger,old.at,false,"unknown",4));
+              }
+          }
+          copy=new ArrayList<>(stations);
+      }
       long fingerprint=37;
       for(RiverStation q:copy){fingerprint=31*fingerprint+q.name.hashCode();
        fingerprint=31*fingerprint+Long.hashCode(q.at);
@@ -1108,9 +1176,11 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private LinearLayout.LayoutParams lp(int w,int h,int l,int t,int r,int b){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(w,h);p.setMargins(dp(l),dp(t),dp(r),dp(b));return p;}private LinearLayout.LayoutParams weight(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-1,1f);p.setMargins(dp(2),0,dp(2),0);return p;}private int dp(int v){return Math.round(v*getResources().getDisplayMetrics().density);}
     private static final class RiverStation{final String name,district,stage;final double lat,lon,level,warning,danger;final long at;final boolean fresh;final int rank;RiverStation(String n,String di,double a,double o,double l,double w,double d,long tm,boolean f,String s,int r){name=n;district=di;lat=a;lon=o;level=l;warning=w;danger=d;at=tm;fresh=f;stage=s;rank=r;}}
     private static final class NewsItem{final String title,source,url;final long at;NewsItem(String t,String s,String u,long a){title=t;source=s;url=u;at=a;}}
-    @Override protected void onPause(){main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(newsAutoRefreshTick);main.removeCallbacks(newsKnowledgeTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
+    @Override protected void onPause(){main.removeCallbacks(riverAutoRefresh);main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(newsAutoRefreshTick);main.removeCallbacks(newsKnowledgeTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
     @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();
         main.post(mapVisibilityTick);
+        // Recalculate station ages as soon as the app is visible; do not wait for a tap.
+        main.removeCallbacks(riverAutoRefresh);main.post(riverAutoRefresh);
         main.removeCallbacks(governmentAutoRefresh);main.postDelayed(governmentAutoRefresh,GOVERNMENT_FOREGROUND_REFRESH_MS);
         if(newsList!=null&&System.currentTimeMillis()-newsLastFetchedAt>=FloodSafeRemoteConfig.newsPollMillis())refreshNews();
         FloodSafeRemoteConfig.refreshAsync(getApplicationContext(),onOtaContentChanged);

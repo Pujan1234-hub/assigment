@@ -42,8 +42,16 @@ final class OfficialStationFeeds {
             putFinite(out,"warningLevel",s,"warning");
             putFinite(out,"dangerLevel",s,"danger");
             long when=timestamp(s.optString("observed",""));
-            boolean recent="observed".equals(s.optString("status"))&&when>0&&
-                 now-when<=RIVER_DISPLAY_MAX_AGE_MS&&when-now<5L*60L*1000L;
+            // Preserve only an explicitly verified, timestamped original gauge
+            // observation for the stale-detail box. Never classify it as live.
+            double verifiedLevel=s.optDouble("level",Double.NaN);
+            boolean hasLastVerified="observed".equals(s.optString("status"))&&when>0&&
+                 when-now<=5L*60L*1000L&&Double.isFinite(verifiedLevel);
+            if(hasLastVerified){
+                out.put("lastVerifiedWaterLevel",verifiedLevel);
+                out.put("lastVerifiedWaterLevelOn",s.optString("observed"));
+            }
+            boolean recent=hasLastVerified&&now-when<=RIVER_DISPLAY_MAX_AGE_MS;
             if(recent&&Double.isFinite(s.optDouble("level",Double.NaN))) {
                 out.put("waterLevel",s.optDouble("level"));
                 out.put("waterLevelOn",s.optString("observed"));

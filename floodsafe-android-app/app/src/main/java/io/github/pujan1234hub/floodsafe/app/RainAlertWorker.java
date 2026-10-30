@@ -38,7 +38,9 @@ import java.util.Locale;
 public final class RainAlertWorker extends Worker {
     static final String PREFS = "floodsafe_rain_alerts";
     static final String CHANNEL_ID = "local_rain_alerts_v2";
-    private static final String WEATHER_CHANNEL_ID = "smart_weather_updates_v1";
+    private static final String WEATHER_CHANNEL_ID = "smart_weather_updates_v2";
+    private static final String SUN_CHANNEL_ID = "floodsafe_sunrise_sunset_v1";
+    private static final long WEATHER_LAST_FIX_MAX_AGE_MS = 24L * 60L * 60L * 1000L;
     private static final double WET_MM = 0.10d;
     private static final int LOOKAHEAD_MINUTES = 35;
     private static final long WEATHER_DIGEST_INTERVAL_MS = 3L * 60L * 60L * 1000L;
@@ -61,12 +63,26 @@ public final class RainAlertWorker extends Worker {
                 "lat", Double.doubleToRawLongBits(Double.NaN)));
         double lon = Double.longBitsToDouble(prefs.getLong(
                 "lon", Double.doubleToRawLongBits(Double.NaN)));
-        if (!Double.isFinite(lat) || !Double.isFinite(lon)) return Result.success();
-        if (prefs.getBoolean("follow_device", false)) {
-            long locationTime = prefs.getLong("location_time", 0L);
-            if (!MonitoringLocationPolicy.freshDeviceLocation(
-                    locationTime, System.currentTimeMillis(), lat, lon)) return Result.success();
+        // Weather-only GPS fallback. River emergency workers retain their strict 5-minute
+        // fresh-Nepal-device-location policy; a cached weather point is NEVER used by them.
+        boolean cachedWeatherLocation = false;
+        long nowMs = System.currentTimeMillis();
+        long locationTime = prefs.getLong("location_time", 0L);
+        boolean currentGps = Double.isFinite(lat) && Double.isFinite(lon)
+                && (!prefs.getBoolean("follow_device", false)
+                    || MonitoringLocationPolicy.freshDeviceLocation(locationTime, nowMs, lat, lon));
+        if (!currentGps) {
+            long savedAt = prefs.getLong("weather_last_fix_at", 0L);
+            if (savedAt <= 0L || nowMs - savedAt > WEATHER_LAST_FIX_MAX_AGE_MS
+                    || savedAt - nowMs > 2L * 60L * 1000L) return Result.success();
+            lat = Double.longBitsToDouble(prefs.getLong("weather_last_lat",
+                    Double.doubleToRawLongBits(Double.NaN)));
+            lon = Double.longBitsToDouble(prefs.getLong("weather_last_lon",
+                    Double.doubleToRawLongBits(Double.NaN)));
+            cachedWeatherLocation = true;
         }
+        if (!Double.isFinite(lat) || !Double.isFinite(lon)
+                || lat < -90 || lat > 90 || lon < -180 || lon > 180) return Result.success();
 
         try {
             JSONObject data = fetch(lat, lon);
@@ -86,7 +102,8 @@ public final class RainAlertWorker extends Worker {
 
             // This is deliberately independent from Nepal. If the user is in the UK,
             // current-location weather notifications still work. Only river alerts are Nepal-only.
-            maybeNotifyWeatherDigest(data, prefs, now, temperature, apparent, humidity, wind, weatherCode);
+            maybeNotifyWeatherDigest(data, prefs, now, temperature, apparent, humidity, wind, weatherCode, cachedWeatherLocation);
+            maybeNotifySunEvents(data, prefs, now, temperature, humidity, wind, cachedWeatherLocation);
 
             RainEvent event = findEvent(data.optJSONObject("minutely_15"), now);
             boolean rainingNow = current >= WET_MM || (event != null && event.activeNow);
@@ -125,7 +142,7 @@ public final class RainAlertWorker extends Worker {
                 + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,showers,weather_code,wind_speed_10m"
                 + "&minutely_15=precipitation,rain,showers"
                 + "&hourly=temperature_2m,precipitation_probability,precipitation,weather_code"
-                + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max"
+                + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunrise,sunset"
                 + "&forecast_days=2&timezone=auto";
         HttpURLConnection connection = (HttpURLConnection) new URL(
                 "https://api.open-meteo.com/v1/forecast?" + query).openConnection();
@@ -227,7 +244,7 @@ public final class RainAlertWorker extends Worker {
     private void maybeNotifyWeatherDigest(JSONObject data, SharedPreferences prefs,
                                           ZonedDateTime now, double temperature,
                                           double apparent, double humidity, double wind,
-                                          int weatherCode) {
+                                          int weatherCode, boolean cachedWeatherLocation) {
         long nowMs = System.currentTimeMillis();
         long last = prefs.getLong("last_weather_digest_at", 0L);
         String todayKey = now.toLocalDate().toString();
@@ -300,10 +317,88 @@ public final class RainAlertWorker extends Worker {
             text = body.toString();
         }
 
+        if (cachedWeatherLocation) text += " • पछिल्लो GPS स्थानको मौसम";
         notifyWeather(title, text);
         SharedPreferences.Editor edit = prefs.edit().putLong("last_weather_digest_at", nowMs);
         if (eveningDue) edit.putString("last_evening_forecast_date", todayKey);
         edit.apply();
+    }
+
+    // One real, local-time sunrise and sunset greeting per day. Only use provider data;
+    // do not calculate or guess the sun times from a fixed timezone.
+    private void maybeNotifySunEvents(JSONObject data, SharedPreferences prefs, ZonedDateTime now,
+                                      double temperature, double humidity, double wind,
+                                      boolean cachedWeatherLocation) {
+        JSONObject daily = data.optJSONObject("daily");
+        if (daily == null) return;
+        JSONArray dates = daily.optJSONArray("time"), sunrises = daily.optJSONArray("sunrise"),
+                sunsets = daily.optJSONArray("sunset");
+        if (dates == null || sunrises == null || sunsets == null) return;
+        String today = now.toLocalDate().toString();
+        for (int i = 0; i < dates.length(); i++) {
+            if (!today.equals(dates.optString(i))) continue;
+            ZonedDateTime rise = parseSlot(sunrises.optString(i), now.getZone());
+            ZonedDateTime set = parseSlot(sunsets.optString(i), now.getZone());
+            if (rise == null || set == null) return;
+            long untilRise = java.time.Duration.between(now, rise).toMinutes();
+            long untilSet = java.time.Duration.between(now, set).toMinutes();
+            // Local morning: 30 min before sunrise through 3 hours after, before 11 AM.
+            if (untilRise <= 30 && untilRise >= -180 && now.getHour() < 11
+                    && !today.equals(prefs.getString("last_sunrise_notice_day", ""))) {
+                String message = "आज सूर्योदय " + rise.format(DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH))
+                        + " • " + weatherBits(temperature, humidity, wind)
+                        + (cachedWeatherLocation ? " • पछिल्लो GPS स्थान" : "");
+                notifySunEvent("🌅 शुभ प्रभात • Good morning", message, 7311);
+                prefs.edit().putString("last_sunrise_notice_day", today).apply();
+            }
+            // Local evening: 30 min before sunset through 4 hours after, before midnight.
+            if (untilSet <= 30 && untilSet >= -240 && now.getHour() >= 15
+                    && !today.equals(prefs.getString("last_sunset_notice_day", ""))) {
+                String message = "आज सूर्यास्त " + set.format(DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH))
+                        + " • " + weatherBits(temperature, humidity, wind)
+                        + (cachedWeatherLocation ? " • पछिल्लो GPS स्थान" : "");
+                notifySunEvent("🌇 शुभ सन्ध्या • Good evening", message, 7312);
+                prefs.edit().putString("last_sunset_notice_day", today).apply();
+            }
+            return;
+        }
+    }
+
+    private static String weatherBits(double temp, double humidity, double wind) {
+        StringBuilder b = new StringBuilder();
+        if (Double.isFinite(temp)) b.append("तापक्रम ").append(Math.round(temp)).append("°C");
+        if (Double.isFinite(wind)) {
+            if (b.length() > 0) b.append(" • ");
+            b.append("हावा ").append(Math.round(wind)).append(" km/h");
+        }
+        if (Double.isFinite(humidity)) {
+            if (b.length() > 0) b.append(" • ");
+            b.append("आर्द्रता ").append(Math.round(humidity)).append("%");
+        }
+        return b.toString();
+    }
+
+    private void notifySunEvent(String title, String text, int id) {
+        Context app = getApplicationContext();
+        NotificationManager manager = app.getSystemService(NotificationManager.class);
+        if (manager == null) return;
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel channel = new NotificationChannel(SUN_CHANNEL_ID,
+                    "FloodSafe sunrise and sunset greetings", NotificationManager.IMPORTANCE_DEFAULT);
+            channel.enableVibration(true);
+            manager.createNotificationChannel(channel);
+        }
+        Intent launch = new Intent(app, VoiceMainActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent open = PendingIntent.getActivity(app, id, launch,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        android.app.Notification.Builder builder = Build.VERSION.SDK_INT >= 26
+                ? new android.app.Notification.Builder(app, SUN_CHANNEL_ID)
+                : new android.app.Notification.Builder(app);
+        manager.notify(id, builder.setSmallIcon(R.drawable.ic_floodsafe)
+                .setContentTitle(title).setContentText(text)
+                .setStyle(new android.app.Notification.BigTextStyle().bigText(text))
+                .setAutoCancel(true).setContentIntent(open).build());
     }
 
     private static ShortForecast shortForecast(JSONObject hourly, ZonedDateTime now) {
@@ -437,7 +532,7 @@ public final class RainAlertWorker extends Worker {
             NotificationChannel channel = new NotificationChannel(
                     WEATHER_CHANNEL_ID, "FloodSafe smart weather updates", NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription("Current-location weather change and tomorrow forecast updates about every 3 hours");
-            channel.enableVibration(false);
+            channel.enableVibration(true);
             manager.createNotificationChannel(channel);
         }
 
@@ -458,7 +553,9 @@ public final class RainAlertWorker extends Worker {
                 .setOnlyAlertOnce(false)
                 .setContentIntent(open)
                 .build();
-        manager.notify(7102, notification);
+        // Keep individual 3-hour updates in notification history instead of replacing ID 7102.
+        int historyId = 7500 + (int)((System.currentTimeMillis() / 60000L) % 20000L);
+        manager.notify(historyId, notification);
     }
 
     private void notifyRain(boolean rainingNow, long leadMinutes, RainEvent event,

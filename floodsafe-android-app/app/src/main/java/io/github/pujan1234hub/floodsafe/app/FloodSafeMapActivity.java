@@ -138,11 +138,18 @@ public final class FloodSafeMapActivity extends Activity {
                     double lat=number(o,"latitude","lat","stationLatitude","station_latitude");
                     double lon=number(o,"longitude","lon","lng","stationLongitude","station_longitude");
                     if(!Double.isFinite(lat)||!Double.isFinite(lon)||lat<26.2||lat>30.5||lon<80||lon>88.35)continue;
+                    // Current data is used for live colors. Historic data is used only
+                    // inside a grey station's clearly labelled detail card.
                     double level=number(o,"waterLevel","water_level","currentWaterLevel","current_level","_lastWaterLevel");
+                    if(!Double.isFinite(level))
+                        level=number(o,"lastVerifiedWaterLevel");
                     double warn=number(o,"warningLevel","warning_level","warningThreshold","_lastWarningLevel");
                     double danger=number(o,"dangerLevel","danger_level","dangerThreshold","_lastDangerLevel");
                     long at=timestamp(text(o,"waterLevelOn","water_level_on","measuredOn","observedAt","observationTime","_measurementTime"));
-                    boolean fresh=at>0&&at<=now+300000L&&now-at<=MAP_READING_FRESH_MS;
+                    if(at<=0)
+                        at=timestamp(text(o,"lastVerifiedWaterLevelOn"));
+                    boolean hasCurrentMeasurement=Double.isFinite(number(o,"waterLevel","water_level","currentWaterLevel","current_level","_lastWaterLevel"));
+                    boolean fresh=hasCurrentMeasurement&&at>0&&at<=now+300000L&&now-at<=MAP_READING_FRESH_MS;
                     String raw=text(o,"_officialStatus","status","riskLevel").toUpperCase(Locale.ROOT);
                     String stage="unknown";
                     // Match the Home dashboard's official classification exactly.

@@ -1,0 +1,38 @@
+name: Publish FloodSafe Beta-name alias for tested weather APK
+on:
+  push:
+    branches:
+      - fix/floodsafe-v0921-weather-sun-notifications-20261030
+    paths:
+      - '.github/workflows/floodsafe-beta-notifications-alias-20261030.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  alias:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy verified weather APK with original Beta filename
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='floodsafe-v0921-weather-notifications-test-20261030'
+          SRC='FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk'
+          OUT='FloodSafe-Nepal-Android-Beta.apk'
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$SRC" --dir /tmp/floodsafe
+          cp "/tmp/floodsafe/$SRC" "$OUT"
+          test "$(stat -c %s "$OUT")" -gt 85000000
+          unzip -t "$OUT" >/dev/null
+          sha256sum "/tmp/floodsafe/$SRC" "$OUT"
+          cmp "/tmp/floodsafe/$SRC" "$OUT"
+          gh release upload "$TAG" "$OUT" --repo "$GITHUB_REPOSITORY" --clobber
+      - name: Verify release alias exists
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view 'floodsafe-v0921-weather-notifications-test-20261030' --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | grep -Fxq 'FloodSafe-Nepal-Android-Beta.apk'

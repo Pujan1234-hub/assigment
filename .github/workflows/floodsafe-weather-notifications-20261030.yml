@@ -1,4 +1,4 @@
-name: FloodSafe v0.9.21 Map Watch Consistency TEST APK
+name: FloodSafe v0.9.21 Stale Gauge Detail ONLY TEST APK
 on:
   push:
     branches:
@@ -10,6 +10,8 @@ on:
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodMonitorService.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/NativeFullActivity.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMapActivity.java'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/OfficialStationFeeds.java'
+      - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/StationDetailSheet.java'
       - 'floodsafe-android-app/app/src/debug/res/values/strings.xml'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeRemoteConfig.java'
       - 'floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/FloodSafeMessagingService.java'
@@ -78,6 +80,12 @@ jobs:
           ! grep -Fq 'warn*.8' "$J/FloodSafeMapActivity.java"
           ! grep -Fq 'warning*.8' "$J/NativeFullActivity.java"
           grep -Fq 'lastMapStations.clear()' "$J/FloodSafeMapActivity.java"
+          grep -Fq 'lastVerifiedWaterLevel' "$J/OfficialStationFeeds.java"
+          grep -Fq 'lastVerifiedWaterLevelOn' "$J/OfficialStationFeeds.java"
+          grep -Fq 'hasCurrentMeasurement' "$J/FloodSafeMapActivity.java"
+          grep -Fq 'boolean historical=!riverSegment&&!fresh&&Double.isFinite(level)&&observedAt>0' "$J/StationDetailSheet.java"
+          grep -Fq 'LAST VERIFIED WATER LEVEL · NOT LIVE' "$J/StationDetailSheet.java"
+          grep -Fq 'पुरानो मापन (३० मिनेटभन्दा पुरानो)' "$J/StationDetailSheet.java"
           grep -Fq 'MAX_AGE_MS = 10L * 60L * 1000L' "$J/RiverAlertWorker.java"
           grep -Fq "applicationIdSuffix '.preview'" floodsafe-android-app/app/build.gradle
           grep -Fq "versionCode 121" floodsafe-android-app/app/build.gradle
@@ -97,15 +105,15 @@ jobs:
             unzip -Z -1 "$APK" | grep -Fxq "$asset"
           done
           test "$(stat -c %s "$APK")" -gt 85000000
-          cp "$APK" FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk
-          sha256sum FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk > FloodSafe-Map-Status-Fix-SHA256.txt
-          stat -c 'Weather test APK bytes=%s' FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk
+          cp "$APK" FloodSafe-Nepal-v0.9.21-LAST-READING-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-LAST-READING-TEST.apk > FloodSafe-Last-Reading-SHA256.txt
+          stat -c 'Weather test APK bytes=%s' FloodSafe-Nepal-v0.9.21-LAST-READING-TEST.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v0921-MAP-STATUS-FIX-TEST
+          name: FloodSafe-v0921-LAST-READING-TEST
           path: |
-            FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk
-            FloodSafe-Map-Status-Fix-SHA256.txt
+            FloodSafe-Nepal-v0.9.21-LAST-READING-TEST.apk
+            FloodSafe-Last-Reading-SHA256.txt
           retention-days: 14
           if-no-files-found: error
       - name: Publish separately installable TEST APK direct link
@@ -114,10 +122,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG=floodsafe-v0921-map-status-fix-test-20261030
-          NOTES='Preview-only surgical map status consistency fix for v0.9.21: separate River Map used an older invented 80-percent-of-warning threshold, causing yellow map dots even when Home reported zero official Watch. Removed this map-only heuristic; map and Home now classify only confirmed Watch/Warning/Danger on fresh readings. Map station layer refreshes while open at 30-second intervals and expired or unavailable observations turn stale/grey rather than appearing live. DHM-primary unified backend and existing GPS, weather overlay, river glow, 2-km emergency notifications, OTA, SATHI, language and original PJBUILTS intro preserved. Not production release; original stable download unchanged.'
+          TAG=floodsafe-v0921-last-reading-test-20261030
+          NOTES='Preview TEST ONLY: preserve the original cream-colored station detail sheet, but for grey stale stations show the last timestamped verified water-level measurement and observation time as historical NOT LIVE. Current river risk colors, 30-minute freshness, 10-minute emergency safety, map style, weather icons, river glow, OTA, SATHI, language and notifications unchanged. If source does not provide verified measurement and time, show unavailable; never fabricate or imply current danger. Separate preview package. Public beta link unchanged.'
           if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk FloodSafe-Map-Status-Fix-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
+            gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-LAST-READING-TEST.apk FloodSafe-Last-Reading-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" FloodSafe-Nepal-v0.9.21-MAP-STATUS-FIX-TEST.apk FloodSafe-Map-Status-Fix-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 Map Status Consistency TEST' --notes "$NOTES" --prerelease --latest=false
+            gh release create "$TAG" FloodSafe-Nepal-v0.9.21-LAST-READING-TEST.apk FloodSafe-Last-Reading-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'FloodSafe Nepal v0.9.21 Last Verified Reading TEST' --notes "$NOTES" --prerelease --latest=false
           fi

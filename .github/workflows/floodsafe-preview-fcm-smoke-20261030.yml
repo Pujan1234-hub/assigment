@@ -1,0 +1,48 @@
+name: FloodSafe one-time preview FCM smoke check
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/floodsafe-preview-fcm-smoke-20261030.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Send non-emergency test message to preview topic only
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet google-auth requests
+          python3 - <<'PY'
+          import os,json,sys,requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+          raw=os.environ.get("FIREBASE_SERVICE_ACCOUNT","").strip()
+          if not raw:
+            print("TEST_BLOCKED: Firebase service account GitHub Actions secret absent.")
+            sys.exit(2)
+          account=json.loads(raw)
+          credentials=service_account.Credentials.from_service_account_info(account,scopes=[
+            "https://www.googleapis.com/auth/firebase.messaging"])
+          credentials.refresh(Request())
+          payload={"message":{
+            "topic":"floodsafe-testers",
+            "data":{
+              "kind":"app_notice",
+              "title":"🔔 FloodSafe Nepal TEST • सूचना परीक्षण",
+              "body":"नमस्कार! यो FloodSafe Nepal को गैर-आपत्कालीन push परीक्षण हो। / This is a non-emergency FloodSafe preview push test."
+            },
+            "android":{"priority":"high","ttl":"600s"}
+          }}
+          endpoint=f"https://fcm.googleapis.com/v1/projects/{account['project_id']}/messages:send"
+          response=requests.post(endpoint,json=payload,headers={
+            "Authorization":"Bearer "+credentials.token,"Content-Type":"application/json"},timeout=25)
+          print("FCM HTTP",response.status_code)
+          response.raise_for_status()
+          print("FCM accepted preview smoke test. Actual handset delivery must be verified separately.")
+          PY

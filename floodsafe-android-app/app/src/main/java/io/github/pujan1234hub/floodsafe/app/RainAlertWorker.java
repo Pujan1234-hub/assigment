@@ -342,22 +342,22 @@ public final class RainAlertWorker extends Worker {
             if (rise == null || set == null) return;
             long untilRise = java.time.Duration.between(now, rise).toMinutes();
             long untilSet = java.time.Duration.between(now, set).toMinutes();
-            // Local morning: 30 min before sunrise through 3 hours after, before 11 AM.
-            if (untilRise <= 30 && untilRise >= -180 && now.getHour() < 11
+            // Pre-sunrise only. Never announce a sunrise once it has occurred.
+            if (untilRise > 0 && untilRise <= 45 && now.getHour() < 11
                     && !today.equals(prefs.getString("last_sunrise_notice_day", ""))) {
-                String message = "आज सूर्योदय " + rise.format(DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH))
+                String message = "आज सूर्योदय हुनेछ " + rise.format(DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH))
                         + " • " + weatherBits(temperature, humidity, wind)
                         + (cachedWeatherLocation ? " • पछिल्लो GPS स्थान" : "");
-                notifySunEvent("🌅 शुभ प्रभात • Good morning", message, 7311);
+                notifySunEvent("🌅 सूर्योदय हुनुअघि • Before sunrise", message, 7311);
                 prefs.edit().putString("last_sunrise_notice_day", today).apply();
             }
-            // Local evening: 30 min before sunset through 4 hours after, before midnight.
-            if (untilSet <= 30 && untilSet >= -240 && now.getHour() >= 15
+            // Pre-sunset only. Do not send an already-passed sunset as a late greeting.
+            if (untilSet > 0 && untilSet <= 45 && now.getHour() >= 15
                     && !today.equals(prefs.getString("last_sunset_notice_day", ""))) {
-                String message = "आज सूर्यास्त " + set.format(DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH))
+                String message = "आज सूर्यास्त हुनेछ " + set.format(DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH))
                         + " • " + weatherBits(temperature, humidity, wind)
                         + (cachedWeatherLocation ? " • पछिल्लो GPS स्थान" : "");
-                notifySunEvent("🌇 शुभ सन्ध्या • Good evening", message, 7312);
+                notifySunEvent("🌇 सूर्यास्त हुनुअघि • Before sunset", message, 7312);
                 prefs.edit().putString("last_sunset_notice_day", today).apply();
             }
             return;

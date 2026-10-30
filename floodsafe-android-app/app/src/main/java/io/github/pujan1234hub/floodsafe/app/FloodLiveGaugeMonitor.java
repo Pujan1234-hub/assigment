@@ -58,6 +58,8 @@ final class FloodLiveGaugeMonitor {
     private volatile boolean running=false;
     private volatile int lastRiverHash=0,lastRainHash=0,lastHydroHash=0;
     private volatile long lastOfficialRiverAttempt=0L,lastOfficialRainAttempt=0L;
+    private volatile long lastBipadHydrologyAttempt=0L;
+    private volatile String lastRiverObservationSource="none";
 
     FloodLiveGaugeMonitor(Context context){app=context.getApplicationContext();}
     void start(){if(running)return;running=true;handler.post(tick);}
@@ -73,7 +75,9 @@ final class FloodLiveGaugeMonitor {
 
     private void pollRiverOnce() throws Exception{
         long now=System.currentTimeMillis();if(now-lastOfficialRiverAttempt<60000L)return;lastOfficialRiverAttempt=now;
-        String body=OfficialStationFeeds.rivers().toString();if(body.isEmpty())return;
+        JSONObject source=OfficialStationFeeds.rivers();
+        lastRiverObservationSource=source.optString("activeObservationSource","none");
+        String body=source.toString();if(body.isEmpty())return;
         markPoll("live_gauge_poll_time");int hash=hash(body);if(hash==lastRiverHash)return;lastRiverHash=hash;
         cacheBody("floodsafe_live_gauges",body,"live_gauge_change_time");
         try{checkNearbyHazards(new JSONObject(body));}catch(Exception ignored){}
@@ -87,6 +91,13 @@ final class FloodLiveGaugeMonitor {
     }
 
     private void pollHydrologyOnce() throws Exception{
+        // Unified DHM-first source handles the active river feed. The legacy
+        // BIPAD hydrology extras are queried only when BIPAD is the active
+        // verified fallback, never while DHM is live or both sources are down.
+        if(!"bipad".equals(lastRiverObservationSource))return;
+        long now=System.currentTimeMillis();
+        if(now-lastBipadHydrologyAttempt<5L*60L*1000L)return;
+        lastBipadHydrologyAttempt=now;
         JSONObject merged=new JSONObject();JSONArray feeds=new JSONArray();
         for(String endpoint:HYDRO_ENDPOINTS){
             try{

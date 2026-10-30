@@ -1,0 +1,52 @@
+name: Publish verified FloodSafe v0.9.21 River Auto Refresh TEST APK
+
+on:
+  push:
+    branches:
+      - fix/floodsafe-v0921-weather-sun-notifications-20261030
+    paths:
+      - '.github/workflows/publish-floodsafe-v0921-river-auto-refresh.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download precisely verified Android build artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          RUN_ID=41117297103
+          REPO="$GITHUB_REPOSITORY"
+          mkdir -p verified
+          gh run download "$RUN_ID" -R "$REPO" -n FloodSafe-v0921-WEATHER-NOTIFICATIONS-TEST -D verified
+          SOURCE=verified/FloodSafe-Nepal-v0.9.21-WEATHER-NOTIFICATIONS-TEST.apk
+          test -s "$SOURCE"
+          (cd verified && sha256sum -c FloodSafe-Weather-Notifications-SHA256.txt)
+          test "$(stat -c %s "$SOURCE")" -gt 85000000
+          unzip -t "$SOURCE" >/dev/null
+          unzip -Z -1 "$SOURCE" | grep -Fxq 'assets/pjbuilts-original-splash.html'
+          unzip -Z -1 "$SOURCE" | grep -Fxq 'assets/data/nepal-waterways-snapshot.json'
+          cp "$SOURCE" FloodSafe-Nepal-v0.9.21-RIVER-AUTO-REFRESH-TEST.apk
+          cmp "$SOURCE" FloodSafe-Nepal-v0.9.21-RIVER-AUTO-REFRESH-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.21-RIVER-AUTO-REFRESH-TEST.apk > River-Auto-Refresh-SHA256.txt
+      - name: Publish separate TEST release without changing public Beta
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=floodsafe-v0921-river-auto-refresh-test-20261030
+          NOTES='Test APK based on v0.9.21 weather notifications preview. River status count refreshes while screen visible, stale 2-minute observations become Unknown (never falsely Normal), and source failures cannot leave previously live warnings displayed indefinitely. Emergency river push safety rules, original beta, map, language, SATHI, and splash are unchanged. Separate preview install, not a production rollout.'
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" FloodSafe-Nepal-v0.9.21-RIVER-AUTO-REFRESH-TEST.apk River-Auto-Refresh-SHA256.txt --clobber -R "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" FloodSafe-Nepal-v0.9.21-RIVER-AUTO-REFRESH-TEST.apk River-Auto-Refresh-SHA256.txt -R "$GITHUB_REPOSITORY" --target 92c87775df9f71c1b7fada0fe9ba42922e10eb72 --title 'FloodSafe Nepal v0.9.21 River Auto Refresh TEST' --notes "$NOTES" --prerelease --latest=false
+          fi

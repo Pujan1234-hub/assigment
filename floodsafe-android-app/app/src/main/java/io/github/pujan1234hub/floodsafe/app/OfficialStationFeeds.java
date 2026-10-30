@@ -57,7 +57,12 @@ final class OfficialStationFeeds {
         }
         JSONObject result=new JSONObject();
         result.put("results",results);
-        result.put("source","FloodSafe BIPAD/DHM official monitoring");
+        String srcType=src.optString("activeObservationSource","none");
+        if(!"dhm".equals(srcType)&&!"bipad".equals(srcType))srcType="none";
+        result.put("activeObservationSource",srcType);
+        result.put("source",src.optString("source","Official river observations"));
+        result.put("dhmStatus",src.optString("dhmStatus","unknown"));
+        result.put("bipadFallbackStatus",src.optString("bipadFallbackStatus","unknown"));
         result.put("count",results.length());
         return result;
     }

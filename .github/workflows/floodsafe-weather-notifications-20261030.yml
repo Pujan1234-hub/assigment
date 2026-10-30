@@ -85,7 +85,7 @@ jobs:
           grep -Fq 'hasCurrentMeasurement' "$J/FloodSafeMapActivity.java"
           grep -Fq 'boolean historical=!riverSegment&&!fresh&&Double.isFinite(level)&&observedAt>0' "$J/StationDetailSheet.java"
           grep -Fq 'LAST VERIFIED WATER LEVEL · NOT LIVE' "$J/StationDetailSheet.java"
-          grep -Fq 'पुरानो मापन (३० मिनेटभन्दा पुरानो)' "$J/StationDetailSheet.java"
+          grep -Fq '३० मिनेटभन्दा पुरानो मापन' "$J/StationDetailSheet.java"
           grep -Fq 'MAX_AGE_MS = 10L * 60L * 1000L' "$J/RiverAlertWorker.java"
           grep -Fq "applicationIdSuffix '.preview'" floodsafe-android-app/app/build.gradle
           grep -Fq "versionCode 121" floodsafe-android-app/app/build.gradle

@@ -17,7 +17,8 @@ import java.nio.charset.StandardCharsets;
  */
 final class OfficialStationFeeds {
     private static final String ROOT = "https://pjbuilts.com/api/";
-    private static final long MAX_AGE_MS = 2L * 60L * 60L * 1000L;
+    private static final long MAX_AGE_MS = 2L * 60L * 60L * 1000L; // DHM rainfall remains strict.
+    private static final long RIVER_DISPLAY_MAX_AGE_MS = 30L * 60L * 1000L; // Display only, emergency alerts still require <=10 min.
     private OfficialStationFeeds() {}
 
     static JSONObject rivers() throws Exception {
@@ -41,20 +42,36 @@ final class OfficialStationFeeds {
             putFinite(out,"warningLevel",s,"warning");
             putFinite(out,"dangerLevel",s,"danger");
             long when=timestamp(s.optString("observed",""));
-            boolean recent="observed".equals(s.optString("status"))&&when>0&&
-                 now-when<=MAX_AGE_MS&&when-now<5L*60L*1000L;
+            // Preserve only an explicitly verified, timestamped original gauge
+            // observation for the stale-detail box. Never classify it as live.
+            double verifiedLevel=s.optDouble("level",Double.NaN);
+            boolean hasLastVerified="observed".equals(s.optString("status"))&&when>0&&
+                 when-now<=5L*60L*1000L&&Double.isFinite(verifiedLevel);
+            if(hasLastVerified){
+                out.put("lastVerifiedWaterLevel",verifiedLevel);
+                out.put("lastVerifiedWaterLevelOn",s.optString("observed"));
+            }
+            boolean recent=hasLastVerified&&now-when<=RIVER_DISPLAY_MAX_AGE_MS;
             if(recent&&Double.isFinite(s.optDouble("level",Double.NaN))) {
                 out.put("waterLevel",s.optDouble("level"));
                 out.put("waterLevelOn",s.optString("observed"));
                 // DHM/BIPAD status is based on current reading and validated thresholds.
-                if("DANGER".equalsIgnoreCase(s.optString("reportedStatus")))out.put("_officialStatus","danger");
-                else if("WARNING".equalsIgnoreCase(s.optString("reportedStatus")))out.put("_officialStatus","warning");
+                String official=s.optString("reportedStatus","").toUpperCase(java.util.Locale.ROOT);
+                // Guard against misreading "BELOW WARNING LEVEL" as a warning.
+                if(official.contains("BELOW")||official.contains("NORMAL")) out.put("_officialStatus","normal");
+                else if(official.contains("DANGER"))out.put("_officialStatus","danger");
+                else if(official.contains("WARNING"))out.put("_officialStatus","warning");
             }
             results.put(out);
         }
         JSONObject result=new JSONObject();
         result.put("results",results);
-        result.put("source","FloodSafe BIPAD/DHM official monitoring");
+        String srcType=src.optString("activeObservationSource","none");
+        if(!"dhm".equals(srcType)&&!"bipad".equals(srcType))srcType="none";
+        result.put("activeObservationSource",srcType);
+        result.put("source",src.optString("source","Official river observations"));
+        result.put("dhmStatus",src.optString("dhmStatus","unknown"));
+        result.put("bipadFallbackStatus",src.optString("bipadFallbackStatus","unknown"));
         result.put("count",results.length());
         return result;
     }

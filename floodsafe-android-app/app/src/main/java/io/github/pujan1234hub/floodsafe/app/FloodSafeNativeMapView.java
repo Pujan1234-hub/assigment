@@ -3,7 +3,13 @@ package io.github.pujan1234hub.floodsafe.app;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.Typeface;
+import android.view.View;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -60,12 +66,29 @@ final class FloodSafeNativeMapView extends FrameLayout {
     interface StationTapListener { void onStationTap(Object stationObject); }
 
     private static final LatLng NEPAL_CENTER = new LatLng(28.10, 84.15);
+    // Esri World Imagery returns "Map data not yet available" placeholder images at
+    // some high zoom tile levels in Nepal. Request no deeper than 15 from Esri;
+    // MapLibre scales the available z15 parent imagery as the camera zooms further.
+    // Max camera 17 limits excessive raster blur, and applies to pinch as well as +.
+    private static final int SATELLITE_SOURCE_MAX_ZOOM = 15;
+    private static final double CAMERA_MAX_ZOOM = 17.0;
     private static final String STYLE_JSON = "{\"version\":8,\"sources\":{" +
-            "\"satellite\":{\"type\":\"raster\",\"tiles\":[\"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}\"],\"tileSize\":256,\"maxzoom\":19,\"attribution\":\"Imagery © Esri\"}," +
-            "\"terrain\":{\"type\":\"raster-dem\",\"tiles\":[\"https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png\"],\"tileSize\":256,\"encoding\":\"terrarium\",\"minzoom\":0,\"maxzoom\":15,\"attribution\":\"Terrain © AWS Terrain Tiles\"}}," +
-            "\"layers\":[{\"id\":\"satellite\",\"type\":\"raster\",\"source\":\"satellite\"},{\"id\":\"hillshade\",\"type\":\"hillshade\",\"source\":\"terrain\",\"paint\":{\"hillshade-exaggeration\":0.30,\"hillshade-shadow-color\":\"#14242c\",\"hillshade-highlight-color\":\"#f2fdff\",\"hillshade-accent-color\":\"#4f7f8e\"}}]}";
+            "\"satellite\":{\"type\":\"raster\",\"tiles\":[\"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}\"],\"tileSize\":256,\"maxzoom\":15,\"attribution\":\"Imagery © Esri\"}," +
+            "\"terrain\":{\"type\":\"raster-dem\",\"tiles\":[\"https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png\"],\"tileSize\":256,\"encoding\":\"terrarium\",\"minzoom\":0,\"maxzoom\":15,\"attribution\":\"Terrain © AWS Terrain Tiles\"}," +
+            // Transparent place-name reference overlay: no raster basemap replacement.
+            // Keep max tile zoom 12; overzoom locally instead of requesting unavailable deep tiles.
+            "\"place-labels\":{\"type\":\"raster\",\"tiles\":[\"https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}\"],\"tileSize\":256,\"minzoom\":0,\"maxzoom\":12,\"attribution\":\"Place names © Esri, © OpenStreetMap contributors\"}}," +
+            "\"layers\":[{\"id\":\"satellite\",\"type\":\"raster\",\"source\":\"satellite\"},{\"id\":\"hillshade\",\"type\":\"hillshade\",\"source\":\"terrain\",\"paint\":{\"hillshade-exaggeration\":0.30,\"hillshade-shadow-color\":\"#14242c\",\"hillshade-highlight-color\":\"#f2fdff\",\"hillshade-accent-color\":\"#4f7f8e\"}},{\"id\":\"place-labels\",\"type\":\"raster\",\"source\":\"place-labels\"}]}";
 
     private final MapView mapView;
+    private final View districtNamesOverlay;
+    private volatile List<DistrictLabel> bundledDistrictNames=java.util.Collections.emptyList();
+    private final Paint districtText=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint districtOutline=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private static final class DistrictLabel {
+        final String name;final double lat,lon;
+        DistrictLabel(String n,double a,double o){name=n;lat=a;lon=o;}
+    }
     private final StationTapListener stationTapListener;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -77,9 +100,23 @@ final class FloodSafeNativeMapView extends FrameLayout {
     boolean terrain = true;
     private double userLat = Double.NaN, userLon = Double.NaN;
     private String districtGeoJson = null;
+    private volatile NepalRiverBoundary nationalBoundary;
+    private Runnable weatherOverlayInvalidator;
     private String riversGeoJson = null;
     private long particleStart = 0L;
+    private int riskRevision = 0;
+    private long weatherFrameAt = 0L;
+    private volatile boolean disposed = false;
     private boolean animationRunning = false;
+    private boolean particlesEnabled = true;
+    /** Stop frequent MapLibre source updates while the river map is offscreen. */
+    void setParticleAnimationEnabled(boolean enabled){
+        if(particlesEnabled==enabled)return;
+        particlesEnabled=enabled;
+        if(!enabled){animationRunning=false;main.removeCallbacks(particleTick);}
+        else if(rendererResumed&&!hostPaused&&styleReady)startParticles();
+    }
+    private boolean rendererStarted = false, rendererResumed = false, hostPaused = false;
 
     FloodSafeNativeMapView(Context context, StationTapListener listener) {
         super(context);
@@ -88,11 +125,29 @@ final class FloodSafeNativeMapView extends FrameLayout {
         MapLibre.getInstance(context.getApplicationContext());
         mapView = new MapView(context);
         addView(mapView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        // Native Android text fallback ensures all 77 district names can still render
+        // even if Esri reference/OSM town-label tiles are offline or later retired.
+        districtText.setTextAlign(Paint.Align.CENTER);
+        districtText.setTypeface(Typeface.create("sans-serif-medium",Typeface.BOLD));
+        districtText.setStyle(Paint.Style.FILL);
+        districtText.setColor(Color.WHITE);
+        districtOutline.setTextAlign(Paint.Align.CENTER);
+        districtOutline.setTypeface(Typeface.create("sans-serif-medium",Typeface.BOLD));
+        districtOutline.setStyle(Paint.Style.STROKE);
+        districtOutline.setStrokeJoin(Paint.Join.ROUND);
+        districtOutline.setStrokeWidth(4.5f*getResources().getDisplayMetrics().density);
+        districtOutline.setColor(Color.rgb(14,30,42));
+        districtNamesOverlay=new View(context){
+            @Override protected void onDraw(Canvas canvas){super.onDraw(canvas);drawBundledDistrictNames(canvas);}
+        };
+        districtNamesOverlay.setClickable(false);
+        districtNamesOverlay.setFocusable(false);
+        addView(districtNamesOverlay,new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
         mapView.onCreate((Bundle) null);
         mapView.getMapAsync(m -> {
             map = m;
             map.setMinZoomPreference(4.8);
-            map.setMaxZoomPreference(19.0);
+            map.setMaxZoomPreference(CAMERA_MAX_ZOOM);
             try {
                 LatLngBounds bounds = new LatLngBounds.Builder()
                         .include(new LatLng(25.4, 79.2))
@@ -107,25 +162,49 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 refreshStationSources();
                 refreshRiverRiskSources();
                 refreshUserSource();
-                startParticles();
+                if(rendererResumed)startParticles();
             });
             map.addOnMapClickListener(this::onMapClick);
+            map.addOnCameraIdleListener(()->districtNamesOverlay.invalidate());
+            // Weather icons must redraw during every camera movement, not jump to a cached location.
+            map.addOnCameraMoveListener(() -> {
+                if (!particlesEnabled || hostPaused || disposed) return;
+                long now = android.os.SystemClock.uptimeMillis();
+                // 20Hz keeps weather symbols anchored without projecting 77 points at 60fps.
+                if (now-weatherFrameAt >= 50L) {
+                    weatherFrameAt=now;
+                    Runnable notify = weatherOverlayInvalidator;
+                    if (notify != null) notify.run();
+                    districtNamesOverlay.postInvalidateOnAnimation();
+                }
+            });
         });
         loadBundledGeometry();
     }
 
-    @Override protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        try { mapView.onStart(); } catch (Exception ignored) {}
-        try { mapView.onResume(); } catch (Exception ignored) {}
+    private void resumeRenderer(){
+        if(hostPaused)return;
+        if(!rendererStarted){try{mapView.onStart();rendererStarted=true;}catch(Exception ignored){}}
+        if(!rendererResumed){try{mapView.onResume();rendererResumed=true;}catch(Exception ignored){}}
+        if(styleReady)startParticles();
     }
-
-    @Override protected void onDetachedFromWindow() {
-        animationRunning = false;
+    private void pauseRenderer(){
+        animationRunning=false;
+        main.removeCallbacks(particleTick);
+        if(rendererResumed){try{mapView.onPause();}catch(Exception ignored){}rendererResumed=false;}
+        if(rendererStarted){try{mapView.onStop();}catch(Exception ignored){}rendererStarted=false;}
+    }
+    void onHostPause(){hostPaused=true;pauseRenderer();}
+    void onHostResume(){hostPaused=false;if(isAttachedToWindow())resumeRenderer();}
+    @Override protected void onAttachedToWindow(){
+        super.onAttachedToWindow();
+        resumeRenderer();
+    }
+    @Override protected void onDetachedFromWindow(){
+        disposed=true;
+        hostPaused=true;pauseRenderer();
         main.removeCallbacksAndMessages(null);
-        try { mapView.onPause(); } catch (Exception ignored) {}
-        try { mapView.onStop(); } catch (Exception ignored) {}
-        try { mapView.onDestroy(); } catch (Exception ignored) {}
+        try{mapView.onDestroy();}catch(Exception ignored){}
         io.shutdownNow();
         super.onDetachedFromWindow();
     }
@@ -139,6 +218,18 @@ final class FloodSafeNativeMapView extends FrameLayout {
         }
         return super.dispatchTouchEvent(ev);
     }
+
+    /** Read-only screen coordinate projection for the separate district weather layer.
+     * Does not mutate MapLibre river lines, flow particles, or stations.
+     */
+    android.graphics.PointF weatherPoint(double lat,double lon) {
+        if(map==null||!Double.isFinite(lat)||!Double.isFinite(lon))return null;
+        try{return map.getProjection().toScreenLocation(new LatLng(lat,lon));}
+        catch(Exception ignored){return null;}
+    }
+    double weatherZoom() {return map==null?5.4:map.getCameraPosition().zoom;}
+    void setWeatherOverlayInvalidator(Runnable invalidator) { weatherOverlayInvalidator = invalidator; }
+    void updateUserLocation(double lat,double lon){userLat=lat;userLon=lon;refreshUserSource();}
 
     void setBase(Bitmap ignored) { }
 
@@ -165,7 +256,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         if (map == null) return;
         double current = map.getCameraPosition().zoom;
         double delta = Math.log(Math.max(0.2f, factor)) / Math.log(2.0);
-        map.animateCamera(CameraUpdateFactory.zoomTo(Math.max(4.8, Math.min(19.0, current + delta))), 300);
+        map.animateCamera(CameraUpdateFactory.zoomTo(Math.max(4.8, Math.min(CAMERA_MAX_ZOOM, current + delta))), 300);
     }
 
     void resetView() {
@@ -184,8 +275,53 @@ final class FloodSafeNativeMapView extends FrameLayout {
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cp), 500);
     }
 
+
+    /** 77 reliable locally bundled names, positioned in the native camera projection. */
+    private void drawBundledDistrictNames(Canvas canvas){
+        if(map==null||canvas==null)return;
+        double zoom=map.getCameraPosition().zoom;
+        if(zoom<5.15||zoom>11.8)return;
+        List<DistrictLabel> labels=bundledDistrictNames;
+        if(labels.isEmpty())return;
+        float density=getResources().getDisplayMetrics().density;
+        float sp=getResources().getDisplayMetrics().scaledDensity;
+        float font=(zoom>=8.2?13.5f:zoom>=6.6?12.3f:11.2f)*sp;
+        districtText.setTextSize(font);
+        districtOutline.setTextSize(font);
+        List<RectF> used=new ArrayList<>(75);
+        for(DistrictLabel d:labels){
+            PointF p;
+            try{p=map.getProjection().toScreenLocation(new LatLng(d.lat,d.lon));}
+            catch(Exception e){continue;}
+            if(p==null||p.x<25*density||p.y<25*density||
+               p.x>getWidth()-25*density||p.y>getHeight()-25*density)continue;
+            float textWidth=districtText.measureText(d.name);
+            RectF rect=new RectF(p.x-textWidth*.5f-4*density,p.y-font-4*density,
+                                 p.x+textWidth*.5f+4*density,p.y+5*density);
+            boolean overlap=false;
+            for(RectF prior:used)if(RectF.intersects(prior,rect)){overlap=true;break;}
+            if(overlap)continue;
+            used.add(rect);
+            canvas.drawText(d.name,p.x,p.y,districtOutline);
+            canvas.drawText(d.name,p.x,p.y,districtText);
+        }
+    }
+
     private void loadBundledGeometry() {
         io.execute(() -> {
+            try{
+                JSONArray districts=DistrictWeatherStore.districts(getContext());
+                List<DistrictLabel> local=new ArrayList<>(districts.length());
+                for(int i=0;i<districts.length();i++){
+                    JSONObject d=districts.optJSONObject(i);if(d==null)continue;
+                    double lat=d.optDouble("lat",Double.NaN),lon=d.optDouble("lon",Double.NaN);
+                    String name=d.optString("name","").trim();
+                    if(!name.isEmpty()&&Double.isFinite(lat)&&Double.isFinite(lon)
+                       &&lat>=26.2&&lat<=30.5&&lon>=80.0&&lon<=88.35)
+                        local.add(new DistrictLabel(name,lat,lon));
+                }
+                bundledDistrictNames=java.util.Collections.unmodifiableList(local);
+            }catch(Exception ignored){}
             try {
                 districtGeoJson = readAsset("data/nepal-districts.geojson");
             } catch (Exception ignored) {
@@ -193,8 +329,10 @@ final class FloodSafeNativeMapView extends FrameLayout {
             }
             try {
                 String raw;
-                try { raw = readAsset("data/nepal-waterways-snapshot.json"); }
-                catch (Exception e) { raw = readAsset("data/nepal-waterways-tiles/overview.json"); }
+                // National overview is the compact real river dataset; keep the full snapshot bundled for detailed future use.
+                // Parsing the 48MB snapshot in one pass causes large transient JSON allocations and slow startup.
+                try { raw = readAsset("data/nepal-waterways-tiles/overview.json"); }
+                catch (Exception e) { raw = readAsset("data/nepal-waterways-snapshot.json"); }
                 JSONObject root = new JSONObject(raw);
                 JSONArray ways = root.optJSONArray("waterways");
                 // Use the genuine Nepal border, not the old rectangular bounding box.
@@ -202,6 +340,11 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 // waterways across another country.
                 NepalRiverBoundary nepalClip = districtGeoJson == null
                         ? null : new NepalRiverBoundary(districtGeoJson);
+                nationalBoundary = nepalClip;
+                // A station received before the district polygons load must also be rechecked.
+                if (nepalClip != null) synchronized (stations) {
+                    stations.removeIf(station -> !nepalClip.contains(station.lon, station.lat));
+                }
                 if (ways != null && nepalClip != null) {
                     List<RiverWay> all = new ArrayList<>();
                     for (int i = 0; i < ways.length(); i++) {
@@ -219,17 +362,56 @@ final class FloodSafeNativeMapView extends FrameLayout {
                             rw.name = name;
                             rw.type = type;
                             rw.points.addAll(clipped);
-                            if (rw.points.size() >= 2) all.add(rw);
+                            if (rw.points.size() >= 2) {
+                                for(double[] pt : clipped) {
+                                    rw.minLat=Math.min(rw.minLat,pt[1]);rw.maxLat=Math.max(rw.maxLat,pt[1]);
+                                    rw.minLon=Math.min(rw.minLon,pt[0]);rw.maxLon=Math.max(rw.maxLon,pt[0]);
+                                }
+                                all.add(rw);
+                            }
                         }
                     }
                     all.sort(Comparator.comparingInt(FloodSafeNativeMapView::riverScore).reversed());
-                    if (all.size() > 1400) all = new ArrayList<>(all.subList(0, 1400));
+                    // Keep the full verified waterways asset for future zoom-tile detail, but
+                    // only render a screen-friendly national overview here. 1400 complex
+                    // GeoJSON lines and 3 risk layers overwhelmed some phones.
+                    // The earlier 500-river cap discarded most of Nepal's real
+                    // overview network. Spread the available line budget across
+                    // longitude bands (far west -> far east), not just top score.
+                    final int MAX_RIVERS=2200;
+                    List<RiverWay> balanced=new ArrayList<>(Math.min(MAX_RIVERS,all.size()));
+                    int[] bandCounts=new int[9];
+                    for(RiverWay rw:all){
+                        if(balanced.size()>=MAX_RIVERS)break;
+                        int band=(int)Math.floor((rw.minLon+rw.maxLon)/2d)-80;
+                        band=Math.max(0,Math.min(8,band));
+                        if(bandCounts[band]>=260)continue;
+                        balanced.add(rw);bandCounts[band]++;
+                    }
+                    // Fill any remaining capacity without duplicating selected rivers.
+                    if(balanced.size()<MAX_RIVERS)for(RiverWay rw:all){
+                        if(balanced.size()>=MAX_RIVERS)break;
+                        if(!balanced.contains(rw))balanced.add(rw);
+                    }
+                    all=balanced;
+                    // More lines, fewer vertices per line, keeping responsive pinch/pan.
+                    for (RiverWay rw : all) {
+                        if (rw.points.size() <= 65) continue;
+                        List<double[]> sampled = new ArrayList<>(65);
+                        for (int k=0;k<65;k++) {
+                            int at=(int)Math.round((rw.points.size()-1)*k/64d);
+                            sampled.add(rw.points.get(at));
+                        }
+                        rw.points.clear();
+                        rw.points.addAll(sampled);
+                    }
                     rivers.clear();
                     rivers.addAll(all);
                     riversGeoJson = makeRiversGeoJson(all);
                 }
             } catch (Exception ignored) {}
             main.post(() -> {
+                districtNamesOverlay.invalidate();
                 installGeoLayers();
                 refreshRiverRiskSources();
             });
@@ -306,19 +488,33 @@ final class FloodSafeNativeMapView extends FrameLayout {
     }
 
     private void refreshRiverRiskSources() {
-        if (!styleReady || style == null || rivers.isEmpty()) return;
-        List<StationDot> snapshot;
+        if (!styleReady || style == null || rivers.isEmpty() || disposed) return;
+        // The old version did 1400 rivers x every station x hundreds of points,
+        // plus JSON serialization ON THE UI THREAD. This could freeze Android and cause ANR.
+        final int version = ++riskRevision;
+        final List<RiverWay> geometry = new ArrayList<>(rivers);
+        final List<StationDot> snapshot;
         synchronized (stations) { snapshot = new ArrayList<>(stations); }
-        for (RiverWay river : rivers) river.stage = riverStage(river, snapshot);
-        setGeo("fs-river-alert", riverGeoByStage(rivers, "alert"));
-        setGeo("fs-river-warning", riverGeoByStage(rivers, "warning"));
-        setGeo("fs-river-danger", riverGeoByStage(rivers, "danger"));
+        io.execute(() -> {
+            try {
+                for (RiverWay river : geometry) river.stage = riverStage(river, snapshot);
+                final String yellow = riverGeoByStage(geometry, "alert");
+                final String orange = riverGeoByStage(geometry, "warning");
+                final String red = riverGeoByStage(geometry, "danger");
+                main.post(() -> {
+                    if (disposed || version != riskRevision || !styleReady || style == null) return;
+                    setGeo("fs-river-alert", yellow);
+                    setGeo("fs-river-warning", orange);
+                    setGeo("fs-river-danger", red);
+                });
+            } catch (Exception ignored) {}
+        });
     }
 
     private static String riverStage(RiverWay river, List<StationDot> snapshot) {
         int best = 0;
         for (StationDot s : snapshot) {
-            if (!s.fresh) continue;
+            if (!s.fresh || !withinRiverEnvelope(s, river, 0.06)) continue;
             String stage = normalizeStage(s.stage);
             int severity = severity(stage);
             if (severity <= best || severity == 0) continue;
@@ -330,6 +526,11 @@ final class FloodSafeNativeMapView extends FrameLayout {
         return "normal";
     }
 
+    private static boolean withinRiverEnvelope(StationDot s, RiverWay r, double pad) {
+        // Bounding envelopes are calculated once, OFF the main thread during geometry load.
+        return s.lat>=r.minLat-pad && s.lat<=r.maxLat+pad
+            && s.lon>=r.minLon-pad && s.lon<=r.maxLon+pad;
+    }
     private static boolean stationNearRiver(StationDot s, RiverWay r, double maxKm) {
         int stride = Math.max(1, r.points.size() / 100);
         double best = Double.MAX_VALUE;
@@ -418,7 +619,13 @@ final class FloodSafeNativeMapView extends FrameLayout {
 
     private RiverWay nearestRiver(double la, double lo, double thresholdKm) {
         RiverWay best = null; double d = Double.MAX_VALUE;
+        double latitudePad=thresholdKm/111d+.012d;
+        double longitudePad=thresholdKm/(111d*Math.max(.4d,Math.cos(Math.toRadians(la))))+.012d;
         for (RiverWay r : rivers) {
+            // Precomputed bounding boxes discard nearly every distant river before
+            // the CPU-intensive distance test. This keeps tap responses immediate.
+            if(la<r.minLat-latitudePad || la>r.maxLat+latitudePad ||
+               lo<r.minLon-longitudePad || lo>r.maxLon+longitudePad)continue;
             int stride = Math.max(1, r.points.size() / 140);
             for (int i = 0; i < r.points.size(); i += stride) {
                 double[] p = r.points.get(i);
@@ -429,26 +636,26 @@ final class FloodSafeNativeMapView extends FrameLayout {
         return d <= thresholdKm ? best : null;
     }
 
-    private void showRiver(RiverWay r, double la, double lo) {
-        StationDot gauge = nearestStation(la, lo);
-        StringBuilder msg = new StringBuilder();
-        msg.append("River status: ").append(r.stage.toUpperCase(Locale.ROOT));
-        if (gauge != null) {
-            double d = km(la, lo, gauge.lat, gauge.lon);
-            msg.append("\n\nनजिकको official gauge: ").append(gauge.name)
-                    .append(String.format(Locale.US, " • %.1f km", d));
-            if (Double.isFinite(gauge.level)) msg.append(String.format(Locale.US, "\nपानीको सतह: %.2f m", gauge.level));
-            msg.append("\nStatus: ").append(gauge.fresh ? gauge.stage.toUpperCase(Locale.ROOT) : "STALE / UNKNOWN");
-            if (Double.isFinite(gauge.rainfallMm)) {
-                msg.append(String.format(Locale.US, "\nवर्षा: %.1f mm", gauge.rainfallMm));
-            }
-        } else msg.append("\n\nयो नदी segment नजिक direct official gauge reference भेटिएन।");
-        msg.append("\n\nRainfall station markers map मा देखाइँदैनन्; उपलब्ध rainfall detail station/river detail भित्र मात्र देखाइन्छ।");
-        new AlertDialog.Builder(getContext()).setTitle(r.name).setMessage(msg.toString()).setPositiveButton("ठीक छ", null).show();
+    private void showRiver(RiverWay r,double la,double lo){
+        StationDot gauge=nearestStation(la,lo);
+        String status=gauge!=null&&gauge.fresh?gauge.stage:"stale";
+        double measuredLevel=gauge!=null&&gauge.fresh?gauge.level:Double.NaN;
+        StringBuilder extra=new StringBuilder();
+        extra.append("🗺️ ").append(r.name).append("\n");
+        if(gauge!=null){
+            double d=km(la,lo,gauge.lat,gauge.lon);
+            extra.append("📍 ").append("नजिकको DHM/BIPAD स्टेशन: ").append(gauge.name)
+                 .append(String.format(Locale.US," · %.1f km",d));
+            if(!gauge.fresh)extra.append("\n⚠️ हालको आधिकारिक मापन उपलब्ध छैन।");
+            if(Double.isFinite(gauge.rainfallMm))extra.append(String.format(Locale.US,"\n🌧 %.1f mm",gauge.rainfallMm));
+        } else extra.append("यस खण्ड नजिक पुष्टि भएको DHM gauge भेटिएन।");
+        extra.append("\nयो नदी खण्डमा देखाइएको stage नजिकको स्टेशनबाट आएको सन्दर्भ हो, नदीका सबै बिन्दुको मापन होइन।");
+        StationDetailSheet.show(getContext(),r.name,status,measuredLevel,
+            gauge!=null&&gauge.fresh,0L,extra.toString(),false,true);
     }
 
     private void startParticles() {
-        if (animationRunning) return;
+        if (animationRunning || !particlesEnabled || hostPaused || !rendererResumed) return;
         animationRunning = true;
         particleStart = System.currentTimeMillis();
         main.post(particleTick);
@@ -456,10 +663,10 @@ final class FloodSafeNativeMapView extends FrameLayout {
 
     private final Runnable particleTick = new Runnable() {
         @Override public void run() {
-            if (!animationRunning || !styleReady || style == null) return;
+            if (!animationRunning || !particlesEnabled || hostPaused || !rendererResumed || !styleReady || style == null) return;
             try {
                 JSONArray features = new JSONArray();
-                int n = Math.min(36, rivers.size());
+                int n = Math.min(24, rivers.size());
                 double phase = ((System.currentTimeMillis() - particleStart) % 6500L) / 6500.0;
                 for (int i = 0; i < n; i++) {
                     RiverWay r = rivers.get(i);
@@ -474,7 +681,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
                 JSONObject fc = new JSONObject().put("type", "FeatureCollection").put("features", features);
                 setGeo("fs-flow-particles", fc.toString());
             } catch (Exception ignored) {}
-            main.postDelayed(this, 160L);
+            main.postDelayed(this, 350L);
         }
     };
 
@@ -484,6 +691,9 @@ final class FloodSafeNativeMapView extends FrameLayout {
             Class<?> c = o.getClass();
             double la = getDouble(c, o, "lat"), lo = getDouble(c, o, "lon");
             if (!Double.isFinite(la) || !Double.isFinite(lo)) return null;
+            // Rectangle checks alone allow stations in India/China: use Nepal's 77-district union.
+            NepalRiverBoundary boundary = nationalBoundary;
+            if (boundary != null && !boundary.contains(lo,la)) return null;
             StationDot s = new StationDot();
             s.original = o; s.lat = la; s.lon = lo;
             s.name = getString(c, o, "name", "Official river station");
@@ -596,6 +806,10 @@ final class FloodSafeNativeMapView extends FrameLayout {
         Object original; String name, stage; double lat, lon, level, rainfallMm; boolean fresh;
     }
     private static final class RiverWay {
-        String name, type, stage = "normal"; final List<double[]> points = new ArrayList<>();
+        String name, type;
+        volatile String stage = "normal";
+        double minLat=Double.POSITIVE_INFINITY,maxLat=Double.NEGATIVE_INFINITY;
+        double minLon=Double.POSITIVE_INFINITY,maxLon=Double.NEGATIVE_INFINITY;
+        final List<double[]> points = new ArrayList<>();
     }
 }

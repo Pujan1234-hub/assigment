@@ -41,8 +41,6 @@ import java.util.Locale;
  * fallback when a river name cannot be mapped to the bundled native river network.
  */
 public final class RiverAlertWorker extends Worker {
-    private static final String ENDPOINT =
-            "https://camkoacuokffryyrygda.supabase.co/functions/v1/sync-bipad-rivers";
     private static final String CHANNEL_ID = "official_nepal_alerts_v3";
     private static final String PUSH_PREFS = "floodsafe_push_guard";
     private static final double RADIUS_KM = 2d;
@@ -108,30 +106,6 @@ public final class RiverAlertWorker extends Worker {
         } catch (Exception ignored) {
             return Result.retry();
         }
-    }
-
-    private static JSONObject fetch() throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) new URL(ENDPOINT + "?_fs=" + System.currentTimeMillis()).openConnection();
-        connection.setConnectTimeout(15000);
-        connection.setReadTimeout(20000);
-        connection.setUseCaches(false);
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setRequestProperty("Cache-Control", "no-cache, no-store");
-        connection.setRequestProperty("Pragma", "no-cache");
-        int code = connection.getResponseCode();
-        if (code != 200) {
-            connection.disconnect();
-            throw new IllegalStateException("River HTTP " + code);
-        }
-        StringBuilder body = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                connection.getInputStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) body.append(line);
-        } finally {
-            connection.disconnect();
-        }
-        return new JSONObject(body.toString());
     }
 
     private static final class Hazard {

@@ -1,0 +1,84 @@
+name: FloodSafe Nepal owner-controlled service notifications
+on:
+  workflow_dispatch:
+    inputs:
+      audience:
+        description: 'Delivery audience: preview devices first, all only after testing'
+        type: choice
+        options:
+          - preview
+          - all
+        default: preview
+        required: true
+      title_ne:
+        description: 'Nepali notification title'
+        type: string
+        required: true
+      body_ne:
+        description: 'Nepali notification text'
+        type: string
+        required: true
+      title_en:
+        description: 'English notification title'
+        type: string
+        required: true
+      body_en:
+        description: 'English notification text'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+concurrency:
+  group: floodsafe-manual-service-notice
+  cancel-in-progress: false
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Deliver validated app notice through Firebase (never an emergency alert)
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          AUDIENCE: ${{ inputs.audience }}
+          TITLE_NE: ${{ inputs.title_ne }}
+          BODY_NE: ${{ inputs.body_ne }}
+          TITLE_EN: ${{ inputs.title_en }}
+          BODY_EN: ${{ inputs.body_en }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet google-auth requests
+          python3 - <<'PY'
+          import json,os,sys,requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+          audience=os.environ.get('AUDIENCE')
+          if audience not in ('preview','all'):sys.exit('Audience must be preview or all')
+          title_ne=os.environ.get('TITLE_NE','').strip()
+          title_en=os.environ.get('TITLE_EN','').strip()
+          body_ne=os.environ.get('BODY_NE','').strip()
+          body_en=os.environ.get('BODY_EN','').strip()
+          if any(not s or len(s)>limit for s,limit in (
+              (title_ne,90),(title_en,90),(body_ne,500),(body_en,500))):
+              sys.exit('Both languages are required within safe lengths')
+          raw=os.environ.get('FIREBASE_SERVICE_ACCOUNT','').strip()
+          if not raw:sys.exit('FIREBASE_SERVICE_ACCOUNT not configured: no message sent')
+          service=json.loads(raw)
+          creds=service_account.Credentials.from_service_account_info(
+              service,scopes=['https://www.googleapis.com/auth/firebase.messaging'])
+          creds.refresh(Request())
+          # No source URLs, authority impersonation or remote executable payloads.
+          title='ℹ️ '+title_ne+' / '+title_en
+          body=body_ne+'\n'+body_en
+          topic='floodsafe-testers' if audience=='preview' else 'nepal-alerts'
+          payload={'message':{'topic':topic,
+              'data':{'kind':'app_notice','title':title[:180],'body':body[:1050]},
+              'android':{'priority':'high','ttl':'1800s'}}}
+          url=f"https://fcm.googleapis.com/v1/projects/{service['project_id']}/messages:send"
+          r=requests.post(url,headers={
+              'Authorization':'Bearer '+creds.token,'Content-Type':'application/json'
+          },json=payload,timeout=20)
+          r.raise_for_status()
+          print(json.dumps({'submitted':True,'audience':audience,
+              'kind':'app_notice','fcm_accepted':True,'delivery_confirmed':False}))
+          PY

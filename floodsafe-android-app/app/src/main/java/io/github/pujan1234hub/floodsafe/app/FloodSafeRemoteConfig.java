@@ -46,19 +46,33 @@ final class FloodSafeRemoteConfig {
         final List<String> triggers;final String ne,en;
         FAQ(List<String> t,String n,String e){triggers=t;ne=n;en=e;}
     }
+    // Informational OTA notice: never an official warning or a change to alert safety.
+    private static final class Notice {
+        final String titleNe,titleEn,bodyNe,bodyEn;
+        final long startsAt,expiresAt;
+        Notice(String tn,String te,String bn,String be,long start,long end){
+            titleNe=tn;titleEn=te;bodyNe=bn;bodyEn=be;startsAt=start;expiresAt=end;
+        }
+        String text(boolean english){
+            long now=System.currentTimeMillis();
+            if(now<startsAt||now>=expiresAt)return null;
+            return (english?titleEn:titleNe)+"\n"+(english?bodyEn:bodyNe);
+        }
+    }
     private static final class Snapshot {
         final int revision,newsPollSeconds,knowledgeSeconds;
         final boolean enabled;
         final List<GyanKnowledge.Entry> lessons;
         final List<FAQ> faqs;
         final String canonical;
-        Snapshot(int r,int p,int k,boolean e,List<GyanKnowledge.Entry> l,List<FAQ> f,String c){
+        final Notice notice;
+        Snapshot(int r,int p,int k,boolean e,List<GyanKnowledge.Entry> l,List<FAQ> f,String c,Notice n){
             revision=r;newsPollSeconds=p;knowledgeSeconds=k;enabled=e;
             lessons=Collections.unmodifiableList(new ArrayList<>(l));
             faqs=Collections.unmodifiableList(new ArrayList<>(f));
-            canonical=c;
+            canonical=c;notice=n;
         }
-        static Snapshot defaults(){return new Snapshot(0,60,11,false,Collections.emptyList(),Collections.emptyList(),"");}
+        static Snapshot defaults(){return new Snapshot(0,60,11,false,Collections.emptyList(),Collections.emptyList(),"",null);}
     }
 
     static void init(Context ctx){
@@ -80,6 +94,11 @@ final class FloodSafeRemoteConfig {
     static int knowledgeRotateMillis(){return current.knowledgeSeconds*1000;}
     static boolean remoteEnabled(){return current.enabled;}
     static String source(){return RAW;}
+    /** Null when no currently active, validated owner notice is published. */
+    static String activeNotice(boolean english){
+        Notice notice=current.notice;
+        return notice==null?null:notice.text(english);
+    }
 
     static GyanKnowledge.Entry newsLessonAt(int index){
         Snapshot s=current;
@@ -187,8 +206,25 @@ final class FloodSafeRemoteConfig {
                 faqs.add(new FAQ(triggers,ne,en));
             }
         }
-        return enabled?new Snapshot(revision,poll,rotate,true,lessons,faqs,raw)
-                      :new Snapshot(revision,60,11,false,Collections.emptyList(),Collections.emptyList(),raw);
+        // Owner notices are time-bounded, bilingual, plain text, not code or warnings.
+        Notice notice=null;
+        JSONObject bulletin=o.optJSONObject("app_notice");
+        if(enabled&&bulletin!=null&&bulletin.optBoolean("enabled",false)){
+            String type=safe(bulletin.optString("type","service"),20);
+            if(!type.matches("service|maintenance|announcement"))
+                throw new IllegalArgumentException("notice type");
+            String tn=required(bulletin,"title_ne",120);
+            String te=required(bulletin,"title_en",120);
+            String bn=required(bulletin,"body_ne",700);
+            String be=required(bulletin,"body_en",700);
+            long start=java.time.Instant.parse(required(bulletin,"starts_at",40)).toEpochMilli();
+            long end=java.time.Instant.parse(required(bulletin,"expires_at",40)).toEpochMilli();
+            if(end<=start||end-start>14L*24L*60L*60L*1000L)
+                throw new IllegalArgumentException("notice expiry");
+            notice=new Notice(tn,te,bn,be,start,end);
+        }
+        return enabled?new Snapshot(revision,poll,rotate,true,lessons,faqs,raw,notice)
+                      :new Snapshot(revision,60,11,false,Collections.emptyList(),Collections.emptyList(),raw,null);
     }
     private static int bounded(int x,int a,int b,int fallback){return x<a||x>b?fallback:x;}
     private static String required(JSONObject o,String key,int max){

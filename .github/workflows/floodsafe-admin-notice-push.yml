@@ -54,6 +54,9 @@ jobs:
           from google.auth.transport.requests import Request
           audience=os.environ.get('AUDIENCE')
           if audience not in ('preview','all'):sys.exit('Audience must be preview or all')
+          # Protect users from an accidental broadcast while preview testing is ongoing.
+          if audience=='all':
+              sys.exit('Broadcast to all users intentionally disabled until preview delivery is verified')
           title_ne=os.environ.get('TITLE_NE','').strip()
           title_en=os.environ.get('TITLE_EN','').strip()
           body_ne=os.environ.get('BODY_NE','').strip()
@@ -64,6 +67,10 @@ jobs:
           raw=os.environ.get('FIREBASE_SERVICE_ACCOUNT','').strip()
           if not raw:sys.exit('FIREBASE_SERVICE_ACCOUNT not configured: no message sent')
           service=json.loads(raw)
+          if service.get('project_id')!='floodsafe-nepal':
+              sys.exit('Wrong Firebase project. Expected floodsafe-nepal; no message sent')
+          if not service.get('client_email','').endswith('.gserviceaccount.com'):
+              sys.exit('Invalid Firebase service account; no message sent')
           creds=service_account.Credentials.from_service_account_info(
               service,scopes=['https://www.googleapis.com/auth/firebase.messaging'])
           creds.refresh(Request())
@@ -80,5 +87,6 @@ jobs:
           },json=payload,timeout=20)
           r.raise_for_status()
           print(json.dumps({'submitted':True,'audience':audience,
+              'target_project':'floodsafe-nepal',
               'kind':'app_notice','fcm_accepted':True,'delivery_confirmed':False}))
           PY

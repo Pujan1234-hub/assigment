@@ -61,4 +61,27 @@ jobs:
           print('APP_ESTIMATED_STAGE',dict(fresh_counts))
           print('AGE_STATS_MIN',min(timestamps) if timestamps else 'none','MAX',max(timestamps) if timestamps else 'none')
           print('WATCH_EXAMPLES',json.dumps(near_watch[:22],ensure_ascii=False))
+          for limit in (2,10,30,120,1440):
+            counts=collections.Counter()
+            for row in rows:
+              raw=row.get('observed') or ''
+              try:when=datetime.datetime.fromisoformat(raw.replace('Z','+00:00')).astimezone(timezone.utc)
+              except Exception:when=None
+              age=(now-when).total_seconds()/60 if when else 999999
+              if row.get('status')!='observed' or not -5<=age<=limit:
+                counts['stale']+=1
+                continue
+              def fl(k):
+                try:return float(row.get(k))
+                except (ValueError,TypeError):return float('nan')
+              level,warning,danger=fl('level'),fl('warning'),fl('danger')
+              rawstatus=str(row.get('reportedStatus') or '').upper()
+              if not math.isfinite(level):counts['unmeasured']+=1
+              elif (math.isfinite(danger) and danger>0 and level>=danger) or ('DANGER' in rawstatus and 'BELOW' not in rawstatus):counts['danger']+=1
+              elif (math.isfinite(warning) and warning>0 and level>=warning) or ('WARNING' in rawstatus and 'BELOW' not in rawstatus):counts['warning']+=1
+              elif (math.isfinite(warning) and warning>0 and level>=.8*warning) or ('WATCH' in rawstatus or 'ALERT' in rawstatus):counts['watch']+=1
+              else:counts['normal']+=1
+            print('FRESH_WINDOW_MINUTES',limit,'COUNTS',dict(counts))
+          print('REPORTED_STATUS_COUNTER',dict(collections.Counter(str(row.get('reportedStatus')) for row in rows)))
+
           PY

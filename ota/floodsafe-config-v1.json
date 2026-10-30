@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 3,
+  "revision": 4,
   "enabled": true,
   "news": {
     "poll_seconds": 60,
@@ -59,13 +59,13 @@
     }
   ],
   "app_notice": {
-    "enabled": false,
-    "type": "service",
-    "title_ne": "FloodSafe Nepal सेवा सूचना",
-    "title_en": "FloodSafe Nepal service notice",
-    "body_ne": "कुनै आधिकारिक स्रोत अस्थायी रूपमा उपलब्ध नभए यहाँ पुष्टि गरिएको जानकारी देखाइनेछ।",
-    "body_en": "Verified service updates are displayed here if an official feed is temporarily unavailable.",
-    "starts_at": "2026-10-30T00:00:00Z",
-    "expires_at": "2026-11-06T00:00:00Z"
+    "enabled": true,
+    "type": "announcement",
+    "title_ne": "FloodSafe Nepal OTA परीक्षण",
+    "title_en": "FloodSafe Nepal OTA Test",
+    "body_ne": "यो PJBUILTS बाट पठाइएको परीक्षण सूचना हो। कुनै नदी खतरा चेतावनी होइन। नयाँ APK बिना सूचना परिवर्तन भएको जाँच गर्नुहोस्।",
+    "body_en": "This is a PJBUILTS service notice test, not a river danger warning. It checks notice updates without a new APK.",
+    "starts_at": "2026-10-30T20:00:00Z",
+    "expires_at": "2026-10-31T20:00:00Z"
   }
 }

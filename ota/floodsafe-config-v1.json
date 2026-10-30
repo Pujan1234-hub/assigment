@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 4,
+  "revision": 5,
   "enabled": true,
   "news": {
     "poll_seconds": 60,
@@ -61,11 +61,11 @@
   "app_notice": {
     "enabled": true,
     "type": "announcement",
-    "title_ne": "FloodSafe Nepal OTA परीक्षण",
-    "title_en": "FloodSafe Nepal OTA Test",
-    "body_ne": "यो PJBUILTS बाट पठाइएको परीक्षण सूचना हो। कुनै नदी खतरा चेतावनी होइन। नयाँ APK बिना सूचना परिवर्तन भएको जाँच गर्नुहोस्।",
-    "body_en": "This is a PJBUILTS service notice test, not a river danger warning. It checks notice updates without a new APK.",
-    "starts_at": "2026-10-30T20:00:00Z",
-    "expires_at": "2026-10-31T20:00:00Z"
+    "title_ne": "OTA दोस्रो परीक्षण — FloodSafe Nepal",
+    "title_en": "OTA Test 2 — FloodSafe Nepal",
+    "body_ne": "यो दोस्रो OTA परीक्षण सूचना हो। पुरानै TEST APK मा यो नयाँ सन्देश देखिए server बाट परिवर्तन सही आइरहेको छ। यो नदीको खतरा चेतावनी होइन।",
+    "body_en": "This is the second OTA test. If this new message appears in the same TEST APK, the remote update has arrived without reinstalling. This is not a river danger warning.",
+    "starts_at": "2026-10-30T00:00:00Z",
+    "expires_at": "2026-11-01T23:00:00Z"
   }
 }

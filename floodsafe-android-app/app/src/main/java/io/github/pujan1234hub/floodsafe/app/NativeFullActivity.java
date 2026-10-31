@@ -688,7 +688,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 lm.requestSingleUpdate(LocationManager.GPS_PROVIDER,this,getMainLooper());
             else if(lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
                 lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER,this,getMainLooper());
-        }catch(Exception ignored){}
+        }catch(SecurityException ignored){}catch(Exception ignored){}
     }
     @Override public void onLocationChanged(Location l){
         if(l==null||!Double.isFinite(l.getLatitude())||!Double.isFinite(l.getLongitude()))return;

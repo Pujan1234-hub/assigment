@@ -41,7 +41,7 @@ public final class FloodSafeNasaSatelliteActivity extends Activity {
         title.setText("🛰 NASA • नेपाल भू–उपग्रह");
         title.setTextSize(16);title.setTextColor(Color.rgb(19,65,84));
         title.setGravity(Gravity.CENTER_VERTICAL);
-        title.setTypeface(null,1);
+        title.setTypeface(null,android.graphics.Typeface.BOLD);
         Button reload=new Button(this);
         reload.setText("↻");
         reload.setContentDescription("Reload NASA map");

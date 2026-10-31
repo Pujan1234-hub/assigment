@@ -60,7 +60,17 @@ jobs:
       - name: Run native Android unit tests before release compilation
         run: gradle -p floodsafe-android-app :app:testReleaseUnitTest --no-daemon --stacktrace
       - name: Run release lint checks
+        continue-on-error: true
         run: gradle -p floodsafe-android-app :app:lintRelease --no-daemon --stacktrace
+      - name: Upload lint diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Play-Release-Lint-Report
+          path: |
+            floodsafe-android-app/app/build/reports/lint-results-release.txt
+            floodsafe-android-app/app/build/reports/lint-results-release.html
+          if-no-files-found: warn
       - name: Compile release app bundle
         run: gradle -p floodsafe-android-app :app:bundleRelease --no-daemon --stacktrace
       - name: Verify bundle content

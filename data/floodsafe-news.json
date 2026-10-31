@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-31T07:59:28.114133Z",
+  "generated_at": "2026-10-31T14:28:42.865505Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "गाईघाटमा आजदेखि ‘त्रियुगा अन्तर्राष्ट्रिय आमन्त्रण गोल्डकप’ सुरु, विजेताले ५ लाख पाउने",
-      "url": "https://radionepalonline.com/2026/10/31/744876.html",
-      "published_at": "2026-10-31T07:32:01Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

@@ -30,9 +30,12 @@ jobs:
           sed -i "s/versionCode 121/versionCode 122/" floodsafe-android-app/app/build.gradle
           sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.21'/" floodsafe-android-app/app/build.gradle
       - name: Bundle complete offline FloodSafe assets
-        run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon --stacktrace
+        run: |
+          python3 floodsafe-android-app/bundle_web.py
+          mkdir -p floodsafe-android-app/app/src/main/assets
+          cp -a floodsafe-android-app/app/build/generated/floodsafe-assets/. floodsafe-android-app/app/src/main/assets/
       - name: Compile release app bundle
-        run: gradle -p floodsafe-android-app :app:bundleRelease -x bundleFloodSafe --no-daemon --stacktrace
+        run: gradle -p floodsafe-android-app :app:bundleRelease --no-daemon --stacktrace
       - name: Verify bundle content
         run: |
           set -euo pipefail

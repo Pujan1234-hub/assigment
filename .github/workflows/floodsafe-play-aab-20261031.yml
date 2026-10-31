@@ -58,7 +58,7 @@ jobs:
           mkdir -p floodsafe-android-app/app/src/main/assets
           cp -a floodsafe-android-app/app/build/generated/floodsafe-assets/. floodsafe-android-app/app/src/main/assets/
       - name: Run native Android unit tests before release compilation
-        run: gradle -p floodsafe-android-app :app:testDebugUnitTest --no-daemon --stacktrace
+        run: gradle -p floodsafe-android-app :app:testReleaseUnitTest --no-daemon --stacktrace
       - name: Run release lint checks
         run: gradle -p floodsafe-android-app :app:lintRelease --no-daemon --stacktrace
       - name: Compile release app bundle

@@ -1,0 +1,54 @@
+name: FloodSafe Nepal Play AAB candidate (unsigned)
+on:
+  push:
+    branches:
+      - build/floodsafe-play-aab-20261031
+    paths:
+      - '.github/workflows/floodsafe-play-aab-20261031.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Install Android platform and build tools
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
+      - name: Set next release version without changing stable source
+        run: |
+          sed -i "s/versionCode 121/versionCode 122/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.21'/" floodsafe-android-app/app/build.gradle
+      - name: Bundle complete offline FloodSafe assets
+        run: gradle -p floodsafe-android-app :app:bundleFloodSafe --no-daemon --stacktrace
+      - name: Compile release app bundle
+        run: gradle -p floodsafe-android-app :app:bundleRelease -x bundleFloodSafe --no-daemon --stacktrace
+      - name: Verify bundle content
+        run: |
+          set -euo pipefail
+          AAB=floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab
+          test -s "$AAB"
+          unzip -t "$AAB" >/dev/null
+          unzip -l "$AAB" | grep -q 'base/dex/classes.dex'
+          unzip -l "$AAB" | grep -q 'base/assets/floodsafe-nepal/v25/index.html'
+          sha256sum "$AAB" > floodsafe-aab-sha256.txt
+          du -h "$AAB"
+      - name: Archive unsigned AAB for secure local signing
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.21-unsigned-play-bundle
+          path: |
+            floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab
+            floodsafe-aab-sha256.txt
+          if-no-files-found: error
+          retention-days: 14

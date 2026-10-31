@@ -60,7 +60,6 @@ jobs:
       - name: Run native Android unit tests before release compilation
         run: gradle -p floodsafe-android-app :app:testReleaseUnitTest --no-daemon --stacktrace
       - name: Run release lint checks
-        continue-on-error: true
         run: gradle -p floodsafe-android-app :app:lintRelease --no-daemon --stacktrace
       - name: Upload lint diagnostics
         if: always()

@@ -1,0 +1,39 @@
+name: Improve FloodSafe v0.9.21 Beta release information
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/floodsafe-release-details-v0921.yml'
+      - '.github/release-notes/floodsafe-v0921.md'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update-release-details:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update only release title and notes; preserve prerelease and APK assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG='floodsafe-v0921-last-reading-test-20261030'
+          TITLE='FloodSafe Nepal v0.9.21 — Android Beta Test'
+          NOTES='.github/release-notes/floodsafe-v0921.md'
+          test -s "$NOTES"
+          BEFORE="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")"
+          test "$(jq -r '.prerelease' <<< "$BEFORE")" = true
+          test "$(jq -r '.draft' <<< "$BEFORE")" = false
+          printf '%s' "$BEFORE" | jq -r '.assets[] | [.name,(.size|tostring),(.id|tostring)] | @tsv' | sort > /tmp/floodsafe-assets-before.tsv
+          test "$(wc -l < /tmp/floodsafe-assets-before.tsv)" -eq 3
+          gh release edit "$TAG" -R "$GITHUB_REPOSITORY" --title "$TITLE" --notes-file "$NOTES"
+          AFTER="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")"
+          test "$(jq -r '.name' <<< "$AFTER")" = "$TITLE"
+          test "$(jq -r '.prerelease' <<< "$AFTER")" = true
+          test "$(jq -r '.draft' <<< "$AFTER")" = false
+          printf '%s' "$AFTER" | jq -r '.assets[] | [.name,(.size|tostring),(.id|tostring)] | @tsv' | sort > /tmp/floodsafe-assets-after.tsv
+          diff -u /tmp/floodsafe-assets-before.tsv /tmp/floodsafe-assets-after.tsv
+          echo 'SUCCESS: Release information updated; all original APK assets and prerelease status retained.'

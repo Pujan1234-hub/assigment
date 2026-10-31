@@ -49,13 +49,13 @@ public final class FloodSafeAdvancedActivity extends Activity {
   lat=getIntent().getDoubleExtra("lat",Double.NaN);
   lon=getIntent().getDoubleExtra("lon",Double.NaN);
   getWindow().setStatusBarColor(Color.rgb(224,243,252));
-  LinearLayout page=new LinearLayout(this);page.setOrientation(1);page.setPadding(dp(12),dp(12),dp(12),0);page.setBackgroundColor(Color.rgb(232,246,253));
+  LinearLayout page=new LinearLayout(this);page.setOrientation(LinearLayout.VERTICAL);page.setPadding(dp(12),dp(12),dp(12),0);page.setBackgroundColor(Color.rgb(232,246,253));
   Button back=button("← "+tr("गृह","Home"));back.setOnClickListener(v->finish());page.addView(back,new LinearLayout.LayoutParams(-1,dp(45)));
   TextView title=label(tr("FloodSafe Nepal · उन्नत जानकारी","FloodSafe Nepal · Advanced"),22,true);page.addView(title);
   TextView desc=label(tr("नदी, वर्षा र पूर्वानुमानको आधिकारिक/मोडेल विवरण","River, rainfall, forecasts and verified source details"),11,false);page.addView(desc);
   ScrollView scroll=new ScrollView(this);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-  content=new LinearLayout(this);content.setOrientation(1);content.setPadding(0,dp(10),0,dp(30));scroll.addView(content);
-  controls=new LinearLayout(this);controls.setOrientation(1);content.addView(controls);
+  content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(0,dp(10),0,dp(30));scroll.addView(content);
+  controls=new LinearLayout(this);controls.setOrientation(LinearLayout.VERTICAL);content.addView(controls);
   for(String[] segment:new String[][]{
     {"river","🌊 "+tr("नदी स्टेशन","Rivers")},
     {"rain","🌧 "+tr("वर्षा स्टेशन","Rainfall")},
@@ -74,7 +74,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
   search.setHint(tr("जिल्ला वा नदी/स्टेशनको नाम लेख्नुहोस्","Type district or station"));
   content.addView(search,new LinearLayout.LayoutParams(-1,dp(52)));
   summary=label("",12,false);content.addView(summary);
-  holder=new LinearLayout(this);holder.setOrientation(1);content.addView(holder);
+  holder=new LinearLayout(this);holder.setOrientation(LinearLayout.VERTICAL);content.addView(holder);
   search.addTextChangedListener(new TextWatcher(){
     @Override public void beforeTextChanged(CharSequence s,int start,int count,int after){}
     @Override public void onTextChanged(CharSequence s,int start,int before,int count){if(entries!=null)renderEntries();}
@@ -87,7 +87,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
  private TextView label(String val,int sp,boolean bold){
    TextView t=new TextView(this);t.setText(val);t.setTextColor(bold?ink:muted);t.setTextSize(sp);
    t.setPadding(dp(12),dp(10),dp(8),dp(10));
-   if(bold)t.setTypeface(null,1);
+   if(bold)t.setTypeface(null,android.graphics.Typeface.BOLD);
    return t;
  }
  private Button button(String text){
@@ -95,7 +95,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
    b.setBackgroundColor(Color.WHITE);return b;
  }
  private void card(String heading,String body){
-   LinearLayout box=new LinearLayout(this);box.setOrientation(1);box.setPadding(dp(12),dp(9),dp(12),dp(8));
+   LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(12),dp(9),dp(12),dp(8));
    GradientDrawable g=new GradientDrawable();g.setColor(Color.WHITE);g.setCornerRadius(dp(14));g.setStroke(dp(1),Color.rgb(208,227,239));box.setBackground(g);
    box.addView(label(heading,15,true));box.addView(label(body,12,false));
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(6),0,dp(6));holder.addView(box,lp);
@@ -143,7 +143,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
      String val=mode.equals("river")?number(r,"level")+" m":number(r,"value")+" mm";
      if(mode.equals("river")&&!"observed".equals(r.optString("status")))val=tr("नयाँ मापन छैन","No current reading");
      final JSONObject station=r;
-     LinearLayout box=new LinearLayout(this);box.setOrientation(1);box.setBackgroundColor(Color.WHITE);
+     LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setBackgroundColor(Color.WHITE);
      TextView header=label("🌊 "+name,15,true);box.addView(header);
      box.addView(label(district+" · "+val,12,false));
      box.setPadding(dp(5),dp(4),dp(5),dp(4));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,dp(5),0,dp(5));holder.addView(box,p);

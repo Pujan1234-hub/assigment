@@ -29,6 +29,29 @@ jobs:
         run: |
           sed -i "s/versionCode 121/versionCode 122/" floodsafe-android-app/app/build.gradle
           sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.21'/" floodsafe-android-app/app/build.gradle
+      - name: Prepare Play Console package and approved launcher icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal'/" floodsafe-android-app/app/build.gradle
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/google-services.json')
+          j=json.loads(p.read_text())
+          for client in j['client']:
+              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal'
+          p.write_text(json.dumps(j,indent=2))
+          PY
+          mkdir -p floodsafe-android-app/app/src/main/res/drawable-nodpi
+          base64 --decode floodsafe-android-app/branding/approved-floodsafe-icon.webp.b64 > floodsafe-android-app/app/src/main/res/drawable-nodpi/floodsafe_icon_original.webp
+          cat > floodsafe-android-app/app/src/main/res/drawable/ic_floodsafe.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+              android:src="@drawable/floodsafe_icon_original"
+              android:gravity="fill" />
+          XML
+          test -s floodsafe-android-app/app/src/main/res/drawable-nodpi/floodsafe_icon_original.webp
       - name: Bundle complete offline FloodSafe assets
         run: |
           python3 floodsafe-android-app/bundle_web.py

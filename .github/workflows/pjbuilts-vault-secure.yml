@@ -29,11 +29,13 @@ jobs:
       - name: Apply Android platform compatibility correction
         run: |
           sed -i 's/BiometricPrompt.BIOMETRIC_ERROR_NEGATIVE_BUTTON/BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED/g' vault-android/app/src/main/java/com/pjbuilts/vault/MainActivity.java
+      - name: Require PIN + strong biometric on every unlock
+        run: python vault-2fa-patch.py
       - name: Build installable APK
         run: cd vault-android && gradle --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: PJBUILTS-Vault-v2.0.0-SECURE-APK
+          name: PJBUILTS-Vault-v2.1.0-2FA-APK
           path: vault-android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: warn

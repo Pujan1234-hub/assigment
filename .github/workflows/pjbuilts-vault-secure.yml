@@ -26,6 +26,9 @@ jobs:
         run: |
           mkdir -p vault-android
           base64 -d vault-project.tar.gz.b64 | tar -xz -C vault-android
+      - name: Apply Android platform compatibility correction
+        run: |
+          sed -i 's/BiometricPrompt.BIOMETRIC_ERROR_NEGATIVE_BUTTON/BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED/g' vault-android/app/src/main/java/com/pjbuilts/vault/MainActivity.java
       - name: Build installable APK
         run: cd vault-android && gradle --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4

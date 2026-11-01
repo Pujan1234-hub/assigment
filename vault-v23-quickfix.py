@@ -154,6 +154,26 @@ if needle in s:
 sub('''        content.addView(text("USERNAME / PROJECT ID",11,GOLD,true));TextView username=text(o.optString("username"),15,NAVY,true);content.addView(username);gap(content,13);''','''        content.addView(text("USERNAME / PROJECT ID",11,GOLD,true));TextView username=text(o.optString("username"),15,NAVY,true);content.addView(username);
         TextView copyId=button("COPY USERNAME",false);content.addView(copyId,lp(-1,41));
         copyId.setOnClickListener(v->copySecret(o.optString("username")));gap(content,13);''')
+# Developer-focused cream / navy / gold dashboard and smoother editing sessions.
+s=s.replace('root.addView(status);gap(root,24);',
+'''root.addView(status);gap(root,15);
+            LinearLayout quick=card();quick.addView(text("◈  DEV QUICK ACCESS / SESSION ACTIVE",11,GOLD,true));gap(quick,8);
+            quick.addView(text("Copy, paste, switch apps and pick up exactly where you left off.",13,NAVY,false));gap(quick,8);
+            quick.addView(text("2-MINUTE QUICK SWITCH  •  FINGERPRINT AFTER TIMEOUT",10,MUTED,true));
+            root.addView(quick);gap(root,24);''')
+s=s.replace('Toast.LENGTH_LONG).show();','Toast.LENGTH_SHORT).show();')
+s=s.replace('Copied. Clipboard will clear after 20 seconds.','Copied. Clipboard clears after 60 seconds.')
+s=s.replace('},20000);','},60000);')
+s=s.replace('''            awayAt=SystemClock.elapsedRealtime();
+        super.onPause();''','''            awayAt=SystemClock.elapsedRealtime();
+        if(awayAt>0){
+            handler.postDelayed(()->{
+                if(awayAt>0&&SystemClock.elapsedRealtime()-awayAt>=QUICK_SWITCH&&store.isUnlocked()){
+                    store.lock();coverScreen();
+                }
+            },QUICK_SWITCH+80);
+        }
+        super.onPause();''')
 p.write_text(s)
 b=Path('vault-android/app/build.gradle')
 t=b.read_text().replace("applicationId 'com.pjbuilts.vault.secure2fa.premium'","applicationId 'com.pjbuilts.vault.quickvault23'")

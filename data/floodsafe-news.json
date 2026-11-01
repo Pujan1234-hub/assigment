@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-01T14:05:44.173610Z",
+  "generated_at": "2026-11-01T18:53:50.539591Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,29 +12,16 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "प्रधानमन्त्री बालेनले भने- ‘एक दुई जना उम्किन्छु भनेर सपना नदेखे हुन्छ ’",
-      "url": "https://www.ronbpost.com/2026/11/21201/",
-      "published_at": "2026-11-01T14:03:32Z",
-      "source": "RONB Post"
-    },
-    {
-      "title": "‘सडक सुरक्षा र ट्राफिक व्यवस्थापनमा ट्राफिक प्रहरीको भूमिका महत्वपूर्ण’",
-      "url": "https://radionepalonline.com/2026/11/01/745185.html",
-      "published_at": "2026-11-01T13:38:30Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

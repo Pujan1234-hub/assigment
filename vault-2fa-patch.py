@@ -85,7 +85,7 @@ s=s.replace('versionCode 1','versionCode 2').replace("versionName '2.0.0-secure'
 p.write_text(s)
 p=Path('vault-android/app/src/main/AndroidManifest.xml')
 s=p.read_text().replace('<manifest xmlns:android="http://schemas.android.com/apk/res/android">','<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>')
-p.write_text(s)
+p.write_text(s.replace('android:label="PJBUILTS Vault"','android:label="@string/app_name"'))
 p=Path('vault-android/app/src/main/res/values/strings.xml')
 p.write_text('<resources><string name="app_name">PJBUILTS Vault 2FA</string></resources>\n')
 print('Patched mandatory 2-step PIN + strong biometric unlock')

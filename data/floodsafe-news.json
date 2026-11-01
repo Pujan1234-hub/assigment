@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-01T00:44:48.812266Z",
+  "generated_at": "2026-11-01T06:54:04.837136Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "अर्नब चक्रवातको प्रभाव कमजोर हुँदै, मौसममा क्रमिक सुधार",
-      "url": "https://radionepalonline.com/2026/11/01/745011.html",
-      "published_at": "2026-11-01T00:41:39Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

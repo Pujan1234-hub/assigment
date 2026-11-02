@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-02T08:30:22.412692Z",
+  "generated_at": "2026-11-02T18:47:35.764313Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "अन्तर्राष्ट्रिय मञ्चमा जलवायु कूटनीति प्रभावकारी बनाउनुपर्नेमा सांसदहरूको जोड",
-      "url": "https://radionepalonline.com/2026/11/02/745350.html",
-      "published_at": "2026-11-02T08:10:31Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

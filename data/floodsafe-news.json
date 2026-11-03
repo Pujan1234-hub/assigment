@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-03T01:21:02.997801Z",
+  "generated_at": "2026-11-03T08:11:23.669487Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,55 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 7
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "कर्णालीमा ‘१९बुँदे साझा प्रतिबद्धता’ जारी गर्दै आर्थिक मामिला परिषद् बैठक सम्पन्न",
-      "url": "https://radionepalonline.com/2026/11/03/745510.html",
-      "published_at": "2026-11-03T01:20:33Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "धानबालीको सिजनमा प्रमुख सिँचाइ नहर पूर्ण क्षमतामा सञ्चालन गरिँदै",
-      "url": "https://radionepalonline.com/2026/11/03/745508.html",
-      "published_at": "2026-11-03T01:16:33Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "विश्वविद्यालयको नेतृत्वमा नयाँ अनुहार, सुधारको अपेक्षा",
-      "url": "https://radionepalonline.com/2026/11/03/745505.html",
-      "published_at": "2026-11-03T01:11:12Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "आजका लागि तोकियो विदेशी मुद्राको विनिमयदर",
-      "url": "https://radionepalonline.com/2026/11/03/745503.html",
-      "published_at": "2026-11-03T01:05:10Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "दीपावली र छठः माटो बेचेर पर्व खर्च जुटाउँदै स्थानीय",
-      "url": "https://radionepalonline.com/2026/11/03/745500.html",
-      "published_at": "2026-11-03T01:01:12Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "लक्ष्यभन्दा चार अर्ब बढी राजस्व उठायो भैरहवा भन्सारले",
-      "url": "https://radionepalonline.com/2026/11/03/745497.html",
-      "published_at": "2026-11-03T00:55:09Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "बागलुङमा एकैपटक १५ बेलिब्रिज निर्माण हुँदै",
-      "url": "https://radionepalonline.com/2026/11/03/745494.html",
-      "published_at": "2026-11-03T00:51:03Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

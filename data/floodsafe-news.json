@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-04T08:13:00.601750Z",
+  "generated_at": "2026-11-04T16:23:41.345095Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,47 +12,16 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 4
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "परराष्ट्रमन्त्री खनालसँग भारतीय विदेश सचिव मिश्रीको भेटवार्ता",
-      "url": "https://radionepalonline.com/2026/11/04/745848.html",
-      "published_at": "2026-11-04T08:07:49Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "मन्त्रिपरिषद्को बैठक सुरु",
-      "url": "https://radionepalonline.com/2026/11/04/745844.html",
-      "published_at": "2026-11-04T07:59:28Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "धनकुटाको लेगुवामा बजार अनुगमन: ४७ हजार बढीका म्याद गुज्रिएका अखाद्य वस्तु जफत गरी नष्ट",
-      "url": "https://radionepalonline.com/2026/11/04/745841.html",
-      "published_at": "2026-11-04T07:55:38Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "परराष्ट्रमन्त्री शिशिर खनाल र भारतीय विदेश सचिव मिस्रीबीच भेटवार्ता",
-      "url": "https://www.ronbpost.com/2026/11/21284/",
-      "published_at": "2026-11-04T07:55:29Z",
-      "source": "RONB Post"
-    },
-    {
-      "title": "प्राविधिक शिक्षालाई श्रम बजार र निजी क्षेत्रको मागसँग जोड्नुपर्छ: मुख्यमन्त्री आचार्य",
-      "url": "https://radionepalonline.com/2026/11/04/745836.html",
-      "published_at": "2026-11-04T07:51:37Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

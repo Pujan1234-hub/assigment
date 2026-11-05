@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-05T09:42:03.590021Z",
+  "generated_at": "2026-11-05T17:40:37.964463Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,29 +12,16 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "प्रधानमन्त्रीले लिए सुरक्षा निकायका प्रमुखहरूसँग ब्रिफिङ",
-      "url": "https://www.ronbpost.com/2026/11/21332/",
-      "published_at": "2026-11-05T09:41:30Z",
-      "source": "RONB Post"
-    },
-    {
-      "title": "सुरक्षा निकायका प्रमुखहरूसँग प्रधानमन्त्री शाहको ब्रिफिङ, अपराध नियन्त्रणमा ‘शून्य सहनशीलता’ अपनाउन निर्देशन",
-      "url": "https://radionepalonline.com/2026/11/05/746082.html",
-      "published_at": "2026-11-05T09:38:09Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

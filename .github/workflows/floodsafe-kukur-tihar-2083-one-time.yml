@@ -1,0 +1,68 @@
+name: FloodSafe Nepal - Kukur Tihar 2083 greeting (one time)
+on:
+  schedule:
+    # 2026-11-08 07:00 Nepal = 2026-11-08 01:15 UTC.
+    - cron: '15 1 8 11 *'
+permissions:
+  contents: read
+concurrency:
+  group: floodsafe-kukur-tihar-2083
+  cancel-in-progress: false
+jobs:
+  send:
+    if: ${{ github.event_name == 'schedule' && github.run_attempt == 1 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Send one-time non-emergency Kukur Tihar greeting through existing Firebase
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet google-auth requests
+          python3 - <<'PY'
+          import json,os,sys
+          from datetime import datetime,timezone,timedelta
+          import requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          # This cron is annual; limit the action to the requested date in 2026 only.
+          now_nepal=datetime.now(timezone.utc)+timedelta(hours=5,minutes=45)
+          if now_nepal.date().isoformat()!="2026-11-08" or not (7 <= now_nepal.hour < 10):
+              print("SKIPPED: Outside 8 November 2026, 07:00-09:59 Nepal-time window.")
+              sys.exit(0)
+
+          raw=os.environ.get("FIREBASE_SERVICE_ACCOUNT","").strip()
+          if not raw: sys.exit("FIREBASE_SERVICE_ACCOUNT secret unavailable; no greeting sent.")
+          key=json.loads(raw)
+          if key.get("project_id")!="floodsafe-nepal":
+              sys.exit("Wrong Firebase project; no greeting sent.")
+          if not key.get("client_email","").endswith(".gserviceaccount.com"):
+              sys.exit("Unexpected Firebase service account; no greeting sent.")
+
+          creds=service_account.Credentials.from_service_account_info(
+              key,scopes=["https://www.googleapis.com/auth/firebase.messaging"])
+          creds.refresh(Request())
+          payload={"message":{
+              "topic":"nepal-alerts",
+              "data":{
+                  "kind":"app_notice",
+                  "title":"🐕🌼 कुकुर तिहारको हार्दिक शुभकामना! 🪔",
+                  "body":"कुकुर तिहारको पावन अवसरमा तपाईं र तपाईंको सम्पूर्ण परिवारलाई हार्दिक शुभकामना! निष्ठा, माया र सुरक्षाका प्रतीक हाम्रा प्रिय कुकुर साथीहरूलाई सम्मान गरौँ। सबैको जीवनमा सुख, शान्ति, स्वास्थ्य र खुसी छाओस्। शुभ तिहार! 🐕🌼❤️ — FloodSafe Nepal"
+              },
+              "android":{"priority":"high","ttl":"21600s"}
+          }}
+          url="https://fcm.googleapis.com/v1/projects/floodsafe-nepal/messages:send"
+          response=requests.post(url,headers={
+              "Authorization":"Bearer "+creds.token,"Content-Type":"application/json"
+          },json=payload,timeout=25)
+          print("FCM HTTP",response.status_code)
+          response.raise_for_status()
+          print(json.dumps({
+              "fcm_accepted":True,"topic":"nepal-alerts",
+              "kind":"app_notice","date_nepal":"2026-11-08",
+              "device_delivery_confirmed":False
+          }))
+          PY

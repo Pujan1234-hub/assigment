@@ -1,8 +1,8 @@
-name: FloodSafe Nepal Play AAB candidate (unsigned)
+name: FloodSafe Nepal Original Blue v0.9.21-repair-preview-test Play build
 on:
   push:
     branches:
-      - build/floodsafe-play-aab-20261031
+      - release/floodsafe-play-0921-original-blue-20261106
     paths:
       - '.github/workflows/floodsafe-play-aab-20261031.yml'
   workflow_dispatch:
@@ -27,8 +27,8 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
       - name: Set next release version without changing stable source
         run: |
-          sed -i "s/versionCode 121/versionCode 122/" floodsafe-android-app/app/build.gradle
-          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.21'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionCode 121/versionCode 123/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.21-repair-preview-test'/" floodsafe-android-app/app/build.gradle
       - name: Prepare Play Console package and approved launcher icon
         shell: bash
         run: |
@@ -85,7 +85,7 @@ jobs:
       - name: Archive unsigned AAB for secure local signing
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0.9.21-unsigned-play-bundle
+          name: FloodSafe-Nepal-v0.9.21-repair-preview-test-UNSIGNED
           path: |
             floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab
             floodsafe-aab-sha256.txt

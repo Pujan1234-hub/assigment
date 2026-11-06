@@ -1,0 +1,47 @@
+name: One-time Tihar Greeting 2026
+on:
+  push:
+    paths:
+      - '.github/workflows/tihar-greeting-20261106.yml'
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send FCM Tihar greeting to FloodSafe Nepal devices
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python -m pip install --quiet google-auth requests
+          python - <<'PY'
+          import json, os, requests, sys
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+          raw = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
+          if not raw:
+              print("ERROR: FIREBASE_SERVICE_ACCOUNT secret missing")
+              sys.exit(2)
+          info = json.loads(raw)
+          creds = service_account.Credentials.from_service_account_info(
+              info, scopes=["https://www.googleapis.com/auth/firebase.messaging"]
+          )
+          creds.refresh(Request())
+          data = {
+              "message": {
+                  "topic": "nepal-alerts",
+                  "notification": {
+                      "title": "🪔 तिहारको हार्दिक शुभकामना!",
+                      "body": "तिहारको पावन अवसरमा तपाईं र तपाईंको परिवारमा सुख, शान्ति, सुस्वास्थ्य र समृद्धिको उज्यालो छाओस्। माता लक्ष्मीको कृपा सधैं रहोस्। शुभ तिहार! 🌸"
+                  },
+                  "android": {"priority": "high"},
+                  "data": {"type": "festival", "festival": "tihar", "sender": "FloodSafe Nepal"}
+              }
+          }
+          response = requests.post(
+              "https://fcm.googleapis.com/v1/projects/floodsafe-nepal/messages:send",
+              headers={"Authorization": f"Bearer {creds.token}", "Content-Type": "application/json"},
+              json=data, timeout=30
+          )
+          print("FCM HTTP status:", response.status_code)
+          print("FCM response:", response.text)
+          response.raise_for_status()
+          PY

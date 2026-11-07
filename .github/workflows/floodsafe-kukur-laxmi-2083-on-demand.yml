@@ -1,0 +1,81 @@
+name: FloodSafe Nepal - Kukur Tihar and Laxmi Puja 2083 (send only on request)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/festival-notifications/send-kukur-laxmi-2083.txt'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: floodsafe-kukur-laxmi-2083-one-time
+  cancel-in-progress: false
+
+jobs:
+  send-on-request:
+    if: github.event.head_commit.message == 'Send Kukur Tihar and Laxmi Puja greeting now' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Send combined festival greeting via existing Firebase topic
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet google-auth requests
+          python3 - <<'PY'
+          import json, os, sys
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          import requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          nepal_today = datetime.now(ZoneInfo("Asia/Kathmandu")).date().isoformat()
+          if nepal_today != "2026-11-08":
+              sys.exit("SKIPPED: Festival greeting is only valid on 8 November 2026 in Nepal.")
+
+          raw = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "").strip()
+          if not raw:
+              sys.exit("FAILED: Firebase service account is not configured in GitHub Actions secrets.")
+          account = json.loads(raw)
+          project_id = account.get("project_id")
+          if project_id != "floodsafe-nepal":
+              sys.exit("FAILED: Unexpected Firebase project; greeting was not sent.")
+          credentials = service_account.Credentials.from_service_account_info(
+              account, scopes=["https://www.googleapis.com/auth/firebase.messaging"]
+          )
+          credentials.refresh(Request())
+
+          title = "🐕🪔 कुकुर तिहार तथा लक्ष्मीपूजाको शुभकामना!"
+          body = (
+              "विश्वास र निःस्वार्थ प्रेमको प्रतीक कुकुरप्रति सम्मान, "
+              "अनि माता लक्ष्मीको आशीर्वादले सबैका घरमा सुख, शान्ति र समृद्धि छाओस्। "
+              "काठमाडौंमा लक्ष्मीपूजाको शुभमुहूर्त: साँझ ५:३८–७:३४। "
+              "शुभ तिहार! 🌼 — FloodSafe Nepal"
+          )
+          message = {
+              "message": {
+                  "topic": "nepal-alerts",
+                  "notification": {"title": title, "body": body},
+                  "android": {"priority": "high", "ttl": "14400s"},
+                  "data": {
+                      "type": "festival",
+                      "festival": "kukur_tihar_laxmi_puja_2083",
+                      "sender": "FloodSafe Nepal",
+                      "muhurat_location": "Kathmandu",
+                      "muhurat_npt": "17:38-19:34"
+                  }
+              }
+          }
+          response = requests.post(
+              f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send",
+              headers={"Authorization": f"Bearer {credentials.token}", "Content-Type": "application/json"},
+              json=message, timeout=30
+          )
+          print("FCM response status:", response.status_code)
+          print("FCM response:", response.text)
+          response.raise_for_status()
+          PY

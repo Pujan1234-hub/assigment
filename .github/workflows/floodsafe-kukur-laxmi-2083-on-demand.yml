@@ -1,81 +1,136 @@
-name: FloodSafe Nepal - Kukur Tihar and Laxmi Puja 2083 (send only on request)
+name: FloodSafe Nepal - Kukur Tihar and Lakshmi Puja - Nepal 8 November 2026
 on:
   push:
     branches: [main]
     paths:
-      - '.github/festival-notifications/send-kukur-laxmi-2083.txt'
+      - '.github/workflows/floodsafe-kukur-laxmi-2083-on-demand.yml'
+  schedule:
+    # Nepal 06:30, 10:30, 15:00, 17:15 on 8 Nov 2026 (UTC+05:45)
+    - cron: '45 0 8 11 *'
+    - cron: '45 4 8 11 *'
+    - cron: '15 9 8 11 *'
+    - cron: '30 11 8 11 *'
 
 permissions:
   contents: read
 
 concurrency:
-  group: floodsafe-kukur-laxmi-2083-one-time
+  group: floodsafe-festival-kukur-laxmi-2083
   cancel-in-progress: false
 
 jobs:
-  send-on-request:
-    if: github.event.head_commit.message == 'Send Kukur Tihar and Laxmi Puja greeting now' && github.run_attempt == 1
+  notify:
+    if: github.run_attempt == 1 && (github.event_name == 'schedule' || github.event.head_commit.message == 'Send Kukur Tihar and Laxmi Puja greeting now and schedule follow-ups')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Send combined festival greeting via existing Firebase topic
+      - name: Send festival notification only in Nepal time window
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          EVENT_NAME: ${{ github.event_name }}
+          CRON_EXPRESSION: ${{ github.event.schedule }}
         shell: bash
         run: |
           set -euo pipefail
           python3 -m pip install --quiet google-auth requests
           python3 - <<'PY'
           import json, os, sys
-          from datetime import datetime
+          from datetime import date, datetime, timedelta
           from zoneinfo import ZoneInfo
           import requests
           from google.oauth2 import service_account
           from google.auth.transport.requests import Request
 
-          nepal_today = datetime.now(ZoneInfo("Asia/Kathmandu")).date().isoformat()
-          if nepal_today != "2026-11-08":
-              sys.exit("SKIPPED: Festival greeting is only valid on 8 November 2026 in Nepal.")
+          tz = ZoneInfo("Asia/Kathmandu")
+          now = datetime.now(tz)
+          if now.date() != date(2026, 11, 8):
+              print("SKIPPED: Only 8 November 2026 in Nepal.")
+              sys.exit(0)
 
-          raw = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "").strip()
-          if not raw:
-              sys.exit("FAILED: Firebase service account is not configured in GitHub Actions secrets.")
-          account = json.loads(raw)
-          project_id = account.get("project_id")
-          if project_id != "floodsafe-nepal":
-              sys.exit("FAILED: Unexpected Firebase project; greeting was not sent.")
+          deadline = datetime(2026, 11, 8, 19, 52, tzinfo=tz)
+          if now >= deadline:
+              print("SKIPPED: Nepal festival notifications ended at 19:52.")
+              sys.exit(0)
+
+          event = os.environ.get("EVENT_NAME", "")
+          reminder = False
+          if event == "push":
+              slot = "immediate"
+          elif event == "schedule":
+              schedule_slots = {
+                  "45 0 8 11 *": ("06:30", 6, 30),
+                  "45 4 8 11 *": ("10:30", 10, 30),
+                  "15 9 8 11 *": ("15:00", 15, 0),
+                  "30 11 8 11 *": ("17:15", 17, 15)
+              }
+              schedule_expr = os.environ.get("CRON_EXPRESSION", "")
+              if schedule_expr not in schedule_slots:
+                  print("SKIPPED: Unrecognized scheduled event.")
+                  sys.exit(0)
+              slot, hour, minute = schedule_slots[schedule_expr]
+              planned = datetime(2026, 11, 8, hour, minute, tzinfo=tz)
+              window_end = planned + timedelta(minutes=30)
+              if slot == "17:15":
+                  window_end = datetime(2026, 11, 8, 17, 38, tzinfo=tz)
+              if now < planned or now >= window_end:
+                  print(f"SKIPPED: Delayed or early job for {slot}, local time {now.isoformat()}.")
+                  sys.exit(0)
+              reminder = slot == "17:15"
+          else:
+              print("SKIPPED: Event not allowed.")
+              sys.exit(0)
+
+          if reminder:
+              title = "🪔 लक्ष्मीपूजाको शुभमुहूर्त सुरु हुन लाग्यो!"
+              body = (
+                  "नेपालको समयअनुसार माता लक्ष्मीको पूजाको शुभमुहूर्त साँझ ५:३८ देखि ७:३४ सम्म छ। "
+                  "प्रदोषकाल साँझ ५:१५ देखि ७:५२ र वृषभ लग्न ५:३८ देखि ७:३४ सम्म। "
+                  "सम्पूर्ण परिवारलाई शुभ लक्ष्मीपूजा! 🙏🌼 — FloodSafe Nepal"
+              )
+          else:
+              title = "🐕🪔 कुकुर तिहार तथा लक्ष्मीपूजाको शुभकामना!"
+              body = (
+                  "२२ कार्तिक २०८३ • ८ नोभेम्बर २०२६। नेपालभर सबैलाई हार्दिक शुभकामना! "
+                  "लक्ष्मीपूजा शुभमुहूर्त: साँझ ५:३८–७:३४; प्रदोषकाल: ५:१५–७:५२; "
+                  "वृषभ लग्न: ५:३८–७:३४। अमावस्या प्रारम्भ: आज बिहान ११:४२; "
+                  "समाप्ति: २३ कार्तिक दिउँसो १२:४६। माता लक्ष्मीको कृपाले "
+                  "सुख, शान्ति र समृद्धि छाओस्। 🌼 — FloodSafe Nepal"
+              )
+
+          service_account_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "").strip()
+          if not service_account_json:
+              sys.exit("FAILED: FIREBASE_SERVICE_ACCOUNT GitHub Actions secret is unavailable.")
+          account = json.loads(service_account_json)
+          if account.get("project_id") != "floodsafe-nepal":
+              sys.exit("FAILED: Wrong Firebase project, notification NOT sent.")
           credentials = service_account.Credentials.from_service_account_info(
               account, scopes=["https://www.googleapis.com/auth/firebase.messaging"]
           )
           credentials.refresh(Request())
 
-          title = "🐕🪔 कुकुर तिहार तथा लक्ष्मीपूजाको शुभकामना!"
-          body = (
-              "विश्वास र निःस्वार्थ प्रेमको प्रतीक कुकुरप्रति सम्मान, "
-              "अनि माता लक्ष्मीको आशीर्वादले सबैका घरमा सुख, शान्ति र समृद्धि छाओस्। "
-              "काठमाडौंमा लक्ष्मीपूजाको शुभमुहूर्त: साँझ ५:३८–७:३४। "
-              "शुभ तिहार! 🌼 — FloodSafe Nepal"
-          )
-          message = {
+          ttl_seconds = max(1, int((deadline - datetime.now(tz)).total_seconds()))
+          payload = {
               "message": {
                   "topic": "nepal-alerts",
                   "notification": {"title": title, "body": body},
-                  "android": {"priority": "high", "ttl": "14400s"},
+                  "android": {"priority": "high", "ttl": f"{ttl_seconds}s"},
                   "data": {
                       "type": "festival",
                       "festival": "kukur_tihar_laxmi_puja_2083",
                       "sender": "FloodSafe Nepal",
-                      "muhurat_location": "Kathmandu",
-                      "muhurat_npt": "17:38-19:34"
+                      "time_zone": "Asia/Kathmandu",
+                      "slot": slot,
+                      "end_time": "2026-11-08T19:52:00+05:45"
                   }
               }
           }
           response = requests.post(
-              f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send",
+              "https://fcm.googleapis.com/v1/projects/floodsafe-nepal/messages:send",
               headers={"Authorization": f"Bearer {credentials.token}", "Content-Type": "application/json"},
-              json=message, timeout=30
+              json=payload, timeout=30
           )
-          print("FCM response status:", response.status_code)
+          print("Notification slot:", slot, "; Nepal local:", now.isoformat())
+          print("FCM HTTP response:", response.status_code)
           print("FCM response:", response.text)
           response.raise_for_status()
           PY

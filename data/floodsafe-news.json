@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-08T09:21:05.834143Z",
+  "generated_at": "2026-11-08T16:08:24.731293Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,25 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 2
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "कुकुर तिहारजस्ता पर्वलाई अन्तर्राष्ट्रियकरण गर्नुपर्छ: प्रथम महिला काफ्ले",
-      "url": "https://radionepalonline.com/2026/11/08/746797.html",
-      "published_at": "2026-11-08T08:57:34Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "प्रहरी केनाइन कार्यालयमा कुकुर पूजा सम्पन्न",
-      "url": "https://radionepalonline.com/2026/11/08/746794.html",
-      "published_at": "2026-11-08T08:52:29Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

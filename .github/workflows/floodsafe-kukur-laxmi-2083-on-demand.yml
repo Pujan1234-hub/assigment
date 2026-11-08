@@ -1,42 +1,45 @@
-name: FloodSafe Nepal - Kukur Tihar and Laxmi Puja 2083 messages
+name: FloodSafe Nepal - Kukur Tihar and Laxmi Puja 2083 (one-day sends)
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/floodsafe-kukur-laxmi-2083-on-demand.yml'
   schedule:
-    # 8 November 2026, Nepal local 06:30, 10:30, 15:00 and 17:15 respectively
-    - cron: '45 0 8 11 *'
-    - cron: '45 4 8 11 *'
-    - cron: '15 9 8 11 *'
-    - cron: '30 11 8 11 *'
+    # Retry checks every five minutes during the remaining 8 Nov 2026 window.
+    # Nepal is UTC+05:45; intended sends: 15:00 and 17:15 NPT.
+    - cron: '*/5 9-11 8 11 *'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: floodsafe-kukur-laxmi-2083
+  group: floodsafe-festival-2083-single-sender
   cancel-in-progress: false
 
 jobs:
   notify:
-    if: github.run_attempt == 1 && (github.event_name == 'schedule' || github.event.head_commit.message == 'Send correct Laxmi Puja greeting now and schedule reminder at 17:15 NPT')
+    if: github.run_attempt == 1 && (github.event_name == 'schedule' || github.event.head_commit.message == 'Send missed Laxmi Puja greeting now and enable reliable 15:00 and 17:15 retries')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Send correct festival message through Firebase Cloud Messaging
+      - name: Send the correct greeting exactly once for each remaining slot
         shell: bash
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}
-          CRON_EXPRESSION: ${{ github.event.schedule }}
         run: |
           set -euo pipefail
           python3 -m pip install --quiet google-auth requests
           python3 - <<'PY'
-          import json, os, sys
-          from datetime import date, datetime, timedelta
+          import base64
+          import json
+          import os
+          import sys
+          from datetime import date, datetime
           from zoneinfo import ZoneInfo
+
           import requests
           from google.oauth2 import service_account
           from google.auth.transport.requests import Request
@@ -44,44 +47,30 @@ jobs:
           tz = ZoneInfo("Asia/Kathmandu")
           now = datetime.now(tz)
           if now.date() != date(2026, 11, 8):
-              print("SKIPPED: Only valid on 8 November 2026 in Nepal.")
+              print("SKIP: one-day festival campaign only.")
               sys.exit(0)
-
           deadline = datetime(2026, 11, 8, 19, 52, tzinfo=tz)
           if now >= deadline:
-              print("SKIPPED: Festival notifications end at 19:52 NPT.")
+              print("SKIP: past festival cutoff 19:52 NPT.")
               sys.exit(0)
 
-          event = os.environ.get("EVENT_NAME", "")
+          event = os.environ.get("EVENT_NAME")
           if event == "push":
-              slot = "immediate"
-              if now >= datetime(2026, 11, 8, 6, 30, tzinfo=tz):
-                  print("SKIPPED: Immediate greeting is only for before 06:30 NPT.")
-                  sys.exit(0)
+              slot = "missed-greeting-catchup"
           elif event == "schedule":
-              schedule_slots = {
-                  "45 0 8 11 *": ("06:30", 6, 30),
-                  "45 4 8 11 *": ("10:30", 10, 30),
-                  "15 9 8 11 *": ("15:00", 15, 0),
-                  "30 11 8 11 *": ("17:15", 17, 15),
-              }
-              expr = os.environ.get("CRON_EXPRESSION", "")
-              if expr not in schedule_slots:
-                  print("SKIPPED: Unknown schedule expression.")
-                  sys.exit(0)
-              slot, hour, minute = schedule_slots[expr]
-              planned = datetime(2026, 11, 8, hour, minute, tzinfo=tz)
-              expires = min(planned + timedelta(minutes=30), deadline)
-              if slot == "17:15":
-                  expires = datetime(2026, 11, 8, 17, 38, tzinfo=tz)
-              if not planned <= now < expires:
-                  print(f"SKIPPED: late/early job {slot} at {now.isoformat()}.")
+              time = now.time()
+              if (15, 0) <= (time.hour, time.minute) < (15, 35):
+                  slot = "15-00-greeting"
+              elif (17, 15) <= (time.hour, time.minute) < (17, 38):
+                  slot = "17-15-puja-reminder"
+              else:
+                  print("SKIP: outside remaining delivery windows.")
                   sys.exit(0)
           else:
-              print("SKIPPED: Unauthorised event.")
+              print("SKIP: not an authorized trigger.")
               sys.exit(0)
 
-          if slot == "17:15":
+          if slot == "17-15-puja-reminder":
               title = "🪔🙏 लक्ष्मीपूजाको शुभमुहूर्त सुरु हुँदैछ 🪔🙏"
               body = (
                   "माता लक्ष्मीको पूजा–आराधनाका लागि शुभमुहूर्त साँझ ५:३८ बजेदेखि सुरु हुँदैछ।\n\n"
@@ -103,28 +92,45 @@ jobs:
                   "शुभ तिहार! 🌼\n— FloodSafe Nepal परिवार"
               )
 
+          token = os.environ.get("GH_TOKEN", "").strip()
+          repo = os.environ.get("GH_REPOSITORY", "").strip()
+          if not token or not repo:
+              sys.exit("FAILED: GitHub token or repository missing.")
+          headers = {
+              "Authorization": "Bearer " + token,
+              "Accept": "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28"
+          }
+          marker_path = ".github/festival-notifications/sent-20261108-" + slot + ".json"
+          marker_url = "https://api.github.com/repos/" + repo + "/contents/" + marker_path
+          marker = requests.get(marker_url, headers=headers, timeout=20)
+          if marker.status_code == 200:
+              print("SKIP: slot already sent:", slot)
+              sys.exit(0)
+          if marker.status_code != 404:
+              sys.exit("FAILED: cannot check dedup marker (" + str(marker.status_code) + ").")
+
           raw = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "").strip()
           if not raw:
-              sys.exit("FAILED: FIREBASE_SERVICE_ACCOUNT secret is missing.")
-          account = json.loads(raw)
-          if account.get("project_id") != "floodsafe-nepal":
-              sys.exit("FAILED: Firebase project mismatch. No notification sent.")
+              sys.exit("FAILED: Firebase service account is not available.")
+          info = json.loads(raw)
+          if info.get("project_id") != "floodsafe-nepal":
+              sys.exit("FAILED: unexpected Firebase project.")
           credentials = service_account.Credentials.from_service_account_info(
-              account, scopes=["https://www.googleapis.com/auth/firebase.messaging"]
+              info, scopes=["https://www.googleapis.com/auth/firebase.messaging"]
           )
           credentials.refresh(Request())
 
-          ttl_seconds = max(1, int((deadline - datetime.now(tz)).total_seconds()))
-          payload = {
+          ttl = max(1, int((deadline - datetime.now(tz)).total_seconds()))
+          message = {
               "message": {
                   "topic": "nepal-alerts",
                   "notification": {"title": title, "body": body},
-                  "android": {"priority": "high", "ttl": f"{ttl_seconds}s"},
+                  "android": {"priority": "high", "ttl": str(ttl) + "s"},
                   "data": {
                       "type": "festival",
                       "festival": "kukur_tihar_laxmi_puja_2083",
                       "sender": "FloodSafe Nepal",
-                      "time_zone": "Asia/Kathmandu",
                       "slot": slot,
                       "end_time": "2026-11-08T19:52:00+05:45"
                   }
@@ -132,11 +138,31 @@ jobs:
           }
           response = requests.post(
               "https://fcm.googleapis.com/v1/projects/floodsafe-nepal/messages:send",
-              headers={"Authorization": f"Bearer {credentials.token}", "Content-Type": "application/json"},
-              json=payload, timeout=30
+              headers={
+                  "Authorization": "Bearer " + credentials.token,
+                  "Content-Type": "application/json"
+              },
+              json=message, timeout=30
           )
-          print("Festival notification:", slot, "; Nepal time:", now.isoformat())
-          print("FCM HTTP status:", response.status_code)
-          print("FCM result:", response.text)
+          print("FCM status:", response.status_code)
+          print("FCM response:", response.text)
           response.raise_for_status()
+
+          marker_content = json.dumps(
+              {"slot": slot, "submitted_at_nepal": datetime.now(tz).isoformat(),
+               "fcm_message_response": response.json().get("name", "")},
+              ensure_ascii=False
+          )
+          uploaded = requests.put(
+              marker_url, headers=headers, timeout=20,
+              json={
+                  "message": "Record completed FloodSafe Nepal festival push: " + slot,
+                  "content": base64.b64encode(marker_content.encode("utf-8")).decode("ascii"),
+                  "branch": "main"
+              }
+          )
+          print("Dedup marker status:", uploaded.status_code)
+          if uploaded.status_code not in (200, 201):
+              sys.exit("WARNING: Firebase accepted message but could not store dedup marker.")
+          print("SENT_TO_FCM:", slot)
           PY

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-09T05:59:52.369006Z",
+  "generated_at": "2026-11-09T16:01:35.252714Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,19 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "राष्ट्रपति पौडेलबाट गाईको पूजा",
-      "url": "https://radionepalonline.com/2026/11/09/746978.html",
-      "published_at": "2026-11-09T05:41:17Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

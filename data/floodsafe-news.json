@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-11T08:14:24.277175Z",
+  "generated_at": "2026-11-11T16:18:12.046439Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -12,7 +12,7 @@
   "sources": {
     "RONB Post": {
       "ok": true,
-      "items": 0
+      "items": 1
     },
     "Radio Nepal": {
       "ok": true,
@@ -23,5 +23,12 @@
       "items": 0
     }
   },
-  "items": []
+  "items": [
+    {
+      "title": "भाइटीकामा दुई हजार पाँच सय यात्रुलाई सशस्त्र प्रहरीको निःशुल्क बस सेवा",
+      "url": "https://www.ronbpost.com/2026/11/21466/",
+      "published_at": "2026-11-11T16:05:56Z",
+      "source": "RONB Post"
+    }
+  ]
 }

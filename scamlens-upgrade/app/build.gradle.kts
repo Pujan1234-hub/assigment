@@ -12,8 +12,8 @@ android {
         applicationId = "com.pjbuilts.scamlens"
         minSdk = 26
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.3.0-beta1"
+        versionCode = 15
+        versionName = "1.3.0-beta2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

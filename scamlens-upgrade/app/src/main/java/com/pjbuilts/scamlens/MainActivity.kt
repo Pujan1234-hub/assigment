@@ -145,7 +145,7 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
     val ctx = LocalContext.current
     val hist = remember(refresh) { store.getHistory(8) }
     val status = remember(refresh, protectionRefresh) { readProtectionStatus(ctx) }
-    val notificationGuardActive = notificationGuardOn && status.notificationAccessActive
+    val notificationGuardActive = store.notificationGuardEnabled && status.notificationAccessActive
     val fullyProtected = status.callGuardActive && notificationGuardActive && status.warningNotificationsAllowed
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -324,7 +324,7 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
         notifText = if (it) "Warning notifications enabled." else "Warning notification permission not granted."
     }
 
-    val notificationGuardActive = store.notificationGuardEnabled && status.notificationAccessActive
+    val notificationGuardActive = notificationGuardOn && status.notificationAccessActive
     val fullyProtected = status.callGuardActive && notificationGuardActive && status.warningNotificationsAllowed
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

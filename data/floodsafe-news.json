@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-13T00:31:44.530550Z",
+  "generated_at": "2026-11-13T07:13:23.996730Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,25 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 2
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
       "items": 0
     }
   },
-  "items": [
-    {
-      "title": "आजदेखि छठ पर्व सुरु, मिथिला क्षेत्र छठमय",
-      "url": "https://radionepalonline.com/2026/11/13/747796.html",
-      "published_at": "2026-11-13T00:27:42Z",
-      "source": "Radio Nepal"
-    },
-    {
-      "title": "यस्तो छ आजको मौसम पूर्वानुमान",
-      "url": "https://radionepalonline.com/2026/11/13/747794.html",
-      "published_at": "2026-11-13T00:24:09Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

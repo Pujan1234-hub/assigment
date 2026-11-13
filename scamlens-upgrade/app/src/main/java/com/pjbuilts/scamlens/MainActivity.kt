@@ -145,7 +145,7 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
     val ctx = LocalContext.current
     val hist = remember(refresh) { store.getHistory(8) }
     val status = remember(refresh, protectionRefresh) { readProtectionStatus(ctx) }
-    val notificationGuardActive = store.notificationGuardEnabled && status.notificationAccessActive
+    val notificationGuardActive = notificationGuardOn && status.notificationAccessActive
     val fullyProtected = status.callGuardActive && notificationGuardActive && status.warningNotificationsAllowed
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -298,6 +298,11 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
 @Composable private fun Protect(store: LocalStore, protectionRefresh: Int, changed: ()->Unit) {
     val ctx = LocalContext.current
     var localRefresh by remember { mutableIntStateOf(0) }
+    // SharedPreferences isn't Compose state: mirror user-editable values locally so
+    // each switch changes immediately instead of only after leaving the screen.
+    var notificationGuardOn by remember { mutableStateOf(store.notificationGuardEnabled) }
+    var unknownCallNoticesOn by remember { mutableStateOf(store.warnEveryUnverifiedCall) }
+    var autoBlockOn by remember { mutableStateOf(store.autoBlockHighRisk) }
     var roleText by remember { mutableStateOf("") }
     var notifText by remember { mutableStateOf("") }
     val status = remember(protectionRefresh, localRefresh) { readProtectionStatus(ctx) }
@@ -395,15 +400,16 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
                 "Notification Guard",
                 if (status.notificationAccessActive) "Android access is granted. Turn ScamLens analysis on or off here."
                 else "Grant Android notification access above, then keep this enabled.",
-                store.notificationGuardEnabled
+                notificationGuardOn
             ) {
+                notificationGuardOn = it
                 store.notificationGuardEnabled = it
                 localRefresh++
                 changed()
             }
         }
-        item { Toggle("Show all unknown incoming calls","Optional neutral caller notice, even without scam evidence. Off by default.",store.warnEveryUnverifiedCall) { store.warnEveryUnverifiedCall=it; changed() } }
-        item { Toggle("Auto-block reported repeat callers","Only auto-block numbers you reported that call 4+ times in 10 minutes (or numbers you manually blocked).",store.autoBlockHighRisk) { store.autoBlockHighRisk=it; changed() } }
+        item { Toggle("Show all unknown incoming calls","Optional neutral caller notice, even without scam evidence. Off by default.",unknownCallNoticesOn) { unknownCallNoticesOn=it; store.warnEveryUnverifiedCall=it; changed() } }
+        item { Toggle("Auto-block reported repeat callers","Only auto-block numbers you reported that call 4+ times in 10 minutes (or numbers you manually blocked).",autoBlockOn) { autoBlockOn=it; store.autoBlockHighRisk=it; changed() } }
         item { Card { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("Reaction levels", fontWeight = FontWeight.Bold)
             Text("UNKNOWN — no local scam evidence", color = Slate)
@@ -437,16 +443,19 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
 }
 
 @Composable private fun SettingsPage(store: LocalStore, changed: ()->Unit) {
+    var notificationGuardOn by remember { mutableStateOf(store.notificationGuardEnabled) }
+    var unknownCallNoticesOn by remember { mutableStateOf(store.warnEveryUnverifiedCall) }
+    var autoBlockOn by remember { mutableStateOf(store.autoBlockHighRisk) }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text("Settings", fontSize = 28.sp, fontWeight = FontWeight.Black); Text("Protection behaviour and privacy.", color = Slate) }
-        item { Toggle("Notification Guard","Analyse visible notification text locally.",store.notificationGuardEnabled) { store.notificationGuardEnabled=it; changed() } }
-        item { Toggle("Show all unknown calls","Optional neutral caller notification. Off by default.",store.warnEveryUnverifiedCall) { store.warnEveryUnverifiedCall=it; changed() } }
-        item { Toggle("Auto-block reported repeat callers","Off by default. Requires your own prior report and repeated calls.",store.autoBlockHighRisk) { store.autoBlockHighRisk=it; changed() } }
+        item { Toggle("Notification Guard","Analyse visible notification text locally.",notificationGuardOn) { notificationGuardOn=it; store.notificationGuardEnabled=it; changed() } }
+        item { Toggle("Show all unknown calls","Optional neutral caller notification. Off by default.",unknownCallNoticesOn) { unknownCallNoticesOn=it; store.warnEveryUnverifiedCall=it; changed() } }
+        item { Toggle("Auto-block reported repeat callers","Off by default. Requires your own prior report and repeated calls.",autoBlockOn) { autoBlockOn=it; store.autoBlockHighRisk=it; changed() } }
         item { Card { Column(Modifier.padding(16.dp)) {
             Text("Privacy", fontWeight = FontWeight.Bold)
             Text("Core scoring and screenshot OCR run locally. History is short, redacted and device-local.", color = Slate)
         }}}
-        item { Text("ScamLens 1.3.0 beta 1 · PJBUILTS", color = Slate) }
+        item { Text("ScamLens 1.3.0 beta 2 · PJBUILTS", color = Slate) }
     }
 }
 

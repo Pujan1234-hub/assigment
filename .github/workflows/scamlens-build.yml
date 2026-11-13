@@ -1,8 +1,8 @@
-name: ScamLens v1.2.1 Protection Sync
+name: ScamLens v1.3.0 Beta 1
 
 on:
   push:
-    branches: [scamlens-v1.2-full-upgrade]
+    branches: [scamlens-v1.2-full-upgrade, scamlens-v1.3-false-positive-fix]
     paths:
       - 'scamlens-upgrade/**'
       - '.github/workflows/scamlens-build.yml'
@@ -47,14 +47,14 @@ jobs:
       - name: Package APK + source
         run: |
           mkdir -p delivery
-          cp scamlens-upgrade/app/build/outputs/apk/debug/app-debug.apk delivery/ScamLens-PJBUILTS-v1.2.1-FullProtection.apk
-          (cd scamlens-upgrade && zip -qr ../delivery/ScamLens-PJBUILTS-v1.2.1-source.zip . -x '.gradle/*' 'build/*' 'app/build/*')
+          cp scamlens-upgrade/app/build/outputs/apk/debug/app-debug.apk delivery/ScamLens-PJBUILTS-v1.3.0-beta1-FullProtection.apk
+          (cd scamlens-upgrade && zip -qr ../delivery/ScamLens-PJBUILTS-v1.3.0-beta1-source.zip . -x '.gradle/*' 'build/*' 'app/build/*')
           sha256sum delivery/* > delivery/SHA256SUMS.txt
           ls -lh delivery
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ScamLens-PJBUILTS-v1.2.1-FullProtection
+          name: ScamLens-PJBUILTS-v1.3.0-beta1-FullProtection
           path: delivery/*
           if-no-files-found: error
           retention-days: 14

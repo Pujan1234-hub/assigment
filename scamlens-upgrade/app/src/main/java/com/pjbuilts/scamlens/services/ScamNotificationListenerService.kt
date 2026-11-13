@@ -38,9 +38,10 @@ class ScamNotificationListenerService : NotificationListenerService() {
 
         val result = RiskEngine.analyse(combined, ScanSource.NOTIFICATION)
         val meaningful = result.score >= 26
+        // Never interrupt the user for a single medium-strength signal.
+        // A name/domain mismatch alone cannot trigger a scam notification.
         val urgent = result.verdict == Verdict.SUSPECTED_SCAM ||
-            result.verdict == Verdict.HIGH_RISK ||
-            (result.verdict == Verdict.USE_CAUTION && result.signals.any { it.points >= 24 })
+            result.verdict == Verdict.HIGH_RISK
 
         if (meaningful) store.addScan(result)
         if (!urgent) return

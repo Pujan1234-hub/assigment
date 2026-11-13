@@ -15,7 +15,7 @@ class LocalStore(context: Context) {
         set(value) = prefs.edit().putBoolean("auto_block_high", value).apply()
 
     var warnEveryUnverifiedCall: Boolean
-        get() = prefs.getBoolean("warn_unverified_calls", true)
+        get() = prefs.getBoolean("warn_unverified_calls", false)
         set(value) = prefs.edit().putBoolean("warn_unverified_calls", value).apply()
 
     var notificationGuardEnabled: Boolean

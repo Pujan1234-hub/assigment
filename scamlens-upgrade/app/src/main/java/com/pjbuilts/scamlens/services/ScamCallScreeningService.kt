@@ -38,7 +38,14 @@ class ScamCallScreeningService : CallScreeningService() {
         respondToCall(callDetails, response)
         store.addCall(result, blockNow)
 
-        if (store.warnEveryUnverifiedCall || result.score >= 25 || blockNow) {
+        // Default to quiet for ordinary unknown callers. An explicit opt-in still
+        // allows neutral identification notices without branding them scammers.
+        if (store.warnEveryUnverifiedCall ||
+            result.verdict == com.pjbuilts.scamlens.domain.Verdict.SUSPECTED_SCAM ||
+            result.verdict == com.pjbuilts.scamlens.domain.Verdict.HIGH_RISK ||
+            result.verdict == com.pjbuilts.scamlens.domain.Verdict.USE_CAUTION ||
+            blockNow
+        ) {
             ProtectionNotifier.showCallAlert(this, result, blockNow)
         }
     }

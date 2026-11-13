@@ -1,18 +1,28 @@
-# ScamLens by PJBUILTS — v1.1
+# ScamLens by PJBUILTS — v1.3.0 beta 1
 
-Native Android scam protection upgraded from score-only UI to real device reactions.
+This is an incremental upgrade of the native Android v1.2.1 app, package `com.pjbuilts.scamlens`.
 
-- CallScreeningService incoming-call protection
-- clear UNVERIFIED / SUSPECTED SCAM / HIGH-RISK verdicts
-- reason/evidence cards and actions
-- local block, report and trusted caller lists
-- repeated-call signal
-- Notification Guard
-- message and URL scan
-- screenshot OCR
-- safe QR scan
-- phone check
-- persistent redacted local history
-- PJBUILTS intro
+## Completed — Step 1: false-positive protection
 
-A low score never means “safe”. ScamLens does not invent caller reputation or fake community report counts.
+- Unknown and withheld callers no longer count as scam evidence.
+- Repeated calls without other evidence do not auto-block legitimate recruiters.
+- Manual blocks mean **blocked by you**, not **proven fraud**.
+- Reports are clearly labelled local/personal, not crowd-verified.
+- Default caller notifications are quiet unless a warning has actual evidence.
+- Mentioning a brand while linking elsewhere is not, by itself, phishing.
+- Notification Guard requires a stronger suspicious pattern before interrupting.
+- UI labels distinguish lack of evidence from verified caller identity.
+- JUnit regression cases cover genuine unknown callers, reported repeat callers,
+  Google/article links and actual phishing examples.
+
+## Next steps
+
+1. Add a consented caller-ID provider interface and verified-business name lookup.
+   The current project has **no licensed reverse lookup database**: do not display
+   invented caller names or claim that every UK number can be identified.
+2. Add a provenance-aware reputation service with provider attribution and caching.
+3. Improve the call UI / notifications and privacy controls.
+4. Test real Android call screening on Samsung devices; it must respond within five seconds.
+
+Existing message/link scan, OCR, QR, local history, report/trust/block actions,
+CallScreeningService and Notification Guard remain in place.

@@ -1,4 +1,4 @@
-# ScamLens by PJBUILTS — v1.3.0 beta 1
+# ScamLens by PJBUILTS — v1.3.0 beta 2
 
 This is an incremental upgrade of the native Android v1.2.1 app, package `com.pjbuilts.scamlens`.
 
@@ -14,6 +14,12 @@ This is an incremental upgrade of the native Android v1.2.1 app, package `com.pj
 - UI labels distinguish lack of evidence from verified caller identity.
 - JUnit regression cases cover genuine unknown callers, reported repeat callers,
   Google/article links and actual phishing examples.
+
+## Beta 2 UI fix
+
+- Protection and Settings toggles now bind to Compose observable state.
+- Switches redraw immediately, with no back-navigation needed, while values persist in SharedPreferences.
+- Notification Guard status updates in-place as its switch changes.
 
 ## Next steps
 

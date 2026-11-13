@@ -29,10 +29,12 @@ object ProtectionNotifier {
         if (!canNotify(context)) return
 
         val title = when {
-            blockedNow -> "BLOCKED · high-risk caller"
-            result.verdict == Verdict.HIGH_RISK -> "HIGH RISK · likely scam call"
-            result.verdict == Verdict.SUSPECTED_SCAM -> "SUSPECTED SCAM CALL"
-            else -> "UNVERIFIED CALLER · check before trusting"
+            blockedNow && result.blockedLocally -> "BLOCKED · your block list"
+            blockedNow -> "BLOCKED · repeated caller you reported"
+            result.trustedLocally -> "Caller trusted by you"
+            result.reportedLocally -> "Caller previously reported by you"
+            result.verdict == Verdict.USE_CAUTION -> "Unusual calling pattern"
+            else -> "Unknown caller · no scam evidence"
         }
         val reason = result.reasons.firstOrNull().orEmpty()
         val open = PendingIntent.getActivity(
@@ -60,8 +62,8 @@ object ProtectionNotifier {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val body = result.displayNumber + "\n" + reason + "\n\n" + result.recommendedAction +
-            "\n\n" + result.scoreLabel
+        val body = result.displayNumber + "\n" + reason + "\n\n" +
+            result.recommendedAction + "\n" + result.scoreLabel
 
         val builder = NotificationCompat.Builder(context, CALL_CHANNEL)
             .setSmallIcon(R.drawable.ic_scamlens)
@@ -96,7 +98,7 @@ object ProtectionNotifier {
         val title = when (result.verdict) {
             Verdict.HIGH_RISK -> "HIGH RISK · likely scam message"
             Verdict.SUSPECTED_SCAM -> "SUSPECTED SCAM MESSAGE"
-            Verdict.USE_CAUTION -> "CAUTION · suspicious message"
+            Verdict.USE_CAUTION -> "Message needs verification"
             Verdict.NO_STRONG_SIGNALS -> "ScamLens check"
         }
         val reason = result.signals.firstOrNull()?.detail ?: result.category
@@ -115,7 +117,7 @@ object ProtectionNotifier {
         val notification = NotificationCompat.Builder(context, MESSAGE_CHANNEL)
             .setSmallIcon(R.drawable.ic_scamlens)
             .setContentTitle(title)
-            .setContentText(result.headline)
+            .setContentText(reason)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setSubText("ScamLens Notification Guard")
             .setPriority(NotificationCompat.PRIORITY_HIGH)

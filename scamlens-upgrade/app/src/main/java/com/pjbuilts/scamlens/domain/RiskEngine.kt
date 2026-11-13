@@ -119,7 +119,7 @@ object RiskEngine {
             }
 
             brandDomains.forEach { (brand, officialDomains) ->
-                if (lower.contains(brand) && host.isNotBlank()) {
+                if (host.isNotBlank() && isBrandImpersonationClaim(text, brand)) {
                     val official = officialDomains.any { host == it || host.endsWith("." + it) }
                     if (!official) {
                         signals += RiskSignal(
@@ -202,6 +202,23 @@ object RiskEngine {
             actions = actions,
             source = source
         )
+    }
+
+    /**
+     * Mentioning Google, HMRC or another brand while linking to a different site
+     * is not itself phishing. Only consider a mismatch when the message also
+     * presents itself as coming from the brand and requests account/payment action.
+     */
+    private fun isBrandImpersonationClaim(text: String, brand: String): Boolean {
+        val name = Regex.escape(brand)
+        val claim = Regex(
+            "(?i)(?:\\b" + name + "\\s*(?::|account\\b|security\\b|support\\b|team\\b|verification\\b|login\\b)" +
+                "|\\b(?:from|official|on behalf of|message from|notice from)\\s+" + name + "\\b)"
+        )
+        val action = Regex(
+            """(?i)\b(?:verify|sign\s*in|log\s*in|reset|confirm|update|pay|payment|fee|password|otp|suspended|blocked|closed|missed\s+delivery)\b"""
+        )
+        return claim.containsMatchIn(text) && action.containsMatchIn(text)
     }
 
     private fun cleanUrl(value: String): String =

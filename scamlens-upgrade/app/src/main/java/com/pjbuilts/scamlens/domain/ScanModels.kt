@@ -61,22 +61,30 @@ data class PhoneRiskResult(
     val verdict: Verdict,
     val reasons: List<String>,
     val recommendedAction: String,
-    val shouldAutoBlock: Boolean = false
+    val shouldAutoBlock: Boolean = false,
+    val trustedLocally: Boolean = false,
+    val blockedLocally: Boolean = false,
+    val reportedLocally: Boolean = false
 ) {
     val verdictLabel: String
-        get() = when (verdict) {
-            Verdict.NO_STRONG_SIGNALS -> "Trusted on this device"
-            Verdict.USE_CAUTION -> "Unverified caller"
-            Verdict.SUSPECTED_SCAM -> "Suspected scam call"
-            Verdict.HIGH_RISK -> "High-risk scam call"
+        get() = when {
+            blockedLocally -> "Blocked by you"
+            trustedLocally -> "Trusted by you"
+            verdict == Verdict.NO_STRONG_SIGNALS -> "Unknown caller · no scam evidence"
+            verdict == Verdict.USE_CAUTION -> "Unusual calling pattern"
+            reportedLocally -> "Previously reported by you"
+            verdict == Verdict.SUSPECTED_SCAM -> "Suspicious call"
+            else -> "High-risk call"
         }
 
     val headline: String
-        get() = when (verdict) {
-            Verdict.NO_STRONG_SIGNALS -> "You marked this caller as trusted"
-            Verdict.USE_CAUTION -> "Caller identity is not verified"
-            Verdict.SUSPECTED_SCAM -> "Do not trust this caller without verification"
-            Verdict.HIGH_RISK -> "Strong local evidence says block or end this call"
+        get() = when {
+            blockedLocally -> "You chose to block this caller"
+            trustedLocally -> "You marked this caller as trusted"
+            verdict == Verdict.NO_STRONG_SIGNALS -> "Unknown does not mean scam"
+            verdict == Verdict.USE_CAUTION -> "Check the caller before sharing information"
+            reportedLocally -> "This is based on your previous local report"
+            else -> "Several concerning signals were found"
         }
 
     val scoreLabel: String

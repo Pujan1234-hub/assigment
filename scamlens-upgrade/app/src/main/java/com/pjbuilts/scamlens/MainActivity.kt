@@ -335,7 +335,7 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
                     Text("Incoming Call Guard", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text(if (status.callGuardActive) "ACTIVE ✓" else "NOT ACTIVE", fontWeight = FontWeight.Black,
                         color = if (status.callGuardActive) Forest else Color(0xFF8A4B00))
-                    Text("Shows UNVERIFIED, SUSPECTED SCAM or HIGH RISK with reasons and Block/Trust actions.", color = Slate)
+                    Text("Shows caller uncertainty and actual local evidence without labelling unknown numbers as fraud.", color = Slate)
 
                     if (status.callGuardActive) {
                         OutlinedButton({}, enabled = false) { Text("Call Guard active ✓") }
@@ -402,16 +402,16 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
                 changed()
             }
         }
-        item { Toggle("Warn on unverified incoming calls","Show a heads-up status even when the evidence score is low.",store.warnEveryUnverifiedCall) { store.warnEveryUnverifiedCall=it; changed() } }
-        item { Toggle("Auto-block 85+ local risk","Reject only very-high-risk calls or numbers already on your block list.",store.autoBlockHighRisk) { store.autoBlockHighRisk=it; changed() } }
+        item { Toggle("Show all unknown incoming calls","Optional neutral caller notice, even without scam evidence. Off by default.",store.warnEveryUnverifiedCall) { store.warnEveryUnverifiedCall=it; changed() } }
+        item { Toggle("Auto-block reported repeat callers","Only auto-block numbers you reported that call 4+ times in 10 minutes (or numbers you manually blocked).",store.autoBlockHighRisk) { store.autoBlockHighRisk=it; changed() } }
         item { Card { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("Reaction levels", fontWeight = FontWeight.Bold)
-            Text("UNVERIFIED — caller identity not confirmed", color = Slate)
-            Text("CAUTION — meaningful suspicious evidence", color = Slate)
-            Text("SUSPECTED SCAM — multiple/strong scam signals", color = Slate)
-            Text("HIGH RISK — strong evidence; block/end and verify independently", color = Slate)
+            Text("UNKNOWN — no local scam evidence", color = Slate)
+            Text("CAUTION — unusual calling pattern", color = Slate)
+            Text("REPORTED — based on a report you made on this device", color = Slate)
+            Text("HIGH RISK — repeated calls from a number you reported", color = Slate)
         }}}
-        item { Card(colors = CardDefaults.cardColors(containerColor = SoftAmber)) { Text("ScamLens will not invent caller reputation. Unknown callers stay UNVERIFIED until real evidence exists.", Modifier.padding(16.dp), fontWeight = FontWeight.SemiBold) } }
+        item { Card(colors = CardDefaults.cardColors(containerColor = SoftAmber)) { Text("ScamLens does not invent caller identities or crowd reports. An unknown number is not proof of fraud.", Modifier.padding(16.dp), fontWeight = FontWeight.SemiBold) } }
     }
 }
 
@@ -440,13 +440,13 @@ private fun readProtectionStatus(ctx: Context): ProtectionStatus {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text("Settings", fontSize = 28.sp, fontWeight = FontWeight.Black); Text("Protection behaviour and privacy.", color = Slate) }
         item { Toggle("Notification Guard","Analyse visible notification text locally.",store.notificationGuardEnabled) { store.notificationGuardEnabled=it; changed() } }
-        item { Toggle("Warn on unverified calls","Show a clear caller status even at low evidence risk.",store.warnEveryUnverifiedCall) { store.warnEveryUnverifiedCall=it; changed() } }
-        item { Toggle("Auto-block 85+ local risk","Optional. Keep off if you want to review every call.",store.autoBlockHighRisk) { store.autoBlockHighRisk=it; changed() } }
+        item { Toggle("Show all unknown calls","Optional neutral caller notification. Off by default.",store.warnEveryUnverifiedCall) { store.warnEveryUnverifiedCall=it; changed() } }
+        item { Toggle("Auto-block reported repeat callers","Off by default. Requires your own prior report and repeated calls.",store.autoBlockHighRisk) { store.autoBlockHighRisk=it; changed() } }
         item { Card { Column(Modifier.padding(16.dp)) {
             Text("Privacy", fontWeight = FontWeight.Bold)
             Text("Core scoring and screenshot OCR run locally. History is short, redacted and device-local.", color = Slate)
         }}}
-        item { Text("ScamLens 1.2.1 · PJBUILTS", color = Slate) }
+        item { Text("ScamLens 1.3.0 beta 1 · PJBUILTS", color = Slate) }
     }
 }
 

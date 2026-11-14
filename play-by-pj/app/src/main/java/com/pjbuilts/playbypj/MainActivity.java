@@ -18,7 +18,7 @@ import android.os.Looper;
 import android.provider.OpenableColumns;
 import android.content.res.AssetFileDescriptor;
 import android.view.Gravity;
-import android.view.TextureView;
+import org.videolan.libvlc.util.VLCVideoLayout;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -53,13 +53,49 @@ public final class MainActivity extends Activity {
     private final float[] rates={1f,1.25f,1.5f,2f,0.75f};
     private final String[] looks={"Original","Cinema Gold","Vivid 4K","Noir"};
     private final Handler ui=new Handler(Looper.getMainLooper());
-    private TextureView texture;
+    private VLCVideoLayout videoLayout;
+    private boolean videoAttached=false, pendingPlay=false;
+    private int outputAttachAttempts=0;
     private View tint;
     private SeekBar timeline,filterAmount;
     private TextView startClock,endClock,status,mediaTitle,codecLabel,rateLabel;
     private Button playButton,rateButton;
     private final ArrayList<Button> lookButtons=new ArrayList<>();
     private boolean immersive=false;
+    private final Runnable attachVideoOutput=new Runnable(){
+        @Override public void run(){
+            if(player==null||videoLayout==null||isFinishing()||isDestroyed())return;
+            if(videoAttached&&player.getVLCVout().areViewsAttached())return;
+            // attachViews requires an attached layout; attaching before the view is
+            // measured is what left the prior player in an invalid surface state.
+            if(videoLayout.getWindowToken()==null||videoLayout.getWidth()==0||videoLayout.getHeight()==0){
+                if(++outputAttachAttempts<60)ui.postDelayed(this,80L);
+                else status.setText("Video surface not ready • reopen player");
+                return;
+            }
+            try{
+                if(!player.getVLCVout().areViewsAttached()){
+                    // Canonical VideoLAN VideoHelper manages TextureView lifecycle,
+                    // surface recreation, vout and subtitles without duplicate attach.
+                    player.attachViews(videoLayout,null,false,true);
+                }
+                videoAttached=true;
+                outputAttachAttempts=0;
+                status.setText("VLC video output ready • MP4 / HEVC / MKV");
+                if(pendingPlay){
+                    pendingPlay=false;
+                    playMedia(false);
+                }
+            }catch(Exception e){
+                videoAttached=false;
+                if(++outputAttachAttempts<12){
+                    ui.postDelayed(this,160L);
+                }else{
+                    status.setText("VLC surface error: "+e.getClass().getSimpleName());
+                }
+            }
+        }
+    };
     private final Runnable tick=new Runnable(){
         @Override public void run(){
             if(player!=null&&!seeking){
@@ -88,10 +124,11 @@ public final class MainActivity extends Activity {
             opts.add("--audio-time-stretch");
             vlc=new LibVLC(getApplicationContext(),opts);
             player=new MediaPlayer(vlc);
-            player.getVLCVout().setVideoView(texture);
-            player.getVLCVout().attachViews();
             player.setEventListener(event->ui.post(()->handleEvent(event.type)));
-            status.setText("Ready • VLC software decoding available");
+            // Never attach the VLC output inside onCreate before the layout is ready.
+            // Keep pending file/stream requests until VideoLAN has attached its vout.
+            status.setText("Preparing VLC video output…");
+            videoLayout.post(attachVideoOutput);
             ui.post(tick);
             if(getIntent()!=null&&Intent.ACTION_VIEW.equals(getIntent().getAction())){
                 Uri u=getIntent().getData();if(u!=null)openFilm(u);
@@ -138,8 +175,8 @@ public final class MainActivity extends Activity {
         videoBox.setBackground(round(INK,18));
         videoBox.setClipToOutline(true);
         page.addView(videoBox,new LinearLayout.LayoutParams(-1,-2));
-        texture=new TextureView(this);
-        videoBox.addView(texture,new FrameLayout.LayoutParams(-1,-1));
+        videoLayout=new VLCVideoLayout(this);
+        videoBox.addView(videoLayout,new FrameLayout.LayoutParams(-1,-1));
         tint=new View(this);tint.setClickable(false);
         videoBox.addView(tint,new FrameLayout.LayoutParams(-1,-1));
         status=text("Starting VLC decoder…",12,false,0xff7b6b57);
@@ -248,6 +285,13 @@ public final class MainActivity extends Activity {
     }
     private void playMedia(boolean softwareOnly){
         if(vlc==null||player==null)return;
+        if(!videoAttached||!player.getVLCVout().areViewsAttached()){
+            pendingPlay=true;
+            status.setText("Preparing video screen before decoding…");
+            ui.removeCallbacks(attachVideoOutput);
+            ui.post(attachVideoOutput);
+            return;
+        }
         closeOpenedFile();
         try{
             Media media;
@@ -330,8 +374,10 @@ public final class MainActivity extends Activity {
         else if(look==2)m.setSaturation(1f+0.45f*k);
         else if(look==1)m.setSaturation(1f+0.12f*k);
         paint.setColorFilter(new ColorMatrixColorFilter(m));
-        texture.setLayerType(View.LAYER_TYPE_HARDWARE,paint);
-        texture.setLayerPaint(paint);
+        // The LibVLC layout uses its own TextureView for GPU rendering;
+        // keep filter effects on the containing native video view.
+        videoLayout.setLayerType(View.LAYER_TYPE_HARDWARE,paint);
+        videoLayout.setLayerPaint(paint);
         for(int i=0;i<lookButtons.size();i++){
             Button b=lookButtons.get(i);
             b.setBackground(round(i==look?INK:SOFT,16));
@@ -377,12 +423,29 @@ public final class MainActivity extends Activity {
     }
     private int dp(int v){return Math.round(v*getResources().getDisplayMetrics().density);}
     private void toast(String msg){Toast.makeText(this,msg,Toast.LENGTH_LONG).show();}
-    @Override protected void onPause(){super.onPause(); if(player!=null&&player.isPlaying())player.pause();}
+    @Override protected void onResume(){
+        super.onResume();
+        if(player!=null&&(!videoAttached||!player.getVLCVout().areViewsAttached())){
+            videoAttached=false;
+            ui.post(attachVideoOutput);
+        }
+    }
+    @Override protected void onPause(){
+        super.onPause();
+        if(player!=null&&player.isPlaying())player.pause();
+    }
     @Override protected void onDestroy(){
         ui.removeCallbacksAndMessages(null);
-        try{if(player!=null){player.setEventListener(null);player.stop();
-            if(player.getVLCVout().areViewsAttached())player.getVLCVout().detachViews();
-            player.release();}}catch(Exception ignored){}
+        try{
+            if(player!=null){
+                player.setEventListener(null);
+                player.stop();
+                // VideoHelper must be released through the canonical player API.
+                player.detachViews();
+                player.release();
+            }
+        }catch(Exception ignored){}
+        videoAttached=false;
         closeOpenedFile();
         if(vlc!=null)vlc.release();
         super.onDestroy();

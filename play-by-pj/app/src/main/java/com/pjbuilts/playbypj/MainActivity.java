@@ -319,6 +319,257 @@ public final class MainActivity extends Activity {
         footer.setGravity(Gravity.CENTER);page.addView(footer,vertical(0,20));
     }
 
+
+    private void installFullscreenControls(){
+        fullHud=new FrameLayout(this);
+        fullHud.setVisibility(View.GONE);
+        videoBox.addView(fullHud,new FrameLayout.LayoutParams(-1,-1));
+        fullExit=button("✕ Exit Fullscreen",0xcc14202e,Color.WHITE,12);
+        FrameLayout.LayoutParams top=new FrameLayout.LayoutParams(dp(166),dp(48),Gravity.TOP|Gravity.END);
+        top.setMargins(dp(12),dp(12),dp(12),0);
+        fullHud.addView(fullExit,top);
+        fullExit.setOnClickListener(v->toggleFullscreen());
+        LinearLayout bottom=new LinearLayout(this);
+        bottom.setGravity(Gravity.CENTER);
+        bottom.setOrientation(LinearLayout.HORIZONTAL);
+        bottom.setPadding(dp(12),dp(7),dp(12),dp(13));
+        bottom.setBackgroundColor(0xc5121b2b);
+        FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,dp(64),Gravity.BOTTOM);
+        fullHud.addView(bottom,bp);
+        Button rewind=button("−10",0xff29374b,Color.WHITE,13);
+        fullPlay=button("▶",GOLD,INK,16);
+        Button forward=button("+10",0xff29374b,Color.WHITE,13);
+        Button sub=button("CC",0xff29374b,Color.WHITE,13);
+        Button aud=button("♫",0xff29374b,Color.WHITE,13);
+        Button again=button("↻",0xff29374b,Color.WHITE,13);
+        for(Button b:new Button[]{rewind,fullPlay,forward,sub,aud,again}){
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(43),1);
+            lp.setMargins(dp(3),0,dp(3),0);
+            bottom.addView(b,lp);
+        }
+        rewind.setOnClickListener(v->{seekRelative(-10_000);showFullscreenControls();});
+        fullPlay.setOnClickListener(v->{togglePlay();showFullscreenControls();});
+        forward.setOnClickListener(v->{seekRelative(10_000);showFullscreenControls();});
+        sub.setOnClickListener(v->{showTrackDialog(true);showFullscreenControls();});
+        aud.setOnClickListener(v->{showTrackDialog(false);showFullscreenControls();});
+        again.setOnClickListener(v->{cycleLoop();showFullscreenControls();});
+    }
+    private void showFullscreenControls(){
+        if(!immersive||fullHud==null)return;
+        ui.removeCallbacks(hideFullControls);
+        fullHud.animate().cancel();
+        fullHud.setVisibility(View.VISIBLE);
+        fullHud.setAlpha(0f);
+        fullHud.animate().alpha(1f).setDuration(200).start();
+        controlsShown=true;
+        ui.postDelayed(hideFullControls,4500);
+    }
+    private void showTrackDialog(boolean subtitles){
+        if(player==null||!player.hasMedia()){
+            toast("Open and start a film first");
+            return;
+        }
+        List<VlcTrackPicker.Option> tracks=VlcTrackPicker.available(player,subtitles);
+        String selected=VlcTrackPicker.selected(player,subtitles);
+        ArrayList<String> display=new ArrayList<>();
+        ArrayList<String> ids=new ArrayList<>();
+        if(subtitles){
+            display.add("Off · No subtitles");
+            ids.add("-1");
+        }
+        for(int i=0;i<tracks.size();i++){
+            VlcTrackPicker.Option t=tracks.get(i);
+            if("-1".equals(t.id)&&subtitles)continue;
+            display.add(String.format(Locale.US,"%02d · %s",i+1,t.label));
+            ids.add(t.id);
+        }
+        if(tracks.isEmpty()&&!subtitles){
+            new AlertDialog.Builder(this).setTitle("Audio tracks")
+                .setMessage("The playing file has not reported an audio track yet.")
+                .setPositiveButton("OK",null).show();
+            return;
+        }
+        int checked=ids.indexOf(selected);
+        if(checked<0)checked=subtitles?0:-1;
+        String[] options=display.toArray(new String[0]);
+        new AlertDialog.Builder(this)
+            .setTitle(subtitles?"CC · Subtitle tracks":"♫ · Audio tracks")
+            .setSingleChoiceItems(options,checked,(dialog,which)->{
+                if(which>=0&&which<ids.size()){
+                    boolean success=VlcTrackPicker.choose(player,subtitles,ids.get(which));
+                    if(!success)toast("Track not available • try after playback starts");
+                    else toast(subtitles?"Subtitle selected":"Audio track selected");
+                }
+                dialog.dismiss();
+            })
+            .setNegativeButton("Close",null).show();
+    }
+    private void cycleLoop(){
+        loopMode=(loopMode+1)%3;
+        String name=loopMode==LOOP_ONE?"One":loopMode==LOOP_ALL?"All":"Off";
+        if(loopButton!=null){
+            loopButton.setText("↻ Loop: "+name);
+            loopButton.animate().rotationBy(180f).setDuration(220).start();
+        }
+        toast("Loop "+name);
+    }
+    private void buildMusicSection(LinearLayout page){
+        TextView section=text("♫  YOUR MUSIC · A–Z LIBRARY",17,true,INK);
+        page.addView(section,vertical(0,24));
+        LinearLayout row=new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        page.addView(row,vertical(0,10));
+        Button scan=button("↻ Music Library",INK,Color.WHITE,13);
+        Button playlists=button("☷ Playlists",SOFT,INK,13);
+        Button add=button("+ Save Song",SOFT,INK,13);
+        for(Button b:new Button[]{scan,playlists,add}){
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(51),1);
+            lp.setMargins(dp(2),0,dp(2),0);row.addView(b,lp);
+        }
+        scan.setOnClickListener(v->loadMusicLibrary());
+        playlists.setOnClickListener(v->showPlaylists());
+        add.setOnClickListener(v->saveCurrentToPlaylist());
+        musicSearch=new EditText(this);
+        musicSearch.setSingleLine(true);
+        musicSearch.setTextSize(14);
+        musicSearch.setHint("Search local songs A–Z");
+        musicSearch.setBackground(round(0xffe9e4dc,12));
+        musicSearch.setPadding(dp(12),0,dp(12),0);
+        page.addView(musicSearch,new LinearLayout.LayoutParams(-1,dp(45)));
+        musicSearch.addTextChangedListener(new TextWatcher(){
+            public void beforeTextChanged(CharSequence s,int start,int count,int after){}
+            public void onTextChanged(CharSequence s,int start,int before,int count){
+                musicListLimit=80;showMusicItems();
+            }
+            public void afterTextChanged(Editable e){}
+        });
+        musicCount=text("Tap Music Library to grant access and load downloaded songs",12,false,0xff756b61);
+        page.addView(musicCount,vertical(0,8));
+        musicResultsPanel=new LinearLayout(this);
+        musicResultsPanel.setOrientation(LinearLayout.VERTICAL);
+        page.addView(musicResultsPanel,vertical(0,3));
+    }
+    private String musicPermission(){
+        return Build.VERSION.SDK_INT>=33?
+            "android.permission.READ_MEDIA_AUDIO":"android.permission.READ_EXTERNAL_STORAGE";
+    }
+    private void loadMusicLibrary(){
+        String permission=musicPermission();
+        if(Build.VERSION.SDK_INT>=23 && checkSelfPermission(permission)!=PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{permission},MUSIC_PERMISSION);
+            return;
+        }
+        musicCount.setText("Scanning on-device music…");
+        new Thread(()->{
+            List<MusicLibrary.Track> found=MusicLibrary.scan(getApplicationContext());
+            runOnUiThread(()->{
+                if(isFinishing()||isDestroyed())return;
+                music.clear();music.addAll(found);
+                musicListLimit=80;showMusicItems();
+            });
+        },"PJ-Music-MediaStore").start();
+    }
+    @Override public void onRequestPermissionsResult(int req,String[] permissions,int[] results){
+        super.onRequestPermissionsResult(req,permissions,results);
+        if(req==MUSIC_PERMISSION){
+            if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)loadMusicLibrary();
+            else toast("Music access not granted; you can still open individual files");
+        }
+    }
+    private void showMusicItems(){
+        if(musicResultsPanel==null||musicCount==null||musicSearch==null)return;
+        musicResultsPanel.removeAllViews();
+        String query=musicSearch.getText().toString().toLowerCase(Locale.ROOT).trim();
+        ArrayList<MusicLibrary.Track> filtered=new ArrayList<>();
+        for(MusicLibrary.Track t:music)
+            if(query.isEmpty()||t.name.toLowerCase(Locale.ROOT).contains(query))filtered.add(t);
+        musicCount.setText(filtered.size()+" tracks · A–Z · on this device");
+        int visible=Math.min(filtered.size(),musicListLimit);
+        for(int i=0;i<visible;i++){
+            final MusicLibrary.Track track=filtered.get(i);
+            final List<MusicLibrary.Track> group=filtered;
+            Button item=button("♫  "+track.name,0xfff1ede4,INK,12);
+            item.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
+            item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams lp=vertical(0,3);lp.height=dp(48);
+            musicResultsPanel.addView(item,lp);
+            item.setOnClickListener(v->playTrack(track,group));
+        }
+        if(visible<filtered.size()){
+            Button more=button("Show more · "+(filtered.size()-visible)+" remaining",SOFT,INK,12);
+            musicResultsPanel.addView(more,vertical(4,8));
+            more.setOnClickListener(v->{musicListLimit+=80;showMusicItems();});
+        }
+    }
+    private void playTrack(MusicLibrary.Track track,List<MusicLibrary.Track> tracks){
+        if(track==null)return;
+        queue.clear();queue.addAll(tracks);
+        queueIndex=0;
+        for(int i=0;i<queue.size();i++)if(queue.get(i).uri.equals(track.uri)){queueIndex=i;break;}
+        playQueueIndex(queueIndex);
+    }
+    private void playQueueIndex(int index){
+        if(index<0||index>=queue.size())return;
+        queueIndex=index;
+        currentTrack=queue.get(index);
+        isMusic=true;
+        musicWave.setActive(true);
+        movieUri=currentTrack.uri;
+        movieUrl=null;retryingSoftware=false;
+        mediaTitle.setText("♫  "+currentTrack.name);
+        status.setText("Loading music · "+(queueIndex+1)+" / "+queue.size());
+        playMedia(false);
+    }
+    private void showPlaylists(){
+        List<String> names=MusicLibrary.names(this);
+        ArrayList<String> opts=new ArrayList<>();
+        opts.add("＋ Create new playlist");
+        for(String name:names)opts.add("♫ "+name);
+        new AlertDialog.Builder(this)
+            .setTitle("My playlists · saved on this phone")
+            .setItems(opts.toArray(new String[0]),(d,i)->{
+                if(i==0)createPlaylistDialog(false);
+                else{
+                    String name=names.get(i-1);
+                    List<MusicLibrary.Track> tracks=MusicLibrary.tracks(this,name);
+                    if(tracks.isEmpty()){toast("Playlist is empty");return;}
+                    playTrack(tracks.get(0),tracks);
+                    toast("Playing "+name+" · "+tracks.size()+" tracks");
+                }
+            }).setNegativeButton("Close",null).show();
+    }
+    private void createPlaylistDialog(boolean addCurrent){
+        EditText field=new EditText(this);
+        field.setSingleLine(true);
+        field.setHint("e.g. My favourites");
+        new AlertDialog.Builder(this)
+            .setTitle("Create playlist")
+            .setView(field)
+            .setPositiveButton("Create",(d,w)->{
+                String name=field.getText().toString().trim();
+                boolean created=MusicLibrary.create(this,name);
+                if(!created){toast("Name required or playlist already exists");return;}
+                if(addCurrent&&currentTrack!=null)MusicLibrary.add(this,name,currentTrack);
+                toast("Playlist saved: "+name);
+            }).setNegativeButton("Cancel",null).show();
+    }
+    private void saveCurrentToPlaylist(){
+        if(currentTrack==null){toast("Play a music file from Music Library first");return;}
+        List<String> names=MusicLibrary.names(this);
+        ArrayList<String> choices=new ArrayList<>();
+        choices.add("＋ New playlist");
+        choices.addAll(names);
+        new AlertDialog.Builder(this).setTitle("Save song to playlist")
+            .setItems(choices.toArray(new String[0]),(d,which)->{
+                if(which==0)createPlaylistDialog(true);
+                else{
+                    String name=names.get(which-1);
+                    if(MusicLibrary.add(this,name,currentTrack))toast("Saved to "+name);
+                    else toast("Unable to save track");
+                }
+            }).setNegativeButton("Cancel",null).show();
+    }
+
     private void pickFilm(){
         Intent picker=new Intent(Intent.ACTION_OPEN_DOCUMENT);
         picker.addCategory(Intent.CATEGORY_OPENABLE);

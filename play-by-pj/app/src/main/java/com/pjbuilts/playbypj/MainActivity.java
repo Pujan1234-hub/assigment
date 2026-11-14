@@ -34,7 +34,6 @@ import android.widget.Toast;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.IVLCVout;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,9 +88,8 @@ public final class MainActivity extends Activity {
             opts.add("--audio-time-stretch");
             vlc=new LibVLC(getApplicationContext(),opts);
             player=new MediaPlayer(vlc);
-            IVLCVout vout=player.getVLCVout();
-            vout.setVideoView(texture);
-            vout.attachViews();
+            player.getVLCVout().setVideoView(texture);
+            player.getVLCVout().attachViews();
             player.setEventListener(event->ui.post(()->handleEvent(event.type)));
             status.setText("Ready • VLC software decoding available");
             ui.post(tick);

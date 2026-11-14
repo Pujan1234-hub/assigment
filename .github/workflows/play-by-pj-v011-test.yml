@@ -1,8 +1,8 @@
-name: PLAY by PJ v0.1.2 Video Surface Init Fix TEST APK
+name: PLAY by PJ v0.1.3 Fullscreen Audio Tracks Music Library TEST APK
 on:
   push:
     branches:
-      - test/play-by-pj-v012-vlc-surface-fix-20261114
+      - test/play-by-pj-v013-fullscreen-tracks-music-20261114
     paths:
       - 'play-by-pj/**'
       - '.github/workflows/play-by-pj-v011-test.yml'
@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: play-by-pj-v012-surface-fix-test
+  group: play-by-pj-v013-fullscreen-tracks-music-test
   cancel-in-progress: true
 jobs:
   android:
@@ -43,6 +43,18 @@ jobs:
           grep -Fq 'pendingPlay=true' "$J"
           grep -Fq 'player.detachViews()' "$J"
           ! grep -Fq 'getVLCVout().setVideoView(texture)' "$J"
+          grep -Fq 'setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE)' "$J"
+          grep -Fq 'showTrackDialog(boolean subtitles)' "$J"
+          grep -Fq 'new MusicWaveView(this)' "$J"
+          grep -Fq 'player.detachViews()' "$J"
+          grep -Fq 'void playQueueIndex(int index)' "$J"
+          grep -Fq 'String musicPermission()' "$J"
+          grep -Fq 'rootPage.setPadding(0,0,0,0)' "$J"
+          grep -Fq 'private void applyLook(boolean animate)' "$J"
+          test -s play-by-pj/app/src/main/java/com/pjbuilts/playbypj/VlcTrackPicker.java
+          test -s play-by-pj/app/src/main/java/com/pjbuilts/playbypj/MusicLibrary.java
+          test -s play-by-pj/app/src/main/java/com/pjbuilts/playbypj/MusicWaveView.java
+          grep -Fq 'READ_MEDIA_AUDIO' play-by-pj/app/src/main/AndroidManifest.xml
           ! grep -Fq 'READ_EXTERNAL_STORAGE' play-by-pj/app/src/main/AndroidManifest.xml
       - name: Build native video player with real bundled VLC decoder
         run: gradle -p play-by-pj :app:assembleDebug --no-daemon --stacktrace
@@ -52,16 +64,16 @@ jobs:
           set -euo pipefail
           SOURCE="play-by-pj/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$SOURCE"
-          cp "$SOURCE" Play-by-PJ-v0.1.2-VLC-SURFACE-FIX-TEST.apk
-          unzip -l Play-by-PJ-v0.1.2-VLC-SURFACE-FIX-TEST.apk | grep -E 'lib/(arm64-v8a|armeabi-v7a|x86_64)/libvlc.so'
-          unzip -l Play-by-PJ-v0.1.2-VLC-SURFACE-FIX-TEST.apk | grep -F 'res/drawable'
-          sha256sum Play-by-PJ-v0.1.2-VLC-SURFACE-FIX-TEST.apk | tee PLAY-BY-PJ-SHA256.txt
-          stat -c 'APK_BYTES=%s' Play-by-PJ-v0.1.2-VLC-SURFACE-FIX-TEST.apk
+          cp "$SOURCE" Play-by-PJ-v0.1.3-FULLSCREEN-MUSIC-TEST.apk
+          unzip -l Play-by-PJ-v0.1.3-FULLSCREEN-MUSIC-TEST.apk | grep -E 'lib/(arm64-v8a|armeabi-v7a|x86_64)/libvlc.so'
+          unzip -l Play-by-PJ-v0.1.3-FULLSCREEN-MUSIC-TEST.apk | grep -F 'res/drawable'
+          sha256sum Play-by-PJ-v0.1.3-FULLSCREEN-MUSIC-TEST.apk | tee PLAY-BY-PJ-SHA256.txt
+          stat -c 'APK_BYTES=%s' Play-by-PJ-v0.1.3-FULLSCREEN-MUSIC-TEST.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: Play-by-PJ-v012-VLC-SURFACE-TEST
+          name: Play-by-PJ-v013-FULLSCREEN-MUSIC-TEST
           path: |
-            Play-by-PJ-v0.1.2-VLC-SURFACE-FIX-TEST.apk
+            Play-by-PJ-v0.1.3-FULLSCREEN-MUSIC-TEST.apk
             PLAY-BY-PJ-SHA256.txt
           retention-days: 30
   publish:
@@ -71,18 +83,18 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: Play-by-PJ-v012-VLC-SURFACE-TEST
+          name: Play-by-PJ-v013-FULLSCREEN-MUSIC-TEST
           path: ./release
       - name: Release test APK; leave other projects untouched
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG=play-by-pj-v012-vlc-surface-fix-test-20261114
-          APK=./release/Play-by-PJ-v0.1.2-VLC-SURFACE-FIX-TEST.apk
-          NOTES='PLAY by PJ v0.1.2 TEST. Standalone Android preview using real VideoLAN LibVLC 3.7.7 native decoding with managed, deferred VLCVideoLayout surface initialization to avoid invalid state; never plays media until video output attaches with file-descriptor local video input, Android document picker for MP4/MKV/HEVC, software decoding retry after HW errors, streaming, speed, scrubbing, optional cinematic color looks, and custom PJ icon. This PREVIEW is reconstructed from screenshots because the original source ZIP is not in connected GitHub. APK is not signed for production. Build and static packaging pass does not guarantee every corrupted/protected format, 4K performance or every phone codec. No production changes.'
+          TAG=play-by-pj-v013-fullscreen-music-test-20261114
+          APK=./release/Play-by-PJ-v0.1.3-FULLSCREEN-MUSIC-TEST.apk
+          NOTES='PLAY by PJ v0.1.3 TEST. Standalone Android preview using real VideoLAN LibVLC 3.7.7 native decoding plus deferred video surface initialization, real immersive landscape fullscreen with in-video controls, embedded subtitle selection on/off, audio track selection, music loop off/one/all, on-device media library sorted A-Z, persistent named playlists, golden audio visualizer and cinematic filter transitions; user permissions requested before library scan with file-descriptor local video input, Android document picker for MP4/MKV/HEVC, software decoding retry after HW errors, streaming, speed, scrubbing, optional cinematic color looks, and custom PJ icon. The source project is a standalone recreation and feature upgrade based on user screenshots and feedback because the original source ZIP is not in connected GitHub. APK is not signed for production. Build and static packaging pass does not guarantee every corrupted/protected format, 4K performance or every phone codec. No production changes.'
           if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$TAG" "$APK" ./release/PLAY-BY-PJ-SHA256.txt -R "$GITHUB_REPOSITORY" --clobber
           else
-            gh release create "$TAG" "$APK" ./release/PLAY-BY-PJ-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'PLAY by PJ v0.1.2 VLC Surface Initialization Fix TEST' --notes "$NOTES" --prerelease --latest=false
+            gh release create "$TAG" "$APK" ./release/PLAY-BY-PJ-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'PLAY by PJ v0.1.3 Fullscreen Subtitles Audio Music and Looks TEST' --notes "$NOTES" --prerelease --latest=false
           fi

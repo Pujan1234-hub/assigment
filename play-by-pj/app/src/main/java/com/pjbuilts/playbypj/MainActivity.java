@@ -172,6 +172,9 @@ public final class MainActivity extends Activity {
             status.setText("Preparing VLC video output…");
             videoLayout.post(attachVideoOutput);
             ui.post(tick);
+            // Previously granted audio access: populate A–Z library automatically.
+            if(Build.VERSION.SDK_INT<23 || checkSelfPermission(musicPermission())==PackageManager.PERMISSION_GRANTED)
+                loadMusicLibrary();
             if(getIntent()!=null&&Intent.ACTION_VIEW.equals(getIntent().getAction())){
                 Uri u=getIntent().getData();if(u!=null)openFilm(u);
             }

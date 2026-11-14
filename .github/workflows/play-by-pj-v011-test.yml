@@ -1,0 +1,84 @@
+name: PLAY by PJ v0.1.1 VLC Decoder TEST APK
+on:
+  push:
+    branches:
+      - test/play-by-pj-v011-libvlc-decoder-20261114
+    paths:
+      - 'play-by-pj/**'
+      - '.github/workflows/play-by-pj-v011-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: play-by-pj-v011-decoder-test
+  cancel-in-progress: true
+jobs:
+  android:
+    name: Compile and check VLC decoder
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Validate decoder, permissions and icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          J=play-by-pj/app/src/main/java/com/pjbuilts/playbypj/MainActivity.java
+          test -s "$J"
+          test -s play-by-pj/app/src/main/res/drawable/ic_play_by_pj.xml
+          grep -Fq "libvlc-all:3.7.7" play-by-pj/app/build.gradle
+          grep -Fq 'openAssetFileDescriptor(movieUri,"r")' "$J"
+          grep -Fq 'media.setHWDecoderEnabled(!softwareOnly,false)' "$J"
+          grep -Fq 'MediaPlayer.Event.EncounteredError' "$J"
+          grep -Fq 'getVLCVout()' "$J"
+          ! grep -Fq 'READ_EXTERNAL_STORAGE' play-by-pj/app/src/main/AndroidManifest.xml
+      - name: Build native video player with real bundled VLC decoder
+        run: gradle -p play-by-pj :app:assembleDebug --no-daemon --stacktrace
+      - name: Validate installable APK, native libraries and icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE="play-by-pj/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$SOURCE"
+          cp "$SOURCE" Play-by-PJ-v0.1.1-VLC-DECODER-TEST.apk
+          unzip -l Play-by-PJ-v0.1.1-VLC-DECODER-TEST.apk | grep -E 'lib/(arm64-v8a|armeabi-v7a|x86_64)/libvlc.so'
+          unzip -l Play-by-PJ-v0.1.1-VLC-DECODER-TEST.apk | grep -F 'res/drawable'
+          sha256sum Play-by-PJ-v0.1.1-VLC-DECODER-TEST.apk | tee PLAY-BY-PJ-SHA256.txt
+          stat -c 'APK_BYTES=%s' Play-by-PJ-v0.1.1-VLC-DECODER-TEST.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Play-by-PJ-v011-VLC-TEST
+          path: |
+            Play-by-PJ-v0.1.1-VLC-DECODER-TEST.apk
+            PLAY-BY-PJ-SHA256.txt
+          retention-days: 30
+  publish:
+    name: Publish standalone APK
+    runs-on: ubuntu-latest
+    needs: android
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Play-by-PJ-v011-VLC-TEST
+          path: ./release
+      - name: Release test APK; leave other projects untouched
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=play-by-pj-v011-vlc-decoder-test-20261114
+          APK=./release/Play-by-PJ-v0.1.1-VLC-DECODER-TEST.apk
+          NOTES='PLAY by PJ v0.1.1 TEST. New standalone Android app using native VideoLAN LibVLC 3.7.7 bundled codecs with file-descriptor local video input, Android document picker for MP4/MKV/HEVC, software decoding retry after HW errors, streaming, speed, scrubbing, optional cinematic color looks, and custom PJ icon. This PREVIEW is reconstructed from screenshots because the original source ZIP is not in connected GitHub. APK is not signed for production. Build and static packaging pass does not guarantee every corrupted/protected format, 4K performance or every phone codec. No production changes.'
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK" ./release/PLAY-BY-PJ-SHA256.txt -R "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" "$APK" ./release/PLAY-BY-PJ-SHA256.txt -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'PLAY by PJ v0.1.1 Native VLC Decoder TEST' --notes "$NOTES" --prerelease --latest=false
+          fi

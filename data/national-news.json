@@ -1,63 +1,28 @@
 {
-  "generated_at": "2026-11-14T22:31:54.007586+05:45",
-  "updated_at_npt": "14 Nov 22:31 NPT",
+  "generated_at": "2026-11-15T02:43:40.720907+05:45",
+  "updated_at_npt": "15 Nov 02:43 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "छठमा सुरक्षा योजना मजबुत बनाउन आईजीपीको निर्देशन",
+      "title": "कारको ठक्करबाट मोटरसाइकल चालकको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605234/igp-directs-to-strengthen-security-plan-for-chhath",
-      "published_at": "2026-11-14T21:58:59+05:45",
-      "flash": true
-    },
-    {
-      "title": "पार्टीमै रहेर अन्य दललाई मत दिनेलाई कारबाही गर्ने ओलीको चेतावनी २ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605218/oli-warns-of-action-against-those-who-vote-for-other-parties-while-remaining-in-the-party",
-      "published_at": "2026-11-14T20:12:38+05:45",
+      "url": "https://www.ratopati.com/story/605243/motorcyclist-dies-after-being-hit-by-car",
+      "published_at": "2026-11-14T23:02:11+05:45",
       "flash": false
     },
     {
-      "title": "सपना खोसिएको पुस्ताको सङ्घर्ष: विश्वव्यापी युवा आन्दोलनको राजनीतिक सन्देश",
+      "title": "राफिन्हाबारे ब्राजिलको अनौठो निर्णय : बार्सिलोना स्तब्ध, दुई पक्षबिच नयाँ तनाव",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605164/the-struggle-of-a-generation-robbed-of-its-dreams-the-political-message-of-the-global-youth-movement",
-      "published_at": "2026-11-14T20:00:00+05:45",
+      "url": "https://www.ratopati.com/story/605242/brazils-strange-decision-regarding-rafinha-barcelona-shocked-new-tension-between-the-two-sides",
+      "published_at": "2026-11-14T23:01:04+05:45",
       "flash": false
     },
     {
-      "title": "पोर्चुगल पठाउने प्रलोभनमा ठगी र शोषण, नेपाली दूतावासको चेतावनी ३ घण्टा अगाडि",
+      "title": "गर्मीयामको जितपछि भारतका जेनजी आन्दोलनकारीसामु अनिश्चितताको शीतकाल",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605196/nepali-embassy-warns-of-fraud-and-exploitation-in-the-lure-of-sending-people-to-portugal",
-      "published_at": "2026-11-14T18:45:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "बर्दियामा मिनिबस दुर्घटना : दुई जनाको मृत्यु, १५ जना घाइते ४ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605190/minibus-accident-in-bardiya-two-dead-15-injured",
-      "published_at": "2026-11-14T18:26:12+05:45",
-      "flash": false
-    },
-    {
-      "title": "पार्टीका लागि निरन्तर योगदान गर्छु : पूर्वप्रधानमन्त्री देउवा ४ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605186/i-will-continue-to-contribute-to-the-party-former-prime-minister-deuba",
-      "published_at": "2026-11-14T18:08:57+05:45",
-      "flash": false
-    },
-    {
-      "title": "हिमालको फेदीमा करोडौँको स्वास्थ्य भवन, मुख्यमन्त्रीद्वारा उद्घाटन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605184/chief-minister-inaugurates-multi-crore-health-building-at-the-foot-of-the-himalayas",
-      "published_at": "2026-11-14T18:02:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रहरी अहिले मार खाने र हेरेर बस्ने गरी दुई भागमा बाँडिएको छ : ओली ५ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605177/police-are-now-divided-into-two-groups-those-who-kill-and-those-who-watch-kp-sharma-oli",
-      "published_at": "2026-11-14T17:16:01+05:45",
+      "url": "https://www.ratopati.com/story/605236/after-a-summer-of-victory-indias-genji-protesters-face-a-winter-of-uncertainty",
+      "published_at": "2026-11-14T23:00:00+05:45",
       "flash": false
     }
   ],
@@ -77,8 +42,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 8
+      "flash": 0,
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

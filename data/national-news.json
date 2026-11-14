@@ -1,13 +1,21 @@
 {
-  "generated_at": "2026-11-14T05:10:46.095559+05:45",
-  "updated_at_npt": "14 Nov 05:10 NPT",
+  "generated_at": "2026-11-14T09:13:12.472172+05:45",
+  "updated_at_npt": "14 Nov 09:13 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
-  "items": [],
+  "items": [
+    {
+      "title": "सामाजिक सुरक्षा प्रणालीको सुदृढीकरणमा नेपालको जोड",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605073/nepals-emphasis-on-strengthening-the-social-security-system",
+      "published_at": "2026-11-14T08:47:22+05:45",
+      "flash": true
+    }
+  ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     },
@@ -20,8 +28,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 0
+      "flash": 1,
+      "recent": 1
     },
     "Kathmandu Post": {
       "ok": true,
@@ -31,7 +39,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     }

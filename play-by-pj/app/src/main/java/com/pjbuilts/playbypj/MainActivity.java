@@ -587,6 +587,9 @@ public final class MainActivity extends Activity {
     }
     private void openFilm(Uri uri){
         movieUri=uri;movieUrl=null;retryingSoftware=false;
+        isMusic=false;currentTrack=null;
+        queue.clear();queueIndex=-1;
+        if(musicWave!=null)musicWave.setActive(false);
         mediaTitle.setText(displayName(uri));
         playMedia(false);
     }
@@ -650,10 +653,25 @@ public final class MainActivity extends Activity {
         if(isFinishing()||player==null)return;
         if(type==MediaPlayer.Event.Playing){
             playButton.setText("Ⅱ");
-            status.setText(retryingSoftware?"Playing • VLC software decode":"Playing • VLC decoder");
+            if(fullPlay!=null)fullPlay.setText("Ⅱ");
+            status.setText(isMusic?"Playing music · "+(queueIndex+1)+"/"+queue.size():
+                retryingSoftware?"Playing • VLC software decode":"Playing • VLC decoder");
+            if(musicWave!=null&&isMusic)musicWave.invalidate();
+            updateTrackButtons();
         }else if(type==MediaPlayer.Event.Paused||type==MediaPlayer.Event.Stopped||type==MediaPlayer.Event.EndReached){
             playButton.setText("▶");
-            if(type==MediaPlayer.Event.EndReached)status.setText("Playback finished");
+            if(fullPlay!=null)fullPlay.setText("▶");
+            if(type==MediaPlayer.Event.EndReached){
+                status.setText("Playback finished");
+                if(loopMode==LOOP_ONE){
+                    ui.postDelayed(()->playMedia(false),130);
+                }else if(!queue.isEmpty()&&queueIndex+1<queue.size()){
+                    ui.postDelayed(()->playQueueIndex(queueIndex+1),130);
+                }else if(loopMode==LOOP_ALL){
+                    if(!queue.isEmpty())ui.postDelayed(()->playQueueIndex(0),130);
+                    else ui.postDelayed(()->playMedia(false),130);
+                }
+            }
         }else if(type==MediaPlayer.Event.EncounteredError){
             if(!retryingSoftware&&(movieUri!=null||movieUrl!=null)){
                 retryingSoftware=true;
@@ -679,31 +697,92 @@ public final class MainActivity extends Activity {
     private void toggleFullscreen(){
         immersive=!immersive;
         if(immersive){
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-        }else getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            originalVis.clear();
+            for(int i=0;i<rootPage.getChildCount();i++){
+                View child=rootPage.getChildAt(i);
+                if(child!=videoBox){originalVis.put(child,child.getVisibility());child.setVisibility(View.GONE);}
+            }
+            rootPage.setPadding(0,0,0,0);
+            rootScroll.setVerticalScrollBarEnabled(false);
+            rootScroll.smoothScrollTo(0,0);
+            videoBox.setClipToOutline(false);
+            videoBox.setBackgroundColor(Color.BLACK);
+            fullHud.setVisibility(View.VISIBLE);
+            getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            showFullscreenControls();
+        }else{
+            ui.removeCallbacks(hideFullControls);
+            fullHud.animate().cancel();
+            fullHud.setVisibility(View.GONE);
+            fullHud.setAlpha(1f);
+            for(Map.Entry<View,Integer> e:originalVis.entrySet())e.getKey().setVisibility(e.getValue());
+            originalVis.clear();
+            rootPage.setPadding(dp(16),dp(22),dp(16),dp(42));
+            rootScroll.setVerticalScrollBarEnabled(true);
+            videoBox.setBackground(round(INK,18));
+            videoBox.setClipToOutline(true);
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        }
+        videoBox.requestLayout();
+        rootPage.requestLayout();
+        rootScroll.requestLayout();
     }
-    private void applyLook(){
+    @Override public void onConfigurationChanged(Configuration next){
+        super.onConfigurationChanged(next);
+        if(videoBox!=null)videoBox.post(()->videoBox.requestLayout());
+    }
+    @Override public void onBackPressed(){
+        if(immersive)toggleFullscreen();
+        else super.onBackPressed();
+    }
+    private void updateTrackButtons(){
+        if(player==null)return;
+        List<VlcTrackPicker.Option> subs=VlcTrackPicker.available(player,true);
+        List<VlcTrackPicker.Option> audio=VlcTrackPicker.available(player,false);
+        if(subtitleButton!=null){
+            int count=0;for(VlcTrackPicker.Option o:subs)if(!"-1".equals(o.id))count++;
+            subtitleButton.setText("CC Subtitles · "+count);
+        }
+        if(audioButton!=null)audioButton.setText("♫ Audio · "+audio.size());
+    }
+    private void applyLook(){applyLook(false);}
+    private void applyLook(boolean animate){
         float k=intensity/100f;
         int mask=Color.TRANSPARENT;
         if(look==1)mask=Color.argb((int)(48*k),241,187,95);
-        else if(look==2)mask=Color.argb((int)(32*k),35,213,180);
-        else if(look==3)mask=Color.argb((int)(35*k),0,0,0);
-        tint.setBackgroundColor(mask);
+        else if(look==2)mask=Color.argb((int)(36*k),35,213,180);
+        else if(look==3)mask=Color.argb((int)(42*k),2,4,12);
+        if(animate){
+            final int color=mask;
+            tint.animate().cancel();
+            tint.animate().alpha(.1f).setDuration(130).withEndAction(()->{
+                tint.setBackgroundColor(color);
+                tint.animate().alpha(1f).setDuration(230)
+                    .setInterpolator(new AccelerateDecelerateInterpolator()).start();
+            }).start();
+        }else{
+            tint.setAlpha(1f);tint.setBackgroundColor(mask);
+        }
         Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
         ColorMatrix m=new ColorMatrix();
         if(look==3)m.setSaturation(1f-k);
-        else if(look==2)m.setSaturation(1f+0.45f*k);
-        else if(look==1)m.setSaturation(1f+0.12f*k);
+        else if(look==2)m.setSaturation(1f+.45f*k);
+        else if(look==1)m.setSaturation(1f+.12f*k);
         paint.setColorFilter(new ColorMatrixColorFilter(m));
-        // The LibVLC layout uses its own TextureView for GPU rendering;
-        // keep filter effects on the containing native video view.
+        // VLC uses TextureView (forceTextureView=true) for GPU-side color looks.
         videoLayout.setLayerType(View.LAYER_TYPE_HARDWARE,paint);
         videoLayout.setLayerPaint(paint);
         for(int i=0;i<lookButtons.size();i++){
             Button b=lookButtons.get(i);
             b.setBackground(round(i==look?INK:SOFT,16));
             b.setTextColor(i==look?Color.WHITE:INK);
+            if(animate)b.animate().alpha(i==look?1f:.82f).setDuration(180).start();
+            else b.setAlpha(i==look?1f:.82f);
         }
     }
     private void closeOpenedFile(){

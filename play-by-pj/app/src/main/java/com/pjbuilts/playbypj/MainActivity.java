@@ -1,6 +1,24 @@
 package com.pjbuilts.playbypj;
 
 import android.app.Activity;
+import android.Manifest;
+import android.os.Build;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.Context;
+import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.graphics.Canvas;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import android.view.ViewParent;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -40,7 +58,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public final class MainActivity extends Activity {
-    private static final int OPEN_FILM=3101;
+    private static final int OPEN_FILM=3101, MUSIC_PERMISSION=3105;
+    private static final int FULLSCREEN=0, LOOP_ONE=1, LOOP_ALL=2;
     private static final int CREAM=0xfffaf7ed, INK=0xff111925, SOFT=0xffeae3d8, GOLD=0xffd4a957;
     private LibVLC vlc;
     private MediaPlayer player;
@@ -59,9 +78,32 @@ public final class MainActivity extends Activity {
     private View tint;
     private SeekBar timeline,filterAmount;
     private TextView startClock,endClock,status,mediaTitle,codecLabel,rateLabel;
-    private Button playButton,rateButton;
+    private Button playButton,rateButton,fullPlay,loopButton,subtitleButton,audioButton;
     private final ArrayList<Button> lookButtons=new ArrayList<>();
-    private boolean immersive=false;
+    private boolean immersive=false,isMusic=false;
+    private int loopMode=FULLSCREEN,queueIndex=-1,musicListLimit=80;
+    private final List<MusicLibrary.Track> music=new ArrayList<>();
+    private final List<MusicLibrary.Track> queue=new ArrayList<>();
+    private MusicLibrary.Track currentTrack;
+    private View musicResults;
+    private LinearLayout musicResultsPanel;
+    private EditText musicSearch;
+    private TextView musicCount;
+    private ScrollView rootScroll;
+    private LinearLayout rootPage;
+    private FrameLayout videoBox,fullHud;
+    private MusicWaveView musicWave;
+    private Button fullExit;
+    private final Map<View,Integer> originalVis=new IdentityHashMap<>();
+    private boolean controlsShown=true;
+    private final Runnable hideFullControls=()->{
+        if(immersive&&fullHud!=null){
+            fullHud.animate().alpha(0f).setDuration(250).withEndAction(()->{
+                if(immersive)fullHud.setVisibility(View.INVISIBLE);
+            }).start();
+            controlsShown=false;
+        }
+    };
     private final Runnable attachVideoOutput=new Runnable(){
         @Override public void run(){
             if(player==null||videoLayout==null||isFinishing()||isDestroyed())return;
@@ -140,13 +182,14 @@ public final class MainActivity extends Activity {
     }
 
     private void buildScreen(){
-        ScrollView scroll=new ScrollView(this);
-        scroll.setFillViewport(true);
-        scroll.setBackgroundColor(CREAM);
-        LinearLayout page=new LinearLayout(this);page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(16),dp(22),dp(16),dp(42));
-        scroll.addView(page);
-        setContentView(scroll);
+        rootScroll=new ScrollView(this);
+        rootScroll.setFillViewport(true);
+        rootScroll.setBackgroundColor(CREAM);
+        rootPage=new LinearLayout(this);rootPage.setOrientation(LinearLayout.VERTICAL);
+        rootPage.setPadding(dp(16),dp(22),dp(16),dp(42));
+        rootScroll.addView(rootPage);
+        setContentView(rootScroll);
+        LinearLayout page=rootPage;
 
         TextView title=text("PLAY  by PJ",33,true,INK);page.addView(title);
         TextView brand=text("PJBUILTS  ·  PRIVATE CINEMA  ·  VLC DECODER",12,true,0xff85745f);
@@ -165,10 +208,11 @@ public final class MainActivity extends Activity {
         stream.setOnClickListener(v->streamDialog());
 
         mediaTitle=text("Choose a film to start",16,true,INK);page.addView(mediaTitle,vertical(0,20));
-        FrameLayout videoBox=new FrameLayout(this){
+        videoBox=new FrameLayout(this){
             @Override protected void onMeasure(int w,int h){
                 int ww=View.MeasureSpec.getSize(w);
-                int hh=Math.round(ww*0.73f);
+                int hh=immersive?Math.max(dp(220),getResources().getDisplayMetrics().heightPixels):
+                    Math.round(ww*0.73f);
                 super.onMeasure(w,View.MeasureSpec.makeMeasureSpec(hh,View.MeasureSpec.EXACTLY));
             }
         };
@@ -177,8 +221,14 @@ public final class MainActivity extends Activity {
         page.addView(videoBox,new LinearLayout.LayoutParams(-1,-2));
         videoLayout=new VLCVideoLayout(this);
         videoBox.addView(videoLayout,new FrameLayout.LayoutParams(-1,-1));
+        musicWave=new MusicWaveView(this);
+        musicWave.setActive(false);
+        videoBox.addView(musicWave,new FrameLayout.LayoutParams(-1,-1));
         tint=new View(this);tint.setClickable(false);
         videoBox.addView(tint,new FrameLayout.LayoutParams(-1,-1));
+        installFullscreenControls();
+        videoLayout.setOnClickListener(v->{if(immersive)showFullscreenControls();});
+        musicWave.setOnClickListener(v->{if(immersive)showFullscreenControls();});
         status=text("Starting VLC decoder…",12,false,0xff7b6b57);
         page.addView(status,vertical(0,9));
 
@@ -221,6 +271,20 @@ public final class MainActivity extends Activity {
         });
         full.setOnClickListener(v->toggleFullscreen());
 
+        LinearLayout extras=new LinearLayout(this);
+        extras.setOrientation(LinearLayout.HORIZONTAL);
+        page.addView(extras,vertical(0,9));
+        subtitleButton=button("CC Subtitles",SOFT,INK,12);
+        audioButton=button("♫ Audio tracks",SOFT,INK,12);
+        loopButton=button("↻ Loop: Off",SOFT,INK,12);
+        for(Button v:new Button[]{subtitleButton,audioButton,loopButton}){
+            LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(0,dp(48),1f);
+            ep.setMargins(dp(2),0,dp(2),0);
+            extras.addView(v,ep);
+        }
+        subtitleButton.setOnClickListener(v->showTrackDialog(true));
+        audioButton.setOnClickListener(v->showTrackDialog(false));
+        loopButton.setOnClickListener(v->cycleLoop());
         page.addView(text("✦  CINEMATIC LOOKS",16,true,INK),vertical(0,22));
         LinearLayout filters=new LinearLayout(this);filters.setOrientation(LinearLayout.HORIZONTAL);
         page.addView(filters,vertical(0,10));
@@ -230,7 +294,13 @@ public final class MainActivity extends Activity {
             lookButtons.add(v);
             LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(48),i==1?1.45f:1f);
             lp.setMargins(dp(2),0,dp(2),0);filters.addView(v,lp);
-            v.setOnClickListener(bv->{look=choice;applyLook();});
+            v.setOnClickListener(bv->{
+                look=choice;
+                applyLook(true);
+                v.animate().scaleX(1.07f).scaleY(1.07f).setDuration(130)
+                    .withEndAction(()->v.animate().scaleX(1f).scaleY(1f).setDuration(160).start())
+                    .start();
+            });
         }
         page.addView(text("Filter intensity",13,true,INK),vertical(0,15));
         filterAmount=new SeekBar(this);filterAmount.setMax(100);filterAmount.setProgress(intensity);
@@ -244,6 +314,7 @@ public final class MainActivity extends Activity {
         });
         codecLabel=text("VLC · Hardware decode + software fallback · MP4 / HEVC / MKV",12,true,0xff7b6b57);
         page.addView(codecLabel,vertical(0,20));
+        buildMusicSection(page);
         TextView footer=text("Hardware when available · Software codec fallback · Local private playback\nPJBUILTS.COM · Your films remain on your device",11,false,0xff948879);
         footer.setGravity(Gravity.CENTER);page.addView(footer,vertical(0,20));
     }

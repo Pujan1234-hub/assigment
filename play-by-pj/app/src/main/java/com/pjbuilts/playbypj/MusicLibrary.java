@@ -30,8 +30,7 @@ final class MusicLibrary {
         Uri content=MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String[] cols={MediaStore.Audio.Media._ID,MediaStore.Audio.Media.DISPLAY_NAME,
             MediaStore.Audio.Media.DURATION};
-        try(Cursor c=ctx.getContentResolver().query(content,cols,null,null,
-            MediaStore.Audio.Media.DISPLAY_NAME+" COLLATE NOCASE ASC")){
+        try(Cursor c=ctx.getContentResolver().query(content,cols,null,null,null)){
             if(c!=null)while(c.moveToNext()){
                 String name=c.getString(1);
                 if(name==null||name.trim().isEmpty())continue;

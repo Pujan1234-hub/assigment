@@ -55,7 +55,7 @@ jobs:
           test -s play-by-pj/app/src/main/java/com/pjbuilts/playbypj/MusicLibrary.java
           test -s play-by-pj/app/src/main/java/com/pjbuilts/playbypj/MusicWaveView.java
           grep -Fq 'READ_MEDIA_AUDIO' play-by-pj/app/src/main/AndroidManifest.xml
-          ! grep -Fq 'READ_EXTERNAL_STORAGE' play-by-pj/app/src/main/AndroidManifest.xml
+          grep -Fq 'READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"' play-by-pj/app/src/main/AndroidManifest.xml
       - name: Build native video player with real bundled VLC decoder
         run: gradle -p play-by-pj :app:assembleDebug --no-daemon --stacktrace
       - name: Validate installable APK, native libraries and icon

@@ -1,63 +1,84 @@
 {
-  "generated_at": "2026-11-15T13:28:43.387087+05:45",
-  "updated_at_npt": "15 Nov 13:28 NPT",
+  "generated_at": "2026-11-15T20:44:18.340709+05:45",
+  "updated_at_npt": "15 Nov 20:44 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "तेस्रो पक्षले किनेको सम्पत्तिबारे गिरिबन्धु टिस्टेटमा यस्तो छ सर्वोच्चको नजिर !",
+      "title": "कालीगण्डकी करिडोर सडक पुन:अवरुद्ध",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605309/this-is-the-supreme-courts-precedent-in-the-giribandhu-estate-regarding-property-purchased-by-a-third-party",
-      "published_at": "2026-11-15T12:27:39+05:45",
+      "url": "https://www.ratopati.com/story/605419/kaligandaki-corridor-road-blocked-again",
+      "published_at": "2026-11-15T20:38:34+05:45",
+      "flash": true
+    },
+    {
+      "title": "प्रधानमन्त्री सचिवालयबाट माधव खनालकाे नाम हटाइयो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605415/madhav-khanals-name-removed-from-prime-ministers-secretariat",
+      "published_at": "2026-11-15T20:26:47+05:45",
+      "flash": true
+    },
+    {
+      "title": "घोप्टेभिरको सुक्खा पहिरोले अनिश्चित बनायो यात्रा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605414/dry-landslide-in-ghoptebhir-makes-travel-uncertain",
+      "published_at": "2026-11-15T20:19:55+05:45",
+      "flash": true
+    },
+    {
+      "title": "प्रधानमन्त्रीको सचिवालयका विज्ञलाई संयोजक र उपसंयोजककाे जिम्मेवारी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605406/experts-from-the-prime-ministers-secretariat-are-assigned-the-responsibilities-of-coordinator-and-deputy-coordinator",
+      "published_at": "2026-11-15T19:54:01+05:45",
+      "flash": true
+    },
+    {
+      "title": "मुगु जिप दुर्घटना : घाइतेको अवस्था बुझ्न अस्पताल पुगे मुख्यमन्त्री",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605400/mugu-jeep-accident-chief-minister-visits-hospital-to-assess-condition-of-injured",
+      "published_at": "2026-11-15T19:44:18+05:45",
       "flash": false
     },
     {
-      "title": "ट्याक्टर र मोटरसाइकल ठोक्किँदा एक जनाको मृत्यु",
+      "title": "प्रधानमन्त्रीको भारत भ्रमण : आर्थिक सहकार्यमा नयाँ अध्याय खुल्ने निजी क्षेत्रको अपेक्षा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605300/accident",
-      "published_at": "2026-11-15T11:23:18+05:45",
+      "url": "https://www.ratopati.com/story/605381/prime-ministers-visit-to-india-private-sector-expects-new-chapter-in-economic-cooperation",
+      "published_at": "2026-11-15T19:30:00+05:45",
       "flash": false
     },
     {
-      "title": "राष्ट्रपति पौडेल दिउँसो ४ बजे गौरीघाटमा छठ पूजा गर्न जाने २ घण्टा अगाडि",
+      "title": "गौरीघाटमा राष्ट्रपतिसँगै सर्वसाधारणको छठ (भिडियो रिपोर्ट)",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605293/president-paudel-to-attend-chhath-puja-at-gaurighat-at-4-pm",
-      "published_at": "2026-11-15T10:50:42+05:45",
+      "url": "https://www.ratopati.com/story/605382/common-people-celebrate-chhath-with-the-president-at-gaurighat-video-report",
+      "published_at": "2026-11-15T19:00:00+05:45",
       "flash": false
     },
     {
-      "title": "प्रधानमन्त्री र सभापतिबिच कुनै मतभेद छैन : रास्वपा महामन्त्री आचार्य",
+      "title": "मुगु गाडी दुर्घटना अपडेट : ३ जनाकाे मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605284/there-is-no-difference-between-the-prime-minister-and-the-speaker-rsp-general-secretary-acharya",
-      "published_at": "2026-11-15T10:03:50+05:45",
+      "url": "https://www.ratopati.com/story/605391/magu-accident-update-3-people-dead",
+      "published_at": "2026-11-15T18:45:02+05:45",
       "flash": false
     },
     {
-      "title": "छठले हामीलाई जीवनको गहिरो दर्शन सिकाउँछ : प्रधानमन्त्री शाह",
+      "title": "९ वटा संसदीय निर्वाचन, ३ पटक कार्यकाल नपुगी संसद् विघटन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605282/chhath-teaches-us-a-deep-philosophy-of-life-prime-minister-shah",
-      "published_at": "2026-11-15T09:37:47+05:45",
+      "url": "https://www.ratopati.com/story/605333/9-parliamentary-elections-3-times-parliament-dissolved-before-its-term-ended",
+      "published_at": "2026-11-15T18:15:00+05:45",
       "flash": false
     },
     {
-      "title": "पेट्रोल छर्केर आगो लगाइएका चौधरीको उपचारका क्रममा मृत्यु",
+      "title": "मुगुकाे टाेप्लामा रारा जाँदै गरेको गाडी दुर्घटना",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605277/chaudhary-who-was-set-on-fire-after-being-doused-with-petrol-dies-during-treatment",
-      "published_at": "2026-11-15T09:07:07+05:45",
-      "flash": false
-    },
-    {
-      "title": "पदयात्रामा लेक लागे के गर्ने ? सरकारले तोक्यो उपचार र आपतकालीन उद्धार मापदण्ड",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605267/what-to-do-if-you-get-stuck-while-hiking-government-sets-treatment-and-emergency-rescue-standards",
-      "published_at": "2026-11-15T08:00:00+05:45",
+      "url": "https://www.ratopati.com/story/605372/vehicle-heading-to-rara-crashes-in-topla-mugu",
+      "published_at": "2026-11-15T17:35:37+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 8,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     },
@@ -70,8 +91,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 7
+      "flash": 5,
+      "recent": 11
     },
     "Kathmandu Post": {
       "ok": true,
@@ -81,7 +102,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 5,
+      "candidates": 6,
       "flash": 0,
       "recent": 0
     }

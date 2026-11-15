@@ -59,3 +59,5 @@ jobs:
           r.raise_for_status()
           print("FCM accepted:",r.json().get("name",""))
           PY
+
+# User-requested second broadcast of this exact greeting on 2026-11-15.

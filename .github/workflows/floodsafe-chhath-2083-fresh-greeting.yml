@@ -1,0 +1,63 @@
+name: FloodSafe Nepal - Chhath Parva 2083 fresh greeting
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/floodsafe-chhath-2083-fresh-greeting.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: floodsafe-chhath-2083-fresh-greeting-once
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    if: github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Send fresh Chhath Parva greeting to FloodSafe Nepal users
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet google-auth requests
+          python3 - <<'PY'
+          import json,os,sys
+          from datetime import datetime,date
+          from zoneinfo import ZoneInfo
+          import requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          now=datetime.now(ZoneInfo("Asia/Kathmandu"))
+          if now.date()!=date(2026,11,15):
+              sys.exit("Outside the 15 November 2026 Chhath greeting window; no push sent")
+          raw=os.environ.get("FIREBASE_SERVICE_ACCOUNT","").strip()
+          if not raw:sys.exit("Missing FIREBASE_SERVICE_ACCOUNT secret; not sent")
+          info=json.loads(raw)
+          if info.get("project_id")!="floodsafe-nepal":
+              sys.exit("Unexpected Firebase project; not sent")
+          creds=service_account.Credentials.from_service_account_info(
+              info,scopes=["https://www.googleapis.com/auth/firebase.messaging"])
+          creds.refresh(Request())
+          title="🌅🌼 सूर्य उपासनाको पावन छठ पर्वको शुभकामना!"
+          body=("अस्ताउँदो र उदाउँदो सूर्यलाई अर्घ्य अर्पण गर्ने यस पवित्र पर्वले "
+                "हरेक घरमा आशा, आस्था र नयाँ उज्यालो ल्याओस्। छठी मैयाको कृपाले "
+                "सबैको मनोकामना पूरा होस्, परिवारमा स्वास्थ्य, प्रेम र सुख सधैँ कायम रहोस्। "
+                "सम्पूर्ण व्रतालु तथा श्रद्धालुहरूमा छठ पर्वको हार्दिक मंगलमय शुभकामना! "
+                "🙏🌸 — FloodSafe Nepal परिवार")
+          payload={"message":{
+              "topic":"nepal-alerts",
+              "notification":{"title":title,"body":body},
+              "android":{"priority":"high","ttl":"43200s"},
+              "data":{"type":"festival","festival":"chhath_2083","sender":"FloodSafe Nepal"}}}
+          url="https://fcm.googleapis.com/v1/projects/floodsafe-nepal/messages:send"
+          r=requests.post(url,headers={"Authorization":"Bearer "+creds.token,
+              "Content-Type":"application/json"},json=payload,timeout=30)
+          print("FCM HTTP status:",r.status_code)
+          r.raise_for_status()
+          print("FCM accepted:",r.json().get("name",""))
+          PY

@@ -1,84 +1,70 @@
 {
-  "generated_at": "2026-11-15T20:44:18.340709+05:45",
-  "updated_at_npt": "15 Nov 20:44 NPT",
+  "generated_at": "2026-11-16T02:03:34.153057+05:45",
+  "updated_at_npt": "16 Nov 02:03 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "किसानको बाली जोगाउन प्रहरी खेतमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605446/police-in-the-fields-to-protect-farmers-crops",
+      "published_at": "2026-11-16T01:30:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "१२ बजे १२ समाचार : विदेश भ्रमणमा मन्त्री र सांसदको लर्को, तीन पटक कार्यकाल नपुग्दै संसद् विघटन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605444/12-oclock-12-news-ministers-and-mps-clash-over-foreign-trips-parliament-dissolved-three-times-before-completing-its-term",
+      "published_at": "2026-11-16T00:00:05+05:45",
+      "flash": false
+    },
+    {
+      "title": "वडा प्रहरी परिसरमै कुटाकुट गर्ने ६ जना पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605429/6-people-arrested-for-fighting-inside-the-ward-police-station",
+      "published_at": "2026-11-15T21:36:41+05:45",
+      "flash": false
+    },
+    {
+      "title": "छठ पर्वमा नेशनल मेडिकल कलेजको स्वास्थ्य सेवा अभियान",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605428/national-medical-colleges-health-service-campaign-during-chhath-festival",
+      "published_at": "2026-11-15T21:35:05+05:45",
+      "flash": false
+    },
+    {
+      "title": "बेमौसमी वर्षाले पोखरामा काटेको धान खेतमै भिज्यो, कृषक चिन्तित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605422/unseasonal-rains-in-pokhara-soak-harvested-rice-in-the-field-farmers-worried",
+      "published_at": "2026-11-15T20:58:20+05:45",
+      "flash": false
+    },
     {
       "title": "कालीगण्डकी करिडोर सडक पुन:अवरुद्ध",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/605419/kaligandaki-corridor-road-blocked-again",
       "published_at": "2026-11-15T20:38:34+05:45",
-      "flash": true
+      "flash": false
     },
     {
-      "title": "प्रधानमन्त्री सचिवालयबाट माधव खनालकाे नाम हटाइयो",
+      "title": "६. प्रधानमन्त्री सचिवालयबाट माधव खनालकाे नाम हटाइयो",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/605415/madhav-khanals-name-removed-from-prime-ministers-secretariat",
       "published_at": "2026-11-15T20:26:47+05:45",
-      "flash": true
+      "flash": false
     },
     {
       "title": "घोप्टेभिरको सुक्खा पहिरोले अनिश्चित बनायो यात्रा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/605414/dry-landslide-in-ghoptebhir-makes-travel-uncertain",
       "published_at": "2026-11-15T20:19:55+05:45",
-      "flash": true
-    },
-    {
-      "title": "प्रधानमन्त्रीको सचिवालयका विज्ञलाई संयोजक र उपसंयोजककाे जिम्मेवारी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605406/experts-from-the-prime-ministers-secretariat-are-assigned-the-responsibilities-of-coordinator-and-deputy-coordinator",
-      "published_at": "2026-11-15T19:54:01+05:45",
-      "flash": true
-    },
-    {
-      "title": "मुगु जिप दुर्घटना : घाइतेको अवस्था बुझ्न अस्पताल पुगे मुख्यमन्त्री",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605400/mugu-jeep-accident-chief-minister-visits-hospital-to-assess-condition-of-injured",
-      "published_at": "2026-11-15T19:44:18+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रधानमन्त्रीको भारत भ्रमण : आर्थिक सहकार्यमा नयाँ अध्याय खुल्ने निजी क्षेत्रको अपेक्षा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605381/prime-ministers-visit-to-india-private-sector-expects-new-chapter-in-economic-cooperation",
-      "published_at": "2026-11-15T19:30:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "गौरीघाटमा राष्ट्रपतिसँगै सर्वसाधारणको छठ (भिडियो रिपोर्ट)",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605382/common-people-celebrate-chhath-with-the-president-at-gaurighat-video-report",
-      "published_at": "2026-11-15T19:00:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "मुगु गाडी दुर्घटना अपडेट : ३ जनाकाे मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605391/magu-accident-update-3-people-dead",
-      "published_at": "2026-11-15T18:45:02+05:45",
-      "flash": false
-    },
-    {
-      "title": "९ वटा संसदीय निर्वाचन, ३ पटक कार्यकाल नपुगी संसद् विघटन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605333/9-parliamentary-elections-3-times-parliament-dissolved-before-its-term-ended",
-      "published_at": "2026-11-15T18:15:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "मुगुकाे टाेप्लामा रारा जाँदै गरेको गाडी दुर्घटना",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605372/vehicle-heading-to-rara-crashes-in-topla-mugu",
-      "published_at": "2026-11-15T17:35:37+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     },
@@ -91,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 5,
-      "recent": 11
+      "flash": 1,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -102,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 6,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     }

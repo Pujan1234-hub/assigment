@@ -1,42 +1,42 @@
 {
-  "generated_at": "2026-11-16T05:47:09.498063+05:45",
-  "updated_at_npt": "16 Nov 05:47 NPT",
+  "generated_at": "2026-11-16T11:59:38.523172+05:45",
+  "updated_at_npt": "16 Nov 11:59 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "पश्चिमी न्यूनचापीय प्रणालीको प्रभाव : आज यी प्रदेशमा हल्का वर्षा र हिमपातको सम्भावना",
+      "title": "मुद्रास्फीति र खराब मौसमले जापानी अर्थतन्त्र सुस्त",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605459/impact-of-western-low-pressure-system-light-rain-and-snowfall-likely-in-these-provinces-today",
-      "published_at": "2026-11-16T05:42:33+05:45",
+      "url": "https://www.ratopati.com/story/605516/inflation-and-bad-weather-slow-japans-economy",
+      "published_at": "2026-11-16T11:56:41+05:45",
       "flash": true
     },
     {
-      "title": "पूर्वाधार निर्माणसँगै पर्यटकीय गन्तव्य बन्दै कपासे भञ्ज्याङ",
+      "title": "चितवनमा दसैँ–तिहार अवधिमा सडक दुर्घटनामा कमी, राजस्व बढ्यो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605455/kapase-bhanjyang-is-becoming-a-tourist-destination-with-the-construction-of-infrastructure",
-      "published_at": "2026-11-16T04:42:25+05:45",
+      "url": "https://www.ratopati.com/story/605507/chitwan-sees-decrease-in-road-accidents-revenue-increases-during-dashain-tihar-period",
+      "published_at": "2026-11-16T11:11:29+05:45",
+      "flash": true
+    },
+    {
+      "title": "अभिषेक गिरीको ४५ करोड सम्पत्तिको स्रोत खोज्दै प्रहरी",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605503/police-searching-for-source-of-abhishesh-giris-rs-450-million-wealth",
+      "published_at": "2026-11-16T10:47:20+05:45",
       "flash": false
     },
     {
-      "title": "शुक्लागण्डकी फूल बिक्रीमा अग्रणी बन्दै",
+      "title": "धनगढीबाट काठमाडौँ आउँदै गरेको बस दुर्घटना, २५ यात्रु घाइते",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605452/shuklagandaki-becoming-a-leader-in-flower-sales",
-      "published_at": "2026-11-16T04:19:39+05:45",
-      "flash": false
-    },
-    {
-      "title": "किसानको बाली जोगाउन प्रहरी खेतमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605446/police-in-the-fields-to-protect-farmers-crops",
-      "published_at": "2026-11-16T01:30:00+05:45",
+      "url": "https://www.ratopati.com/story/605483/bus-coming-from-dhangadhi-to-kathmandu-crashes-25-passengers-injured",
+      "published_at": "2026-11-16T09:00:17+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     },
@@ -49,7 +49,7 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
+      "flash": 2,
       "recent": 4
     },
     "Kathmandu Post": {
@@ -60,7 +60,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 8,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     }

@@ -1,63 +1,35 @@
 {
-  "generated_at": "2026-11-16T02:03:34.153057+05:45",
-  "updated_at_npt": "16 Nov 02:03 NPT",
+  "generated_at": "2026-11-16T05:47:09.498063+05:45",
+  "updated_at_npt": "16 Nov 05:47 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "पश्चिमी न्यूनचापीय प्रणालीको प्रभाव : आज यी प्रदेशमा हल्का वर्षा र हिमपातको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605459/impact-of-western-low-pressure-system-light-rain-and-snowfall-likely-in-these-provinces-today",
+      "published_at": "2026-11-16T05:42:33+05:45",
+      "flash": true
+    },
+    {
+      "title": "पूर्वाधार निर्माणसँगै पर्यटकीय गन्तव्य बन्दै कपासे भञ्ज्याङ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605455/kapase-bhanjyang-is-becoming-a-tourist-destination-with-the-construction-of-infrastructure",
+      "published_at": "2026-11-16T04:42:25+05:45",
+      "flash": false
+    },
+    {
+      "title": "शुक्लागण्डकी फूल बिक्रीमा अग्रणी बन्दै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605452/shuklagandaki-becoming-a-leader-in-flower-sales",
+      "published_at": "2026-11-16T04:19:39+05:45",
+      "flash": false
+    },
     {
       "title": "किसानको बाली जोगाउन प्रहरी खेतमा",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/605446/police-in-the-fields-to-protect-farmers-crops",
       "published_at": "2026-11-16T01:30:00+05:45",
-      "flash": true
-    },
-    {
-      "title": "१२ बजे १२ समाचार : विदेश भ्रमणमा मन्त्री र सांसदको लर्को, तीन पटक कार्यकाल नपुग्दै संसद् विघटन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605444/12-oclock-12-news-ministers-and-mps-clash-over-foreign-trips-parliament-dissolved-three-times-before-completing-its-term",
-      "published_at": "2026-11-16T00:00:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "वडा प्रहरी परिसरमै कुटाकुट गर्ने ६ जना पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605429/6-people-arrested-for-fighting-inside-the-ward-police-station",
-      "published_at": "2026-11-15T21:36:41+05:45",
-      "flash": false
-    },
-    {
-      "title": "छठ पर्वमा नेशनल मेडिकल कलेजको स्वास्थ्य सेवा अभियान",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605428/national-medical-colleges-health-service-campaign-during-chhath-festival",
-      "published_at": "2026-11-15T21:35:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "बेमौसमी वर्षाले पोखरामा काटेको धान खेतमै भिज्यो, कृषक चिन्तित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605422/unseasonal-rains-in-pokhara-soak-harvested-rice-in-the-field-farmers-worried",
-      "published_at": "2026-11-15T20:58:20+05:45",
-      "flash": false
-    },
-    {
-      "title": "कालीगण्डकी करिडोर सडक पुन:अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605419/kaligandaki-corridor-road-blocked-again",
-      "published_at": "2026-11-15T20:38:34+05:45",
-      "flash": false
-    },
-    {
-      "title": "६. प्रधानमन्त्री सचिवालयबाट माधव खनालकाे नाम हटाइयो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605415/madhav-khanals-name-removed-from-prime-ministers-secretariat",
-      "published_at": "2026-11-15T20:26:47+05:45",
-      "flash": false
-    },
-    {
-      "title": "घोप्टेभिरको सुक्खा पहिरोले अनिश्चित बनायो यात्रा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605414/dry-landslide-in-ghoptebhir-makes-travel-uncertain",
-      "published_at": "2026-11-15T20:19:55+05:45",
       "flash": false
     }
   ],
@@ -78,7 +50,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 1,
-      "recent": 8
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

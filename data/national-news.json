@@ -1,66 +1,9 @@
 {
-  "generated_at": "2026-11-17T23:14:55.642860+05:45",
-  "updated_at_npt": "17 Nov 23:14 NPT",
+  "generated_at": "2026-11-18T05:40:52.441282+05:45",
+  "updated_at_npt": "18 Nov 05:40 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
-  "items": [
-    {
-      "title": "इरानमा बस पल्टिँदा १३ जनाको मृत्यु, १४ घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605903/13-killed-14-injured-in-bus-overturn-in-iran",
-      "published_at": "2026-11-17T23:08:33+05:45",
-      "flash": true
-    },
-    {
-      "title": "मन्त्री मेहताद्वारा स्वास्थ्य संस्थाको अनुगमन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605898/minister-mehta-monitors-health-institutions",
-      "published_at": "2026-11-17T21:54:42+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रधानमन्त्रीकाे भारत भ्रमण : नेपालगञ्ज–दिल्ली सिधा हवाई उडानका लागि ध्यानाकर्षण १ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605892/prime-ministers-visit-to-india-attention-drawn-to-nepalgunj-delhi-direct-flight",
-      "published_at": "2026-11-17T21:21:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "चिया उद्योगमा आगलागीबाट ३० लाखको क्षति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605891/fire-at-tea-factory-causes-rs-3-million-loss",
-      "published_at": "2026-11-17T21:18:42+05:45",
-      "flash": false
-    },
-    {
-      "title": "क्वार्टरमा अचेत अवस्थामा भेटिएका इन्स्पेक्टरको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605888/inspector-found-unconscious-in-quarters-dies",
-      "published_at": "2026-11-17T21:11:25+05:45",
-      "flash": false
-    },
-    {
-      "title": "सभामुख अर्याल र फ्रान्स–नेपाल संसदीय समूहकी अध्यक्षबिच भेटवार्ता २ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605884/meeting-between-speaker-aryal-and-the-chair-of-the-france-nepal-parliamentary-group",
-      "published_at": "2026-11-17T20:56:48+05:45",
-      "flash": false
-    },
-    {
-      "title": "भोटेकोशी बाढीपीडितका समस्या र पुनर्स्थापनाबारे उत्तरगया गाउँपालिकामा छलफल",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605880/discussion-in-uttargaya-rural-municipality-on-the-problems-and-rehabilitation-of-bhotekoshi-flood-victims",
-      "published_at": "2026-11-17T20:32:37+05:45",
-      "flash": false
-    },
-    {
-      "title": "पशुपति गौशाला धर्मशाला पशुपतिमै फिर्ता, जिल्ला र उच्च अदालतको फैसला सर्वोच्चबाटै सदर",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605856/pashupati-gaushala-dharamshala-returned-to-pashupati-district-and-high-court-decisions-upheld-by-supreme-court",
-      "published_at": "2026-11-17T18:52:55+05:45",
-      "flash": false
-    }
-  ],
+  "items": [],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
@@ -77,8 +20,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 9
+      "flash": 0,
+      "recent": 0
     },
     "Kathmandu Post": {
       "ok": true,

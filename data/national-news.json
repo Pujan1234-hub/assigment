@@ -1,42 +1,84 @@
 {
-  "generated_at": "2026-11-17T05:55:44.820869+05:45",
-  "updated_at_npt": "17 Nov 05:55 NPT",
+  "generated_at": "2026-11-17T13:41:34.321057+05:45",
+  "updated_at_npt": "17 Nov 13:41 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "विपद्को चपेटामा म्याग्दीका जलविद्युत् आयोजना",
+      "title": "शक्तिशाली एल निनोले विश्वभर खडेरी, आगलागी र खाद्य सङ्कटको जोखिम",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605666/myagdis-hydropower-projects-in-the-grip-of-disaster",
-      "published_at": "2026-11-17T02:30:00+05:45",
+      "url": "https://www.ratopati.com/story/605767/strong-el-nino-raises-risk-of-drought-fires-and-food-shortages-worldwide",
+      "published_at": "2026-11-17T13:35:51+05:45",
+      "flash": true
+    },
+    {
+      "title": "जेनजी आन्दोलनका क्रममा बाल सुधार गृहबाट फरार कैदी पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605763/prisoner-who-escaped-from-juvenile-correctional-home-during-genji-movement-arrested",
+      "published_at": "2026-11-17T13:25:43+05:45",
+      "flash": true
+    },
+    {
+      "title": "स्थानीय तह चुनावको मिति घोषणा नहुँदै मैदानमा प्रमुख दल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605754/major-parties-in-the-fray-even-though-the-date-for-local-elections-has-not-been-announced",
+      "published_at": "2026-11-17T13:03:21+05:45",
+      "flash": true
+    },
+    {
+      "title": "स्वरूप परिवर्तन गरिएका ४०१ वटा बुलेट मोटरसाइकल ट्राफिक प्रहरीको नियन्त्रणमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605746/401-modified-bullet-motorcycles-taken-into-custody-by-traffic-police",
+      "published_at": "2026-11-17T12:31:26+05:45",
       "flash": false
     },
     {
-      "title": "बाढीपछिको पुनर्निर्माण र जलवायु अनुकूलनमा सहयोग बढाउन एडिबीसँग आग्रह ३ घण्टा अगाडि",
+      "title": "घरायसी विवादका क्रममा श्रीमानले लोहोरो प्रहार गर्दा श्रीमतीको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605665/adb-urged-to-increase-support-for-post-flood-reconstruction-and-climate-adaptation",
-      "published_at": "2026-11-17T02:15:00+05:45",
+      "url": "https://www.ratopati.com/story/605735/wife-dies-after-husband-hits-her-with-a-stick-during-a-domestic-dispute",
+      "published_at": "2026-11-17T12:01:11+05:45",
       "flash": false
     },
     {
-      "title": "१२ बजे १२ समाचार : तातोपानी नाका नखुल्दा व्यवसायीहरू मर्कामादेखि प्रधानमन्त्रीको भारत भ्रमण तयारीसम्म ५ घण्टा अगाडि",
+      "title": "आन्तरिक पर्यटकको रोजाइ बन्दै गुल्मीको रेसुङ्गा पार्क, ४० हजारभन्दा बढीले गरे अवलोकन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605658/12-oclock-12-news-from-businessmen-in-trouble-as-tatopani-border-checkpoint-not-opened-to-preparations-for-prime-ministers-visit-to-india",
-      "published_at": "2026-11-17T00:00:27+05:45",
+      "url": "https://www.ratopati.com/story/605726/gulmis-resunga-park-becomes-a-favorite-among-domestic-tourists-visited-by-over-40000-people",
+      "published_at": "2026-11-17T11:08:13+05:45",
       "flash": false
     },
     {
-      "title": "गुहेश्वरीस्थित महादेव होटलको आगलागी नियन्त्रणमा",
+      "title": "प्रधानमन्त्रीको भारत भ्रमणमा हवाई रुट र पोखरा–सुनौली फास्ट ट्र्याकमा सहमति गर्न पोखरेली मेयरको आग्रह",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605659/fire-at-mahadev-hotel-in-guheshwari-under-control",
-      "published_at": "2026-11-16T23:56:56+05:45",
+      "url": "https://www.ratopati.com/story/605707/pokharel-mayor-urges-agreement-on-air-route-and-pokhara-sunauli-fast-track-for-prime-ministers-visit-to-india",
+      "published_at": "2026-11-17T09:56:57+05:45",
+      "flash": false
+    },
+    {
+      "title": "५. अमेरिकी डलर बलियो बन्दा सुनको मूल्य एक वर्षयताकै न्यून विन्दु नजिक",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605705/gold-nears-one-year-low-as-us-dollar-strengthens",
+      "published_at": "2026-11-17T09:40:17+05:45",
+      "flash": false
+    },
+    {
+      "title": "जब्दीघाटमा नयाँ पुल निर्माणका लागि ठेक्का सम्झौता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605704/contract-agreement-for-construction-of-new-bridge-in-jabdighat",
+      "published_at": "2026-11-17T09:33:54+05:45",
+      "flash": false
+    },
+    {
+      "title": "टमाटरखेतीमा अब्बल बन्दै टोड्केका किसान",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/605689/todke-farmers-are-becoming-proficient-in-tomato-farming",
+      "published_at": "2026-11-17T07:42:14+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     },
@@ -49,8 +91,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 4
+      "flash": 3,
+      "recent": 10
     },
     "Kathmandu Post": {
       "ok": true,
@@ -60,7 +102,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 5,
       "flash": 0,
       "recent": 0
     }

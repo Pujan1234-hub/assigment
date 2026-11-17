@@ -1,77 +1,42 @@
 {
-  "generated_at": "2026-11-16T21:47:14.802740+05:45",
-  "updated_at_npt": "16 Nov 21:47 NPT",
+  "generated_at": "2026-11-17T05:55:44.820869+05:45",
+  "updated_at_npt": "17 Nov 05:55 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "हालसम्मकै छोटो भारत भ्रमणमा जाँदै प्रधानमन्त्री बालेन",
+      "title": "विपद्को चपेटामा म्याग्दीका जलविद्युत् आयोजना",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605645/prime-minister-balen-is-leaving-for-his-shortest-visit-to-india-so-far",
-      "published_at": "2026-11-16T21:36:41+05:45",
-      "flash": true
-    },
-    {
-      "title": "कन्काइ पुल बनेको हो कि होइन ? प्रशंसा र आलोचनाको केन्द्रमा मन्त्री लम्साल",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605625/was-the-kankai-bridge-built-or-not-minister-lamsal-at-the-center-of-praise-and-criticism",
-      "published_at": "2026-11-16T19:29:17+05:45",
+      "url": "https://www.ratopati.com/story/605666/myagdis-hydropower-projects-in-the-grip-of-disaster",
+      "published_at": "2026-11-17T02:30:00+05:45",
       "flash": false
     },
     {
-      "title": "३. इनम सापकाेटा प्रकरण : प्रधानमन्त्रीका सल्लाहकारसहित चार जनालाई पक्राउ गर्न माग",
+      "title": "बाढीपछिको पुनर्निर्माण र जलवायु अनुकूलनमा सहयोग बढाउन एडिबीसँग आग्रह ३ घण्टा अगाडि",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605624/genji-movement-nepal-demands-arrest-of-four-people-including-the-prime-ministers-advisor-in-the-inam-case",
-      "published_at": "2026-11-16T19:25:07+05:45",
+      "url": "https://www.ratopati.com/story/605665/adb-urged-to-increase-support-for-post-flood-reconstruction-and-climate-adaptation",
+      "published_at": "2026-11-17T02:15:00+05:45",
       "flash": false
     },
     {
-      "title": "नागरिकको स्वास्थ्य सेवाप्रति प्रदेश सरकार गम्भीर छ : मुख्यमन्त्री पाण्डे",
+      "title": "१२ बजे १२ समाचार : तातोपानी नाका नखुल्दा व्यवसायीहरू मर्कामादेखि प्रधानमन्त्रीको भारत भ्रमण तयारीसम्म ५ घण्टा अगाडि",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605623/provincial-government-is-serious-about-citizens-health-services-chief-minister-pandey",
-      "published_at": "2026-11-16T19:21:46+05:45",
+      "url": "https://www.ratopati.com/story/605658/12-oclock-12-news-from-businessmen-in-trouble-as-tatopani-border-checkpoint-not-opened-to-preparations-for-prime-ministers-visit-to-india",
+      "published_at": "2026-11-17T00:00:27+05:45",
       "flash": false
     },
     {
-      "title": "भोटेकोशी बाढी प्रभावित जिल्लामा पुनर्निर्माण शीघ्र सुरु हुन्छ : मख्यमन्त्री मगर",
+      "title": "गुहेश्वरीस्थित महादेव होटलको आगलागी नियन्त्रणमा",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605619/reconstruction-to-begin-soon-in-bhotekoshi-flood-affected-districts-chief-minister-magar",
-      "published_at": "2026-11-16T18:52:53+05:45",
-      "flash": false
-    },
-    {
-      "title": "स्कुटर दुर्घटना, दुई जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605618/scooter-accident-two-dead",
-      "published_at": "2026-11-16T18:50:26+05:45",
-      "flash": false
-    },
-    {
-      "title": "मोटरसाइकलको ठक्करबाट युवकको मृत्यु, चालक पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605592/youth-dies-in-motorcycle-accident-driver-arrested",
-      "published_at": "2026-11-16T16:43:17+05:45",
-      "flash": false
-    },
-    {
-      "title": "नेपाल–भारत सीमा विवाद समाधानको विषय प्राथमिकताका साथ उठाउन एमालेको आग्रह",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605589/uml-urges-to-raise-the-issue-of-resolving-nepal-india-border-dispute-with-priority",
-      "published_at": "2026-11-16T16:36:48+05:45",
-      "flash": false
-    },
-    {
-      "title": "स्थानीय तह निर्वाचनका लागि ७७ जिल्लाबाट उम्मेदवारको नाम संकलन गर्ने जय नेपालको निर्णय",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/605585/jai-nepals-decision-to-collect-names-of-candidates-from-77-districts-for-local-level-elections",
-      "published_at": "2026-11-16T16:08:35+05:45",
+      "url": "https://www.ratopati.com/story/605659/fire-at-mahadev-hotel-in-guheshwari-under-control",
+      "published_at": "2026-11-16T23:56:56+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
-      "ok": false,
-      "error": "HTTPSConnectionPool(host='www.onlinekhabar.com', port=443): Read timed out.",
+      "ok": true,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     },
@@ -84,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 9
+      "flash": 0,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

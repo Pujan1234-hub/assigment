@@ -1,57 +1,15 @@
 {
-  "generated_at": "2026-11-18T21:43:43.142050+05:45",
-  "updated_at_npt": "18 Nov 21:43 NPT",
+  "generated_at": "2026-11-19T04:39:38.213046+05:45",
+  "updated_at_npt": "19 Nov 04:39 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "भारततर्फ थप ६१५.०२ मेगावाट विद्युत् निर्यात गर्न स्वीकृति",
+      "title": "म्याग्दी प्रहरीको ‘ब्राबोसेरा’ अभियान",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606129/approval-to-export-an-additional-61502-mw-of-electricity-to-india",
-      "published_at": "2026-11-18T20:59:46+05:45",
+      "url": "https://www.ratopati.com/story/606161/myagdi-polices-brabocera-campaign",
+      "published_at": "2026-11-19T04:30:00+05:45",
       "flash": true
-    },
-    {
-      "title": "'कन्काई पुल अलपत्र पार्नु हुँदैन, सदनमा आवाज उठाउनेछौँ'",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606123/kankai-bridge-should-not-be-abandoned-we-will-raise-our-voice-in-the-house",
-      "published_at": "2026-11-18T20:23:21+05:45",
-      "flash": false
-    },
-    {
-      "title": "गेटा स्वास्थ्य विज्ञान विश्वविद्यालय सञ्चालनमा बहाना स्वीकार्य छैन : मुख्यमन्त्री भट्ट",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606119/excuses-are-not-acceptable-in-the-operation-of-geta-health-sciences-university-chief-minister-bhatta",
-      "published_at": "2026-11-18T20:02:43+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रधानमन्त्री बालेनको भारत भ्रमणका क्रममा नेपालको प्राथमिकता के हुनुपर्छ ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606055/what-should-be-nepals-priorities-during-prime-minister-balens-visit-to-india",
-      "published_at": "2026-11-18T19:30:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "‘प्रधानमन्त्रीले भारतलाई विषादीयुक्त तरकारी पठाउन बन्द गर भन्नुपर्छ’",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606095/the-prime-minister-should-tell-india-to-stop-sending-pesticide-laden-vegetables",
-      "published_at": "2026-11-18T18:54:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "२. प्रधानमन्त्रीका राजनीतिक सल्लाहकार ब्यञ्जनकारविरुद्ध प्रहरीमा जाहेरी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606098/police-complaint-filed-against-prime-ministers-political-advisor-byanjankar",
-      "published_at": "2026-11-18T17:56:57+05:45",
-      "flash": false
-    },
-    {
-      "title": "१५५ मोबाइल र ४९ ल्यापटप प्रहरीको अनुसन्धानमा, काभ्रेमा विदेशीको गतिविधिमाथि निगरानी बढाइयो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606072/155-mobile-phones-and-49-laptops-seized-in-police-investigation-surveillance-increased-on-foreigner-activities-in-kavre",
-      "published_at": "2026-11-18T16:27:17+05:45",
-      "flash": false
     }
   ],
   "sources": {
@@ -71,7 +29,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 1,
-      "recent": 7
+      "recent": 1
     },
     "Kathmandu Post": {
       "ok": true,

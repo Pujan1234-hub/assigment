@@ -1,49 +1,63 @@
 {
-  "generated_at": "2026-11-19T09:44:05.933839+05:45",
-  "updated_at_npt": "19 Nov 09:44 NPT",
+  "generated_at": "2026-11-19T18:34:30.015041+05:45",
+  "updated_at_npt": "19 Nov 18:34 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "मकवानपुरको भीमफेदीमा सुमो दुर्घटना, ३ जनाको मृत्यु",
+      "title": "भारतबाट १५० मेगावाट विद्युत् खरिद गर्ने प्रक्रिया अघि बढाउने निर्णय",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606184/vehicle-accident-in-bhaise-makawanpur-human-casualties-suspected",
-      "published_at": "2026-11-19T09:27:27+05:45",
+      "url": "https://www.ratopati.com/story/606347/decision-to-proceed-with-the-process-of-purchasing-150-mw-of-electricity-from-india",
+      "published_at": "2026-11-19T18:31:00+05:45",
       "flash": true
     },
     {
-      "title": "मिर्चैया दुर्घटनामा युवकको मृत्यु : १० दिनपछि टिपरसहित चालक पक्राउ",
+      "title": "पीएचपीपछि जाभामा पनि देखियो सुरक्षा कमजोरी, केन्द्रले जारी गर्‍यो एडभाइजरी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606180/youth-dies-in-mirchaiya-accident-driver-arrested-along-with-tipper-10-days-later",
-      "published_at": "2026-11-19T08:35:13+05:45",
+      "url": "https://www.ratopati.com/story/606345/after-php-security-vulnerabilities-were-also-found-in-java-the-center-issued-an-advisory",
+      "published_at": "2026-11-19T18:24:45+05:45",
+      "flash": true
+    },
+    {
+      "title": "राष्ट्रिय भेलाबाट प्राप्त निष्कर्षहरूको प्रभावकारी कार्यान्वयन गर्न ओलीको निर्देशन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606344/oli-directs-for-effective-implementation-of-conclusions-from-national-gathering",
+      "published_at": "2026-11-19T18:18:15+05:45",
+      "flash": true
+    },
+    {
+      "title": "महेन्द्र राजमार्गको मर्मत गर्न कांग्रेस हेटौँडा–१९ को ७ दिने अल्टिमेटम",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606320/congress-hetauda-19-issues-7-day-ultimatum-to-repair-mahendra-highway",
+      "published_at": "2026-11-19T16:47:59+05:45",
       "flash": false
     },
     {
-      "title": "बाजुरामा अनियन्त्रित ट्याक्टर सडकबाट १५० मिटर तल खस्यो, चालक घाइते",
+      "title": "प्रदेश प्रमुखले दिएको समयसीमा सकिन एक दिन बाँकी रहँदासमेत मधेसमा नयाँ सरकारबारे अन्योल",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606177/out-of-control-tractor-falls-150-meters-off-road-in-bajura-driver-injured",
-      "published_at": "2026-11-19T08:15:30+05:45",
+      "url": "https://www.ratopati.com/story/606310/confusion-over-new-government-in-madhesh-even-with-one-day-left-before-the-deadline-given-by-the-provincial-chief",
+      "published_at": "2026-11-19T16:27:44+05:45",
       "flash": false
     },
     {
-      "title": "नेपालमा पश्चिमी वायुका साथै ‘अक्वान’ चक्रवातको आंशिक प्रभाव, कस्तो रहला आजको मौसम ?",
+      "title": "काठमाडौँलाई २४ सै घण्टा खुला गर्न सुरक्षा र व्यवस्थापनको नयाँ खाका कोरिँदै",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606162/partial-impact-of-cyclone-akwan-along-with-westerly-winds-in-nepal-what-will-be-the-weather-like-today",
-      "published_at": "2026-11-19T06:11:38+05:45",
+      "url": "https://www.ratopati.com/story/606280/preparations-to-keep-kathmandu-open-24-hours-a-day-new-security-and-management-framework-being-drawn-up",
+      "published_at": "2026-11-19T15:30:00+05:45",
       "flash": false
     },
     {
-      "title": "म्याग्दी प्रहरीको ‘ब्राबोसेरा’ अभियान",
+      "title": "तीन महिनामा ४५ आगलागीका घटना, १७ करोड बढीको क्षति",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606161/myagdi-polices-brabocera-campaign",
-      "published_at": "2026-11-19T04:30:00+05:45",
+      "url": "https://www.ratopati.com/story/606235/45-fire-incidents-in-three-months-damage-of-over-rs-170-million",
+      "published_at": "2026-11-19T12:40:52+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     },
@@ -56,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 6
+      "flash": 3,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +81,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 5,
+      "candidates": 6,
       "flash": 0,
       "recent": 0
     }

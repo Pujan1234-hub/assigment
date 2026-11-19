@@ -1,21 +1,49 @@
 {
-  "generated_at": "2026-11-19T04:39:38.213046+05:45",
-  "updated_at_npt": "19 Nov 04:39 NPT",
+  "generated_at": "2026-11-19T09:44:05.933839+05:45",
+  "updated_at_npt": "19 Nov 09:44 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "मकवानपुरको भीमफेदीमा सुमो दुर्घटना, ३ जनाको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606184/vehicle-accident-in-bhaise-makawanpur-human-casualties-suspected",
+      "published_at": "2026-11-19T09:27:27+05:45",
+      "flash": true
+    },
+    {
+      "title": "मिर्चैया दुर्घटनामा युवकको मृत्यु : १० दिनपछि टिपरसहित चालक पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606180/youth-dies-in-mirchaiya-accident-driver-arrested-along-with-tipper-10-days-later",
+      "published_at": "2026-11-19T08:35:13+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाजुरामा अनियन्त्रित ट्याक्टर सडकबाट १५० मिटर तल खस्यो, चालक घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606177/out-of-control-tractor-falls-150-meters-off-road-in-bajura-driver-injured",
+      "published_at": "2026-11-19T08:15:30+05:45",
+      "flash": false
+    },
+    {
+      "title": "नेपालमा पश्चिमी वायुका साथै ‘अक्वान’ चक्रवातको आंशिक प्रभाव, कस्तो रहला आजको मौसम ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606162/partial-impact-of-cyclone-akwan-along-with-westerly-winds-in-nepal-what-will-be-the-weather-like-today",
+      "published_at": "2026-11-19T06:11:38+05:45",
+      "flash": false
+    },
     {
       "title": "म्याग्दी प्रहरीको ‘ब्राबोसेरा’ अभियान",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/606161/myagdi-polices-brabocera-campaign",
       "published_at": "2026-11-19T04:30:00+05:45",
-      "flash": true
+      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -29,7 +57,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 1,
-      "recent": 1
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,
@@ -39,7 +67,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 5,
       "flash": 0,
       "recent": 0
     }

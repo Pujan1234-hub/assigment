@@ -1,63 +1,28 @@
 {
-  "generated_at": "2026-11-19T18:34:30.015041+05:45",
-  "updated_at_npt": "19 Nov 18:34 NPT",
+  "generated_at": "2026-11-20T02:46:50.849468+05:45",
+  "updated_at_npt": "20 Nov 02:46 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "भारतबाट १५० मेगावाट विद्युत् खरिद गर्ने प्रक्रिया अघि बढाउने निर्णय",
+      "title": "आगलागीबाट बालआश्रममा एक करोड बढीको क्षति",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606347/decision-to-proceed-with-the-process-of-purchasing-150-mw-of-electricity-from-india",
-      "published_at": "2026-11-19T18:31:00+05:45",
-      "flash": true
-    },
-    {
-      "title": "पीएचपीपछि जाभामा पनि देखियो सुरक्षा कमजोरी, केन्द्रले जारी गर्‍यो एडभाइजरी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606345/after-php-security-vulnerabilities-were-also-found-in-java-the-center-issued-an-advisory",
-      "published_at": "2026-11-19T18:24:45+05:45",
-      "flash": true
-    },
-    {
-      "title": "राष्ट्रिय भेलाबाट प्राप्त निष्कर्षहरूको प्रभावकारी कार्यान्वयन गर्न ओलीको निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606344/oli-directs-for-effective-implementation-of-conclusions-from-national-gathering",
-      "published_at": "2026-11-19T18:18:15+05:45",
-      "flash": true
-    },
-    {
-      "title": "महेन्द्र राजमार्गको मर्मत गर्न कांग्रेस हेटौँडा–१९ को ७ दिने अल्टिमेटम",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606320/congress-hetauda-19-issues-7-day-ultimatum-to-repair-mahendra-highway",
-      "published_at": "2026-11-19T16:47:59+05:45",
+      "url": "https://www.ratopati.com/story/606379/fire-damages-orphanage-by-over-rs-10-million",
+      "published_at": "2026-11-19T23:33:17+05:45",
       "flash": false
     },
     {
-      "title": "प्रदेश प्रमुखले दिएको समयसीमा सकिन एक दिन बाँकी रहँदासमेत मधेसमा नयाँ सरकारबारे अन्योल",
+      "title": "‘प्रधानमन्त्री बालेनको भारत भ्रमण तयारी विगतमा भन्दा कमजोर छ’",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606310/confusion-over-new-government-in-madhesh-even-with-one-day-left-before-the-deadline-given-by-the-provincial-chief",
-      "published_at": "2026-11-19T16:27:44+05:45",
-      "flash": false
-    },
-    {
-      "title": "काठमाडौँलाई २४ सै घण्टा खुला गर्न सुरक्षा र व्यवस्थापनको नयाँ खाका कोरिँदै",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606280/preparations-to-keep-kathmandu-open-24-hours-a-day-new-security-and-management-framework-being-drawn-up",
-      "published_at": "2026-11-19T15:30:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "तीन महिनामा ४५ आगलागीका घटना, १७ करोड बढीको क्षति",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606235/45-fire-incidents-in-three-months-damage-of-over-rs-170-million",
-      "published_at": "2026-11-19T12:40:52+05:45",
+      "url": "https://www.ratopati.com/story/606325/preparations-for-prime-minister-balens-visit-to-india-are-weaker-than-in-the-past",
+      "published_at": "2026-11-19T21:15:00+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     },
@@ -70,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 7
+      "flash": 0,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,
@@ -81,7 +46,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 6,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     }

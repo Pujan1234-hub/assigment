@@ -857,7 +857,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         feedFresh.setText(t("Official नदी अवस्था refresh हुँदैछ…","Refreshing official river status…"));
         io.execute(()->{
             try{
-                JSONObject root=OfficialStationFeeds.rivers();
+                JSONObject root=OfficialStationFeeds.rivers(getApplicationContext());
                 String source=root.optString("activeObservationSource","none");
                 JSONArray rows=root.optJSONArray("results");
                 if(rows==null)rows=root.optJSONArray("data");

@@ -1,0 +1,80 @@
+name: FloodSafe 0.9.22 station recovery test APK
+
+on:
+  push:
+    branches:
+      - fix/floodsafe-play-stations-20261120
+    paths:
+      - '.github/workflows/floodsafe-station-recovery-test-20261120.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Install Android platform
+        shell: bash
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Prepare isolated testing package and bundled station catalogue
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i "s/versionCode 121/versionCode 123/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.22-station-recovery'/" floodsafe-android-app/app/build.gradle
+          python3 floodsafe-android-app/bundle_web.py
+          mkdir -p floodsafe-android-app/app/src/main/assets
+          cp -a floodsafe-android-app/app/build/generated/floodsafe-assets/. floodsafe-android-app/app/src/main/assets/
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          app=Path('floodsafe-android-app/app')
+          config=json.loads((app/'google-services.json').read_text())
+          for client in config['client']:
+              client['client_info']['android_client_info']['package_name']='io.github.pujan1234hub.floodsafe.app.preview'
+          dest=app/'src/debug/google-services.json'
+          dest.parent.mkdir(parents=True,exist_ok=True)
+          dest.write_text(json.dumps(config))
+          strings=app/'src/debug/res/values/strings.xml'
+          strings.parent.mkdir(parents=True,exist_ok=True)
+          strings.write_text('<resources><string name="app_name">FloodSafe Station Fix TEST</string></resources>')
+          data=json.loads((app/'src/main/assets/data/floodsafe-core.json').read_text())
+          assert len(data.get('river_stations',[]))>=12
+          print('Bundled catalogue records:',len(data['river_stations']))
+          PY
+
+      - name: Compile isolated, debug-signed APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p floodsafe-android-app :app:assembleDebug --no-daemon --stacktrace
+          APK=floodsafe-android-app/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | head -4
+          unzip -t "$APK" >/dev/null
+          cp "$APK" FloodSafe-Nepal-v0.9.22-STATION-TEST.apk
+          sha256sum FloodSafe-Nepal-v0.9.22-STATION-TEST.apk > FloodSafe-Nepal-Station-Test-SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.22-Station-Test-APK
+          path: |
+            FloodSafe-Nepal-v0.9.22-STATION-TEST.apk
+            FloodSafe-Nepal-Station-Test-SHA256.txt
+          if-no-files-found: error
+          retention-days: 14

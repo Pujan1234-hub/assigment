@@ -127,7 +127,7 @@ public final class FloodSafeMapActivity extends Activity {
         mapFetchInFlight=true;
         io.execute(()->{
             try{
-                JSONObject feeds=OfficialStationFeeds.rivers();
+                JSONObject feeds=OfficialStationFeeds.rivers(getApplicationContext());
                 String source=feeds.optString("activeObservationSource","none");
                 JSONArray arr=feeds.optJSONArray("results");
                 if(arr==null)arr=feeds.optJSONArray("data");

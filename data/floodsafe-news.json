@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-20T13:19:45.494792Z",
+  "generated_at": "2026-11-20T21:22:04.899962Z",
   "refresh_minutes": 5,
   "latest_window_minutes": 10,
   "archive_window_minutes": 20,
@@ -16,25 +16,12 @@
     },
     "Radio Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     },
     "News24 Nepal": {
       "ok": true,
-      "items": 1
+      "items": 0
     }
   },
-  "items": [
-    {
-      "title": "वाम एकता तयारी, नजर राष्ट्रियसभा र राष्ट्रपतिमा !",
-      "url": "https://www.news24nepal.com/detail/14109",
-      "published_at": "2026-11-20T12:59:26Z",
-      "source": "News24 Nepal"
-    },
-    {
-      "title": "नेपाल पर्यटन पत्रकार सङ्घको अध्यक्षमा बास्तोला",
-      "url": "https://radionepalonline.com/2026/11/20/749760.html",
-      "published_at": "2026-11-20T12:54:24Z",
-      "source": "Radio Nepal"
-    }
-  ]
+  "items": []
 }

@@ -1,28 +1,49 @@
 {
-  "generated_at": "2026-11-20T02:46:50.849468+05:45",
-  "updated_at_npt": "20 Nov 02:46 NPT",
+  "generated_at": "2026-11-20T07:59:23.279015+05:45",
+  "updated_at_npt": "20 Nov 07:59 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "आगलागीबाट बालआश्रममा एक करोड बढीको क्षति",
+      "title": "रोहिङ्ग्यामाथि म्यान्माले नरसंहार गरेको अन्तर्राष्ट्रिय अदालतको ठहर",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606379/fire-damages-orphanage-by-over-rs-10-million",
-      "published_at": "2026-11-19T23:33:17+05:45",
+      "url": "https://www.ratopati.com/story/606395/international-court-of-justice-rules-myanmar-committed-genocide-against-rohingya",
+      "published_at": "2026-11-20T07:20:36+05:45",
+      "flash": true
+    },
+    {
+      "title": "हरिबोधिनी एकादशीः देशभरका नारायण मन्दिरमा भक्तजनको लाम",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606394/haribodhini-ekadashi-devotees-queue-at-narayan-temples-across-the-country",
+      "published_at": "2026-11-20T07:16:02+05:45",
+      "flash": true
+    },
+    {
+      "title": "लुम्बिनीका १० जिल्ला कुष्ठरोगको जोखिममा, देशभरका नयाँ सङ्क्रमितमध्ये २५ प्रतिशत यहीँका",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606391/10-districts-of-lumbini-at-risk-of-leprosy-25-percent-of-new-infections-across-the-country-are-from-here",
+      "published_at": "2026-11-20T07:01:46+05:45",
+      "flash": true
+    },
+    {
+      "title": "धादिङमा बोलेरो दुर्घटना : एक महिलाको मृत्यु, ९ जना घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606390/bolero-accident-in-dhading-one-woman-dies-9-injured",
+      "published_at": "2026-11-20T06:57:49+05:45",
       "flash": false
     },
     {
-      "title": "‘प्रधानमन्त्री बालेनको भारत भ्रमण तयारी विगतमा भन्दा कमजोर छ’",
+      "title": "विकास आयोजना समयमै सम्पन्न गर्न मन्त्री लम्सालको निर्देशन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606325/preparations-for-prime-minister-balens-visit-to-india-are-weaker-than-in-the-past",
-      "published_at": "2026-11-19T21:15:00+05:45",
+      "url": "https://www.ratopati.com/story/606387/minister-lamsal-directs-to-complete-development-projects-on-time",
+      "published_at": "2026-11-20T06:50:37+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 8,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     },
@@ -35,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 2
+      "flash": 3,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,
@@ -46,7 +67,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 6,
       "flash": 0,
       "recent": 0
     }

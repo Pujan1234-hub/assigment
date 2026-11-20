@@ -76,6 +76,128 @@ final class OfficialStationFeeds {
         return result;
     }
 
+    /**
+     * Keep official station LOCATIONS visible when the online station-detail service
+     * is unavailable. Offline catalogue entries NEVER contain live levels or alerts.
+     * Normal live observations still come exclusively from rivers() above.
+     */
+    static JSONObject rivers(android.content.Context context) throws Exception {
+        try {
+            JSONObject online = rivers();
+            JSONArray items = online.optJSONArray("results");
+            if (items != null && items.length() > 0) return online;
+        } catch (Exception ignored) {
+            // A failed online request must not make the entire station map disappear.
+        }
+        return packagedRiverCatalogue(context);
+    }
+
+    private static JSONObject packagedRiverCatalogue(android.content.Context context) throws Exception {
+        byte[] buffer = new byte[8192];
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        try (java.io.InputStream stream = context.getAssets().open("data/floodsafe-core.json")) {
+            int count;
+            while ((count = stream.read(buffer)) != -1) bytes.write(buffer, 0, count);
+        }
+        JSONObject snapshot = new JSONObject(new String(bytes.toByteArray(), StandardCharsets.UTF_8));
+        JSONArray catalog = snapshot.optJSONArray("river_stations");
+        if (catalog == null || catalog.length() == 0) catalog = snapshot.optJSONArray("rivers");
+        if (catalog == null) throw new IllegalStateException("Bundled river catalogue missing");
+        JSONArray results = new JSONArray();
+        java.util.HashSet<String> unique = new java.util.HashSet<>();
+        for (int i=0; i<catalog.length(); i++) {
+            JSONObject raw = catalog.optJSONObject(i);
+            if (raw == null) continue;
+            JSONObject fields = raw.optJSONObject("fields");
+            JSONObject station = raw.optJSONObject("station");
+            double latitude = firstNumber(raw,"latitude","lat","stationLatitude","station_latitude");
+            double longitude = firstNumber(raw,"longitude","lon","lng","stationLongitude","station_longitude");
+            if (fields != null) {
+                if (!Double.isFinite(latitude))
+                    latitude = firstNumber(fields,"latitude","lat","stationLatitude","station_latitude");
+                if (!Double.isFinite(longitude))
+                    longitude = firstNumber(fields,"longitude","lon","lng","stationLongitude","station_longitude");
+            }
+            if (station != null) {
+                if (!Double.isFinite(latitude))
+                    latitude = firstNumber(station,"latitude","lat","stationLatitude","station_latitude");
+                if (!Double.isFinite(longitude))
+                    longitude = firstNumber(station,"longitude","lon","lng","stationLongitude","station_longitude");
+            }
+            if (!nepal(latitude,longitude)) {
+                for (String locationKey : new String[]{"point","location","geometry","centroid"}) {
+                    JSONObject obj = raw.optJSONObject(locationKey);
+                    if (obj == null && fields != null) obj = fields.optJSONObject(locationKey);
+                    JSONArray coordinate = obj == null ? null : obj.optJSONArray("coordinates");
+                    if (coordinate == null || coordinate.length() < 2) continue;
+                    double a = coordinate.optDouble(0,Double.NaN);
+                    double b = coordinate.optDouble(1,Double.NaN);
+                    if (nepal(b,a)) {latitude=b; longitude=a; break;}
+                    if (nepal(a,b)) {latitude=a; longitude=b; break;}
+                }
+            }
+            if (!nepal(latitude,longitude)) {
+                JSONArray coordinate = raw.optJSONArray("_stationCoordinate");
+                if (coordinate != null && coordinate.length() >= 2) {
+                    double a=coordinate.optDouble(0,Double.NaN), b=coordinate.optDouble(1,Double.NaN);
+                    if (nepal(b,a)) {latitude=b;longitude=a;}
+                    else if(nepal(a,b)) {latitude=a;longitude=b;}
+                }
+            }
+            if (!nepal(latitude,longitude)) continue;
+            String name = firstText(raw,"stationName","station_name","river_name","riverName","title","name");
+            if (name.isEmpty() && fields!=null)
+                name=firstText(fields,"stationName","station_name","river_name","riverName","title","name");
+            if (name.isEmpty() && station!=null)
+                name=firstText(station,"stationName","station_name","river_name","riverName","title","name");
+            if (name.isEmpty()) continue;
+            String id=firstText(raw,"stationSeriesId","station_series_id","stationId","station_id","id");
+            if (id.isEmpty() && fields!=null)
+                id=firstText(fields,"stationSeriesId","station_series_id","stationId","station_id","id");
+            String key=id.isEmpty()?name+"|"+latitude+"|"+longitude:id;
+            if (!unique.add(key)) continue;
+            JSONObject item = new JSONObject();
+            item.put("stationName",name);
+            item.put("stationSeriesId",id);
+            item.put("latitude",latitude);
+            item.put("longitude",longitude);
+            String district=firstText(raw,"districtName","district_name","district");
+            if (district.isEmpty() && fields!=null)
+                district=firstText(fields,"districtName","district_name","district");
+            item.put("districtName",district);
+            // Intentionally omit waterLevel, observation time, and risk status.
+            // The caller must render these catalogue-only markers as grey/unknown.
+            results.put(item);
+        }
+        if (results.length()==0)
+            throw new IllegalStateException("No usable coordinates in bundled station catalogue");
+        JSONObject response=new JSONObject();
+        response.put("results",results);
+        response.put("count",results.length());
+        response.put("activeObservationSource","none");
+        response.put("source","Bundled BIPAD station catalogue; not live");
+        response.put("catalogueOnly",true);
+        return response;
+    }
+
+    private static String firstText(JSONObject o,String... keys) {
+        if (o==null) return "";
+        for(String key:keys) {
+            String value=o.optString(key,"").trim();
+            if (!value.isEmpty() && !"null".equalsIgnoreCase(value)) return value;
+        }
+        return "";
+    }
+
+    private static double firstNumber(JSONObject o,String... keys) {
+        if (o==null) return Double.NaN;
+        for(String key:keys) {
+            double value=o.optDouble(key,Double.NaN);
+            if (Double.isFinite(value)) return value;
+        }
+        return Double.NaN;
+    }
+
     static JSONObject rainfall() throws Exception {
         JSONObject src = get(ROOT + "floodsafe-dhm-stations?kind=rain");
         JSONArray items=src.optJSONArray("items"),results=new JSONArray();

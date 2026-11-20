@@ -190,7 +190,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
         feed.setText("BIPAD/DHM river feed refresh हुँदैछ…");
         io.execute(() -> {
             try {
-                JSONObject root = OfficialStationFeeds.rivers();
+                JSONObject root = OfficialStationFeeds.rivers(getApplicationContext());
                 JSONArray rows = arrayFrom(root);
                 List<LiveStation> out = new ArrayList<>();
                 long now = System.currentTimeMillis();

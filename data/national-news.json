@@ -1,63 +1,28 @@
 {
-  "generated_at": "2026-11-21T21:13:17.486442+05:45",
-  "updated_at_npt": "21 Nov 21:13 NPT",
+  "generated_at": "2026-11-22T02:47:52.574745+05:45",
+  "updated_at_npt": "22 Nov 02:47 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "भोटेकोशी बाढीपीडितद्वारा पुनः स्थापनाको माग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606805/bhotekoshi-flood-victims-demand-restoration",
+      "published_at": "2026-11-22T01:01:13+05:45",
+      "flash": false
+    },
     {
       "title": "‘भोटेकोशी विपद् नभएको भए प्रधानमन्त्री बालेन भारत भ्रमणमा आउने थिएनन्’",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/606750/if-it-werent-for-the-bhotekoshi-disaster-prime-minister-balen-would-not-have-visited-india",
       "published_at": "2026-11-21T21:00:00+05:45",
-      "flash": true
-    },
-    {
-      "title": "प्रधानमन्त्रीको भारत भ्रमणको तयारी पूरा, विमानस्थलमा जितिन प्रसादले स्वागत गर्ने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606788/preparations-for-prime-ministers-visit-to-india-complete-jitin-prasad-to-welcome-him-at-the-airport",
-      "published_at": "2026-11-21T20:30:44+05:45",
-      "flash": true
-    },
-    {
-      "title": "बागमतीको यातायात मन्त्रालयका ३२२ कर्मचारीको सरुवा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606772/322-employees-of-bagmatis-ministry-of-transport-transferred",
-      "published_at": "2026-11-21T19:15:26+05:45",
-      "flash": false
-    },
-    {
-      "title": "अप्ठ्यारो हामीले भोगेर आयौँ, अहिले त लोकतन्त्र आएको छ : शशाङ्क कोइराला",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606769/we-went-through-hardships-now-democracy-has-arrived-shashank-koirala",
-      "published_at": "2026-11-21T18:55:42+05:45",
-      "flash": false
-    },
-    {
-      "title": "सहकारीको डेटामा सफ्टवेयर कम्पनीको एकाधिकार : कानुनी लडाइँको चेतावनी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606727/software-companys-monopoly-on-cooperative-data-warning-of-legal-battle",
-      "published_at": "2026-11-21T18:30:00+05:45",
-      "flash": false
-    },
-    {
-      "title": "राजमार्ग बन्द गरेर घोप्टेभीरको सुक्खा पहिरो रोकथामको काम सुरू",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606732/work-begins-to-prevent-dry-landslides-in-ghoptebhir-by-closing-the-highway",
-      "published_at": "2026-11-21T16:32:05+05:45",
-      "flash": false
-    },
-    {
-      "title": "दैलेखमा श्रीमानको बन्चरो प्रहारबाट श्रीमती र दुई सन्तानको मृत्यु, एक छोरा गम्भीर घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606718/wife-and-two-children-killed-one-son-seriously-injured-in-husbands-axe-attack-in-dailekh",
-      "published_at": "2026-11-21T15:24:46+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     },
@@ -70,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 7
+      "flash": 0,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,

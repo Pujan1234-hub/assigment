@@ -1,13 +1,70 @@
 {
-  "generated_at": "2026-11-21T05:58:08.544955+05:45",
-  "updated_at_npt": "21 Nov 05:58 NPT",
+  "generated_at": "2026-11-21T13:03:38.061781+05:45",
+  "updated_at_npt": "21 Nov 13:03 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
-  "items": [],
+  "items": [
+    {
+      "title": "एआई रिपोर्टका आधारमा थेसिस अस्वीकार गरेको भन्दै दायर रिट सर्वोच्चद्वारा दरपिठ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606683/supreme-court-dismisses-writ-petition-filed-alleging-rejection-of-thesis-based-on-ai-report",
+      "published_at": "2026-11-21T13:03:22+05:45",
+      "flash": true
+    },
+    {
+      "title": "भीमफेदी कारागारबाट आन्दोलनको क्रममा फरार लागुऔषध मुद्दाका प्रतिवादी पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606677/drug-case-defendant-who-escaped-from-bhimphedi-prison-during-protest-arrested",
+      "published_at": "2026-11-21T12:47:45+05:45",
+      "flash": true
+    },
+    {
+      "title": "प्रधानमन्त्रीले भारत भ्रमणअघि परामर्श नगरेको भन्दै कांग्रेसको असन्तुष्टि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606672/congress-expresses-dissatisfaction-over-lack-of-consultation-before-prime-ministers-visit-to-india",
+      "published_at": "2026-11-21T12:34:39+05:45",
+      "flash": true
+    },
+    {
+      "title": "दुई महिनादेखि खत्याड–रारा सडक अझै अवरुद्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606671/khatyad-rara-road-still-blocked-for-two-months",
+      "published_at": "2026-11-21T12:21:04+05:45",
+      "flash": true
+    },
+    {
+      "title": "चुनावमा सामाजिक सञ्जाल र सूचना प्रविधिको प्रयोग बढाउनुपर्छः प्रचण्ड",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606668/use-of-social-media-and-information-technology-should-be-increased-in-elections-prachanda",
+      "published_at": "2026-11-21T12:13:33+05:45",
+      "flash": true
+    },
+    {
+      "title": "छोरा हराएको खबर गर्दा हवल्दारमाथि गालीगलौज गर्ने प्रहरी कर्मचारीमाथि छानबिन सुरु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606663/investigation-launched-against-police-officer-who-abused-constable-when-son-reported-missing",
+      "published_at": "2026-11-21T11:58:18+05:45",
+      "flash": false
+    },
+    {
+      "title": "बन्चरो प्रहार गरी श्रीमती र तीन सन्तानलाई गम्भीर घाइते बनाउने पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606658/man-arrested-for-seriously-injuring-wife-and-three-children-with-axe",
+      "published_at": "2026-11-21T11:37:28+05:45",
+      "flash": false
+    },
+    {
+      "title": "सवारी दुर्घटनामा एकको मृत्यु, चार घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606646/one-dead-four-injured-in-road-accident",
+      "published_at": "2026-11-21T10:46:52+05:45",
+      "flash": false
+    }
+  ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 14,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     },
@@ -20,8 +77,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 0
+      "flash": 5,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -31,7 +88,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     }

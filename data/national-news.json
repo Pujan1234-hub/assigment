@@ -1,45 +1,9 @@
 {
-  "generated_at": "2026-11-21T00:21:20.057080+05:45",
-  "updated_at_npt": "21 Nov 00:21 NPT",
+  "generated_at": "2026-11-21T05:58:08.544955+05:45",
+  "updated_at_npt": "21 Nov 05:58 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
-  "items": [
-    {
-      "title": "रुसद्वारा युक्रेनको राजधानी किएभमा ब्यालिस्टिक क्षेप्यास्त्र आक्रमण, कम्तीमा ९ जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606609/russia-launches-ballistic-missile-attack-on-ukraines-capital-kiev-killing-at-least-9-people",
-      "published_at": "2026-11-20T22:28:30+05:45",
-      "flash": false
-    },
-    {
-      "title": "जुम्लामा मोटरसाइकलको ठक्करबाट पैदलयात्रीको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606608/pedestrian-dies-after-being-hit-by-motorcycle-in-jumla",
-      "published_at": "2026-11-20T22:24:30+05:45",
-      "flash": false
-    },
-    {
-      "title": "काठमाडौँमा मोटरसाइकल दुर्घटना, चालकको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606607/motorcycle-accident-in-kathmandu-driver-dies",
-      "published_at": "2026-11-20T22:14:08+05:45",
-      "flash": false
-    },
-    {
-      "title": "राजस्व चुहावट रोक्न कुनै कसर बाँकी नराख्न अर्थमन्त्री डा. स्वर्णिम वाग्लेको निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606605/finance-minister-dr-swarnim-wagle-directs-to-leave-no-stone-unturned-to-stop-revenue-leakage",
-      "published_at": "2026-11-20T21:59:58+05:45",
-      "flash": false
-    },
-    {
-      "title": "विद्युत् खरिद सम्झौतामा १०० पूर्णांकको नयाँ मापदण्ड प्रस्ताव : निजी क्षेत्रद्वारा खारेजीको माग",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606557/new-criterion-of-100-integers-proposed-in-power-purchase-agreements-private-sector-demands-its-cancellation",
-      "published_at": "2026-11-20T19:30:00+05:45",
-      "flash": false
-    }
-  ],
+  "items": [],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
@@ -57,7 +21,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 0,
-      "recent": 5
+      "recent": 0
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +31,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     }

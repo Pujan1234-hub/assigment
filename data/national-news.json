@@ -1,42 +1,84 @@
 {
-  "generated_at": "2026-11-22T06:56:21.581351+05:45",
-  "updated_at_npt": "22 Nov 06:56 NPT",
+  "generated_at": "2026-11-22T13:46:26.028021+05:45",
+  "updated_at_npt": "22 Nov 13:46 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "पश्चिमी वायु र न्यून चापीय क्षेत्रको आंशिक प्रभाव, आज यी तीन प्रदेशमा हल्का वर्षाको सम्भावना",
+      "title": "प्रधानमन्त्री बालेन शाह भारतको नयाँ दिल्ली प्रस्थान",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606811/partial-influence-of-westerly-winds-and-low-pressure-area-light-rain-likely-in-these-three-provinces-today",
-      "published_at": "2026-11-22T06:55:10+05:45",
+      "url": "https://www.ratopati.com/story/606876/prime-minister-balen-shah-departs-for-new-delhi-india",
+      "published_at": "2026-11-22T13:45:45+05:45",
       "flash": true
     },
     {
-      "title": "गोसाइँकुण्ड बाह्रै महिना पदयात्राका लागि आकर्षक गन्तव्य बन्दै",
+      "title": "प्रधानमन्त्रीको भारत भ्रमण : ३५ सदस्यीय सरकारी टोलीको यस्तो छ सूची",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606809/gosainkunda-is-becoming-an-attractive-destination-for-trekking-all-year-round",
-      "published_at": "2026-11-22T06:35:17+05:45",
+      "url": "https://www.ratopati.com/story/606873/these-are-the-35-member-government-team-for-the-prime-ministers-visit-to-india",
+      "published_at": "2026-11-22T13:38:13+05:45",
       "flash": true
     },
     {
-      "title": "प्रधानमन्त्री बालेन शाह आज भारत भ्रमणमा जाँदै, यस्तो छ कार्यतालिका",
+      "title": "सियाटल विमानस्थलमा अध्यागमन अधिकारीद्वारा दुई जना पक्राउ, विमान र वासिङ्टनका गभर्नरको आपत्ति",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606808/prime-minister-balen-shah-is-leaving-for-india-today-here-is-the-schedule",
-      "published_at": "2026-11-22T06:30:50+05:45",
+      "url": "https://www.ratopati.com/story/606872/two-arrested-by-immigration-officers-at-seattle-airport-plane-and-washington-governor-object",
+      "published_at": "2026-11-22T13:35:45+05:45",
       "flash": true
     },
     {
-      "title": "भोटेकोशी बाढीपीडितद्वारा पुनः स्थापनाको माग",
+      "title": "प्रधानमन्त्रीको भारत भ्रमणमा पनौतीस्थित राष्ट्रिय प्रहरी प्रशिक्षण प्रतिष्ठानको उद्घाटन नहुने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606805/bhotekoshi-flood-victims-demand-restoration",
-      "published_at": "2026-11-22T01:01:13+05:45",
+      "url": "https://www.ratopati.com/story/606871/the-inauguration-of-the-national-police-training-academy-in-panauti-will-not-take-place-during-the-prime-ministers-visit-to-india",
+      "published_at": "2026-11-22T13:32:49+05:45",
+      "flash": true
+    },
+    {
+      "title": "प्रधानमन्त्री वालेन्द्र शाहलाई भारत भ्रमणको रास्वपाले दियो शुभकामना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606870/rashtriya-swayamsevak-sangh-rss-wishes-prime-minister-balendra-shah-on-his-visit-to-india",
+      "published_at": "2026-11-22T13:20:57+05:45",
+      "flash": true
+    },
+    {
+      "title": "इन्डोनेसियाको मिठाई कारखानामा आगलागी हुँदा ३ जनाको मृत्यु, ३६ जना बेपत्ता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606869/3-dead-36-missing-in-indonesian-candy-factory-fire",
+      "published_at": "2026-11-22T13:14:33+05:45",
+      "flash": true
+    },
+    {
+      "title": "७. बालेनबाट संविधान र राष्ट्रपतिको अवमूल्यन, कूटनीतिक क्षेत्रमा असन्तुष्टि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606868/balens-devaluation-of-the-constitution-and-the-president-dissatisfaction-in-the-diplomatic-sector",
+      "published_at": "2026-11-22T13:12:44+05:45",
+      "flash": true
+    },
+    {
+      "title": "माछा मार्ने क्रममा करेन्ट लागेर एक पुरुषको मृत्यु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606856/rai-dies-after-being-electrocuted-while-fishing",
+      "published_at": "2026-11-22T12:11:16+05:45",
+      "flash": false
+    },
+    {
+      "title": "सुदूरपश्चिम सरकारको पूरक बजेटको प्रतिबद्धता अलपत्र, संसदीय समिति गठनमै अन्योल",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606853/far-west-governments-supplementary-budget-commitment-stalled-confusion-over-parliamentary-committee-formation",
+      "published_at": "2026-11-22T11:59:32+05:45",
+      "flash": false
+    },
+    {
+      "title": "प्रहरीद्वारा अपराधका घटनामा संलग्नको ‘प्रोफाइल’ तयार",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606822/police-prepare-profiles-of-those-involved-in-criminal-incidents",
+      "published_at": "2026-11-22T08:31:48+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     },
@@ -49,8 +91,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 4
+      "flash": 7,
+      "recent": 10
     },
     "Kathmandu Post": {
       "ok": true,
@@ -60,7 +102,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 5,
+      "candidates": 2,
       "flash": 0,
       "recent": 0
     }

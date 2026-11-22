@@ -1,28 +1,42 @@
 {
-  "generated_at": "2026-11-22T02:47:52.574745+05:45",
-  "updated_at_npt": "22 Nov 02:47 NPT",
+  "generated_at": "2026-11-22T06:56:21.581351+05:45",
+  "updated_at_npt": "22 Nov 06:56 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
+    {
+      "title": "पश्चिमी वायु र न्यून चापीय क्षेत्रको आंशिक प्रभाव, आज यी तीन प्रदेशमा हल्का वर्षाको सम्भावना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606811/partial-influence-of-westerly-winds-and-low-pressure-area-light-rain-likely-in-these-three-provinces-today",
+      "published_at": "2026-11-22T06:55:10+05:45",
+      "flash": true
+    },
+    {
+      "title": "गोसाइँकुण्ड बाह्रै महिना पदयात्राका लागि आकर्षक गन्तव्य बन्दै",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606809/gosainkunda-is-becoming-an-attractive-destination-for-trekking-all-year-round",
+      "published_at": "2026-11-22T06:35:17+05:45",
+      "flash": true
+    },
+    {
+      "title": "प्रधानमन्त्री बालेन शाह आज भारत भ्रमणमा जाँदै, यस्तो छ कार्यतालिका",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606808/prime-minister-balen-shah-is-leaving-for-india-today-here-is-the-schedule",
+      "published_at": "2026-11-22T06:30:50+05:45",
+      "flash": true
+    },
     {
       "title": "भोटेकोशी बाढीपीडितद्वारा पुनः स्थापनाको माग",
       "source": "Ratopati",
       "url": "https://www.ratopati.com/story/606805/bhotekoshi-flood-victims-demand-restoration",
       "published_at": "2026-11-22T01:01:13+05:45",
       "flash": false
-    },
-    {
-      "title": "‘भोटेकोशी विपद् नभएको भए प्रधानमन्त्री बालेन भारत भ्रमणमा आउने थिएनन्’",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606750/if-it-werent-for-the-bhotekoshi-disaster-prime-minister-balen-would-not-have-visited-india",
-      "published_at": "2026-11-21T21:00:00+05:45",
-      "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     },
@@ -35,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 2
+      "flash": 3,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

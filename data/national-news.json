@@ -1,98 +1,21 @@
 {
-  "generated_at": "2026-11-23T16:24:38.638101+05:45",
-  "updated_at_npt": "23 Nov 16:24 NPT",
+  "generated_at": "2026-11-24T03:59:51.707220+05:45",
+  "updated_at_npt": "24 Nov 03:59 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "प्रधानमन्त्री शाह र भारतीय राष्ट्रपति मुर्मुबिच भेट",
+      "title": "१२ बजे १२ समाचार : राइड सेयरिङको कानुन बन्यो, कार्यान्वयनमा अलमलदेखि प्रधानमन्त्रीको भारत भ्रमण उपलब्धिसम्म",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607095/meeting-between-prime-minister-shah-and-indian-president-murmurb",
-      "published_at": "2026-11-23T16:22:00+05:45",
-      "flash": true
-    },
-    {
-      "title": "भ्रष्टाचार प्रकरणमा पूर्वप्रधानमन्त्री नेपालसहित ९३ जनाको नाममा म्याद जारी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607094/summons-issued-for-93-people-including-former-prime-minister-nepal-in-corruption-case",
-      "published_at": "2026-11-23T16:20:00+05:45",
-      "flash": true
-    },
-    {
-      "title": "प्रधानमन्त्री बालेनको भारत भ्रमण मधेसीका लागि गौरवको विषय हो : सीके राउत",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607093/prime-minister-balens-visit-to-india-is-a-matter-of-pride-for-madhesis-ck-raut",
-      "published_at": "2026-11-23T16:11:17+05:45",
-      "flash": true
-    },
-    {
-      "title": "प्रधानमन्त्री बालेनले गुटको हैसियतको विषयबाहेक केही पनि प्राप्त गर्न सकेनन् : पूर्वप्रधानमन्त्री खनाल",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607092/prime-minister-balen-could-not-achieve-anything-except-the-issue-of-faction-status-former-prime-minister-khanal",
-      "published_at": "2026-11-23T15:59:24+05:45",
-      "flash": true
-    },
-    {
-      "title": "प्रधानमन्त्रीको भारत भ्रमणमा अपेक्षित ‘डिपार्चर’ देखिएन : एमाले",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607086/expected-departure-not-seen-in-prime-ministers-visit-to-india-uml",
-      "published_at": "2026-11-23T15:12:24+05:45",
-      "flash": false
-    },
-    {
-      "title": "बालेनले दिए प्रधानमन्त्री मोदीलाई नेपाल भ्रमणको निम्तो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607064/balen-invites-prime-minister-modi-to-visit-nepal",
-      "published_at": "2026-11-23T14:13:57+05:45",
-      "flash": false
-    },
-    {
-      "title": "समझदारीले किसानका खेतमा समृद्धि, युवाको हातमा रोजगारी पुग्नुपर्छ : प्रधानमन्त्री शाह",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607063/understanding-should-bring-prosperity-to-young-farmers-fields-and-employment-to-the-youth-prime-minister-shah",
-      "published_at": "2026-11-23T14:11:46+05:45",
-      "flash": false
-    },
-    {
-      "title": "प्रधानमन्त्री शाह र भारतीय प्रधानमन्त्री मोदीद्वारा संयुक्त रूपमा तल्लो अरुण जलविद्युत् आयोजनाको शिलान्यास",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607057/pm-shah-and-indian-pm-modi-jointly-lay-foundation-stone-of-lower-arun-hydropower-project",
-      "published_at": "2026-11-23T13:56:10+05:45",
-      "flash": false
-    },
-    {
-      "title": "३. प्रधानमन्त्रीले भेट्न समय नदिएपछि भारतस्थित चार नेपाली सङ्गठनद्वारा ७ बुँदे ज्ञापनपत्र सार्वजनिक",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607050/four-nepali-organizations-in-india-release-7-point-memorandum-after-pm-refuses-to-meet",
-      "published_at": "2026-11-23T13:37:32+05:45",
-      "flash": false
-    },
-    {
-      "title": "स्वास्थ्य सुरक्षाका लागि रङ्गशालाभित्रै ८ बेड बराबरको अस्पताल, ४८ जना स्वास्थ्यकर्मी परिचालन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607046/for-health-safety-an-8-bed-hospital-has-been-set-up-inside-the-stadium-with-48-health-workers-deployed",
-      "published_at": "2026-11-23T13:21:52+05:45",
-      "flash": false
-    },
-    {
-      "title": "गर्भवती युवतीको मृत्युपछि बरहथवाको सरकारी अस्पतालमा तोडफोड तथा आगजनी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607038/government-hospital-in-barhathawa-vandalized-and-set-on-fire-after-pregnant-womans-death",
-      "published_at": "2026-11-23T13:04:17+05:45",
-      "flash": false
-    },
-    {
-      "title": "ओखलढुङ्गाको खनियाँखर्कमा बोलेरो दुर्घटना, नौ जना घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607012/nine-injured-in-balero-accident-in-khaniyankharka-okhaldhunga",
-      "published_at": "2026-11-23T10:49:13+05:45",
+      "url": "https://www.ratopati.com/story/607186/12-news-at-12-ride-sharing-law-passed-from-confusion-in-implementation-to-achievements-of-prime-ministers-visit-to-india",
+      "published_at": "2026-11-24T00:00:12+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 16,
       "flash": 0,
       "recent": 0
     },
@@ -105,8 +28,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 12
+      "flash": 0,
+      "recent": 1
     },
     "Kathmandu Post": {
       "ok": true,
@@ -116,7 +39,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 2,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     }

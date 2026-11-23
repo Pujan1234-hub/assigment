@@ -1,56 +1,42 @@
 {
-  "generated_at": "2026-11-23T03:34:53.045677+05:45",
-  "updated_at_npt": "23 Nov 03:34 NPT",
+  "generated_at": "2026-11-23T07:47:17.150090+05:45",
+  "updated_at_npt": "23 Nov 07:47 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "म्यानचेस्टर युनाइटेडमाथि लिभरपुलको ४-० को फराकिलो जित",
+      "title": "पाटन स्वास्थ्य विज्ञान प्रतिष्ठानले माग्यो विभिन्न विधामा सहप्राध्यापक र उपप्राध्यापक",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606966/liverpools-4-0-win-over-manchester-united",
-      "published_at": "2026-11-23T00:24:31+05:45",
+      "url": "https://www.ratopati.com/story/606989/patan-institute-of-health-sciences-seeks-associate-professors-and-associate-professors-in-various-disciplines",
+      "published_at": "2026-11-23T07:22:23+05:45",
+      "flash": true
+    },
+    {
+      "title": "नयाँ नेतृत्व, नयाँ कूटनीति : प्रधानमन्त्री बालेनको भारत भ्रमण किन महत्त्वपूर्ण?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/606984/new-leadership-new-diplomacy-why-is-prime-minister-balens-visit-to-india-important",
+      "published_at": "2026-11-23T06:41:53+05:45",
       "flash": false
     },
     {
-      "title": "१२ बजे १२ समाचार : बालेनबाट संविधान र राष्ट्रपतिको अवमूल्यन, ऊर्जामन्त्रीले अघि बढाए पीपीए",
+      "title": "सोमबारको मौसम पूर्वानुमान: हिमाली भेगमा हल्का हिमपात हुन सक्ने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606963/12-oclock-12-news-balen-devalues-the-constitution-and-the-president-energy-minister-moves-forward-with-ppa",
-      "published_at": "2026-11-23T00:00:08+05:45",
+      "url": "https://www.ratopati.com/story/606978/mondays-weather-forecast-light-snowfall-possible-in-the-himalayan-region",
+      "published_at": "2026-11-23T05:48:02+05:45",
       "flash": false
     },
     {
-      "title": "अफगानिस्तानमा कोइला खानीको सुरक्षा र उत्पादनमा सुधार",
+      "title": "राष्ट्रपति भवनमा स्वागतदेखि द्विपक्षीय भेटवार्तासम्म : यस्तो छ प्रधानमन्त्रीको सोमबारको कार्यतालिका",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606962/improving-coal-mine-safety-and-production-in-afghanistan",
-      "published_at": "2026-11-22T23:26:51+05:45",
-      "flash": false
-    },
-    {
-      "title": "असार मसान्तभित्र चुहार पुल बन्छ : मुख्यमन्त्री कार्की",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606960/chuhar-bridge-to-be-constructed-by-mid-july-chief-minister-karki",
-      "published_at": "2026-11-22T22:53:28+05:45",
-      "flash": false
-    },
-    {
-      "title": "कार्यसम्पादनका आधारमा रौतहट जिल्ला प्रहरी कार्यालय पहिलो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606957/rautahat-district-police-office-ranked-first-in-terms-of-work-performance",
-      "published_at": "2026-11-22T22:22:19+05:45",
-      "flash": false
-    },
-    {
-      "title": "४. बालेन भारत भ्रमण : सीमा विवाद र एयर रुटमा सहमति नहुने, के–केमा हुँदैछ सहमति ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/606956/balens-visit-to-india-no-agreement-on-border-dispute-and-air-route-what-is-being-agreed-upon",
-      "published_at": "2026-11-22T22:20:34+05:45",
+      "url": "https://www.ratopati.com/story/606977/from-reception-at-rashtrapati-bhavan-to-bilateral-meetings-this-is-the-prime-ministers-schedule-for-monday",
+      "published_at": "2026-11-23T05:41:19+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 11,
       "flash": 0,
       "recent": 0
     },
@@ -63,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 7
+      "flash": 1,
+      "recent": 4
     },
     "Kathmandu Post": {
       "ok": true,

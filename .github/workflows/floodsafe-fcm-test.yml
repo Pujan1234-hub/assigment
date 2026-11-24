@@ -1,6 +1,9 @@
-name: FloodSafe Android notification test
+name: FloodSafe Android non-emergency notification test
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/floodsafe-fcm-test.yml']
 permissions:
   contents: read
 jobs:
@@ -21,6 +24,8 @@ jobs:
           if not raw:
               sys.exit('Missing FIREBASE_SERVICE_ACCOUNT GitHub secret. Add the Firebase service-account JSON first.')
           service = json.loads(raw)
+          if service.get('project_id') != 'floodsafe-nepal':
+              sys.exit('Wrong Firebase project; no push sent')
           creds = service_account.Credentials.from_service_account_info(
               service, scopes=['https://www.googleapis.com/auth/firebase.messaging'])
           creds.refresh(Request())
@@ -28,11 +33,11 @@ jobs:
               'message': {
                   'topic': 'nepal-alerts',
                   'data': {
-                      'title': '🔔 FloodSafe Nepal परीक्षण सूचना',
-                      'body': 'यो बन्द app मा पनि देखिनुपर्ने FCM परीक्षण सूचना हो।',
-                      'kind': 'test'
+                      'title': '🧪 FloodSafe Nepal v0.9.23 — This is testing',
+                      'body': 'यो सामान्य push परीक्षण हो, बाढीको चेतावनी होइन। This is a non-emergency push test.',
+                      'kind': 'app_notice'
                   },
-                  'android': {'priority': 'high'}
+                  'android': {'priority': 'high', 'ttl': '600s'}
               }
           }
           url = f"https://fcm.googleapis.com/v1/projects/{service['project_id']}/messages:send"

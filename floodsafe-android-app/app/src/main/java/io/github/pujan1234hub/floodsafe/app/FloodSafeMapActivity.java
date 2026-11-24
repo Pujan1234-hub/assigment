@@ -185,8 +185,8 @@ public final class FloodSafeMapActivity extends Activity {
                     String feed="dhm".equals(currentObservationSource)?"DHM":
                         "bipad".equals(currentObservationSource)?(english?"BIPAD fallback":"BIPAD वैकल्पिक स्रोत"):
                         (english?"No current official reading":"सरकारी ताजा मापन छैन");
-                    status.setText(feed+" · "+points.size()+(english?" stations":" स्टेशन")+" · 🔴 "+dangerCount+
-                        " 🟠 "+warningCount+" 🟡 "+watchCount);
+                    status.setText(feed+" · "+points.size()+(english?" stations loaded":" स्टेशन लोड")+" · 📍 "+nativeMap.stationCount()+
+                        (english?" on map":" नक्सामा")+" · 🔴 "+dangerCount+" 🟠 "+warningCount+" 🟡 "+watchCount);
                 });
             }catch(Exception e){
                 runOnUiThread(()->{

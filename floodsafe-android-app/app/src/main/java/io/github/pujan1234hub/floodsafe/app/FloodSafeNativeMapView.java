@@ -64,6 +64,17 @@ import static org.maplibre.android.style.layers.Property.LINE_JOIN_ROUND;
  */
 final class FloodSafeNativeMapView extends FrameLayout {
     interface StationTapListener { void onStationTap(Object stationObject); }
+    // Strongly typed station fields: release R8 shrinking must not rename reflected fields
+    // and silently drop every station marker while the dashboard still shows counts.
+    interface StationData {
+        double stationLatitude();
+        double stationLongitude();
+        String stationName();
+        String stationStage();
+        boolean stationFresh();
+        double stationLevel();
+        double stationRainfall();
+    }
 
     private static final LatLng NEPAL_CENTER = new LatLng(28.10, 84.15);
     // Esri World Imagery returns "Map data not yet available" placeholder images at
@@ -439,11 +450,11 @@ final class FloodSafeNativeMapView extends FrameLayout {
             ensureRiverRiskSource("fs-river-warning", "fs-river-warning-glow", "fs-river-warning-layer", "#ff8a1f");
             ensureRiverRiskSource("fs-river-danger", "fs-river-danger-glow", "fs-river-danger-layer", "#f22f4b");
             ensurePointSource("fs-flow-particles", "fs-flow-particles-layer", "#d6fbff", 2.7f, 0.90f);
-            ensurePointSource("fs-stale", "fs-stale-layer", "#8e99a5", 4.0f, 0.92f);
-            ensurePointSource("fs-normal", "fs-normal-layer", "#2d8cff", 4.4f, 0.98f);
-            ensurePointSource("fs-alert", "fs-alert-layer", "#ffc928", 5.0f, 1f);
-            ensurePointSource("fs-warning", "fs-warning-layer", "#ff8a1f", 5.8f, 1f);
-            ensurePointSource("fs-danger", "fs-danger-layer", "#f22f4b", 6.3f, 1f);
+            ensurePointSource("fs-stale", "fs-stale-layer", "#768899", 7.2f, 1.0f);
+            ensurePointSource("fs-normal", "fs-normal-layer", "#2d8cff", 7.0f, 1.0f);
+            ensurePointSource("fs-alert", "fs-alert-layer", "#ffc928", 8.0f, 1f);
+            ensurePointSource("fs-warning", "fs-warning-layer", "#ff8a1f", 8.5f, 1f);
+            ensurePointSource("fs-danger", "fs-danger-layer", "#f22f4b", 9.0f, 1f);
             if (style.getSource("fs-user") == null) {
                 style.addSource(new GeoJsonSource("fs-user", emptyFeatureCollection()));
                 style.addLayer(new CircleLayer("fs-user-halo", "fs-user").withProperties(
@@ -473,7 +484,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         style.addSource(new GeoJsonSource(sourceId, emptyFeatureCollection()));
         style.addLayer(new CircleLayer(layerId, sourceId).withProperties(
                 circleColor(color), circleRadius(radius), circleOpacity(opacity),
-                circleStrokeColor("#ffffff"), circleStrokeWidth(1.0f)));
+                circleStrokeColor("#ffffff"), circleStrokeWidth(2.2f)));
     }
 
     private void refreshStationSources() {
@@ -687,6 +698,23 @@ final class FloodSafeNativeMapView extends FrameLayout {
 
     private StationDot readStation(Object o) {
         if (o == null) return null;
+        if (o instanceof StationData) {
+            StationData data = (StationData) o;
+            double la = data.stationLatitude(), lo = data.stationLongitude();
+            if (!Double.isFinite(la) || !Double.isFinite(lo)) return null;
+            NepalRiverBoundary boundary = nationalBoundary;
+            if (boundary != null && !boundary.contains(lo, la)) return null;
+            StationDot station = new StationDot();
+            station.original = o;
+            station.lat = la; station.lon = lo;
+            station.name = data.stationName();
+            station.stage = data.stationStage() == null ? "unknown" : data.stationStage().toLowerCase(Locale.ROOT);
+            station.fresh = data.stationFresh();
+            station.level = data.stationLevel();
+            station.rainfallMm = data.stationRainfall();
+            return station;
+        }
+        // Compatibility only for older callers. New callers never depend on reflection.
         try {
             Class<?> c = o.getClass();
             double la = getDouble(c, o, "lat"), lo = getDouble(c, o, "lon");

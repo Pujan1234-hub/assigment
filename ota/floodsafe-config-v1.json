@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 8,
+  "revision": 9,
   "enabled": true,
   "news": {
     "poll_seconds": 60,
@@ -59,7 +59,7 @@
     }
   ],
   "app_notice": {
-    "enabled": true,
+    "enabled": false,
     "type": "announcement",
     "title_ne": "🧪 THIS IS TESTING — FloodSafe Nepal v0.9.23",
     "title_en": "🧪 THIS IS TESTING — FloodSafe Nepal v0.9.23",

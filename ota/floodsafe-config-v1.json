@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 10,
+  "revision": 11,
   "enabled": true,
   "news": {
     "poll_seconds": 60,
@@ -59,7 +59,7 @@
     }
   ],
   "app_notice": {
-    "enabled": true,
+    "enabled": false,
     "type": "announcement",
     "title_ne": "Beta test",
     "title_en": "Beta test",

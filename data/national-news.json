@@ -1,91 +1,56 @@
 {
-  "generated_at": "2026-11-24T11:53:36.755688+05:45",
-  "updated_at_npt": "24 Nov 11:53 NPT",
+  "generated_at": "2026-11-24T23:27:02.512051+05:45",
+  "updated_at_npt": "24 Nov 23:27 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "‘कक्रोच’ आन्दोलनका नेतालाई लन्डन जान रोक",
+      "title": "इजरायली हवाई आक्रमणमा हमासका आन्तरिक सुरक्षा प्रमुखको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607253/cockroach-movement-leader-barred-from-traveling-to-london",
-      "published_at": "2026-11-24T11:50:24+05:45",
+      "url": "https://www.ratopati.com/story/607411/hamas-internal-security-chief-killed-in-israeli-airstrike",
+      "published_at": "2026-11-24T22:45:34+05:45",
       "flash": true
     },
     {
-      "title": "आनि छोइङ डोल्माको नियुक्तिविरुद्ध सर्वोच्चमा रिट",
+      "title": "बाढी प्रभावितको अन्तिम सूची तयार गरी तत्काल राहत बाँड्न स्थानीय तहलाई सञ्चारमन्त्रीको आग्रह",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607252/writ-filed-in-supreme-court-against-appointment-of-ani-choing-dolma",
-      "published_at": "2026-11-24T11:49:13+05:45",
+      "url": "https://www.ratopati.com/story/607409/communications-minister-urges-local-levels-to-prepare-final-list-of-flood-victims-and-distribute-relief-immediately",
+      "published_at": "2026-11-24T22:30:51+05:45",
       "flash": true
     },
     {
-      "title": "चिनियाँ प्राध्यापकको नजरमा प्रधानमन्त्रीको भारत भ्रमणले देखाएको कूटनीतिक बाटो",
+      "title": "३. प्रहरीका ६० जना एसपीको सरुवा, १७ जिल्लाका इन्चार्ज फेरिए (सूचीसिहत)",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607251/chinese-professor-sees-diplomatic-path-shown-by-pms-visit-to-india",
-      "published_at": "2026-11-24T11:48:44+05:45",
-      "flash": true
-    },
-    {
-      "title": "बाढीपहिरोले म्याग्दीका जलविद्युत् आयोजना थला, उत्पादनदेखि निर्माणसम्म प्रभावित",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607249/floods-and-landslides-affect-myagdis-hydropower-projects-from-production-to-construction",
-      "published_at": "2026-11-24T11:40:31+05:45",
-      "flash": true
-    },
-    {
-      "title": "सुनकोशी–मरिण डाइभर्सनको पुनः बोलपत्र आह्वान गरिँदै, लागत घट्न सक्ने मन्त्रालयको अनुमान",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607248/re-bidding-for-sunkoshi-marin-diversion-being-called-ministry-estimates-cost-may-decrease",
-      "published_at": "2026-11-24T11:37:30+05:45",
-      "flash": true
-    },
-    {
-      "title": "रूख कांग्रेसको चुनाव चिह्न हो कि नेताहरूको सम्पत्ति ?",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607246/is-the-tree-the-election-symbol-of-the-congress-or-the-property-of-the-leaders",
-      "published_at": "2026-11-24T11:33:07+05:45",
-      "flash": true
-    },
-    {
-      "title": "सुनकोशी मरिन ठेक्का रद्द प्रक्रियाका सम्पूर्ण कागजात सात दिनभित्र बुझाउन लेखा समितिको निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607237/audit-committee-directs-to-submit-all-documents-related-to-sunkoshi-marina-contract-cancellation-process-within-seven-days",
-      "published_at": "2026-11-24T10:54:10+05:45",
-      "flash": true
-    },
-    {
-      "title": "स्वास्थ्य व्यवसायी परिषद्मा सुधारको माग गर्दै डेन्टल हाइजेनिस्टको रिले अनशन, आज वार्ता हुँदै २ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607220/dental-hygienists-relay-hunger-strike-demanding-reforms-in-the-health-professionals-council-talks-to-begin-today",
-      "published_at": "2026-11-24T09:29:57+05:45",
+      "url": "https://www.ratopati.com/story/607408/60-sps-transferred-in-charges-of-17-districts-changed-with-list",
+      "published_at": "2026-11-24T22:18:30+05:45",
       "flash": false
     },
     {
-      "title": "सर्लाहीमा अदालतबाट सजाय तोकिएका १० जना फरार प्रतिवादी पक्राउ",
+      "title": "६. खोसेको उपाधि अदालतबाट फिर्ता, सेनगल फेरि अफ्रिकी च्याम्पियन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607218/10-absconding-defendants-sentenced-by-court-arrested-in-sarlahi",
-      "published_at": "2026-11-24T09:13:23+05:45",
+      "url": "https://www.ratopati.com/story/607401/court-ruling-senegal-to-be-champions-of-2025-africa-cup-of-nations",
+      "published_at": "2026-11-24T21:37:15+05:45",
       "flash": false
     },
     {
-      "title": "दोधारा चाँदनी झोलुङ्गे पुल पुनर्निर्माणका लागि बजेट माग",
+      "title": "६ वर्षदेखि अलपत्र लेते–धम्पु पुल पाँच महिनाभित्र सक्न निर्देशन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607215/budget-demanded-for-reconstruction-of-dodhara-chandni-suspension-bridge",
-      "published_at": "2026-11-24T08:58:00+05:45",
+      "url": "https://www.ratopati.com/story/607382/instructions-to-complete-lete-dhampu-bridge-which-has-been-abandoned-for-6-years-within-five-months",
+      "published_at": "2026-11-24T19:16:17+05:45",
       "flash": false
     },
     {
-      "title": "ताप्लेजुङको ओलाङचुङ्गोला केन्द्रविन्दु भएर भूकम्पकाे धक्का",
+      "title": "सरकारी सभा–समारोहमा प्लास्टिक प्रयोग रोक्न कोशी सरकारलाई उच्च अदालतको परमादेश ४ घण्टा अगाडि",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607209/earthquake-jolts-taplejung-sikkim-border-area",
-      "published_at": "2026-11-24T07:49:26+05:45",
+      "url": "https://www.ratopati.com/story/607379/high-court-orders-koshi-government-to-stop-use-of-plastic-in-government-meetings-and-ceremonies",
+      "published_at": "2026-11-24T18:44:06+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 15,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     },
@@ -98,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 7,
-      "recent": 12
+      "flash": 3,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -109,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 5,
+      "candidates": 3,
       "flash": 0,
       "recent": 0
     }

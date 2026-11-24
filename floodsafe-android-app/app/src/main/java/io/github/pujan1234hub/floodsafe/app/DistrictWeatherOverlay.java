@@ -29,7 +29,7 @@ final class DistrictWeatherOverlay extends View {
   if(w<=0||h<=0)return;
   double zoom=projector.zoom();
   // Collision avoidance keeps full Nepal view legible, but zooming reveals individual districts.
-  final float radius=(zoom<6?37:zoom<8?31:24)*den;
+  final float radius=(zoom<6?44:zoom<8?36:27)*den;
   java.util.ArrayList<PointF> used=new java.util.ArrayList<>();
   paint.setTextAlign(Paint.Align.CENTER);paint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
   for(int i=0;i<districts.length();i++){
@@ -44,9 +44,9 @@ final class DistrictWeatherOverlay extends View {
    used.add(new PointF(x,y));
    float floatY=(float)Math.sin(tick/1100.0+i*1.3)*1.5f*den;
    paint.setStyle(Paint.Style.FILL);paint.setColor(Color.argb(132,243,252,255));
-   c.drawCircle(x,y-7*den+floatY,12*den,paint);
+   c.drawCircle(x,y-5*den+floatY,9*den,paint);
    String icon=DistrictWeatherStore.icon(code);
-   paint.setTextSize(17*den);paint.setColor(Color.WHITE);
+   paint.setTextSize((zoom<7?13:15)*den);paint.setColor(Color.WHITE);
    c.drawText(icon,x,y+floatY,paint);
    if(code>=51&&code<=67||code>=80&&code<=82||code>=95){
     paint.setColor(Color.argb(205,97,209,251));paint.setStrokeWidth(1.2f*den);

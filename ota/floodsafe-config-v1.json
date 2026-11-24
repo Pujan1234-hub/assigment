@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 11,
+  "revision": 12,
   "enabled": true,
   "news": {
     "poll_seconds": 60,

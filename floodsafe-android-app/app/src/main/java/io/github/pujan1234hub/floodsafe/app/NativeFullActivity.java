@@ -1197,7 +1197,15 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private TextView empty(String s){TextView v=text(s,12,false,Color.rgb(102,131,153));v.setPadding(dp(14),dp(13),dp(14),dp(13));v.setBackground(round(Color.rgb(248,252,254),16,Color.rgb(200,223,234),1));return v;}
     private GradientDrawable round(int color,int radius,int stroke,int sw){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp(radius));if(sw>0)g.setStroke(dp(sw),stroke);return g;}
     private LinearLayout.LayoutParams lp(int w,int h,int l,int t,int r,int b){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(w,h);p.setMargins(dp(l),dp(t),dp(r),dp(b));return p;}private LinearLayout.LayoutParams weight(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-1,1f);p.setMargins(dp(2),0,dp(2),0);return p;}private int dp(int v){return Math.round(v*getResources().getDisplayMetrics().density);}
-    private static final class RiverStation{final String name,district,stage;final double lat,lon,level,warning,danger;final long at;final boolean fresh;final int rank;RiverStation(String n,String di,double a,double o,double l,double w,double d,long tm,boolean f,String s,int r){name=n;district=di;lat=a;lon=o;level=l;warning=w;danger=d;at=tm;fresh=f;stage=s;rank=r;}}
+    private static final class RiverStation implements StationMapItem {final String name,district,stage;final double lat,lon,level,warning,danger;final long at;final boolean fresh;final int rank;RiverStation(String n,String di,double a,double o,double l,double w,double d,long tm,boolean f,String s,int r){name=n;district=di;lat=a;lon=o;level=l;warning=w;danger=d;at=tm;fresh=f;stage=s;rank=r;}
+        @Override public String mapName() { return name; }
+        @Override public String mapStage() { return stage; }
+        @Override public double mapLat() { return lat; }
+        @Override public double mapLon() { return lon; }
+        @Override public double mapLevel() { return level; }
+        @Override public double mapRainfallMm() { return Double.NaN; }
+        @Override public boolean mapFresh() { return fresh; }
+    }
     private static final class NewsItem{final String title,source,url;final long at;NewsItem(String t,String s,String u,long a){title=t;source=s;url=u;at=a;}}
     @Override protected void onPause(){main.removeCallbacks(riverAutoRefresh);main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(newsAutoRefreshTick);main.removeCallbacks(newsKnowledgeTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
     @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();

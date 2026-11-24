@@ -1,8 +1,8 @@
-name: FloodSafe Nepal 0.9.22 station recovery AAB code 124
+name: FloodSafe Nepal 0.9.23 visible station pins AAB code 125
 on:
   push:
     branches:
-      - fix/floodsafe-play-stations-20261120
+      - fix/floodsafe-map-visible-pins-20261124
     paths:
       - '.github/workflows/floodsafe-play-aab-20261031.yml'
   workflow_dispatch:
@@ -27,8 +27,8 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
       - name: Set next release version without changing stable source
         run: |
-          sed -i "s/versionCode 121/versionCode 124/" floodsafe-android-app/app/build.gradle
-          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.22-station-recovery'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionCode 121/versionCode 125/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-visible-station-pins'/" floodsafe-android-app/app/build.gradle
       - name: Prepare Play Console package and approved launcher icon
         shell: bash
         run: |
@@ -98,6 +98,19 @@ jobs:
           assert count>=12, 'Offline station fallback would show too few stations'
           PY
 
+      - name: Guard real station pins against release R8 obfuscation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app
+          test -s "$ROOT/StationMapItem.java"
+          grep -Fq 'List<? extends StationMapItem>' "$ROOT/FloodSafeNativeMapView.java"
+          grep -q 'station.original = item' "$ROOT/FloodSafeNativeMapView.java"
+          ! grep -q 'getDeclaredField' "$ROOT/FloodSafeNativeMapView.java"
+          grep -q 'implements StationMapItem' "$ROOT/FloodSafeMapActivity.java"
+          grep -q 'implements StationMapItem' "$ROOT/NativeFullActivity.java"
+          grep -q 'implements StationMapItem' "$ROOT/FloodSafeNativeActivity.java"
+
       - name: Run native Android unit tests before release compilation
         run: gradle -p floodsafe-android-app :app:testReleaseUnitTest --no-daemon --stacktrace
       - name: Run release lint checks
@@ -127,7 +140,7 @@ jobs:
       - name: Archive unsigned AAB for secure local signing
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0.9.22-Station-Recovery-Code124-UNSIGNED
+          name: FloodSafe-Nepal-v0.9.23-Visible-Station-Pins-Code125-UNSIGNED
           path: |
             floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab
             floodsafe-aab-sha256.txt

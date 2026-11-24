@@ -601,7 +601,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
 
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
 
-    static final class LiveStation {
+    static final class LiveStation  implements StationMapItem {
         final String name, district, stage;
         final double lat, lon, level, warning, danger, rainfallMm;
         final long at;
@@ -613,6 +613,14 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
             this.warning = warning; this.danger = danger; this.rainfallMm = rainfallMm; this.at = at;
             this.fresh = fresh; this.stage = stage; this.rank = rank;
         }
+    
+        @Override public String mapName() { return name; }
+        @Override public String mapStage() { return stage; }
+        @Override public double mapLat() { return lat; }
+        @Override public double mapLon() { return lon; }
+        @Override public double mapLevel() { return level; }
+        @Override public double mapRainfallMm() { return rainfallMm; }
+        @Override public boolean mapFresh() { return fresh; }
     }
 
     static final class RainStation {

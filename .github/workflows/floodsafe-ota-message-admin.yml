@@ -1,0 +1,141 @@
+name: FloodSafe Nepal - OTA Message Admin
+run-name: FloodSafe OTA - ${{ github.event.inputs.notice_action || 'check' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      notice_action:
+        description: 'What do you want to do?'
+        type: choice
+        required: true
+        default: publish
+        options:
+          - publish
+          - remove
+      title:
+        description: 'Message title (English or Roman Nepali)'
+        type: string
+        required: false
+        default: 'FloodSafe Nepal update'
+      message:
+        description: 'Message text to show inside the app'
+        type: string
+        required: false
+      nepali_title:
+        description: 'Optional Nepali title (leave blank to use title above)'
+        type: string
+        required: false
+      nepali_message:
+        description: 'Optional Nepali message (leave blank to use message above)'
+        type: string
+        required: false
+      show_hours:
+        description: 'Number of hours to show the message (1 to 336)'
+        type: number
+        required: true
+        default: 24
+
+permissions:
+  contents: read
+
+concurrency:
+  group: floodsafe-nepal-owner-ota-config
+  cancel-in-progress: false
+
+jobs:
+  ota-message:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the EXACT branch used by v0.9.23
+        uses: actions/checkout@v4
+        with:
+          ref: floodsafe-ota-config-v0921
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Validate the owner's form and update informational OTA config
+        shell: bash
+        env:
+          NOTICE_ACTION: ${{ inputs.notice_action }}
+          NOTICE_TITLE: ${{ inputs.title }}
+          NOTICE_BODY: ${{ inputs.message }}
+          NOTICE_TITLE_NE: ${{ inputs.nepali_title }}
+          NOTICE_BODY_NE: ${{ inputs.nepali_message }}
+          NOTICE_HOURS: ${{ inputs.show_hours }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          from datetime import datetime, timedelta, timezone
+
+          path=Path('ota/floodsafe-config-v1.json')
+          if not path.is_file():
+              sys.exit('OTA config not found: no changes made')
+          cfg=json.loads(path.read_text(encoding='utf-8'))
+          if cfg.get('schema')!=1:
+              sys.exit('Unexpected OTA schema: no changes made')
+          revision=int(cfg.get('revision',0))
+          if revision<0 or revision>=1_000_000:
+              sys.exit('Invalid or exhausted OTA revision')
+
+          def validate(text,label,limit):
+              text=(text or '').strip()
+              if len(text)<4 or len(text)>limit:
+                  sys.exit(f'{label} must be 4-{limit} characters')
+              if '<script' in text.lower() or 'javascript:' in text.lower() or chr(0) in text:
+                  sys.exit(f'{label} contains unsupported content')
+              return text
+
+          action=os.environ.get('NOTICE_ACTION','')
+          if action=='publish':
+              title=validate(os.environ.get('NOTICE_TITLE'),'Title',120)
+              body=validate(os.environ.get('NOTICE_BODY'),'Message',700)
+              ne_title=validate(os.environ.get('NOTICE_TITLE_NE') or title,'Nepali title',120)
+              ne_body=validate(os.environ.get('NOTICE_BODY_NE') or body,'Nepali message',700)
+              try:
+                  hours=int(os.environ.get('NOTICE_HOURS','24'))
+              except ValueError:
+                  sys.exit('Invalid hours')
+              if hours<1 or hours>336:
+                  sys.exit('Duration must be 1-336 hours')
+              now=datetime.now(timezone.utc)
+              iso=lambda d:d.replace(microsecond=0).isoformat().replace('+00:00','Z')
+              cfg['app_notice']={
+                  'enabled':True,
+                  'type':'announcement',
+                  'title_ne':ne_title,
+                  'title_en':title,
+                  'body_ne':ne_body,
+                  'body_en':body,
+                  'starts_at':iso(now-timedelta(seconds=60)),
+                  'expires_at':iso(now+timedelta(hours=hours))
+              }
+              cfg['enabled']=True
+              print('Publishing informational OTA notice for',hours,'hours')
+          elif action=='remove':
+              cfg.setdefault('app_notice',{})['enabled']=False
+              print('Removing informational OTA notice; other OTA functions unaffected')
+          else:
+              sys.exit('Invalid action')
+          cfg['revision']=revision+1
+          path.write_text(json.dumps(cfg,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          # No emergency warnings, river-risk changes, APK, keys, or native code are touched.
+          print('Prepared OTA revision',cfg['revision'])
+          PY
+          git config user.name "floodsafe-ota-admin[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ota/floodsafe-config-v1.json
+          git commit -m "OTA admin: ${NOTICE_ACTION} informational notice"
+          git push origin HEAD:floodsafe-ota-config-v0921
+          echo "OTA source updated. Android refreshes it without a Play Store update."
+
+  validate-workflow:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Workflow parsed successfully"

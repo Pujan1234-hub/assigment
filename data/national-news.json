@@ -1,21 +1,91 @@
 {
-  "generated_at": "2026-11-24T03:59:51.707220+05:45",
-  "updated_at_npt": "24 Nov 03:59 NPT",
+  "generated_at": "2026-11-24T11:53:36.755688+05:45",
+  "updated_at_npt": "24 Nov 11:53 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "१२ बजे १२ समाचार : राइड सेयरिङको कानुन बन्यो, कार्यान्वयनमा अलमलदेखि प्रधानमन्त्रीको भारत भ्रमण उपलब्धिसम्म",
+      "title": "‘कक्रोच’ आन्दोलनका नेतालाई लन्डन जान रोक",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607186/12-news-at-12-ride-sharing-law-passed-from-confusion-in-implementation-to-achievements-of-prime-ministers-visit-to-india",
-      "published_at": "2026-11-24T00:00:12+05:45",
+      "url": "https://www.ratopati.com/story/607253/cockroach-movement-leader-barred-from-traveling-to-london",
+      "published_at": "2026-11-24T11:50:24+05:45",
+      "flash": true
+    },
+    {
+      "title": "आनि छोइङ डोल्माको नियुक्तिविरुद्ध सर्वोच्चमा रिट",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607252/writ-filed-in-supreme-court-against-appointment-of-ani-choing-dolma",
+      "published_at": "2026-11-24T11:49:13+05:45",
+      "flash": true
+    },
+    {
+      "title": "चिनियाँ प्राध्यापकको नजरमा प्रधानमन्त्रीको भारत भ्रमणले देखाएको कूटनीतिक बाटो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607251/chinese-professor-sees-diplomatic-path-shown-by-pms-visit-to-india",
+      "published_at": "2026-11-24T11:48:44+05:45",
+      "flash": true
+    },
+    {
+      "title": "बाढीपहिरोले म्याग्दीका जलविद्युत् आयोजना थला, उत्पादनदेखि निर्माणसम्म प्रभावित",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607249/floods-and-landslides-affect-myagdis-hydropower-projects-from-production-to-construction",
+      "published_at": "2026-11-24T11:40:31+05:45",
+      "flash": true
+    },
+    {
+      "title": "सुनकोशी–मरिण डाइभर्सनको पुनः बोलपत्र आह्वान गरिँदै, लागत घट्न सक्ने मन्त्रालयको अनुमान",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607248/re-bidding-for-sunkoshi-marin-diversion-being-called-ministry-estimates-cost-may-decrease",
+      "published_at": "2026-11-24T11:37:30+05:45",
+      "flash": true
+    },
+    {
+      "title": "रूख कांग्रेसको चुनाव चिह्न हो कि नेताहरूको सम्पत्ति ?",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607246/is-the-tree-the-election-symbol-of-the-congress-or-the-property-of-the-leaders",
+      "published_at": "2026-11-24T11:33:07+05:45",
+      "flash": true
+    },
+    {
+      "title": "सुनकोशी मरिन ठेक्का रद्द प्रक्रियाका सम्पूर्ण कागजात सात दिनभित्र बुझाउन लेखा समितिको निर्देशन",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607237/audit-committee-directs-to-submit-all-documents-related-to-sunkoshi-marina-contract-cancellation-process-within-seven-days",
+      "published_at": "2026-11-24T10:54:10+05:45",
+      "flash": true
+    },
+    {
+      "title": "स्वास्थ्य व्यवसायी परिषद्मा सुधारको माग गर्दै डेन्टल हाइजेनिस्टको रिले अनशन, आज वार्ता हुँदै २ घण्टा अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607220/dental-hygienists-relay-hunger-strike-demanding-reforms-in-the-health-professionals-council-talks-to-begin-today",
+      "published_at": "2026-11-24T09:29:57+05:45",
+      "flash": false
+    },
+    {
+      "title": "सर्लाहीमा अदालतबाट सजाय तोकिएका १० जना फरार प्रतिवादी पक्राउ",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607218/10-absconding-defendants-sentenced-by-court-arrested-in-sarlahi",
+      "published_at": "2026-11-24T09:13:23+05:45",
+      "flash": false
+    },
+    {
+      "title": "दोधारा चाँदनी झोलुङ्गे पुल पुनर्निर्माणका लागि बजेट माग",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607215/budget-demanded-for-reconstruction-of-dodhara-chandni-suspension-bridge",
+      "published_at": "2026-11-24T08:58:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "ताप्लेजुङको ओलाङचुङ्गोला केन्द्रविन्दु भएर भूकम्पकाे धक्का",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607209/earthquake-jolts-taplejung-sikkim-border-area",
+      "published_at": "2026-11-24T07:49:26+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 16,
+      "candidates": 15,
       "flash": 0,
       "recent": 0
     },
@@ -28,8 +98,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 1
+      "flash": 7,
+      "recent": 12
     },
     "Kathmandu Post": {
       "ok": true,
@@ -39,7 +109,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 5,
       "flash": 0,
       "recent": 0
     }

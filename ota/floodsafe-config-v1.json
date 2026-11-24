@@ -61,11 +61,11 @@
   "app_notice": {
     "enabled": true,
     "type": "announcement",
-    "title_ne": "🧪 यो परीक्षण हो — FloodSafe Nepal v0.9.23 (OTA 2)",
-    "title_en": "🧪 This is testing — FloodSafe Nepal v0.9.23 (OTA 2)",
-    "body_ne": "यो दोस्रो OTA परीक्षण सन्देश हो। यो सन्देश app मा देखिए नयाँ सूचना Play Store update नगरी आइरहेको छ भन्ने बुझिन्छ। यो बाढी वा नदीको खतरा चेतावनी होइन।",
-    "body_en": "This is testing (second OTA check). If this notice appears, app content updates are reaching v0.9.23 without a Play Store update. This is not a flood or river danger warning.",
+    "title_ne": "🧪 THIS IS TESTING — FloodSafe Nepal v0.9.23",
+    "title_en": "🧪 THIS IS TESTING — FloodSafe Nepal v0.9.23",
+    "body_ne": "यो OTA प्रणालीको परीक्षण सन्देश हो। यो बाढी वा नदीको खतरा चेतावनी होइन।",
+    "body_en": "This is an in-app OTA test notice. It is not an official river or flood warning.",
     "starts_at": "2026-11-24T00:00:00Z",
-    "expires_at": "2026-11-27T23:59:00Z"
+    "expires_at": "2026-11-26T23:59:00Z"
   }
 }

@@ -1,0 +1,110 @@
+name: Build Admin FloodSafe Android APK
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/admin-floodsafe-apk.yml'
+      - 'admin-floodsafe-android/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: admin-floodsafe-release-v1
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Install Android SDK platform
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Verify sensitive configuration is NOT bundled
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R -nE 'github_pat_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}|BEGIN PRIVATE KEY|FIREBASE_SERVICE_ACCOUNT' admin-floodsafe-android/app/src
+          grep -q 'KeyProperties.KEY_ALGORITHM_AES' admin-floodsafe-android/app/src/main/java/com/pjbuilts/adminfloodsafe/MainActivity.java
+          grep -q 'AndroidKeyStore' admin-floodsafe-android/app/src/main/java/com/pjbuilts/adminfloodsafe/MainActivity.java
+          grep -q 'com.pjbuilts.adminfloodsafe' admin-floodsafe-android/app/build.gradle
+          grep -q 'android:allowBackup="false"' admin-floodsafe-android/app/src/main/AndroidManifest.xml
+
+      - name: Compile Android release
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle -p admin-floodsafe-android :app:lintRelease :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Sign an installable independent APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEY=/tmp/admin-floodsafe-release.p12
+          PASS="$(openssl rand -hex 24)"
+          keytool -genkeypair -v -storetype PKCS12 \
+             -keystore "$KEY" \
+             -alias admin_floodsafe \
+             -keyalg RSA -keysize 3072 -validity 3650 \
+             -dname 'CN=Admin FloodSafe,OU=PJBUILTS,O=PJBUILTS,L=Exeter,C=GB' \
+             -storepass "$PASS" -keypass "$PASS" > /dev/null 2>&1
+          mkdir -p dist
+          APK="admin-floodsafe-android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4 "$APK" dist/aligned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
+              --ks "$KEY" --ks-key-alias admin_floodsafe \
+              --ks-pass "pass:$PASS" --key-pass "pass:$PASS" \
+              --out dist/Admin-FloodSafe-v1.0.0.apk dist/aligned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/Admin-FloodSafe-v1.0.0.apk
+          unzip -t dist/Admin-FloodSafe-v1.0.0.apk >/dev/null
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/Admin-FloodSafe-v1.0.0.apk | head -10
+          sha256sum dist/Admin-FloodSafe-v1.0.0.apk > dist/Admin-FloodSafe-v1.0.0.sha256
+          rm -f "$KEY" dist/aligned.apk
+          echo 'Release APK signed and verified (non-debuggable).'
+
+      - name: Archive APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Admin-FloodSafe-v1.0.0-APK
+          path: |
+            dist/Admin-FloodSafe-v1.0.0.apk
+            dist/Admin-FloodSafe-v1.0.0.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish direct APK download (first successful release only)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if gh release view admin-floodsafe-v1.0.0 >/dev/null 2>&1; then
+              echo 'v1.0.0 release already exists. Not overwriting signed binary/certificate.'
+              exit 0
+          fi
+          gh release create admin-floodsafe-v1.0.0 \
+              dist/Admin-FloodSafe-v1.0.0.apk \
+              dist/Admin-FloodSafe-v1.0.0.sha256 \
+              --target "$GITHUB_SHA" \
+              --title 'Admin FloodSafe v1.0.0 (Android)' \
+              --notes 'Private PJBUILTS OTA message publishing companion app. No credentials are built in. Sign in with your own repository-scoped fine-grained GitHub token. In-app informational announcements only, not flood-warning push messages. This initial build uses an ephemeral signing key; replacing with a future different-key build may require uninstall/reinstall.' \
+              --prerelease
+          gh release view admin-floodsafe-v1.0.0 --json url,assets

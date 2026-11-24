@@ -51,6 +51,9 @@ public final class MainActivity extends Activity {
     private static final String REPO="assigment";
     private static final String ACTION="https://api.github.com/repos/"+OWNER+"/"+REPO+"/actions/workflows/floodsafe-ota-message-admin.yml/dispatches";
     private static final String HISTORY="https://api.github.com/repos/"+OWNER+"/"+REPO+"/actions/workflows/floodsafe-ota-message-admin.yml/runs?per_page=6";
+    private static final String PUSH_ACTION="https://api.github.com/repos/"+OWNER+"/"+REPO+"/actions/workflows/floodsafe-admin-notice-push.yml/dispatches";
+    private static final String PUSH_HISTORY="https://api.github.com/repos/"+OWNER+"/"+REPO+"/actions/workflows/floodsafe-admin-notice-push.yml/runs?per_page=6";
+    private static final String PUSH_WORKFLOW="https://github.com/"+OWNER+"/"+REPO+"/actions/workflows/floodsafe-admin-notice-push.yml";
     private static final String LIVE="https://raw.githubusercontent.com/"+OWNER+"/"+REPO+"/floodsafe-ota-config-v0921/ota/floodsafe-config-v1.json";
     private static final String GUIDE="https://github.com/settings/personal-access-tokens/new";
     private static final String WORKFLOW="https://github.com/"+OWNER+"/"+REPO+"/actions/workflows/floodsafe-ota-message-admin.yml";
@@ -59,7 +62,10 @@ public final class MainActivity extends Activity {
     private LinearLayout root;
     private TextView feedback, liveLabel, historyLabel;
     private EditText title, message, titleNe, messageNe, hours, tokenField;
-    private Button publishButton, removeButton;
+    private EditText pushTitle, pushMessage, pushTitleNe, pushMessageNe;
+    private Button publishButton, removeButton, pushBetaButton, pushPreviewButton;
+    private TextView pushFeedback, pushHistoryLabel;
+    private volatile int lastLiveRevision=-1;
     private boolean busy=false;
     private String authorizedUser="";
 
@@ -173,7 +179,7 @@ public final class MainActivity extends Activity {
         },feedback);
     }
     private void showDashboard(){
-        begin("Private owner console · FloodSafe Nepal OTA");
+        begin("Private owner console · OTA notices + Firebase push");
         LinearLayout statusCard=card();
         cardTitle(statusCard,"● Live notice status");
         liveLabel=text("Checking remote configuration…",13,MUTED,false);
@@ -183,7 +189,7 @@ public final class MainActivity extends Activity {
 
         LinearLayout compose=card();
         cardTitle(compose,"Write a new OTA notice");
-        compose.addView(text("This appears inside FloodSafe Nepal v0.9.23. It is NOT a phone push notification and NOT a river danger warning.",13,MUTED,false),wrap(0,5));
+        compose.addView(text("This appears inside FloodSafe Nepal v0.9.23. Changes reach phones when the app checks the server (currently up to about 5 minutes), not instantly.",13,MUTED,false),wrap(0,5));
         title=input(compose,"Title","FloodSafe Nepal update",false);
         message=input(compose,"Message","Write your announcement here…",true);
         titleNe=input(compose,"Nepali title (optional)","Leave blank to use same title",false);
@@ -197,6 +203,20 @@ public final class MainActivity extends Activity {
         feedback=text("Ready. Only general informational notices are allowed.",13,MUTED,false);
         compose.addView(feedback,wrap(12,0));
 
+        LinearLayout pushCard=card();
+        cardTitle(pushCard,"🔔 Send phone PUSH notification");
+        pushCard.addView(text("FCM notification to Android phones. Not an emergency alert. Play beta devices use the nepal-alerts topic; older installations may also subscribe. Both languages supported.",13,MUTED,false),wrap(0,6));
+        pushTitle=input(pushCard,"Push title (English)","FloodSafe Nepal announcement",false);
+        pushMessage=input(pushCard,"Push text (English)","Write a short informational message…",true);
+        pushTitleNe=input(pushCard,"Push title (Nepali, optional)","Leave blank for English title",false);
+        pushMessageNe=input(pushCard,"Push text (Nepali, optional)","Leave blank for English message",true);
+        pushBetaButton=button(pushCard,"🔔 Send to installed Play subscribers",true);
+        pushBetaButton.setOnClickListener(v->askPush("all"));
+        pushPreviewButton=button(pushCard,"🧪 Send to preview-only devices",false);
+        pushPreviewButton.setOnClickListener(v->askPush("preview"));
+        pushFeedback=text("Push requires confirmation. Firebase accepts an alert first; handset delivery is verified separately.",13,MUTED,false);
+        pushCard.addView(pushFeedback,wrap(9,0));
+
         LinearLayout historyCard=card();
         cardTitle(historyCard,"Recent publishing history");
         historyLabel=text("Tap to load recent OTA actions.",13,MUTED,false);
@@ -205,6 +225,12 @@ public final class MainActivity extends Activity {
         history.setOnClickListener(v->loadHistory());
         Button link=button(historyCard,"Open GitHub Workflow ↗",false);
         link.setOnClickListener(v->openUrl(WORKFLOW));
+        pushHistoryLabel=text("No push history loaded.",13,MUTED,false);
+        historyCard.addView(pushHistoryLabel,wrap(14,4));
+        Button pushHistory=button(historyCard,"View Push History",false);
+        pushHistory.setOnClickListener(v->loadPushHistory());
+        Button pushLink=button(historyCard,"Open Push Workflow ↗",false);
+        pushLink.setOnClickListener(v->openUrl(PUSH_WORKFLOW));
 
         LinearLayout access=card();
         cardTitle(access,"Account & security");
@@ -237,7 +263,7 @@ public final class MainActivity extends Activity {
     private void confirmRemove(){
         if(busy)return;
         new AlertDialog.Builder(this).setTitle("Remove current in-app notice?")
-            .setMessage("This removes the OTA announcement after FloodSafe refreshes. It does not disable OTA, push notifications or river alerts.")
+            .setMessage("This disables the notice on the server once the GitHub job completes. Existing FloodSafe v0.9.23 phones poll roughly every 5 minutes, so the screen may not clear immediately. The official flood alerts are unaffected.")
             .setNegativeButton("Cancel",null).setPositiveButton("Remove",(d,w)->dispatch("remove","","","","",24)).show();
     }
     private void dispatch(String action,String t,String b,String tn,String bn,int h){
@@ -255,12 +281,19 @@ public final class MainActivity extends Activity {
             inputs.put("show_hours",String.valueOf(h));
             JSONObject requestBody=new JSONObject();
             requestBody.put("ref","main");requestBody.put("inputs",inputs);
+            int beforeRevision=-1;
+            try{
+                Reply before=request(LIVE+"?revision_before="+System.currentTimeMillis(),"GET",null,null);
+                if(before.code==200)beforeRevision=new JSONObject(before.body).optInt("revision",-1);
+            }catch(Exception ignored){}
             Reply res=request(ACTION,"POST",requestBody.toString(),saved);
             if(res.code!=204)throw new IllegalStateException("GitHub refused action (HTTP "+res.code+"). "+trim(res.body,220));
+            final int startingRevision=beforeRevision;
             runOnUiThread(()->{
                 busy=false;publishButton.setEnabled(true);removeButton.setEnabled(true);
-                feedback.setText("✓ GitHub accepted "+action+". This does not yet confirm publishing. Check Action History for success, then refresh Live Status.");
+                feedback.setText("GitHub accepted "+action+". Confirming that the remote config was actually updated…");
             });
+            verifyOtaOutcome(action,startingRevision);
         },feedback);
     }
     private void refreshLive(){
@@ -280,6 +313,7 @@ public final class MainActivity extends Activity {
                     active=!Instant.now().isBefore(start)&&Instant.now().isBefore(end);
                 }catch(Exception ex){active=false;}
             }
+            lastLiveRevision=revision;
             String result="OTA revision "+revision+"\n"+(active?"🟢 Notice active: "+notice.optString("title_en")+"\n"+trim(notice.optString("body_en"),350)+"\nExpires: "+notice.optString("expires_at"):"⚪ No active in-app notice");
             runOnUiThread(()->{if(liveLabel!=null)liveLabel.setText(result);});
         },liveLabel);
@@ -305,6 +339,112 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->{if(historyLabel!=null)historyLabel.setText(finalText);});
         },historyLabel);
     }
+
+    private void verifyOtaOutcome(String action,int previousRevision){
+        // A 204 from workflow_dispatch means queued, NOT published. Verify the actual raw config.
+        for(int i=0;i<18;i++){
+            try{
+                Thread.sleep(2500L);
+                Reply check=request(LIVE+"?verify="+System.currentTimeMillis()+"-"+i,"GET",null,null);
+                if(check.code!=200)continue;
+                JSONObject obj=new JSONObject(check.body);
+                int revision=obj.optInt("revision",-1);
+                JSONObject notice=obj.optJSONObject("app_notice");
+                boolean enabled=obj.optBoolean("enabled",false)&&notice!=null&&notice.optBoolean("enabled",false);
+                if(revision>previousRevision && ("remove".equals(action)?!enabled:enabled)){
+                    runOnUiThread(()->{
+                        feedback.setText("✓ CONFIRMED: OTA "+action+" updated on server (revision "+revision+"). FloodSafe v0.9.23 may take up to about 5 minutes to reflect removal on-device.");
+                        refreshLive();
+                    });
+                    return;
+                }
+            }catch(Exception ignored){}
+        }
+        runOnUiThread(()->{
+            feedback.setText("Action submitted, but the live server change is not verified yet. Use History and Refresh Live Status to check for success/failure.");
+            refreshLive();
+        });
+    }
+    private void askPush(String audience){
+        if(busy)return;
+        String enTitle=pushTitle.getText().toString().trim();
+        String enText=pushMessage.getText().toString().trim();
+        String neTitle=pushTitleNe.getText().toString().trim();
+        String neText=pushMessageNe.getText().toString().trim();
+        // Backend validates each language separately. Use English as fallback for Nepali fields.
+        if(neTitle.isEmpty())neTitle=enTitle;
+        if(neText.isEmpty())neText=enText;
+        if(!validPush(enTitle,90)||!validPush(enText,500)||!validPush(neTitle,90)||!validPush(neText,500)){
+            pushFeedback.setText("Both titles must be 4–90 characters and both messages 4–500 characters.");
+            return;
+        }
+        if(("ℹ️ "+neTitle+" / "+enTitle).length()>180||(neText+"\n"+enText).length()>1050){
+            pushFeedback.setText("Combined bilingual notification is too long.");return;
+        }
+        final String fneTitle=neTitle,fneText=neText;
+        final boolean all="all".equals(audience);
+        String recipient=all?"all devices subscribed to nepal-alerts, including current Play testers and possible older installs":"only .preview devices subscribed to floodsafe-testers";
+        new AlertDialog.Builder(this)
+            .setTitle(all?"Confirm subscriber-wide push":"Confirm preview-only push")
+            .setMessage("This sends a NON-EMERGENCY phone notification to "+recipient+".\n\n"+enTitle+"\n"+enText+"\n\nPush cannot be recalled after delivery. Send?")
+            .setNegativeButton("Cancel",null)
+            .setPositiveButton("Send Push",(d,w)->dispatchPush(audience,enTitle,enText,fneTitle,fneText))
+            .show();
+    }
+    private static boolean validPush(String input,int max){
+        return input!=null && input.length()>=4 && input.length()<=max
+            && !input.toLowerCase(Locale.ROOT).contains("<script")&&!input.toLowerCase(Locale.ROOT).contains("javascript:");
+    }
+    private void dispatchPush(String audience,String titleEn,String bodyEn,String titleNe,String bodyNe){
+        if(busy)return;
+        String token=readToken();
+        if(token==null){showLogin();return;}
+        busy=true;
+        if(pushBetaButton!=null)pushBetaButton.setEnabled(false);
+        if(pushPreviewButton!=null)pushPreviewButton.setEnabled(false);
+        pushFeedback.setText("Sending secure request to GitHub Actions. No Firebase credential stored in this APK…");
+        work(()->{
+            JSONObject inputs=new JSONObject();
+            inputs.put("audience",audience);
+            inputs.put("title_en",titleEn);
+            inputs.put("body_en",bodyEn);
+            inputs.put("title_ne",titleNe);
+            inputs.put("body_ne",bodyNe);
+            inputs.put("confirm_broadcast","all".equals(audience)?"SEND NON-EMERGENCY PUSH":"");
+            JSONObject payload=new JSONObject();
+            payload.put("ref","main");
+            payload.put("inputs",inputs);
+            Reply reply=request(PUSH_ACTION,"POST",payload.toString(),token);
+            if(reply.code!=204)throw new IllegalStateException("Push workflow not accepted. HTTP "+reply.code+" "+trim(reply.body,200));
+            runOnUiThread(()->{
+                busy=false;
+                if(pushBetaButton!=null)pushBetaButton.setEnabled(true);
+                if(pushPreviewButton!=null)pushPreviewButton.setEnabled(true);
+                pushFeedback.setText("✓ Push job QUEUED. Open Push History and look for SUCCESS. This confirms Firebase acceptance, not receipt by every phone.");
+            });
+        },pushFeedback);
+    }
+    private void loadPushHistory(){
+        String token=readToken();
+        if(token==null){showLogin();return;}
+        pushHistoryLabel.setText("Checking Firebase push workflow runs…");
+        work(()->{
+            Reply reply=request(PUSH_HISTORY,"GET",null,token);
+            if(reply.code!=200)throw new IllegalStateException("Unable to read push history (HTTP "+reply.code+")");
+            JSONArray rows=new JSONObject(reply.body).optJSONArray("workflow_runs");
+            StringBuilder sb=new StringBuilder();
+            if(rows!=null)for(int i=0;i<Math.min(6,rows.length());i++){
+                JSONObject row=rows.optJSONObject(i);if(row==null)continue;
+                String status=row.optString("conclusion");
+                if(status.isEmpty()||status.equals("null"))status=row.optString("status");
+                sb.append("• ").append(status.toUpperCase(Locale.ROOT)).append(" · ")
+                    .append(row.optString("event")).append(" · ")
+                    .append(row.optString("created_at").replace('T',' ').replace("Z"," UTC")).append("\n");
+            }
+            String result=sb.length()==0?"No push workflow runs found.":sb.toString();
+            runOnUiThread(()->{if(pushHistoryLabel!=null)pushHistoryLabel.setText(result);});
+        },pushHistoryLabel);
+    }
     private static String trim(String source,int max){
         if(source==null)return "";
         return source.length()>max?source.substring(0,max)+"…":source;
@@ -322,6 +462,8 @@ public final class MainActivity extends Activity {
                     busy=false;
                     if(publishButton!=null)publishButton.setEnabled(true);
                     if(removeButton!=null)removeButton.setEnabled(true);
+                    if(pushBetaButton!=null)pushBetaButton.setEnabled(true);
+                    if(pushPreviewButton!=null)pushPreviewButton.setEnabled(true);
                     if(error!=null)error.setText("⚠ "+text);
                 });
             }

@@ -233,13 +233,13 @@ final class FloodSafeNativeMapView extends FrameLayout {
 
     void setBase(Bitmap ignored) { }
 
-    void setStations(List<?> source, double lat, double lon) {
+    void setStations(List<? extends StationMapItem> source, double lat, double lon) {
         userLat = lat;
         userLon = lon;
         List<StationDot> next = new ArrayList<>();
         if (source != null) {
-            for (Object o : source) {
-                StationDot s = readStation(o);
+            for (StationMapItem item : source) {
+                StationDot s = readStation(item);
                 if (s != null) next.add(s);
             }
         }
@@ -251,6 +251,8 @@ final class FloodSafeNativeMapView extends FrameLayout {
         refreshRiverRiskSources();
         refreshUserSource();
     }
+
+    int stationCount() { synchronized (stations) { return stations.size(); } }
 
     void zoomBy(float factor) {
         if (map == null) return;
@@ -439,8 +441,8 @@ final class FloodSafeNativeMapView extends FrameLayout {
             ensureRiverRiskSource("fs-river-warning", "fs-river-warning-glow", "fs-river-warning-layer", "#ff8a1f");
             ensureRiverRiskSource("fs-river-danger", "fs-river-danger-glow", "fs-river-danger-layer", "#f22f4b");
             ensurePointSource("fs-flow-particles", "fs-flow-particles-layer", "#d6fbff", 2.7f, 0.90f);
-            ensurePointSource("fs-stale", "fs-stale-layer", "#8e99a5", 4.0f, 0.92f);
-            ensurePointSource("fs-normal", "fs-normal-layer", "#2d8cff", 4.4f, 0.98f);
+            ensurePointSource("fs-stale", "fs-stale-layer", "#a5b8c7", 6.2f, 1.0f);
+            ensurePointSource("fs-normal", "fs-normal-layer", "#2d8cff", 6.2f, 1.0f);
             ensurePointSource("fs-alert", "fs-alert-layer", "#ffc928", 5.0f, 1f);
             ensurePointSource("fs-warning", "fs-warning-layer", "#ff8a1f", 5.8f, 1f);
             ensurePointSource("fs-danger", "fs-danger-layer", "#f22f4b", 6.3f, 1f);
@@ -473,7 +475,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         style.addSource(new GeoJsonSource(sourceId, emptyFeatureCollection()));
         style.addLayer(new CircleLayer(layerId, sourceId).withProperties(
                 circleColor(color), circleRadius(radius), circleOpacity(opacity),
-                circleStrokeColor("#ffffff"), circleStrokeWidth(1.0f)));
+                circleStrokeColor("#ffffff"), circleStrokeWidth(1.6f)));
     }
 
     private void refreshStationSources() {
@@ -685,48 +687,25 @@ final class FloodSafeNativeMapView extends FrameLayout {
         }
     };
 
-    private StationDot readStation(Object o) {
-        if (o == null) return null;
-        try {
-            Class<?> c = o.getClass();
-            double la = getDouble(c, o, "lat"), lo = getDouble(c, o, "lon");
-            if (!Double.isFinite(la) || !Double.isFinite(lo)) return null;
-            // Rectangle checks alone allow stations in India/China: use Nepal's 77-district union.
-            NepalRiverBoundary boundary = nationalBoundary;
-            if (boundary != null && !boundary.contains(lo,la)) return null;
-            StationDot s = new StationDot();
-            s.original = o; s.lat = la; s.lon = lo;
-            s.name = getString(c, o, "name", "Official river station");
-            s.stage = getString(c, o, "stage", "normal").toLowerCase(Locale.ROOT);
-            s.fresh = getBoolean(c, o, "fresh", false);
-            s.level = getDouble(c, o, "level");
-            s.rainfallMm = getOptionalDouble(c, o,
-                    "rainfallMm", "rainfall", "rainfall24h", "rain24h", "rain_mm", "precipitation");
-            return s;
-        } catch (Exception ignored) { return null; }
-    }
-
-    private static double getDouble(Class<?> c, Object o, String name) throws Exception {
-        Field f = c.getDeclaredField(name); f.setAccessible(true); return ((Number) f.get(o)).doubleValue();
-    }
-    private static double getOptionalDouble(Class<?> c, Object o, String... names) {
-        for (String name : names) {
-            try {
-                Field f = c.getDeclaredField(name); f.setAccessible(true);
-                Object v = f.get(o);
-                if (v instanceof Number) {
-                    double n = ((Number) v).doubleValue();
-                    if (Double.isFinite(n)) return n;
-                }
-            } catch (Exception ignored) {}
-        }
-        return Double.NaN;
-    }
-    private static boolean getBoolean(Class<?> c, Object o, String name, boolean fallback) {
-        try { Field f=c.getDeclaredField(name); f.setAccessible(true); return f.getBoolean(o); } catch (Exception e) { return fallback; }
-    }
-    private static String getString(Class<?> c, Object o, String name, String fallback) {
-        try { Field f=c.getDeclaredField(name); f.setAccessible(true); Object v=f.get(o); return v==null?fallback:String.valueOf(v); } catch (Exception e) { return fallback; }
+    // Use a compile-time contract. Reflection on private field names silently
+    // fails after R8 minifies release builds, producing a blank station map.
+    private StationDot readStation(StationMapItem item) {
+        if (item == null) return null;
+        double la = item.mapLat(), lo = item.mapLon();
+        if (!Double.isFinite(la) || !Double.isFinite(lo)) return null;
+        // Use the same real Nepal district boundary already applied to waterways.
+        NepalRiverBoundary boundary = nationalBoundary;
+        if (boundary != null && !boundary.contains(lo, la)) return null;
+        StationDot station = new StationDot();
+        station.original = item;
+        station.lat = la;
+        station.lon = lo;
+        station.name = item.mapName();
+        station.stage = item.mapStage() == null ? "unknown" : item.mapStage().toLowerCase(Locale.ROOT);
+        station.fresh = item.mapFresh();
+        station.level = item.mapLevel();
+        station.rainfallMm = item.mapRainfallMm();
+        return station;
     }
 
     private String readAsset(String path) throws Exception {

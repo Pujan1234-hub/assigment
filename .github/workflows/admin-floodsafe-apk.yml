@@ -1,4 +1,4 @@
-name: Build Admin FloodSafe Android APK
+name: Build Admin FloodSafe v1.1 OTA and Push APK
 on:
   push:
     branches: [main]
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: admin-floodsafe-release-v1
+  group: admin-floodsafe-release-v11
   cancel-in-progress: false
 
 jobs:
@@ -72,21 +72,21 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
               --ks "$KEY" --ks-key-alias admin_floodsafe \
               --ks-pass "pass:$PASS" --key-pass "pass:$PASS" \
-              --out dist/Admin-FloodSafe-v1.0.0.apk dist/aligned.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/Admin-FloodSafe-v1.0.0.apk
-          unzip -t dist/Admin-FloodSafe-v1.0.0.apk >/dev/null
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/Admin-FloodSafe-v1.0.0.apk | head -10
-          sha256sum dist/Admin-FloodSafe-v1.0.0.apk > dist/Admin-FloodSafe-v1.0.0.sha256
+              --out dist/Admin-FloodSafe-v1.1.0.apk dist/aligned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/Admin-FloodSafe-v1.1.0.apk
+          unzip -t dist/Admin-FloodSafe-v1.1.0.apk >/dev/null
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/Admin-FloodSafe-v1.1.0.apk | head -10
+          sha256sum dist/Admin-FloodSafe-v1.1.0.apk > dist/Admin-FloodSafe-v1.1.0.sha256
           rm -f "$KEY" dist/aligned.apk
           echo 'Release APK signed and verified (non-debuggable).'
 
       - name: Archive APK
         uses: actions/upload-artifact@v4
         with:
-          name: Admin-FloodSafe-v1.0.0-APK
+          name: Admin-FloodSafe-v1.1.0-APK
           path: |
-            dist/Admin-FloodSafe-v1.0.0.apk
-            dist/Admin-FloodSafe-v1.0.0.sha256
+            dist/Admin-FloodSafe-v1.1.0.apk
+            dist/Admin-FloodSafe-v1.1.0.sha256
           if-no-files-found: error
           retention-days: 30
 
@@ -96,15 +96,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if gh release view admin-floodsafe-v1.0.0 >/dev/null 2>&1; then
-              echo 'v1.0.0 release already exists. Not overwriting signed binary/certificate.'
+          if gh release view admin-floodsafe-v1.1.0 >/dev/null 2>&1; then
+              echo 'v1.1.0 release already exists. Not overwriting signed binary/certificate.'
               exit 0
           fi
-          gh release create admin-floodsafe-v1.0.0 \
-              dist/Admin-FloodSafe-v1.0.0.apk \
-              dist/Admin-FloodSafe-v1.0.0.sha256 \
+          gh release create admin-floodsafe-v1.1.0 \
+              dist/Admin-FloodSafe-v1.1.0.apk \
+              dist/Admin-FloodSafe-v1.1.0.sha256 \
               --target "$GITHUB_SHA" \
-              --title 'Admin FloodSafe v1.0.0 (Android)' \
-              --notes 'Private PJBUILTS OTA message publishing companion app. No credentials are built in. Sign in with your own repository-scoped fine-grained GitHub token. In-app informational announcements only, not flood-warning push messages. This initial build uses an ephemeral signing key; replacing with a future different-key build may require uninstall/reinstall.' \
+              --title 'Admin FloodSafe v1.1.0 (Android)' \
+              --notes 'Private PJBUILTS OTA message publishing companion app. No credentials are built in. Use a repository-scoped fine-grained GitHub token. Includes OTA notices and non-emergency Firebase push via GitHub Actions workflow; does not alter flood warnings. Separate package from v1.0.0, with an independent signing key. OTA remove is confirmed on the server but the existing FloodSafe v0.9.23 may take up to five minutes to refresh the notice. Push is a non-emergency FCM app_notice and delivered status depends on devices.' \
               --prerelease
-          gh release view admin-floodsafe-v1.0.0 --json url,assets
+          gh release view admin-floodsafe-v1.1.0 --json url,assets

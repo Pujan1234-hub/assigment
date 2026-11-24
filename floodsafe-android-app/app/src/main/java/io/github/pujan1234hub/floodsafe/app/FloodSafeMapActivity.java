@@ -249,7 +249,7 @@ public final class FloodSafeMapActivity extends Activity {
         // Missing and zero thresholds must never appear as real official gauge limits.
         return Double.isFinite(threshold)&&threshold>0d?threshold:Double.NaN;
     }
-    private static final class MapStation {
+    private static final class MapStation implements FloodSafeNativeMapView.StationData {
         final String name,stage;
         final double lat,lon,level,rainfallMm,warning,danger;
         final boolean fresh;final long at;
@@ -257,6 +257,13 @@ public final class FloodSafeMapActivity extends Activity {
             name=n;lat=a;lon=o;level=l;rainfallMm=Double.NaN;
             warning=w;danger=d;fresh=f;stage=st;at=t;
         }
+        @Override public double stationLatitude(){return lat;}
+        @Override public double stationLongitude(){return lon;}
+        @Override public String stationName(){return name;}
+        @Override public String stationStage(){return stage;}
+        @Override public boolean stationFresh(){return fresh;}
+        @Override public double stationLevel(){return level;}
+        @Override public double stationRainfall(){return rainfallMm;}
     }
     @Override protected void onPause(){
         handler.removeCallbacks(mapRefreshTick);

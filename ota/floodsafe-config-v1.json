@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 9,
+  "revision": 10,
   "enabled": true,
   "news": {
     "poll_seconds": 60,
@@ -59,13 +59,13 @@
     }
   ],
   "app_notice": {
-    "enabled": false,
+    "enabled": true,
     "type": "announcement",
-    "title_ne": "🧪 THIS IS TESTING — FloodSafe Nepal v0.9.23",
-    "title_en": "🧪 THIS IS TESTING — FloodSafe Nepal v0.9.23",
-    "body_ne": "यो OTA प्रणालीको परीक्षण सन्देश हो। यो बाढी वा नदीको खतरा चेतावनी होइन।",
-    "body_en": "This is an in-app OTA test notice. It is not an official river or flood warning.",
-    "starts_at": "2026-11-24T00:00:00Z",
-    "expires_at": "2026-11-26T23:59:00Z"
+    "title_ne": "Beta test",
+    "title_en": "Beta test",
+    "body_ne": "Hi this is beta test",
+    "body_en": "Hi this is beta test",
+    "starts_at": "2026-11-24T19:01:51Z",
+    "expires_at": "2026-11-24T20:02:51Z"
   }
 }

@@ -2,6 +2,9 @@ name: FloodSafe Nepal - OTA Message Admin
 run-name: FloodSafe OTA - ${{ github.event.inputs.notice_action || 'check' }}
 
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/floodsafe-ota-message-admin.yml']
   workflow_dispatch:
     inputs:
       notice_action:
@@ -138,4 +141,15 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Workflow parsed successfully"
+      - uses: actions/checkout@v4
+      - name: Validate embedded OTA Python is syntactically correct
+        shell: bash
+        run: |
+          python3 - <<'VERIFY'
+          import pathlib, textwrap
+          text=pathlib.Path('.github/workflows/floodsafe-ota-message-admin.yml').read_text()
+          marker="          python3 - <<'PY'\n"
+          block=text.split(marker,1)[1].split("\n          PY",1)[0]
+          compile(textwrap.dedent(block),'ota-admin-script.py','exec')
+          print('OTA admin workflow and embedded Python are syntactically valid')
+          VERIFY

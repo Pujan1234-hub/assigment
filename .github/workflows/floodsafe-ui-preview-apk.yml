@@ -1,0 +1,150 @@
+name: FloodSafe Nepal UI Preview - separate install APK
+on:
+  push:
+    branches:
+      - ui/floodsafe-v0923-public-beta-20261125
+    paths:
+      - '.github/workflows/floodsafe-ui-preview-apk.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Install Android platform and build tools
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
+      - name: Set next release version without changing stable source
+        run: |
+          sed -i "s/versionCode 121/versionCode 125/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-ui-preview'/" floodsafe-android-app/app/build.gradle
+      - name: Prepare isolated preview package and approved launcher icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.uipreview'/" floodsafe-android-app/app/build.gradle
+          sed -i '/if (hasReleaseSigning) signingConfig signingConfigs.release/c\            signingConfig signingConfigs.debug' floodsafe-android-app/app/build.gradle
+          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal UI TEST</' floodsafe-android-app/app/src/main/res/values/strings.xml
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/google-services.json')
+          j=json.loads(p.read_text())
+          for client in j['client']:
+              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.uipreview'
+          p.write_text(json.dumps(j,indent=2))
+          PY
+          mkdir -p floodsafe-android-app/app/src/main/res/drawable-nodpi
+          base64 --decode floodsafe-android-app/branding/approved-floodsafe-icon.webp.b64 > floodsafe-android-app/app/src/main/res/drawable-nodpi/floodsafe_icon_original.webp
+          cat > floodsafe-android-app/app/src/main/res/drawable/ic_floodsafe.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+              android:src="@drawable/floodsafe_icon_original"
+              android:gravity="fill" />
+          XML
+          test -s floodsafe-android-app/app/src/main/res/drawable-nodpi/floodsafe_icon_original.webp
+      - name: Bundle complete offline FloodSafe assets
+        run: |
+          python3 floodsafe-android-app/bundle_web.py
+          mkdir -p floodsafe-android-app/app/src/main/assets
+          cp -a floodsafe-android-app/app/build/generated/floodsafe-assets/. floodsafe-android-app/app/src/main/assets/
+      - name: Verify fallback includes real, mappable official station coordinates
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/src/main/assets/data/floodsafe-core.json')
+          d=json.loads(p.read_text(encoding='utf-8'))
+          raw=d.get('river_stations') or d.get('rivers') or []
+          count=0
+          for r in raw:
+              if not isinstance(r,dict):continue
+              f=r.get('fields') if isinstance(r.get('fields'),dict) else {}
+              def num(keys):
+                  for obj in (r,f):
+                      for k in keys:
+                          try:
+                              v=float(obj[k])
+                              if v==v:return v
+                          except (KeyError,TypeError,ValueError):pass
+                  return None
+              lat=num(('latitude','lat','stationLatitude','station_latitude'))
+              lon=num(('longitude','lon','lng','stationLongitude','station_longitude'))
+              if lat is None or lon is None:
+                  for obj in (r,f):
+                      for k in ('_stationCoordinate','point','location','geometry','centroid'):
+                          pair=obj.get(k)
+                          if isinstance(pair,dict):pair=pair.get('coordinates')
+                          if not isinstance(pair,list) or len(pair)<2:continue
+                          try:a,b=float(pair[0]),float(pair[1])
+                          except (TypeError,ValueError):continue
+                          if 26.1<=b<=30.8 and 79.8<=a<=88.5:lat,lon=b,a
+                          elif 26.1<=a<=30.8 and 79.8<=b<=88.5:lat,lon=a,b
+                          if lat is not None and lon is not None:break
+                      if lat is not None and lon is not None:break
+              name=(r.get('stationName') or r.get('station_name') or r.get('name') or r.get('title') or f.get('stationName') or f.get('station_name') or f.get('name') or f.get('title'))
+              if lat is not None and lon is not None and 26.1<=lat<=30.8 and 79.8<=lon<=88.5 and name:count+=1
+          print('OFFLINE_STATION_CATALOGUE_COUNT',count)
+          assert count>=12, 'Offline station fallback would show too few stations'
+          PY
+
+      - name: Guard real station pins against release R8 obfuscation
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT=floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app
+          test -s "$ROOT/StationMapItem.java"
+          grep -Fq 'List<? extends StationMapItem>' "$ROOT/FloodSafeNativeMapView.java"
+          grep -q 'station.original = item' "$ROOT/FloodSafeNativeMapView.java"
+          ! grep -q 'getDeclaredField' "$ROOT/FloodSafeNativeMapView.java"
+          grep -q 'implements StationMapItem' "$ROOT/FloodSafeMapActivity.java"
+          grep -q 'implements StationMapItem' "$ROOT/NativeFullActivity.java"
+          grep -q 'implements StationMapItem' "$ROOT/FloodSafeNativeActivity.java"
+
+      - name: Run native Android unit tests before release compilation
+        run: gradle -p floodsafe-android-app :app:testReleaseUnitTest --no-daemon --stacktrace
+      - name: Run release lint checks
+        run: gradle -p floodsafe-android-app :app:lintRelease --no-daemon --stacktrace
+      - name: Upload lint diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Play-Release-Lint-Report
+          path: |
+            floodsafe-android-app/app/build/reports/lint-results-release.txt
+            floodsafe-android-app/app/build/reports/lint-results-release.html
+          if-no-files-found: warn
+      - name: Compile isolated, debug-signed release APK
+        run: gradle -p floodsafe-android-app :app:assembleRelease --no-daemon --stacktrace
+      - name: Verify isolated package and signed APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=floodsafe-android-app/app/build/outputs/apk/release/app-release.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > preview-badging.txt
+          grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview'" preview-badging.txt
+          grep -F "application-label:'FloodSafe Nepal UI TEST'" preview-badging.txt
+          mkdir -p preview-output
+          cp "$APK" preview-output/FloodSafe-Nepal-v0.9.23-UI-TEST.apk
+          sha256sum preview-output/*.apk
+      - name: Upload isolated preview APK only
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Nepal-v0.9.23-UI-TEST
+          path: preview-output/*.apk
+          if-no-files-found: error
+          retention-days: 14

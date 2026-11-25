@@ -1,4 +1,4 @@
-name: FloodSafe Nepal UI Preview 2 - separate install APK
+name: FloodSafe Nepal UI Preview 3 - separate install APK
 on:
   push:
     branches:
@@ -28,21 +28,21 @@ jobs:
       - name: Set next release version without changing stable source
         run: |
           sed -i "s/versionCode 121/versionCode 125/" floodsafe-android-app/app/build.gradle
-          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-ui-preview2'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-ui-preview3'/" floodsafe-android-app/app/build.gradle
       - name: Prepare isolated preview package and approved launcher icon
         shell: bash
         run: |
           set -euo pipefail
-          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.uipreview2'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.uipreview3'/" floodsafe-android-app/app/build.gradle
           sed -i '/if (hasReleaseSigning) signingConfig signingConfigs.release/c\            signingConfig signingConfigs.debug' floodsafe-android-app/app/build.gradle
-          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal UI TEST 2</' floodsafe-android-app/app/src/main/res/values/strings.xml
+          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal UI TEST 3</' floodsafe-android-app/app/src/main/res/values/strings.xml
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=Path('floodsafe-android-app/app/google-services.json')
           j=json.loads(p.read_text())
           for client in j['client']:
-              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.uipreview2'
+              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.uipreview3'
           p.write_text(json.dumps(j,indent=2))
           PY
           mkdir -p floodsafe-android-app/app/src/main/res/drawable-nodpi
@@ -136,15 +136,15 @@ jobs:
           test -s "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > preview-badging.txt
-          grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview2'" preview-badging.txt
-          grep -F "application-label:'FloodSafe Nepal UI TEST 2'" preview-badging.txt
+          grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview3'" preview-badging.txt
+          grep -F "application-label:'FloodSafe Nepal UI TEST 3'" preview-badging.txt
           mkdir -p preview-output
-          cp "$APK" preview-output/FloodSafe-Nepal-v0.9.23-UI-TEST-2.apk
+          cp "$APK" preview-output/FloodSafe-Nepal-v0.9.23-UI-TEST-3.apk
           sha256sum preview-output/*.apk
       - name: Upload isolated preview APK only
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0.9.23-UI-TEST-2
+          name: FloodSafe-Nepal-v0.9.23-UI-TEST-3
           path: preview-output/*.apk
           if-no-files-found: error
           retention-days: 14

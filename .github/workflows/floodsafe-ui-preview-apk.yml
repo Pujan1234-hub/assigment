@@ -1,4 +1,4 @@
-name: FloodSafe Nepal UI Preview 3 - separate install APK
+name: FloodSafe Nepal UI Preview 4 - separate install APK
 on:
   push:
     branches:
@@ -28,21 +28,21 @@ jobs:
       - name: Set next release version without changing stable source
         run: |
           sed -i "s/versionCode 121/versionCode 125/" floodsafe-android-app/app/build.gradle
-          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-ui-preview3'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-ui-preview4'/" floodsafe-android-app/app/build.gradle
       - name: Prepare isolated preview package and approved launcher icon
         shell: bash
         run: |
           set -euo pipefail
-          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.uipreview3'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.uipreview4'/" floodsafe-android-app/app/build.gradle
           sed -i '/if (hasReleaseSigning) signingConfig signingConfigs.release/c\            signingConfig signingConfigs.debug' floodsafe-android-app/app/build.gradle
-          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal UI TEST 3</' floodsafe-android-app/app/src/main/res/values/strings.xml
+          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal UI TEST 4</' floodsafe-android-app/app/src/main/res/values/strings.xml
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=Path('floodsafe-android-app/app/google-services.json')
           j=json.loads(p.read_text())
           for client in j['client']:
-              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.uipreview3'
+              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.uipreview4'
           p.write_text(json.dumps(j,indent=2))
           PY
           mkdir -p floodsafe-android-app/app/src/main/res/drawable-nodpi
@@ -59,6 +59,23 @@ jobs:
           python3 floodsafe-android-app/bundle_web.py
           mkdir -p floodsafe-android-app/app/src/main/assets
           cp -a floodsafe-android-app/app/build/generated/floodsafe-assets/. floodsafe-android-app/app/src/main/assets/
+      - name: Bundle HD dashboard landscape and NASA terrain
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSETS=floodsafe-android-app/app/src/main/assets/dashboard-preview
+          mkdir -p "$ASSETS"
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 120 -A 'FloodSafeNepal/0.9.23 UI preview (pjbuilts.com)' 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/Annapurna_range_as_seen_from_kathmandu.jpg/1280px-Annapurna_range_as_seen_from_kathmandu.jpg' -o "$ASSETS/nepal-hero.jpg"
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 120 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&SRS=EPSG:4326&BBOX=79.8,26.1,88.5,30.8&WIDTH=1600&HEIGHT=864&FORMAT=image/jpeg&LAYERS=BlueMarble_ShadedRelief_Bathymetry&STYLES=' -o "$ASSETS/nepal-terrain.jpg"
+          file "$ASSETS/"*.jpg
+          for f in "$ASSETS/"*.jpg; do file -b "$f" | grep -q 'JPEG image data'; done
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('floodsafe-android-app/app/src/main/assets/dashboard-preview')
+          assert (p/'nepal-hero.jpg').stat().st_size>10000
+          assert (p/'nepal-terrain.jpg').stat().st_size>10000
+          (p/'credits.txt').write_text('Landscape: Samdesherpa, Annapurna range as seen from kathmandu.jpg, Wikimedia Commons, CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Source https://commons.wikimedia.org/wiki/File:Annapurna_range_as_seen_from_kathmandu.jpg. UI displays crop and overlay.\nTerrain: NASA GIBS Blue Marble Shaded Relief Bathymetry, static imagery. Bounds W79.8 S26.1 E88.5 N30.8, EPSG:4326. Station readings are separate.\n')
+          PY
       - name: Verify fallback includes real, mappable official station coordinates
         shell: bash
         run: |
@@ -136,15 +153,15 @@ jobs:
           test -s "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > preview-badging.txt
-          grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview3'" preview-badging.txt
-          grep -F "application-label:'FloodSafe Nepal UI TEST 3'" preview-badging.txt
+          grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview4'" preview-badging.txt
+          grep -F "application-label:'FloodSafe Nepal UI TEST 4'" preview-badging.txt
           mkdir -p preview-output
-          cp "$APK" preview-output/FloodSafe-Nepal-v0.9.23-UI-TEST-3.apk
+          cp "$APK" preview-output/FloodSafe-Nepal-v0.9.23-UI-TEST-4.apk
           sha256sum preview-output/*.apk
       - name: Upload isolated preview APK only
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0.9.23-UI-TEST-3
+          name: FloodSafe-Nepal-v0.9.23-UI-TEST-4
           path: preview-output/*.apk
           if-no-files-found: error
           retention-days: 14

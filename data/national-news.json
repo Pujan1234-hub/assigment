@@ -1,28 +1,56 @@
 {
-  "generated_at": "2026-11-25T07:22:43.018474+05:45",
-  "updated_at_npt": "25 Nov 07:22 NPT",
+  "generated_at": "2026-11-25T16:14:09.011896+05:45",
+  "updated_at_npt": "25 Nov 16:14 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "बन्दरगाह, ऊर्जा र कनेक्टिभिटीमा उत्साह, जुट र चियाबारे चिन्ता",
+      "title": "मधेसमा सरोजको सरकार : न समर्थन, न मन्त्रिपरिषद् विस्तार",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607435/excitement-over-ports-energy-and-connectivity-concerns-over-jute-and-tea",
-      "published_at": "2026-11-25T07:14:14+05:45",
+      "url": "https://www.ratopati.com/story/607551/sarojs-government-in-madhesh-no-support-no-cabinet-expansion",
+      "published_at": "2026-11-25T15:16:32+05:45",
       "flash": true
     },
     {
-      "title": "कस्तो रहला आजको मौसम ?",
+      "title": "एमाले–नेकपा चुनावी तालमेल, ‘मुड’ छ, ‘मोडालिटी’ छैन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607430/how-was-the-weather-today",
-      "published_at": "2026-11-25T06:17:31+05:45",
+      "url": "https://www.ratopati.com/story/607526/uml-ncp-election-coordination-there-is-mood-not-modality",
+      "published_at": "2026-11-25T15:00:00+05:45",
+      "flash": false
+    },
+    {
+      "title": "गोरखामा बस र ट्रक ठोक्कियो, १७ जना घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607545/bus-and-truck-collide-in-gorkha-17-injured",
+      "published_at": "2026-11-25T14:45:36+05:45",
+      "flash": false
+    },
+    {
+      "title": "'कार्कीलाई सुरक्षा सल्लाहकार बनाउनु बढुवा हो, रिटको औचित्य छैन' १ घण्टा अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607534/making-karki-a-security-advisor-is-a-promotion-there-is-no-justification-for-the-writ",
+      "published_at": "2026-11-25T14:27:33+05:45",
+      "flash": false
+    },
+    {
+      "title": "पोखरा विमानस्थलको अन्तर्राष्ट्रिय उडानमा यात्रुको आकर्षण बढ्दै ३ घण्टा अगाडि",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607513/international-flights-at-pokhara-airport-attract-increasing-passenger-interest",
+      "published_at": "2026-11-25T13:05:06+05:45",
+      "flash": false
+    },
+    {
+      "title": "जुम्लामा राजमार्गका अतिक्रमित संरचना हटाउन सुरु",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607506/removal-of-encroached-structures-on-highways-begins-in-jumla",
+      "published_at": "2026-11-25T12:15:10+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 8,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     },
@@ -36,7 +64,7 @@
       "ok": true,
       "candidates": 16,
       "flash": 1,
-      "recent": 2
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -46,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 3,
+      "candidates": 6,
       "flash": 0,
       "recent": 0
     }

@@ -1,56 +1,49 @@
 {
-  "generated_at": "2026-11-25T16:14:09.011896+05:45",
-  "updated_at_npt": "25 Nov 16:14 NPT",
+  "generated_at": "2026-11-26T01:51:32.574753+05:45",
+  "updated_at_npt": "26 Nov 01:51 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "मधेसमा सरोजको सरकार : न समर्थन, न मन्त्रिपरिषद् विस्तार",
+      "title": "साइबर जोखिम बढ्दै जाँदा अस्ट्रेलियाको पूर्वाधार सुरक्षा चिन्ताको विषय: प्रतिवेदन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607551/sarojs-government-in-madhesh-no-support-no-cabinet-expansion",
-      "published_at": "2026-11-25T15:16:32+05:45",
-      "flash": true
-    },
-    {
-      "title": "एमाले–नेकपा चुनावी तालमेल, ‘मुड’ छ, ‘मोडालिटी’ छैन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607526/uml-ncp-election-coordination-there-is-mood-not-modality",
-      "published_at": "2026-11-25T15:00:00+05:45",
+      "url": "https://www.ratopati.com/story/607641/australias-infrastructure-security-a-concern-as-cyber-risks-rise-report",
+      "published_at": "2026-11-26T00:45:00+05:45",
       "flash": false
     },
     {
-      "title": "गोरखामा बस र ट्रक ठोक्कियो, १७ जना घाइते",
+      "title": "सेवाग्राहीका गुनासा तत्काल सम्बोधन गर्न टेलिकमलाई सञ्चारमन्त्रीको निर्देशन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607545/bus-and-truck-collide-in-gorkha-17-injured",
-      "published_at": "2026-11-25T14:45:36+05:45",
+      "url": "https://www.ratopati.com/story/607640/communications-minister-directs-telecom-to-immediately-address-complaints-from-service-users",
+      "published_at": "2026-11-26T00:19:47+05:45",
       "flash": false
     },
     {
-      "title": "'कार्कीलाई सुरक्षा सल्लाहकार बनाउनु बढुवा हो, रिटको औचित्य छैन' १ घण्टा अगाडि",
+      "title": "‘हुंकार मधेस’ द्वारा प्रधानमन्त्रीलाई ज्ञापनपत्र : हिन्दु गणराज्य घोषणादेखि लाल आयोगको प्रतिवेदन सार्वजनिक गर्न माग",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607534/making-karki-a-security-advisor-is-a-promotion-there-is-no-justification-for-the-writ",
-      "published_at": "2026-11-25T14:27:33+05:45",
+      "url": "https://www.ratopati.com/story/607636/memorandum-to-the-prime-minister-by-hunkar-madhes-demand-to-make-public-the-report-of-the-lal-commission-from-the-declaration-of-the-hindu-republic",
+      "published_at": "2026-11-25T23:16:46+05:45",
       "flash": false
     },
     {
-      "title": "पोखरा विमानस्थलको अन्तर्राष्ट्रिय उडानमा यात्रुको आकर्षण बढ्दै ३ घण्टा अगाडि",
+      "title": "युएईमा सडक दुर्घटनाको कहर : १२ दिनमै २७ जनाको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607513/international-flights-at-pokhara-airport-attract-increasing-passenger-interest",
-      "published_at": "2026-11-25T13:05:06+05:45",
+      "url": "https://www.ratopati.com/story/607634/road-accident-havoc-in-uae-27-people-die-in-12-days",
+      "published_at": "2026-11-25T22:30:33+05:45",
       "flash": false
     },
     {
-      "title": "जुम्लामा राजमार्गका अतिक्रमित संरचना हटाउन सुरु",
+      "title": "१० बजे १० समाचार : दानबहादुरलाई मिलेन राहत, भेटिएनन् बानियाँ र अर्याल ३ घण्टा अगाडि",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607506/removal-of-encroached-structures-on-highways-begins-in-jumla",
-      "published_at": "2026-11-25T12:15:10+05:45",
+      "url": "https://www.ratopati.com/story/607614/10-news-at-10",
+      "published_at": "2026-11-25T22:00:00+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     },
@@ -63,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 7
+      "flash": 0,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,

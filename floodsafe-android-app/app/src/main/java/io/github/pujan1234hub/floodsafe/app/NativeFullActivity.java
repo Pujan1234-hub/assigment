@@ -229,9 +229,9 @@ public final class NativeFullActivity extends Activity implements LocationListen
 
     @Override public void onCreate(Bundle state){
         super.onCreate(state);
-        getWindow().setStatusBarColor(Color.rgb(223,242,251));
-        getWindow().setNavigationBarColor(Color.WHITE);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        getWindow().setStatusBarColor(Color.rgb(18,39,48));
+        getWindow().setNavigationBarColor(Color.rgb(18,39,48));
+        getWindow().getDecorView().setSystemUiVisibility(0);
         FloodSafeRemoteConfig.init(getApplicationContext());
         playUpdates=new PlayStoreUpdateBridge(this);
         SharedPreferences p=getSharedPreferences(PREFS,MODE_PRIVATE);english=p.getBoolean(KEY_LANG,false);
@@ -252,9 +252,9 @@ public final class NativeFullActivity extends Activity implements LocationListen
     @Override protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);consumeSathiIntent(i);}
 
     private View buildScreen(){
-        root=new FrameLayout(this); root.setBackgroundColor(Color.rgb(223,242,251));
+        root=new FrameLayout(this); root.setBackgroundColor(Color.rgb(240,237,226));
         scroll=new ScrollView(this); scroll.setFillViewport(true); scroll.setClipToPadding(false); scroll.setPadding(0,0,0,dp(92));
-        content=new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(dp(14),dp(16),dp(14),dp(24));
+        content=new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL); content.setPadding(dp(16),dp(16),dp(16),dp(28));
         scroll.addView(content,new ScrollView.LayoutParams(-1,-2)); root.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
         scroll.setOnScrollChangeListener((v,x,y,oldX,oldY)->{main.removeCallbacks(mapVisibilityTick);main.postDelayed(mapVisibilityTick,160L);});
         homeAnchor=header(); content.addView(homeAnchor);
@@ -270,11 +270,11 @@ public final class NativeFullActivity extends Activity implements LocationListen
         alarmBanner=new LinearLayout(this);alarmBanner.setOrientation(LinearLayout.VERTICAL);alarmBanner.setPadding(dp(16),dp(14),dp(16),dp(14));alarmBanner.setBackground(round(Color.rgb(255,235,239),22,Color.rgb(239,138,152),2));
         alarmTitle=text(t("⚠️ नदी चेतावनी","⚠️ River warning"),22,true,Color.rgb(146,34,56));alarmText=text("",14,true,Color.rgb(146,34,56));alarmBanner.addView(alarmTitle);alarmBanner.addView(alarmText);alarmBanner.setVisibility(View.GONE);content.addView(alarmBanner,lp(-1,-2,0,0,0,dp(12)));
         content.addView(governmentCard(),lp(-1,-2,0,0,0,dp(12)));
+        content.addView(riskCard());
         mapAnchor=mapCard();content.addView(mapAnchor);
          Button advanced=button(t("✨ उन्नत जानकारी · नदी, वर्षा, बाढी, NASA र चेतावनी","✨ Advanced · Rivers, Rain, Flood, NASA & Alerts"));
          advanced.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});
          content.addView(advanced,lp(-1,dp(62),0,dp(10),0,dp(12)));
-        content.addView(riskCard());
         content.addView(rainGaugeCard());
         nearSection=nearCard();content.addView(nearSection);
         content.addView(nationalCard());
@@ -291,7 +291,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(0,0,0,dp(12));
         ImageView icon=new ImageView(this);icon.setImageResource(R.mipmap.ic_launcher);GradientDrawable ib=round(Color.WHITE,16,Color.rgb(209,229,239),1);icon.setBackground(ib);icon.setPadding(dp(3),dp(3),dp(3),dp(3));row.addView(icon,new LinearLayout.LayoutParams(dp(52),dp(52)));
         LinearLayout brand=new LinearLayout(this);brand.setOrientation(LinearLayout.VERTICAL);brand.setPadding(dp(10),0,0,0);LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(0,-2,1f);row.addView(brand,bp);
-        TextView title=text("FloodSafe Nepal",25,true,Color.rgb(16,39,70));brand.addView(title);brandSub=text("",12,true,Color.rgb(82,116,139));brand.addView(brandSub);
+        TextView title=text("FloodSafe Nepal",24,true,Color.rgb(23,54,52));brand.addView(title);brandSub=text("",12,true,Color.rgb(66,91,86));brand.addView(brandSub);
         langBtn=text("",12,true,Color.rgb(18,48,76));langBtn.setGravity(Gravity.CENTER);langBtn.setPadding(dp(12),dp(10),dp(12),dp(10));langBtn.setBackground(round(Color.WHITE,99,Color.rgb(209,229,239),1));langBtn.setOnClickListener(v->{
             english=!english;
             getSharedPreferences(PREFS,MODE_PRIVATE).edit().putBoolean(KEY_LANG,english).apply();
@@ -315,19 +315,20 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
 
     private View hero(){
-        LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);card.setPadding(dp(20),dp(18),dp(20),dp(20));GradientDrawable g=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{Color.rgb(44,143,199),Color.rgb(30,121,173),Color.rgb(23,108,125)});g.setCornerRadius(dp(31));card.setBackground(g);
-        LinearLayout stripe=new LinearLayout(this);stripe.setOrientation(LinearLayout.HORIZONTAL);View b=new View(this),w=new View(this),r=new View(this);b.setBackgroundColor(Color.rgb(0,56,147));w.setBackgroundColor(Color.WHITE);r.setBackgroundColor(Color.rgb(220,20,60));stripe.addView(b,new LinearLayout.LayoutParams(0,dp(6),45));stripe.addView(w,new LinearLayout.LayoutParams(0,dp(6),10));stripe.addView(r,new LinearLayout.LayoutParams(0,dp(6),45));card.addView(stripe,lp(-1,dp(6),0,0,0,dp(18)));
+        LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);card.setPadding(dp(20),dp(20),dp(20),dp(20));card.setBackground(new MonsoonHeroBackground());
+        TextView localWeatherHeading=text(t("तपाईंको स्थानको मौसम","Weather at your location"),14,true,Color.rgb(227,236,216));card.addView(localWeatherHeading,lp(-1,-2,0,0,0,dp(12)));
         LinearLayout top=new LinearLayout(this);top.setOrientation(LinearLayout.HORIZONTAL);place=text("",14,true,Color.WHITE);clock=text("",11,true,Color.WHITE);top.addView(place,new LinearLayout.LayoutParams(0,-2,1f));top.addView(clock);card.addView(top);
-        temp=text("—°",66,false,Color.WHITE);
+        LinearLayout grid=new LinearLayout(this);grid.setOrientation(LinearLayout.HORIZONTAL);grid.setPadding(0,dp(16),0,dp(6));rain=weatherStat(grid,"—",t("वर्षा","Rain"));humidity=weatherStat(grid,"—",t("आर्द्रता","Humidity"));wind=weatherStat(grid,"—",t("हावा","Wind"));card.addView(grid);
+        temp=text("—°",58,false,Color.WHITE);
          LinearLayout heroMiddle=new LinearLayout(this);heroMiddle.setOrientation(LinearLayout.HORIZONTAL);heroMiddle.setGravity(Gravity.CENTER_VERTICAL);
          heroMiddle.addView(temp,new LinearLayout.LayoutParams(0,-2,1.1f));
          miniForecast=new NativeSevenDayChart(this);miniForecast.useLanguage(english);
          heroMiddle.addView(miniForecast,new LinearLayout.LayoutParams(0,dp(124),1.5f));
          card.addView(heroMiddle,lp(-1,-2,0,dp(12),0,0));weatherText=text("",27,true,Color.WHITE);card.addView(weatherText);weatherSupport=text("",13,false,Color.rgb(232,247,255));card.addView(weatherSupport,lp(-1,-2,0,dp(6),0,0));
         rainTiming=text("",12,true,Color.WHITE);rainTiming.setPadding(dp(10),dp(9),dp(10),dp(9));rainTiming.setBackground(round(Color.argb(55,7,61,95),14,Color.argb(64,255,255,255),1));card.addView(rainTiming,lp(-1,-2,0,dp(11),0,0));
-        LinearLayout grid=new LinearLayout(this);grid.setOrientation(LinearLayout.HORIZONTAL);grid.setPadding(0,dp(14),0,0);rain=weatherStat(grid,"—",t("वर्षा","Rain"));humidity=weatherStat(grid,"—",t("आर्द्रता","Humidity"));wind=weatherStat(grid,"—",t("हावा","Wind"));card.addView(grid);return card;
+        return card;
     }
-    private TextView weatherStat(LinearLayout parent,String value,String label){LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);TextView v=text(value,18,true,Color.WHITE);TextView l=text(label,11,true,Color.rgb(215,238,248));box.addView(v);box.addView(l);parent.addView(box,new LinearLayout.LayoutParams(0,-2,1f));return v;}
+    private TextView weatherStat(LinearLayout parent,String value,String label){LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);TextView v=text(value,21,true,Color.WHITE);TextView l=text(label,12,true,Color.rgb(227,236,216));box.addView(v);box.addView(l);parent.addView(box,new LinearLayout.LayoutParams(0,-2,1f));return v;}
 
     // MapLibre satellite / DEM + river GeoJSON are deliberately NOT inflated inside
     // the Home ScrollView. Rendering a MapView while scrolling caused repeated ANRs
@@ -341,7 +342,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         TextView preview=text(t("🗺️ नदीको नक्सा, 3D, zoom र बादल हेर्न तल थिच्नुहोस्।",
                          "🗺️ Open the live map for river geometry, 3D, zoom and weather clouds."),15,true,Color.rgb(31,80,113));
         preview.setPadding(dp(14),dp(25),dp(14),dp(25));
-        preview.setBackground(round(Color.rgb(234,248,255),20,Color.rgb(168,210,230),1));
+        preview.setBackground(round(Color.rgb(232,238,224),20,Color.rgb(193,210,193),1));
         c.addView(preview);
         Button open=button(t("🗺️ लाइभ नदी नक्सा खोल्नुहोस् →","🗺️ Open live river map →"));
         open.setOnClickListener(v->openMapScreen());
@@ -504,7 +505,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
 
     private View riskCard(){LinearLayout c=card();LinearLayout h=new LinearLayout(this);h.setOrientation(LinearLayout.HORIZONTAL);LinearLayout left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);h.addView(left,new LinearLayout.LayoutParams(0,-2,1));TextView title=text(t("🛡️ मेरो निगरानी क्षेत्रको बाढी जोखिम","🛡️ Flood risk near me"),20,true,Color.rgb(16,39,70));left.addView(title);feedFresh=text("",12,true,Color.rgb(100,130,151));left.addView(feedFresh);riskBadge=badge("—",Color.rgb(237,247,252),Color.rgb(23,116,174));h.addView(riskBadge);c.addView(h);riskValue=text("—",34,true,Color.rgb(85,117,139));c.addView(riskValue,lp(-1,-2,0,dp(12),0,0));riskText=text("",13,false,Color.rgb(95,125,146));c.addView(riskText);LinearLayout stats=new LinearLayout(this);stats.setOrientation(LinearLayout.HORIZONTAL);stationCount=stat(stats,"—",t("सबै official स्टेशन","Official stations"));warningCount=stat(stats,"—",t("चेतावनी","Warning"));dangerCount=stat(stats,"—",t("खतरा","Danger"));c.addView(stats,lp(-1,-2,0,dp(12),0,0));return c;}
-    private TextView stat(LinearLayout p,String n,String l){LinearLayout b=new LinearLayout(this);b.setOrientation(LinearLayout.VERTICAL);b.setGravity(Gravity.CENTER);b.setPadding(dp(5),dp(9),dp(5),dp(9));b.setBackground(round(Color.rgb(243,249,252),16,Color.rgb(218,234,242),1));TextView v=text(n,21,true,Color.rgb(16,39,70));TextView s=text(l,9,true,Color.rgb(103,132,154));s.setGravity(Gravity.CENTER);b.addView(v);b.addView(s);LinearLayout.LayoutParams q=new LinearLayout.LayoutParams(0,-2,1);q.setMargins(dp(3),0,dp(3),0);p.addView(b,q);return v;}
+    private TextView stat(LinearLayout p,String n,String l){LinearLayout b=new LinearLayout(this);b.setOrientation(LinearLayout.VERTICAL);b.setGravity(Gravity.CENTER);b.setPadding(dp(5),dp(9),dp(5),dp(9));b.setBackground(round(Color.rgb(239,242,231),16,Color.rgb(213,222,205),1));TextView v=text(n,21,true,Color.rgb(16,39,70));TextView s=text(l,9,true,Color.rgb(103,132,154));s.setGravity(Gravity.CENTER);b.addView(v);b.addView(s);LinearLayout.LayoutParams q=new LinearLayout.LayoutParams(0,-2,1);q.setMargins(dp(3),0,dp(3),0);p.addView(b,q);return v;}
 
     private View nearCard(){LinearLayout c=card();nearTitle=text("",20,true,Color.rgb(16,39,70));nearSub=text("",12,true,Color.rgb(100,130,151));c.addView(nearTitle);c.addView(nearSub);nearList=new LinearLayout(this);nearList.setOrientation(LinearLayout.VERTICAL);c.addView(nearList,lp(-1,-2,0,dp(10),0,0));return c;}
     private View nationalCard(){
@@ -597,7 +598,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         c.addView(newsList,lp(-1,-2,0,dp(8),0,0));return c;}
     private View privacyCard(){LinearLayout c=card();privacyTitle=text("",20,true,Color.rgb(16,39,70));privacySub=text("",12,true,Color.rgb(100,130,151));c.addView(privacyTitle);c.addView(privacySub);Button b=smallButton(t("गोपनीयता नीति हेर्नुहोस् →","View privacy policy →"));b.setOnClickListener(v->showPrivacy());c.addView(b,lp(-1,dp(48),0,dp(10),0,0));return c;}
 
-    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.argb(246,255,255,255),24,Color.rgb(208,227,237),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->openMapScreen());a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->{smoothTo(newsAnchor);if(System.currentTimeMillis()-newsLastFetchedAt>=FloodSafeRemoteConfig.newsPollMillis())refreshNews();});return nav;}
+    private View bottomNav(){LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(8),dp(7),dp(8),dp(7));nav.setBackground(round(Color.rgb(18,39,48),24,Color.rgb(43,75,75),1));Button h=navButton("⌂\n"+t("गृह","Home")),m=navButton("🗺️\n"+t("नदी नक्सा","River map")),a=navButton("✨\n"+t("उन्नत","Advanced")),n=navButton("🔔\n"+t("समाचार","News"));nav.addView(h,weight());nav.addView(m,weight());nav.addView(a,weight());nav.addView(n,weight());h.setBackground(round(Color.rgb(63,102,91),16,Color.TRANSPARENT,0));h.setOnClickListener(v->smoothTo(homeAnchor));m.setOnClickListener(v->openMapScreen());a.setOnClickListener(v->{Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);});n.setOnClickListener(v->{smoothTo(newsAnchor);if(System.currentTimeMillis()-newsLastFetchedAt>=FloodSafeRemoteConfig.newsPollMillis())refreshNews();});return nav;}
     private FrameLayout.LayoutParams bottomParams(){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(-1,dp(72),Gravity.BOTTOM);p.setMargins(dp(9),0,dp(9),dp(9));return p;}
     private void smoothTo(View v){if(v==null)return;scroll.post(()->scroll.smoothScrollTo(0,Math.max(0,v.getTop()-dp(8))));}
 
@@ -1189,12 +1190,43 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private static long parseTime(String s){if(s==null||s.trim().isEmpty())return-1;String v=s.trim();try{long n=Long.parseLong(v);return n<10_000_000_000L?n*1000:n;}catch(Exception ignored){}try{return Instant.parse(v).toEpochMilli();}catch(Exception ignored){}try{return OffsetDateTime.parse(v).toInstant().toEpochMilli();}catch(Exception ignored){}try{return ZonedDateTime.parse(v).toInstant().toEpochMilli();}catch(Exception ignored){}try{return LocalDateTime.parse(v.replace(' ','T'),DateTimeFormatter.ISO_LOCAL_DATE_TIME).atZone(ZoneId.of("Asia/Kathmandu")).toInstant().toEpochMilli();}catch(Exception ignored){return-1;}}
     private static boolean isDisaster(String s){return s.matches(".*(flood|flash flood|landslide|earthquake|avalanche|glacial|glof|fire|wildfire|lightning|storm|windstorm|heavy rain|inundation|बाढी|पहिरो|भूकम्प|हिमपहिरो|डढेलो|आगलागी|चट्याङ|डुबान|अविरल वर्षा).*" )&&!s.matches(".*(road accident|vehicle accident|traffic accident|दुर्घटना|राजनीति|खेलकुद|निर्वाचन).*" );}
     private static int stageColor(String s){switch(s){case"danger":return Color.rgb(214,47,67);case"warning":return Color.rgb(239,125,36);case"alert":return Color.rgb(224,165,42);case"normal":return Color.rgb(31,164,116);default:return Color.rgb(113,139,155);}}private static int stageBg(String s){switch(s){case"danger":return Color.rgb(255,240,242);case"warning":return Color.rgb(255,247,235);case"alert":return Color.rgb(255,248,233);case"normal":return Color.rgb(233,255,245);default:return Color.rgb(243,249,252);}}private static String stageDot(String s){switch(s){case"danger":return"🔴";case"warning":return"🟠";case"alert":return"🟡";case"normal":return"🟢";default:return"⚪";}}private String stageName(String s){switch(s){case"danger":return t("खतरा","DANGER");case"warning":return t("चेतावनी","WARNING");case"alert":return t("निगरानी","ALERT");case"normal":return t("सामान्य","NORMAL");default:return t("पुरानो/अज्ञात","STALE/UNKNOWN");}}
-    private LinearLayout card(){LinearLayout c=new LinearLayout(this);c.setOrientation(LinearLayout.VERTICAL);c.setPadding(dp(17),dp(16),dp(17),dp(16));c.setBackground(round(Color.argb(248,255,255,255),25,Color.rgb(207,229,239),1));c.setElevation(dp(3));c.setLayoutParams(lp(-1,-2,0,0,0,dp(14)));return c;}
+    private LinearLayout card(){LinearLayout c=new LinearLayout(this);c.setOrientation(LinearLayout.VERTICAL);c.setPadding(dp(18),dp(18),dp(18),dp(18));c.setBackground(round(Color.rgb(250,248,240),24,Color.rgb(219,222,208),1));c.setElevation(dp(1));c.setLayoutParams(lp(-1,-2,0,0,0,dp(18)));return c;}
     private TextView text(String s,float sp,boolean bold,int color){TextView v=new TextView(this);v.setText(s);v.setTextSize(sp);v.setTextColor(color);v.setGravity(Gravity.START);v.setLineSpacing(0,1.08f);if(bold)v.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));return v;}
     private TextView badge(String s,int bg,int fg){TextView v=text(s,10,true,fg);v.setPadding(dp(9),dp(6),dp(9),dp(6));v.setGravity(Gravity.CENTER);v.setBackground(round(bg,99,Color.TRANSPARENT,0));return v;}
-    private Button button(String s){Button b=new Button(this);b.setText(s);b.setAllCaps(false);b.setTextColor(Color.rgb(18,48,75));b.setTextSize(15);b.setTypeface(Typeface.DEFAULT_BOLD);b.setBackground(round(Color.WHITE,18,Color.rgb(207,228,239),1));return b;}
-    private Button smallButton(String s){Button b=button(s);b.setTextSize(12);return b;}private Button navButton(String s){Button b=button(s);b.setTextSize(11);b.setBackground(round(Color.rgb(234,246,252),16,Color.TRANSPARENT,0));return b;}
+    private Button button(String s){Button b=new Button(this);b.setText(s);b.setAllCaps(false);b.setTextColor(Color.rgb(18,48,75));b.setTextSize(15);b.setTypeface(Typeface.DEFAULT_BOLD);b.setBackground(round(Color.rgb(247,245,235),18,Color.rgb(207,216,199),1));return b;}
+    private Button smallButton(String s){Button b=button(s);b.setTextSize(12);return b;}private Button navButton(String s){Button b=button(s);b.setTextSize(11);b.setTextColor(Color.rgb(245,246,237));b.setBackground(round(Color.rgb(36,65,68),16,Color.TRANSPARENT,0));return b;}
     private TextView empty(String s){TextView v=text(s,12,false,Color.rgb(102,131,153));v.setPadding(dp(14),dp(13),dp(14),dp(13));v.setBackground(round(Color.rgb(248,252,254),16,Color.rgb(200,223,234),1));return v;}
+    /** Decorative, offline monsoon scene. No weather, location or alert inference. */
+    private final class MonsoonHeroBackground extends android.graphics.drawable.Drawable {
+        private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
+        @Override public void draw(Canvas c){
+            RectF bounds=new RectF(getBounds());
+            if(bounds.width()<=0||bounds.height()<=0)return;
+            int save=c.save();
+            Path clip=new Path();clip.addRoundRect(bounds,dp(28),dp(28),Path.Direction.CW);c.clipPath(clip);
+            c.translate(bounds.left,bounds.top);
+            float w=bounds.width(),h=bounds.height();
+            p.setShader(new android.graphics.LinearGradient(0,0,w,h,new int[]{Color.rgb(22,42,54),Color.rgb(26,64,67),Color.rgb(23,49,48)},null,android.graphics.Shader.TileMode.CLAMP));
+            c.drawRect(0,0,w,h,p);p.setShader(null);
+            ridge(c,w,h,Color.argb(85,105,143,145),new float[]{.39f,.21f,.34f,.12f,.32f,.18f,.40f});
+            ridge(c,w,h,Color.argb(115,37,77,74),new float[]{.57f,.40f,.51f,.32f,.53f,.38f,.56f});
+            ridge(c,w,h,Color.argb(115,17,46,42),new float[]{.79f,.65f,.72f,.56f,.76f,.63f,.82f});
+            p.setColor(Color.argb(36,205,230,224));p.setStrokeWidth(Math.max(1f,dp(1)));
+            for(int i=0;i<34;i++){
+                float x=((i*73)%101)/100f*w,y=((i*37)%103)/102f*h;
+                c.drawLine(x,y,x-dp(7),y+dp(19),p);
+            }
+            p.setColor(Color.argb(55,6,22,26));c.drawRect(0,0,w,h,p);c.restoreToCount(save);
+        }
+        private void ridge(Canvas c,float w,float h,int color,float[] ys){
+            Path path=new Path();path.moveTo(0,h);
+            for(int i=0;i<ys.length;i++)path.lineTo(w*i/(ys.length-1),h*ys[i]);
+            path.lineTo(w,h);path.close();p.setColor(color);c.drawPath(path,p);
+        }
+        @Override public void setAlpha(int alpha){}
+        @Override public void setColorFilter(android.graphics.ColorFilter filter){}
+        @Override public int getOpacity(){return android.graphics.PixelFormat.TRANSLUCENT;}
+    }
     private GradientDrawable round(int color,int radius,int stroke,int sw){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp(radius));if(sw>0)g.setStroke(dp(sw),stroke);return g;}
     private LinearLayout.LayoutParams lp(int w,int h,int l,int t,int r,int b){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(w,h);p.setMargins(dp(l),dp(t),dp(r),dp(b));return p;}private LinearLayout.LayoutParams weight(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-1,1f);p.setMargins(dp(2),0,dp(2),0);return p;}private int dp(int v){return Math.round(v*getResources().getDisplayMetrics().density);}
     private static final class RiverStation implements StationMapItem {final String name,district,stage;final double lat,lon,level,warning,danger;final long at;final boolean fresh;final int rank;RiverStation(String n,String di,double a,double o,double l,double w,double d,long tm,boolean f,String s,int r){name=n;district=di;lat=a;lon=o;level=l;warning=w;danger=d;at=tm;fresh=f;stage=s;rank=r;}

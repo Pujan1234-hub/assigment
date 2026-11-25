@@ -1,56 +1,28 @@
 {
-  "generated_at": "2026-11-24T23:27:02.512051+05:45",
-  "updated_at_npt": "24 Nov 23:27 NPT",
+  "generated_at": "2026-11-25T07:22:43.018474+05:45",
+  "updated_at_npt": "25 Nov 07:22 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "इजरायली हवाई आक्रमणमा हमासका आन्तरिक सुरक्षा प्रमुखको मृत्यु",
+      "title": "बन्दरगाह, ऊर्जा र कनेक्टिभिटीमा उत्साह, जुट र चियाबारे चिन्ता",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607411/hamas-internal-security-chief-killed-in-israeli-airstrike",
-      "published_at": "2026-11-24T22:45:34+05:45",
+      "url": "https://www.ratopati.com/story/607435/excitement-over-ports-energy-and-connectivity-concerns-over-jute-and-tea",
+      "published_at": "2026-11-25T07:14:14+05:45",
       "flash": true
     },
     {
-      "title": "बाढी प्रभावितको अन्तिम सूची तयार गरी तत्काल राहत बाँड्न स्थानीय तहलाई सञ्चारमन्त्रीको आग्रह",
+      "title": "कस्तो रहला आजको मौसम ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607409/communications-minister-urges-local-levels-to-prepare-final-list-of-flood-victims-and-distribute-relief-immediately",
-      "published_at": "2026-11-24T22:30:51+05:45",
-      "flash": true
-    },
-    {
-      "title": "३. प्रहरीका ६० जना एसपीको सरुवा, १७ जिल्लाका इन्चार्ज फेरिए (सूचीसिहत)",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607408/60-sps-transferred-in-charges-of-17-districts-changed-with-list",
-      "published_at": "2026-11-24T22:18:30+05:45",
-      "flash": false
-    },
-    {
-      "title": "६. खोसेको उपाधि अदालतबाट फिर्ता, सेनगल फेरि अफ्रिकी च्याम्पियन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607401/court-ruling-senegal-to-be-champions-of-2025-africa-cup-of-nations",
-      "published_at": "2026-11-24T21:37:15+05:45",
-      "flash": false
-    },
-    {
-      "title": "६ वर्षदेखि अलपत्र लेते–धम्पु पुल पाँच महिनाभित्र सक्न निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607382/instructions-to-complete-lete-dhampu-bridge-which-has-been-abandoned-for-6-years-within-five-months",
-      "published_at": "2026-11-24T19:16:17+05:45",
-      "flash": false
-    },
-    {
-      "title": "सरकारी सभा–समारोहमा प्लास्टिक प्रयोग रोक्न कोशी सरकारलाई उच्च अदालतको परमादेश ४ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607379/high-court-orders-koshi-government-to-stop-use-of-plastic-in-government-meetings-and-ceremonies",
-      "published_at": "2026-11-24T18:44:06+05:45",
+      "url": "https://www.ratopati.com/story/607430/how-was-the-weather-today",
+      "published_at": "2026-11-25T06:17:31+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     },
@@ -63,8 +35,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 3,
-      "recent": 7
+      "flash": 1,
+      "recent": 2
     },
     "Kathmandu Post": {
       "ok": true,

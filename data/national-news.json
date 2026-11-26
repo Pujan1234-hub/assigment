@@ -1,91 +1,42 @@
 {
-  "generated_at": "2026-11-26T17:18:28.615606+05:45",
-  "updated_at_npt": "26 Nov 17:18 NPT",
+  "generated_at": "2026-11-27T02:15:43.705757+05:45",
+  "updated_at_npt": "27 Nov 02:15 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "अनुमतिबिना परियोजना सञ्चालन नगर्न आदिवासी जनजाति समुदायको चेतावनी",
+      "title": "सीमा अपराध नियन्त्रणमा स्थानीयको सहयोग अपरिहार्य",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607789/indigenous-communities-warn-against-operating-projects-without-permission",
-      "published_at": "2026-11-26T17:10:09+05:45",
-      "flash": true
-    },
-    {
-      "title": "ईपीजीको ‘च्याप्टर क्लोज’ ले पेचिलो बन्दै नेपाल-भारत सीमा मुद्दा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607761/nepal-india-border-issue-becomes-more-complicated-with-epgs-chapter-closure",
-      "published_at": "2026-11-26T17:01:52+05:45",
-      "flash": true
-    },
-    {
-      "title": "इकाई निरीक्षण औपचारिकतामा सीमित नराख्न सशस्त्र प्रहरी महानिरीक्षक पौडेलको निर्देशन",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607785/armed-police-inspector-general-poudel-instructs-not-to-limit-unit-inspections-to-formalities",
-      "published_at": "2026-11-26T17:01:49+05:45",
-      "flash": true
-    },
-    {
-      "title": "स्थानीय सेवा ऐन संशोधन गर्ने बागमती सरकारको निर्णय, चौथो तहमा पनि कर्मचारी भर्ना खुल्ने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607784/bagmati-government-decides-to-amend-the-local-service-act-staff-recruitment-will-also-open-at-the-fourth-level",
-      "published_at": "2026-11-26T17:01:28+05:45",
-      "flash": true
-    },
-    {
-      "title": "६. मन्त्रिपरिषद्‌मा सोविता गौतमको मर्यादाक्रम सुधार हुँदा घट्यो ४ मन्त्रीको वरीयता",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607774/as-sobita-gautams-rank-in-the-council-of-ministers-was-improved-the-rank-of-4-ministers-decreased",
-      "published_at": "2026-11-26T16:24:24+05:45",
-      "flash": true
-    },
-    {
-      "title": "७. मन्त्रिपरिषद्को मर्यादाक्रममा फेरबदल : सरकारका १७ मन्त्रीको नयाँ वरीयता यस्तो छ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607771/changes-in-the-division-of-work-and-hierarchy-of-the-council-of-ministers-this-is-the-new-ranking-of-the-17-ministers-of-the-government",
-      "published_at": "2026-11-26T16:15:52+05:45",
+      "url": "https://www.ratopati.com/story/607851/local-cooperation-is-essential-in-controlling-border-crime",
+      "published_at": "2026-11-26T22:49:41+05:45",
       "flash": false
     },
     {
-      "title": "बाजुरामा बाघको आक्रमणबाट दुई महिला घाइते",
+      "title": "महाकाली नदीमा बेपत्ता युवती मृत फेला",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607770/two-women-injured-in-tiger-attack-in-bajura",
-      "published_at": "2026-11-26T16:14:15+05:45",
+      "url": "https://www.ratopati.com/story/607846/missing-girl-found-dead-in-mahakali-river",
+      "published_at": "2026-11-26T22:11:53+05:45",
       "flash": false
     },
     {
-      "title": "भवन र पुल शिलान्याससँगै कागजबाट निर्माण चरणमा",
+      "title": "४. साउदी अरबमा भएको आक्रमणमा एक नेपालीको मृत्यु, ३ जना घाइते",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607734/buildings-and-bridges-are-being-constructed-from-paper-along-with-the-foundation-stone-laying",
-      "published_at": "2026-11-26T14:30:00+05:45",
+      "url": "https://www.ratopati.com/story/607841/one-nepali-killed-3-injured-in-attack-in-saudi-arabia",
+      "published_at": "2026-11-26T20:59:45+05:45",
       "flash": false
     },
     {
-      "title": "तनहुँ जलविद्युत् आयोजना : प्रसारण लाइन निर्माणका लागि धमाधम रुख कटान",
+      "title": "पूर्वमुख्यसचिव अर्याललाई नेपाल–भारत सीमा क्षेत्रबाट पक्राउ गरेको प्रहरीको दाबी",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607744/tanahun-hydropower-project-trees-are-being-cut-down-in-a-hurry-for-the-construction-of-transmission-lines",
-      "published_at": "2026-11-26T14:28:42+05:45",
-      "flash": false
-    },
-    {
-      "title": "निजगढ अन्तर्राष्ट्रिय विमानस्थल बन्छ : पर्यटन मन्त्री",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607736/nijgadh-international-airport-to-be-built-tourism-minister",
-      "published_at": "2026-11-26T14:10:47+05:45",
-      "flash": false
-    },
-    {
-      "title": "झापाको कन्काई पुल निर्धारित समय अगावै बन्यो",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607712/jhapas-kankai-bridge-completed-ahead-of-schedule",
-      "published_at": "2026-11-26T11:54:18+05:45",
+      "url": "https://www.ratopati.com/story/607837/police-claim-to-have-arrested-former-chief-secretary-aryal-from-the-nepal-india-border-area",
+      "published_at": "2026-11-26T20:42:58+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 6,
+      "candidates": 12,
       "flash": 0,
       "recent": 0
     },
@@ -98,8 +49,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 6,
-      "recent": 12
+      "flash": 0,
+      "recent": 5
     },
     "Kathmandu Post": {
       "ok": true,

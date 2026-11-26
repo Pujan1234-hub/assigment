@@ -1,49 +1,63 @@
 {
-  "generated_at": "2026-11-26T01:51:32.574753+05:45",
-  "updated_at_npt": "26 Nov 01:51 NPT",
+  "generated_at": "2026-11-26T08:33:00.649499+05:45",
+  "updated_at_npt": "26 Nov 08:33 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "साइबर जोखिम बढ्दै जाँदा अस्ट्रेलियाको पूर्वाधार सुरक्षा चिन्ताको विषय: प्रतिवेदन",
+      "title": "नेपाल–भारत सहमतिले भैरहवा विमानस्थलमा उडान विस्तारको आशा बढायो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607641/australias-infrastructure-security-a-concern-as-cyber-risks-rise-report",
-      "published_at": "2026-11-26T00:45:00+05:45",
+      "url": "https://www.ratopati.com/story/607666/nepal-india-agreement-raises-hopes-for-expansion-of-flights-at-bhairahawa-airport",
+      "published_at": "2026-11-26T08:01:49+05:45",
+      "flash": true
+    },
+    {
+      "title": "सरकारी टोलीले बल्ल भेट्यो जेनजी आन्दोलनका घाइते ढकबहादुर",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607665/government-team-finally-meets-dhak-bahadur-injured-in-genji-movement",
+      "published_at": "2026-11-26T07:53:00+05:45",
+      "flash": true
+    },
+    {
+      "title": "खराब मौसमको चेतावनीपछि मेसीको १००औँ थ्याङ्क्सगिभिङ परेड शनिबार सारियो",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607664/macys-100th-thanksgiving-parade-moved-to-saturday-after-severe-weather-warning",
+      "published_at": "2026-11-26T07:43:54+05:45",
+      "flash": true
+    },
+    {
+      "title": "इजिप्टमा पेट्रोलियम पदार्थ बोकेको गाडीमा आगलागी, कम्तीमा ३० जनाको मृत्यु, २५ घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607663/at-least-30-killed-25-injured-in-egypt-fuel-tanker-fire",
+      "published_at": "2026-11-26T07:39:02+05:45",
+      "flash": true
+    },
+    {
+      "title": "घुमाउने पुल निर्माणका लागि स्थानीयको ताकेता",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607658/locals-request-for-construction-of-swing-bridge",
+      "published_at": "2026-11-26T06:49:46+05:45",
       "flash": false
     },
     {
-      "title": "सेवाग्राहीका गुनासा तत्काल सम्बोधन गर्न टेलिकमलाई सञ्चारमन्त्रीको निर्देशन",
+      "title": "कस्तो रहला आजको मौसम ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607640/communications-minister-directs-telecom-to-immediately-address-complaints-from-service-users",
-      "published_at": "2026-11-26T00:19:47+05:45",
+      "url": "https://www.ratopati.com/story/607655/how-was-the-weather-today",
+      "published_at": "2026-11-26T06:11:41+05:45",
       "flash": false
     },
     {
-      "title": "‘हुंकार मधेस’ द्वारा प्रधानमन्त्रीलाई ज्ञापनपत्र : हिन्दु गणराज्य घोषणादेखि लाल आयोगको प्रतिवेदन सार्वजनिक गर्न माग",
+      "title": "प्रहरी चौकी भवन हस्तान्तरण",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607636/memorandum-to-the-prime-minister-by-hunkar-madhes-demand-to-make-public-the-report-of-the-lal-commission-from-the-declaration-of-the-hindu-republic",
-      "published_at": "2026-11-25T23:16:46+05:45",
-      "flash": false
-    },
-    {
-      "title": "युएईमा सडक दुर्घटनाको कहर : १२ दिनमै २७ जनाको मृत्यु",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607634/road-accident-havoc-in-uae-27-people-die-in-12-days",
-      "published_at": "2026-11-25T22:30:33+05:45",
-      "flash": false
-    },
-    {
-      "title": "१० बजे १० समाचार : दानबहादुरलाई मिलेन राहत, भेटिएनन् बानियाँ र अर्याल ३ घण्टा अगाडि",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607614/10-news-at-10",
-      "published_at": "2026-11-25T22:00:00+05:45",
+      "url": "https://www.ratopati.com/story/607645/police-station-building-handed-over",
+      "published_at": "2026-11-26T05:16:31+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 9,
+      "candidates": 10,
       "flash": 0,
       "recent": 0
     },
@@ -56,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 6
+      "flash": 5,
+      "recent": 8
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +81,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 6,
+      "candidates": 5,
       "flash": 0,
       "recent": 0
     }

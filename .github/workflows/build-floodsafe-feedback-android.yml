@@ -38,6 +38,8 @@ jobs:
           grep -q 'com.pjbuilts.floodsafefeedback' floodsafe-feedback-android/app/build.gradle
           grep -q 'android:allowBackup="false"' floodsafe-feedback-android/app/src/main/AndroidManifest.xml
           grep -q 'android.permission.ACCESS_NETWORK_STATE' floodsafe-feedback-android/app/src/main/AndroidManifest.xml
+      - name: Generate soft notification chime
+        run: python3 floodsafe-feedback-android/generate_chime.py
       - name: Compile, lint and assemble
         run: gradle -p floodsafe-feedback-android :app:lintRelease :app:assembleRelease --no-daemon --stacktrace
       - name: Sign installable APK
@@ -52,17 +54,17 @@ jobs:
           test -s "$SRC"
           "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4 "$SRC" dist/aligned.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$KEY" --ks-key-alias fs_feedback --ks-pass "pass:$PASS" \
-            --key-pass "pass:$PASS" --out dist/FloodSafe-Feedback-v1.0.3.apk dist/aligned.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/FloodSafe-Feedback-v1.0.3.apk
-          sha256sum dist/FloodSafe-Feedback-v1.0.3.apk > dist/FloodSafe-Feedback-v1.0.3.sha256
+            --key-pass "pass:$PASS" --out dist/FloodSafe-Feedback-v1.0.4.apk dist/aligned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/FloodSafe-Feedback-v1.0.4.apk
+          sha256sum dist/FloodSafe-Feedback-v1.0.4.apk > dist/FloodSafe-Feedback-v1.0.4.sha256
           rm -f "$KEY" dist/aligned.apk
       - name: Archive APK
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Feedback-v1.0.3-APK
+          name: FloodSafe-Feedback-v1.0.4-APK
           path: |
-            dist/FloodSafe-Feedback-v1.0.3.apk
-            dist/FloodSafe-Feedback-v1.0.3.sha256
+            dist/FloodSafe-Feedback-v1.0.4.apk
+            dist/FloodSafe-Feedback-v1.0.4.sha256
           retention-days: 30
           if-no-files-found: error
       - name: Publish APK release
@@ -70,10 +72,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if gh release view floodsafe-feedback-v1.0.3 >/dev/null 2>&1; then
+          if gh release view floodsafe-feedback-v1.0.4 >/dev/null 2>&1; then
             echo 'Release already exists; retaining original APK signature'
             exit 0
           fi
-          gh release create floodsafe-feedback-v1.0.3 dist/FloodSafe-Feedback-v1.0.3.apk dist/FloodSafe-Feedback-v1.0.3.sha256 \
-            --target "$GITHUB_SHA" --title 'FloodSafe Feedback v1.0.3 — Android Admin' \
-            --notes 'Standalone native PJBUILTS feedback inbox, Android 14+ background scheduler permission fix, new separate feedback API, one-time token entry with Android Keystore encrypted login persistence, 15-second foreground refresh and opt-in Android-scheduled background notification checks. Not instantaneous server push. A new signing certificate requires uninstalling the older Feedback Admin APK first. Original FloodSafe Nepal v0.9.23 is not touched.' --prerelease
+          gh release create floodsafe-feedback-v1.0.4 dist/FloodSafe-Feedback-v1.0.4.apk dist/FloodSafe-Feedback-v1.0.4.sha256 \
+            --target "$GITHUB_SHA" --title 'FloodSafe Feedback v1.0.4 — Android Admin' \
+            --notes 'Standalone native PJBUILTS feedback inbox, Android 14+ background scheduler permission fix, new separate feedback API, one-time token entry with Android Keystore encrypted login persistence, 5-second foreground refresh with a soft custom chime and opt-in Android-scheduled background notification checks. Not instantaneous server push. A new signing certificate requires uninstalling the older Feedback Admin APK first. Original FloodSafe Nepal v0.9.23 is not touched.' --prerelease

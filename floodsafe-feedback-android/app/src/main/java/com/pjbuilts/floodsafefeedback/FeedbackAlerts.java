@@ -20,7 +20,7 @@ import java.time.Instant;
 
 public final class FeedbackAlerts extends JobService {
  private static final int JOB=14021;
- private static final String PREF="feedback_alerts", ALIAS="floodsafe_feedback_alerts", CHANNEL="feedback_updates";
+ private static final String PREF="feedback_alerts", ALIAS="floodsafe_feedback_alerts", CHANNEL="feedback_updates_chime_v2";
  private volatile boolean stopped;
  private static android.content.SharedPreferences prefs(Context c){return c.getSharedPreferences(PREF,MODE_PRIVATE);}
  private static javax.crypto.SecretKey key()throws Exception{
@@ -78,18 +78,28 @@ public final class FeedbackAlerts extends JobService {
   }finally{c.disconnect();}
   synchronized(FeedbackAlerts.class){
    if(stopped||!token.equals(readToken(this)))return;
-   Instant prev=Instant.parse(prefs(this).getString("watermark",Instant.EPOCH.toString()));
+   onForeground(this,items);
+  }
+ }
+ static synchronized void onForeground(Context c,JSONArray items){
+  if(!enabled(c))return;
+  try{
+   Instant prev=Instant.parse(prefs(c).getString("watermark",Instant.EPOCH.toString()));
    Instant now=Instant.parse(latest(items));
    if(!now.isAfter(prev))return;
-   if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)return;
-   NotificationManager nm=getSystemService(NotificationManager.class);
+   if(Build.VERSION.SDK_INT>=33&&c.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)return;
+   NotificationManager nm=c.getSystemService(NotificationManager.class);
    if(!nm.areNotificationsEnabled())return;
-   nm.createNotificationChannel(new NotificationChannel(CHANNEL,"New website feedback",NotificationManager.IMPORTANCE_DEFAULT));
+   NotificationChannel channel=new NotificationChannel(CHANNEL,"Feedback · Soft chime",NotificationManager.IMPORTANCE_HIGH);
+   android.net.Uri sound=android.net.Uri.parse("android.resource://"+c.getPackageName()+"/"+R.raw.feedback_chime);
+   channel.setSound(sound,new android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION).setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+   channel.enableVibration(false);
+   nm.createNotificationChannel(channel);
    if(nm.getNotificationChannel(CHANNEL).getImportance()==NotificationManager.IMPORTANCE_NONE)return;
-   Intent open=new Intent(this,MainActivity.class);open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-   PendingIntent intent=PendingIntent.getActivity(this,JOB,open,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-   Notification notification=new Notification.Builder(this,CHANNEL).setSmallIcon(android.R.drawable.ic_dialog_email).setContentTitle("FloodSafe Feedback").setContentText("New website feedback received. Open the private inbox.").setVisibility(Notification.VISIBILITY_PRIVATE).setAutoCancel(true).setContentIntent(intent).build();
-   nm.notify(JOB,notification);prefs(this).edit().putString("watermark",now.toString()).commit();
-  }
+   Intent open=new Intent(c,MainActivity.class);open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+   PendingIntent intent=PendingIntent.getActivity(c,JOB,open,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
+   Notification notification=new Notification.Builder(c,CHANNEL).setSmallIcon(android.R.drawable.ic_dialog_email).setContentTitle("FloodSafe Feedback").setContentText("New website feedback received. Open the private inbox.").setVisibility(Notification.VISIBILITY_PRIVATE).setAutoCancel(true).setContentIntent(intent).build();
+   nm.notify(JOB,notification);prefs(c).edit().putString("watermark",now.toString()).commit();
+  }catch(Exception ignored){}
  }
 }

@@ -36,7 +36,7 @@ public final class MainActivity extends Activity {
     private boolean visible=false;
     private int session=0;
     private final android.os.Handler timer=new android.os.Handler(android.os.Looper.getMainLooper());
-    private final Runnable tick=new Runnable(){public void run(){if(!visible)return;if(!token.isEmpty())load();timer.postDelayed(this,15000);}};
+    private final Runnable tick=new Runnable(){public void run(){if(!visible)return;if(!token.isEmpty())load();timer.postDelayed(this,5000);}};
 
     @Override public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -175,7 +175,7 @@ public final class MainActivity extends Activity {
             if(r.code==401||r.code==403){runOnUiThread(()->{if(current!=session)return;busy=false;TokenStore.clear(this);FeedbackAlerts.disable(this);showLogin("Incorrect or expired admin token.");});return;}
             JSONObject obj=new JSONObject(r.body);if(r.code!=200||!obj.optBoolean("ok"))throw new IllegalStateException("HTTP "+r.code+" — server unavailable");
             JSONArray next=obj.optJSONArray("items");if(next==null)next=new JSONArray();final JSONArray result=next;
-            runOnUiThread(()->{if(current!=session)return;busy=false;boolean remembered=TokenStore.save(this,entered);boolean changed=!records.toString().equals(result.toString());records=result;state.setText("Live feedback · "+records.length()+" reports"+(remembered?"":" · Token could not be saved"));if(changed)render();});
+            runOnUiThread(()->{if(current!=session)return;busy=false;boolean remembered=TokenStore.save(this,entered);boolean changed=!records.toString().equals(result.toString());records=result;if(visible)FeedbackAlerts.onForeground(this,result);state.setText("Live feedback · "+records.length()+" reports"+(remembered?"":" · Token could not be saved"));if(changed)render();});
         }catch(Exception e){fail(current,"Could not load feedback: "+e.getMessage());}});
     }
     private void save(String id,String status,String note){

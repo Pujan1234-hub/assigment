@@ -143,6 +143,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private long lastRiverFetchAt=0L;
     private boolean riverRefreshing=false;
     private String riverObservationSource="none";
+    private int riverWatchCount=-1;
     private final Runnable riverAutoRefresh=new Runnable(){
         @Override public void run(){
             if(isFinishing()||isDestroyed())return;
@@ -904,6 +905,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
             try{
                 JSONObject root=OfficialStationFeeds.rivers(getApplicationContext());
                 String source=root.optString("activeObservationSource","none");
+                final int watchCount=root.optInt("watchCount",-1);
                 JSONArray rows=root.optJSONArray("results");
                 if(rows==null)rows=root.optJSONArray("data");
                 if(rows==null)rows=new JSONArray();
@@ -918,7 +920,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 runOnUiThread(()->{
                     riverRefreshing=false;
                     if(isFinishing()||isDestroyed())return;
-                    riverObservationSource=("dhm".equals(source)||"bipad".equals(source))?source:"none";
+                    riverObservationSource=("dhm".equals(source)||"bipad".equals(source))?source:"none";riverWatchCount=watchCount;
                     synchronized(stations){stations.clear();stations.addAll(out);}
                     refreshRiverUi();
                 });
@@ -926,7 +928,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 runOnUiThread(()->{
                     riverRefreshing=false;
                     if(isFinishing()||isDestroyed())return;
-                    riverObservationSource="none"; // Do not keep claiming the failed feed is live.
+                    riverObservationSource="none";riverWatchCount=-1; // Do not keep claiming the failed feed is live.
                     // Keep the station catalogue but expire old measurements.
                     refreshRiverUi();
                     String unavailable=t("River source उपलब्ध छैन • पुरानो मापन live होइन",
@@ -962,7 +964,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
        fingerprint=31*fingerprint+Double.hashCode(q.level);
        fingerprint=31*fingerprint+q.stage.hashCode();}
       if(fingerprint!=lastStationMapHash){lastStationMapHash=fingerprint;if(map!=null)map.setStations(copy,lat,lon);}
-      else if(map!=null)map.updateUserLocation(lat,lon);int d=0,w=0,a=0,n=0,stale=0;for(RiverStation s:copy){switch(s.stage){case"danger":d++;break;case"warning":w++;break;case"alert":a++;break;case"normal":n++;break;default:stale++;}}stationCount.setText(String.valueOf(copy.size()));warningCount.setText(String.valueOf(w));dangerCount.setText(String.valueOf(d));String sourceName="dhm".equals(riverObservationSource)?t("DHM वैकल्पिक स्रोत","DHM fallback"):("bipad".equals(riverObservationSource)?t("BIPAD मुख्य स्रोत","BIPAD primary"):t("सरकारी ताजा मापन छैन","No current official measurement"));feedFresh.setText(sourceName+" · "+(d+w+a+n)+"/"+copy.size()+" "+t("वर्गीकृत","classified")+" · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · "+t("मापन नभएका ","unavailable ")+stale);nationalFresh.setText(feedFresh.getText());updateRisk(copy);nearList.removeAllViews();
+      else if(map!=null)map.updateUserLocation(lat,lon);int d=0,w=0,a=0,n=0,stale=0;for(RiverStation s:copy){switch(s.stage){case"danger":d++;break;case"warning":w++;break;case"alert":a++;break;case"normal":n++;break;default:stale++;}}stationCount.setText(String.valueOf(copy.size()));warningCount.setText(String.valueOf(w));dangerCount.setText(String.valueOf(d));String sourceName="dhm".equals(riverObservationSource)?t("DHM वैकल्पिक स्रोत","DHM fallback"):("bipad".equals(riverObservationSource)?t("BIPAD मुख्य स्रोत","BIPAD primary"):t("सरकारी ताजा मापन छैन","No current official measurement"));feedFresh.setText(sourceName+(riverWatchCount>=0?" · BIPAD River Watch "+riverWatchCount:"")+"\n"+t("ताजा वर्गीकृत ","Fresh classified ")+(d+w+a+n)+"/"+copy.size()+" · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · "+t("मापन नभएका ","unavailable ")+stale);nationalFresh.setText(feedFresh.getText());updateRisk(copy);nearList.removeAllViews();
         boolean inNepal=isNepal(lat,lon)&&locAt>0&&System.currentTimeMillis()-locAt<24L*60*60*1000;
         if(nearSection!=null)nearSection.setVisibility(inNepal?View.VISIBLE:View.GONE);
         if(inNepal){

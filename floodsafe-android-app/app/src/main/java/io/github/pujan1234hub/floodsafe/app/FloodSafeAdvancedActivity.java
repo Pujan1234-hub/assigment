@@ -122,6 +122,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
        if(seq!=requestSeq||isFinishing()||isDestroyed())return;
        if(mode.equals("river")||mode.equals("rain")){
          activeSource=j.optString("source","Official source unavailable");
+         int watchCount=j.optInt("watchCount",-1);if(watchCount>=0)activeSource+=" · BIPAD "+(mode.equals("river")?"River":"Rain")+" Watch "+watchCount;
          entries=j.optJSONArray(mode.equals("river")?"stations":"items");
          if(entries==null)entries=new JSONArray();renderEntries();
        }else if(mode.equals("forecast"))renderForecast(j);

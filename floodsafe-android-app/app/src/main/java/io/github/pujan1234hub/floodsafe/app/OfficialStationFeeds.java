@@ -74,6 +74,7 @@ final class OfficialStationFeeds {
         result.put("dhmStatus",src.optString("dhmStatus","unknown"));
         result.put("bipadFallbackStatus",src.optString("bipadFallbackStatus","unknown"));
         result.put("count",results.length());
+        result.put("watchCount",src.optInt("watchCount",-1));
         return result;
     }
 
@@ -222,7 +223,7 @@ final class OfficialStationFeeds {
             results.put(out);
         }
         JSONObject result=new JSONObject();
-        result.put("results",results);result.put("source",src.optString("source","Official rainfall"));result.put("activeObservationSource",src.optString("activeObservationSource","none"));
+        result.put("results",results);result.put("source",src.optString("source","Official rainfall"));result.put("activeObservationSource",src.optString("activeObservationSource","none"));result.put("watchCount",src.optInt("watchCount",-1));
         return result;
     }
 

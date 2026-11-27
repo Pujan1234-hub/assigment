@@ -51,10 +51,11 @@ final class FloodLiveGaugeMonitor {
 
     private final Context app;
     private final Handler handler=new Handler(Looper.getMainLooper());
-    private final ExecutorService io=Executors.newFixedThreadPool(3);
+    private final ExecutorService io=Executors.newFixedThreadPool(4);
     private final AtomicBoolean riverInFlight=new AtomicBoolean(false);
     private final AtomicBoolean rainInFlight=new AtomicBoolean(false);
     private final AtomicBoolean hydroInFlight=new AtomicBoolean(false);
+    private final AtomicBoolean quakeInFlight=new AtomicBoolean(false);
     private volatile boolean running=false;
     private volatile int lastRiverHash=0,lastRainHash=0,lastHydroHash=0;
     private volatile long lastOfficialRiverAttempt=0L,lastOfficialRainAttempt=0L;
@@ -70,6 +71,7 @@ final class FloodLiveGaugeMonitor {
         if(riverInFlight.compareAndSet(false,true))io.execute(()->{try{pollRiverOnce();}catch(Exception ignored){}finally{riverInFlight.set(false);}});
         if(rainInFlight.compareAndSet(false,true))io.execute(()->{try{pollRainOnce();}catch(Exception ignored){}finally{rainInFlight.set(false);}});
         if(hydroInFlight.compareAndSet(false,true))io.execute(()->{try{pollHydrologyOnce();}catch(Exception ignored){}finally{hydroInFlight.set(false);}});
+        if(quakeInFlight.compareAndSet(false,true))io.execute(()->{try{EarthquakeAlertWorker.poll(app);}catch(Exception ignored){}finally{quakeInFlight.set(false);}});
         handler.postDelayed(this,15_000L); // Silent background river polling, no overlapping requests.
     }};
 

@@ -49,6 +49,12 @@ final class NewsFeedParser {
         out.sort((a,b)->Long.compare(b.at,a.at));
         return out;
     }
+    static boolean hasAvailableSource(JSONObject o){
+        JSONArray checks=o.optJSONArray("sourceChecks");
+        if(checks==null)return findArray(o)!=null;
+        for(int i=0;i<checks.length();i++){JSONObject c=checks.optJSONObject(i);if(c!=null&&c.optBoolean("available"))return true;}
+        return false;
+    }
     private static JSONArray findArray(JSONObject o){
         for(String key:new String[]{"items","results","news","articles","stories","posts"}){
             JSONArray a=o.optJSONArray(key);if(a!=null)return a;
@@ -62,6 +68,12 @@ final class NewsFeedParser {
         if(s.contains("routine of nepal")||s.contains("ronb"))return "RONB Post";
         if(s.contains("radio nepal")||s.contains("रेडियो नेपाल"))return "Radio Nepal";
         if(s.contains("news24")||s.contains("news 24")||s.contains("न्यूज२४"))return "News24 Nepal";
+        if(s.equals("onlinekhabar"))return "OnlineKhabar";
+        if(s.equals("onlinekhabar english"))return "OnlineKhabar English";
+        if(s.equals("the kathmandu post"))return "The Kathmandu Post";
+        if(s.equals("nepal news"))return "Nepal News";
+        if(s.equals("gorkhapatra"))return "Gorkhapatra";
+        if(s.equals("himal press"))return "Himal Press";
         return "";
     }
     private static String value(JSONObject o,String...names){

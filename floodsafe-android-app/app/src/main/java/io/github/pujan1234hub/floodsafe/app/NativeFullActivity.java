@@ -662,7 +662,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
     private LinearLayout humanCard(){LinearLayout c=card();TextView t=text("🧑‍🤝‍🧑 "+t("Human Status — पछिल्लो विपद्","Human Status — latest disaster"),20,true,Color.rgb(16,39,70));humanFresh=text("",12,true,Color.rgb(100,130,151));c.addView(t);c.addView(humanFresh);LinearLayout stats=new LinearLayout(this);stats.setOrientation(LinearLayout.HORIZONTAL);humanDeaths=stat(stats,"—",t("मृतक","Deaths"));humanInjured=stat(stats,"—",t("घाइते","Injured"));humanMissing=stat(stats,"—",t("बेपत्ता","Missing"));humanRescued=stat(stats,"—",t("उद्धार","Rescued"));c.addView(stats,lp(-1,-2,0,dp(10),0,0));humanDetail=text("",12,false,Color.rgb(95,125,146));c.addView(humanDetail);c.setVisibility(View.GONE);return c;}
     private View newsCard(){LinearLayout c=card();newsTitle=text("",20,true,Color.rgb(16,39,70));
-        newsSub=text("RONB Post • Radio Nepal • News24 Nepal",12,true,Color.rgb(100,130,151));
+        newsSub=text("Nepal news • Weather & safety",12,true,Color.rgb(100,130,151));
         c.addView(newsTitle);c.addView(newsSub);
         // Foreground feed polling and lifecycle refresh are automatic; no manual button.
         newsList=new LinearLayout(this);newsList.setOrientation(LinearLayout.VERTICAL);
@@ -1067,12 +1067,12 @@ public final class NativeFullActivity extends Activity implements LocationListen
             List<NewsFeedParser.Item> articles=new ArrayList<>();
             boolean anyResponse=false;
             for(String endpoint:new String[]{
-                "https://pjbuilts.com/api/news-live-three",
+                "https://pjbuilts.com/api/floodsafe-news",
                 NEWS_ENDPOINT
             }){
                 try{
                     JSONObject root=getJson(endpoint+(endpoint.contains("?")?"&":"?")+"_at="+now);
-                    anyResponse=true;
+                    anyResponse=anyResponse||NewsFeedParser.hasAvailableSource(root);
                     List<NewsFeedParser.Item> parsed=NewsFeedParser.parse(root,now);
                     if(!parsed.isEmpty()){articles=parsed;break;}
                 }catch(Exception ignored){}
@@ -1086,10 +1086,11 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 if(isFinishing()||isDestroyed()||newsList==null)return;
                 newsLastFetchedAt=System.currentTimeMillis();
                 if(!reached){
-                    if(!newsShowingKnowledge)showNewsKnowledgeFallback(true);
+                    if(!newsShowingKnowledge||!newsKnowledgeDisconnected)showNewsKnowledgeFallback(true);
                     return;
                 }
                 // Render only when content changed or the 30-minute window expired.
+                if(out.isEmpty()&&newsShowingKnowledge){if(newsKnowledgeDisconnected)showNewsKnowledgeFallback(false);return;}
                 if(!sameCurrentNews(out) || newsShowingKnowledge)renderNews(out);
             });
         });
@@ -1126,8 +1127,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
         newsKnowledgeCategory=null;newsKnowledgeText=null;
         newsList.removeAllViews();
         newsTitle.setText(t("📰 नेपालका ताजा समाचार","📰 Fresh Nepal news"));
-        newsSub.setText(t("RONB • Radio Nepal • News24 · ३० मिनेटभित्रका समाचार मात्र",
-                          "RONB • Radio Nepal • News24 · published within 30 minutes"));
+        newsSub.setText(t("नेपालका स्रोत • ३० मिनेटभित्रका समाचार मात्र",
+                          "Nepal news sources · published within 30 minutes"));
         for(NewsItem n:out){
             LinearLayout c=new LinearLayout(this);c.setOrientation(LinearLayout.VERTICAL);
             c.setPadding(dp(12),dp(11),dp(12),dp(11));
@@ -1307,7 +1308,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
     private void consumeSathiIntent(Intent i){if(i==null)return;String q=i.getStringExtra(SathiWakeService.EXTRA_QUERY);if(q!=null&&!q.trim().isEmpty()){showSathiDialog(q.trim());i.removeExtra(SathiWakeService.EXTRA_QUERY);}}
 
-    private void enableMonitoring(){getSharedPreferences(RainAlertWorker.PREFS,MODE_PRIVATE).edit().putBoolean("enabled",true).apply();Constraints c=new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();WorkManager wm=WorkManager.getInstance(getApplicationContext());wm.enqueueUniquePeriodicWork("floodsafe-local-rain-alerts",ExistingPeriodicWorkPolicy.UPDATE,new PeriodicWorkRequest.Builder(RainAlertWorker.class,15,TimeUnit.MINUTES).setConstraints(c).build());wm.enqueueUniqueWork("floodsafe-weather-on-open",androidx.work.ExistingWorkPolicy.REPLACE,new androidx.work.OneTimeWorkRequest.Builder(RainAlertWorker.class).setConstraints(c).build());wm.enqueueUniquePeriodicWork("floodsafe-local-river-alerts",ExistingPeriodicWorkPolicy.UPDATE,new PeriodicWorkRequest.Builder(RiverAlertWorker.class,15,TimeUnit.MINUTES).setConstraints(c).build());wm.enqueueUniquePeriodicWork("floodsafe-government-bulletins",ExistingPeriodicWorkPolicy.KEEP,new PeriodicWorkRequest.Builder(GovernmentWarningWorker.class,30,TimeUnit.MINUTES).setConstraints(c).build());FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");if(getPackageName().endsWith(".preview"))FirebaseMessaging.getInstance().subscribeToTopic("floodsafe-testers");WeatherWakeScheduler.ensureScheduled(getApplicationContext(),false);if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},REQ_NOTIFY);}
+    private void enableMonitoring(){getSharedPreferences(RainAlertWorker.PREFS,MODE_PRIVATE).edit().putBoolean("enabled",true).apply();Constraints c=new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();WorkManager wm=WorkManager.getInstance(getApplicationContext());wm.enqueueUniquePeriodicWork("floodsafe-earthquake-notices",ExistingPeriodicWorkPolicy.KEEP,new PeriodicWorkRequest.Builder(EarthquakeAlertWorker.class,15,TimeUnit.MINUTES).setConstraints(c).build());wm.enqueueUniqueWork("floodsafe-earthquake-on-open",androidx.work.ExistingWorkPolicy.KEEP,new androidx.work.OneTimeWorkRequest.Builder(EarthquakeAlertWorker.class).setConstraints(c).build());wm.enqueueUniquePeriodicWork("floodsafe-local-rain-alerts",ExistingPeriodicWorkPolicy.UPDATE,new PeriodicWorkRequest.Builder(RainAlertWorker.class,15,TimeUnit.MINUTES).setConstraints(c).build());wm.enqueueUniqueWork("floodsafe-weather-on-open",androidx.work.ExistingWorkPolicy.REPLACE,new androidx.work.OneTimeWorkRequest.Builder(RainAlertWorker.class).setConstraints(c).build());wm.enqueueUniquePeriodicWork("floodsafe-local-river-alerts",ExistingPeriodicWorkPolicy.UPDATE,new PeriodicWorkRequest.Builder(RiverAlertWorker.class,15,TimeUnit.MINUTES).setConstraints(c).build());wm.enqueueUniquePeriodicWork("floodsafe-government-bulletins",ExistingPeriodicWorkPolicy.KEEP,new PeriodicWorkRequest.Builder(GovernmentWarningWorker.class,30,TimeUnit.MINUTES).setConstraints(c).build());FirebaseMessaging.getInstance().subscribeToTopic("nepal-alerts");if(getPackageName().endsWith(".preview"))FirebaseMessaging.getInstance().subscribeToTopic("floodsafe-testers");WeatherWakeScheduler.ensureScheduled(getApplicationContext(),false);if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},REQ_NOTIFY);}
 
     private final Runnable clockTick=new Runnable(){@Override public void run(){try{java.time.ZonedDateTime z=java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Kathmandu"));clock.setText(String.format(Locale.US,"%02d:%02d:%02d NPT",z.getHour(),z.getMinute(),z.getSecond()));}catch(Exception ignored){}long now=System.currentTimeMillis();
         if(governmentList!=null&&now-lastGovernmentExpiryCheckAt>=60_000L){

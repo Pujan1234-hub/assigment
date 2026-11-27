@@ -13,8 +13,9 @@ final class AnimatedNepalWeatherOverlay extends View {
  private long since=System.currentTimeMillis();
  AnimatedNepalWeatherOverlay(Context c){super(c);setWillNotDraw(false);setClickable(false);}
  void setConditions(double cloudPct,double rainfall,int weatherCode){
-  cloud=(float)Math.max(0,Math.min(100,cloudPct));rain=(float)Math.max(0,Math.min(100,rainfall*25));
-  thunder=weatherCode>=95; invalidate();
+  float nextCloud=(float)Math.max(0,Math.min(100,cloudPct)),nextRain=(float)Math.max(0,Math.min(100,rainfall*25));boolean nextThunder=weatherCode>=95;
+  if(Float.compare(cloud,nextCloud)==0&&Float.compare(rain,nextRain)==0&&thunder==nextThunder)return;
+  cloud=nextCloud;rain=nextRain;thunder=nextThunder;invalidate();
  }
  @Override protected void onDraw(Canvas c){
   super.onDraw(c);

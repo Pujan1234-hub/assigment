@@ -70,7 +70,7 @@ final class FloodLiveGaugeMonitor {
         if(riverInFlight.compareAndSet(false,true))io.execute(()->{try{pollRiverOnce();}catch(Exception ignored){}finally{riverInFlight.set(false);}});
         if(rainInFlight.compareAndSet(false,true))io.execute(()->{try{pollRainOnce();}catch(Exception ignored){}finally{rainInFlight.set(false);}});
         if(hydroInFlight.compareAndSet(false,true))io.execute(()->{try{pollHydrologyOnce();}catch(Exception ignored){}finally{hydroInFlight.set(false);}});
-        handler.postDelayed(this,1_000L); // V0872_ONE_SECOND_BACKGROUND_RECHECK
+        handler.postDelayed(this,15_000L); // Silent background river polling, no overlapping requests.
     }};
 
     private void pollRiverOnce() throws Exception{

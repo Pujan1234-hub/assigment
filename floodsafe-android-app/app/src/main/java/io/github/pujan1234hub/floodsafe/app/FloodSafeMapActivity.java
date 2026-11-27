@@ -175,10 +175,11 @@ public final class FloodSafeMapActivity extends Activity {
                 }
                 runOnUiThread(()->{
                     if(isFinishing()||isDestroyed()||nativeMap==null)return;
+                    boolean changed=!sameStations(lastMapStations,points);
                     lastMapStations.clear();
                     lastMapStations.addAll(points);
                     currentObservationSource="dhm".equals(source)?"dhm":("bipad".equals(source)?"bipad":"none");
-                    nativeMap.setStations(points,deviceLat,deviceLon);
+                    if(changed)nativeMap.setStations(points,deviceLat,deviceLon);
                     int dangerCount=0,warningCount=0,watchCount=0,normalCount=0;
                     for(MapStation p:points){
                         if("danger".equals(p.stage))dangerCount++;
@@ -196,7 +197,7 @@ public final class FloodSafeMapActivity extends Activity {
                     if(isFinishing()||isDestroyed())return;
                     currentObservationSource="none";
                     // No network is not evidence that a cached yellow/red station is still current.
-                    if(nativeMap!=null&&!lastMapStations.isEmpty()){
+                    if(nativeMap!=null&&!lastMapStations.isEmpty()&&lastMapStations.stream().anyMatch(q->q.fresh||!"unknown".equals(q.stage))){
                         List<MapStation> unknown=new ArrayList<>();
                         for(MapStation p:lastMapStations)
                             unknown.add(new MapStation(p.name,p.lat,p.lon,p.level,p.warning,p.danger,false,"unknown",p.at));
@@ -213,6 +214,7 @@ public final class FloodSafeMapActivity extends Activity {
         });
     }
 
+    private static boolean sameStations(List<MapStation> a,List<MapStation> b){if(a.size()!=b.size())return false;for(int i=0;i<a.size();i++){MapStation x=a.get(i),y=b.get(i);if(!java.util.Objects.equals(x.name,y.name)||!java.util.Objects.equals(x.stage,y.stage)||x.at!=y.at||x.fresh!=y.fresh||Double.compare(x.lat,y.lat)!=0||Double.compare(x.lon,y.lon)!=0||Double.compare(x.level,y.level)!=0||Double.compare(x.warning,y.warning)!=0||Double.compare(x.danger,y.danger)!=0)return false;}return true;}
     private void expireMapMarkers(){
         if(lastMapStations.isEmpty()||nativeMap==null)return;
         long now=System.currentTimeMillis();

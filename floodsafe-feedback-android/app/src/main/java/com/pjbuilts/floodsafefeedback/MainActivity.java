@@ -42,7 +42,8 @@ public final class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(NAVY);
         getWindow().setNavigationBarColor(BG);
-        showLogin("");
+        String saved=TokenStore.read(this);
+        if(saved.isEmpty())showLogin("");else{token=saved;showInbox();load();}
     }
     @Override protected void onResume(){super.onResume();visible=true;timer.removeCallbacks(tick);timer.post(tick);}
     @Override protected void onPause(){visible=false;timer.removeCallbacks(tick);super.onPause();}
@@ -68,7 +69,7 @@ public final class MainActivity extends Activity {
         page=v();page.setPadding(dp(15),dp(17),dp(15),dp(28));scroll.addView(page);
     }
     private void showLogin(String reason){
-        session++;busy=false;token="";base("Private owner access · Live submissions");
+        session++;busy=false;token="";records=new JSONArray();base("Private owner access · Live submissions");
         LinearLayout box=card();page.addView(box,p(-1,-2,10));
         box.addView(t("Open your admin inbox",20,INK,true),p(-1,-2,7));
         box.addView(t("Enter the SAME private token used on the FloodSafe Nepal feedback admin webpage. No password is built into this APK.",14,MUTED,false),p(-1,-2,17));
@@ -77,7 +78,7 @@ public final class MainActivity extends Activity {
         field.setPadding(dp(10),dp(8),dp(10),dp(8));field.setBackground(bg(BG,0xffd7e6ef));
         box.addView(field,p(-1,48,12));
         Button open=b("View live feedback",true);box.addView(open,p(-1,48,12));
-        state=t(reason.isEmpty()?"Token stays in memory unless you explicitly enable encrypted background checks. Lock inbox disables them.":reason,13,reason.isEmpty()?MUTED:0xffad3434,false);
+        state=t(reason.isEmpty()?"Enter once. Your verified token is saved securely on this phone. Lock inbox forgets it and disables background alerts.":reason,13,reason.isEmpty()?MUTED:0xffad3434,false);
         box.addView(state,p(-1,-2,0));
         open.setOnClickListener(view->{String entered=field.getText().toString().trim();if(entered.isEmpty()){state.setText("Please enter your admin token.");return;}token=entered;showInbox();load();});
     }
@@ -88,7 +89,7 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(45),1);a.rightMargin=dp(8);
         tools.addView(refresh,a);tools.addView(logout,new LinearLayout.LayoutParams(0,dp(45),1));
         refresh.setOnClickListener(view->load());
-        logout.setOnClickListener(view->{FeedbackAlerts.disable(this);records=new JSONArray();showLogin("Inbox locked.");});
+        logout.setOnClickListener(view->{TokenStore.clear(this);FeedbackAlerts.disable(this);records=new JSONArray();showLogin("Inbox locked.");});
         Button alerts=b("Enable background alerts",false);page.addView(alerts,p(-1,45,8));
         alerts.setOnClickListener(view->{if(busy||token.isEmpty())return;if(android.os.Build.VERSION.SDK_INT>=33&&checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},41);return;}enableAlerts();});
         Button stopAlerts=b("Disable background alerts",false);page.addView(stopAlerts,p(-1,42,10));stopAlerts.setOnClickListener(view->{FeedbackAlerts.disable(this);Toast.makeText(this,"Background alerts disabled",Toast.LENGTH_SHORT).show();});
@@ -168,10 +169,10 @@ public final class MainActivity extends Activity {
         if(busy||token.isEmpty())return;busy=true;final int current=session;final String entered=token;if(records.length()==0)state.setText("Loading live feedback...");
         io.execute(()->{try{
             Reply r=request("GET",null,entered);
-            if(r.code==401||r.code==403){runOnUiThread(()->{if(current!=session)return;busy=false;FeedbackAlerts.disable(this);showLogin("Incorrect or expired admin token.");});return;}
+            if(r.code==401||r.code==403){runOnUiThread(()->{if(current!=session)return;busy=false;TokenStore.clear(this);FeedbackAlerts.disable(this);showLogin("Incorrect or expired admin token.");});return;}
             JSONObject obj=new JSONObject(r.body);if(r.code!=200||!obj.optBoolean("ok"))throw new IllegalStateException("HTTP "+r.code+" — server unavailable");
             JSONArray next=obj.optJSONArray("items");if(next==null)next=new JSONArray();final JSONArray result=next;
-            runOnUiThread(()->{if(current!=session)return;busy=false;boolean changed=!records.toString().equals(result.toString());records=result;state.setText("Live feedback · "+records.length()+" reports");if(changed)render();});
+            runOnUiThread(()->{if(current!=session)return;busy=false;boolean remembered=TokenStore.save(this,entered);boolean changed=!records.toString().equals(result.toString());records=result;state.setText("Live feedback · "+records.length()+" reports"+(remembered?"":" · Token could not be saved"));if(changed)render();});
         }catch(Exception e){fail(current,"Could not load feedback: "+e.getMessage());}});
     }
     private void save(String id,String status,String note){
@@ -179,7 +180,7 @@ public final class MainActivity extends Activity {
         io.execute(()->{try{
             JSONObject body=new JSONObject();body.put("id",id);body.put("status",status);body.put("admin_note",note);
             Reply r=request("PATCH",body.toString(),entered);JSONObject j=new JSONObject(r.body);
-            if(r.code==401||r.code==403){runOnUiThread(()->{if(current!=session)return;busy=false;FeedbackAlerts.disable(this);showLogin("Session expired.");});return;}
+            if(r.code==401||r.code==403){runOnUiThread(()->{if(current!=session)return;busy=false;TokenStore.clear(this);FeedbackAlerts.disable(this);showLogin("Session expired.");});return;}
             if(r.code<200||r.code>299||!j.optBoolean("ok"))throw new IllegalStateException("Server rejected update: "+r.code);
             runOnUiThread(()->{if(current!=session)return;busy=false;Toast.makeText(this,"Saved",Toast.LENGTH_SHORT).show();load();});
         }catch(Exception e){fail(current,"Could not save: "+e.getMessage());}});

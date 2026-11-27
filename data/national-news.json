@@ -1,42 +1,49 @@
 {
-  "generated_at": "2026-11-27T02:15:43.705757+05:45",
-  "updated_at_npt": "27 Nov 02:15 NPT",
+  "generated_at": "2026-11-27T08:57:16.332680+05:45",
+  "updated_at_npt": "27 Nov 08:57 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "सीमा अपराध नियन्त्रणमा स्थानीयको सहयोग अपरिहार्य",
+      "title": "वैदेशिक रोजगारीको ठगी रोक्न कानुन र श्रम मन्त्रालयले संयुक्त पहल थाल्ने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607851/local-cooperation-is-essential-in-controlling-border-crime",
-      "published_at": "2026-11-26T22:49:41+05:45",
+      "url": "https://www.ratopati.com/story/607872/law-and-labor-ministries-to-launch-joint-initiative-to-prevent-foreign-employment-fraud",
+      "published_at": "2026-11-27T08:48:07+05:45",
+      "flash": true
+    },
+    {
+      "title": "दूधको मूल्य ८० रुपैयाँ तोक्न कास्कीका किसानको माग, नत्र गोबर लिएर आन्दोलन गर्ने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607868/kaski-farmers-demand-that-the-price-of-milk-be-fixed-at-rs-80-otherwise-they-will-protest-with-cow-dung",
+      "published_at": "2026-11-27T08:22:30+05:45",
+      "flash": true
+    },
+    {
+      "title": "अमेरिकाको पूर्वी क्षेत्रमा आँधी, थ्याङ्क्सगिभिङ प्रभावित, ९ लाखभन्दा बढी घरमा विद्युत् अवरुद्ध",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607865/storms-hit-eastern-us-disrupting-power-to-more-than-900000-homes-on-thanksgiving",
+      "published_at": "2026-11-27T08:00:11+05:45",
+      "flash": true
+    },
+    {
+      "title": "निर्माण थालेको डेढ दशकपछि उत्पादनको चरणमा राहुघाट जलविद्युत् आयोजना",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607857/rahughat-hydropower-project-in-production-phase-after-a-decade-and-a-half-of-construction",
+      "published_at": "2026-11-27T06:53:08+05:45",
       "flash": false
     },
     {
-      "title": "महाकाली नदीमा बेपत्ता युवती मृत फेला",
+      "title": "कोशी प्रदेशमा हल्का वर्षा, अन्यत्रको मौसम कस्तो रहला ?",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607846/missing-girl-found-dead-in-mahakali-river",
-      "published_at": "2026-11-26T22:11:53+05:45",
-      "flash": false
-    },
-    {
-      "title": "४. साउदी अरबमा भएको आक्रमणमा एक नेपालीको मृत्यु, ३ जना घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607841/one-nepali-killed-3-injured-in-attack-in-saudi-arabia",
-      "published_at": "2026-11-26T20:59:45+05:45",
-      "flash": false
-    },
-    {
-      "title": "पूर्वमुख्यसचिव अर्याललाई नेपाल–भारत सीमा क्षेत्रबाट पक्राउ गरेको प्रहरीको दाबी",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607837/police-claim-to-have-arrested-former-chief-secretary-aryal-from-the-nepal-india-border-area",
-      "published_at": "2026-11-26T20:42:58+05:45",
+      "url": "https://www.ratopati.com/story/607855/light-rain-in-koshi-region-whats-the-weather-like-elsewhere",
+      "published_at": "2026-11-27T06:28:53+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 12,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     },
@@ -49,8 +56,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 0,
-      "recent": 5
+      "flash": 4,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,
@@ -60,7 +67,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 6,
+      "candidates": 5,
       "flash": 0,
       "recent": 0
     }

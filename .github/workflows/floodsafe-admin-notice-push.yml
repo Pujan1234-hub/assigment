@@ -6,12 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       audience:
-        description: 'Delivery audience: preview devices first, all only after testing'
+        description: 'One configured owner device, preview devices, or confirmed broadcast'
         type: choice
         options:
+          - device
           - preview
           - all
-        default: preview
+        default: device
         required: true
       title_ne:
         description: 'Nepali notification title'
@@ -49,6 +50,7 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           AUDIENCE: ${{ inputs.audience }}
+          OWNER_TEST_DEVICE: ${{ secrets.FLOODSAFE_OWNER_TEST_FCM_TOKEN }}
           TITLE_NE: ${{ inputs.title_ne }}
           BODY_NE: ${{ inputs.body_ne }}
           TITLE_EN: ${{ inputs.title_en }}
@@ -58,11 +60,14 @@ jobs:
           set -euo pipefail
           python3 -m pip install --quiet google-auth requests
           python3 - <<'PY'
-          import json,os,sys,requests
+          import json,os,sys,re,requests
           from google.oauth2 import service_account
           from google.auth.transport.requests import Request
           audience=os.environ.get('AUDIENCE')
-          if audience not in ('preview','all'):sys.exit('Audience must be preview or all')
+          if audience not in ('device','preview','all'):sys.exit('Invalid audience; no message sent')
+          device=os.environ.get('OWNER_TEST_DEVICE','').strip() if audience=='device' else ''
+          if audience=='device' and not re.fullmatch(r'[A-Za-z0-9_:\-]{20,4096}',device):
+              sys.exit('Owner test device is not configured; no message sent. No broadcast fallback.')
           # A Play beta install subscribes to nepal-alerts, NOT floodsafe-testers.
           # An explicit approval is required each time for all-device broadcast.
           if audience=='all' and os.environ.get('CONFIRM_BROADCAST','')!='SEND NON-EMERGENCY PUSH':
@@ -88,15 +93,21 @@ jobs:
           title='ℹ️ '+title_ne+' / '+title_en
           body=body_ne+'\n'+body_en
           if len(title)>180 or len(body)>1050:sys.exit('Combined notification too long; shorten both languages')
-          topic='floodsafe-testers' if audience=='preview' else 'nepal-alerts'
-          payload={'message':{'topic':topic,
+          if audience=='device':
+              target={'token':device}
+              title='TEST · '+title
+              android={'priority':'high','ttl':'60s'}
+          else:
+              target={'topic':'floodsafe-testers' if audience=='preview' else 'nepal-alerts'}
+              android={'priority':'high','ttl':'1800s'}
+          payload={'message':{**target,
               'data':{'kind':'app_notice','title':title,'body':body},
-              'android':{'priority':'high','ttl':'1800s'}}}
+              'android':android}}
           url=f"https://fcm.googleapis.com/v1/projects/{service['project_id']}/messages:send"
           r=requests.post(url,headers={
               'Authorization':'Bearer '+creds.token,'Content-Type':'application/json'
           },json=payload,timeout=20)
-          r.raise_for_status()
+          if not r.ok:sys.exit('Firebase rejected the request (HTTP %d); no fallback sent'%r.status_code)
           print(json.dumps({'submitted':True,'audience':audience,
               'target_project':'floodsafe-nepal',
               'kind':'app_notice','fcm_accepted':True,'delivery_confirmed':False}))

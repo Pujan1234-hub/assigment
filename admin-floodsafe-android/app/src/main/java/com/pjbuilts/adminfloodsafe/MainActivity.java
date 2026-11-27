@@ -63,7 +63,7 @@ public final class MainActivity extends Activity {
     private TextView feedback, liveLabel, historyLabel;
     private EditText title, message, titleNe, messageNe, hours, tokenField;
     private EditText pushTitle, pushMessage, pushTitleNe, pushMessageNe;
-    private Button publishButton, removeButton, pushBetaButton, pushPreviewButton;
+    private Button publishButton, removeButton, pushBetaButton, pushPreviewButton, pushDeviceButton;
     private TextView pushFeedback, pushHistoryLabel;
     private volatile int lastLiveRevision=-1;
     private boolean busy=false;
@@ -210,7 +210,10 @@ public final class MainActivity extends Activity {
         pushMessage=input(pushCard,"Push text (English)","Write a short informational message…",true);
         pushTitleNe=input(pushCard,"Push title (Nepali, optional)","Leave blank for English title",false);
         pushMessageNe=input(pushCard,"Push text (Nepali, optional)","Leave blank for English message",true);
-        pushBetaButton=button(pushCard,"🔔 Send to installed Play subscribers",true);
+        pushDeviceButton=button(pushCard,"🧪 Test on my phone only",true);
+        pushDeviceButton.setOnClickListener(v->askDeviceTest());
+        pushCard.addView(text("Single-device test uses only the private owner FCM token configured in GitHub. If missing, no notification is sent. Never falls back to all users.",12,MUTED,false),wrap(4,8));
+        pushBetaButton=button(pushCard,"🔔 Send to installed Play subscribers",false);
         pushBetaButton.setOnClickListener(v->askPush("all"));
         pushPreviewButton=button(pushCard,"🧪 Send to preview-only devices",false);
         pushPreviewButton.setOnClickListener(v->askPush("preview"));
@@ -365,6 +368,15 @@ public final class MainActivity extends Activity {
             refreshLive();
         });
     }
+    private void askDeviceTest(){
+        if(busy)return;
+        new AlertDialog.Builder(this)
+            .setTitle("Test on my phone only")
+            .setMessage("Send one clearly labelled test notification to the configured owner FloodSafe device only? If no valid owner token is configured, the server will stop without sending. No other subscribers will receive it.")
+            .setNegativeButton("Cancel",null)
+            .setPositiveButton("Send test",(d,w)->dispatchPush("device","Sound test","This is a private notification sound test.","ध्वनि परीक्षण","यो निजी सूचना ध्वनि परीक्षण हो।"))
+            .show();
+    }
     private void askPush(String audience){
         if(busy)return;
         String enTitle=pushTitle.getText().toString().trim();
@@ -402,6 +414,7 @@ public final class MainActivity extends Activity {
         busy=true;
         if(pushBetaButton!=null)pushBetaButton.setEnabled(false);
         if(pushPreviewButton!=null)pushPreviewButton.setEnabled(false);
+        if(pushDeviceButton!=null)pushDeviceButton.setEnabled(false);
         pushFeedback.setText("Sending secure request to GitHub Actions. No Firebase credential stored in this APK…");
         work(()->{
             JSONObject inputs=new JSONObject();
@@ -420,6 +433,7 @@ public final class MainActivity extends Activity {
                 busy=false;
                 if(pushBetaButton!=null)pushBetaButton.setEnabled(true);
                 if(pushPreviewButton!=null)pushPreviewButton.setEnabled(true);
+                if(pushDeviceButton!=null)pushDeviceButton.setEnabled(true);
                 pushFeedback.setText("✓ Push job QUEUED. Open Push History and look for SUCCESS. This confirms Firebase acceptance, not receipt by every phone.");
             });
         },pushFeedback);
@@ -464,6 +478,7 @@ public final class MainActivity extends Activity {
                     if(removeButton!=null)removeButton.setEnabled(true);
                     if(pushBetaButton!=null)pushBetaButton.setEnabled(true);
                     if(pushPreviewButton!=null)pushPreviewButton.setEnabled(true);
+                if(pushDeviceButton!=null)pushDeviceButton.setEnabled(true);
                     if(error!=null)error.setText("⚠ "+text);
                 });
             }

@@ -370,7 +370,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private void openAdvancedPreview(){Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);}
     private LinearLayout buildMorePanel(){
         LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);LinearLayout heading=card();heading.addView(text(t("अन्य सुविधाहरू","More features"),23,true,Color.rgb(16,39,70)));heading.addView(text(t("आवश्यक जानकारी छानेर हेर्नुहोस्","Choose the information you need"),12,false,Color.rgb(70,101,122)));panel.addView(heading);
-        String[] labels={t("🌧 वर्षा स्टेशन","🌧 Rain gauge"),t("☁ ७ दिनको पूर्वानुमान","☁ 7-day forecast"),t("🌊 जिल्ला नदी स्टेशन","🌊 District rivers"),t("⚠ सरकारी सूचना","⚠ Government notices"),t("📚 समाचार / ज्ञान","📚 News / knowledge"),t("✚ विपद् विवरण","✚ Disaster status"),t("🛰 उन्नत / NASA","🛰 Advanced / NASA"),"🤖 SATHI",t("🔒 गोपनीयता","🔒 Privacy")};
+        String[] labels={t("🌧 वर्षा स्टेशन","🌧 Rain gauge"),t("☁ ७ दिनको पूर्वानुमान","☁ 7-day forecast"),t("🌊 जिल्ला नदी स्टेशन","🌊 District rivers"),t("⚠ सरकारी सूचना","⚠ Government notices"),t("📚 समाचार / ज्ञान","📚 News / knowledge"),t("✚ विपद् विवरण","✚ Disaster status"),t("🛰 उन्नत / NASA","🛰 Advanced / NASA"),"🤖 FloodSafe Sathi AI",t("🔒 गोपनीयता","🔒 Privacy")};
         Runnable[] actions={()->smoothTo(rainAnchor),()->smoothTo(forecastAnchor),()->smoothTo(nationalAnchor),()->smoothTo(governmentAnchor),()->smoothTo(newsAnchor),()->smoothTo(humanCard),()->openAdvancedPreview(),()->showSathiDialog(null),()->smoothTo(privacyAnchor)};
         for(int i=0;i<labels.length;i+=2){LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);for(int j=i;j<Math.min(i+2,labels.length);j++){Button b=button(labels[j]);b.setTextSize(14);b.setBackground(round(Color.rgb(249,244,232),16,Color.rgb(214,218,206),1));Runnable action=actions[j];b.setOnClickListener(v->action.run());row.addView(b,weight());}if(i+1==labels.length){View space=new View(this);row.addView(space,weight());}panel.addView(row,lp(-1,dp(57),0,0,0,6));}
         return panel;
@@ -1135,13 +1135,23 @@ public final class NativeFullActivity extends Activity implements LocationListen
         newsKnowledgeText.setText(entry.body(english));
     }
 
-    private void showPrivacy(){new AlertDialog.Builder(this).setTitle(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety")).setMessage(t("FloodSafe ले location स्थानीय मौसम र 2 km verified river warning मिलाउन प्रयोग गर्छ। Background location user-enabled monitoring का लागि मात्र हो। Microphone SATHI voice का लागि मात्र प्रयोग हुन्छ। FCM notification delivery का लागि device token प्रयोग हुन सक्छ। Force stop पछि Android ले background काम रोक्न सक्छ।","FloodSafe uses location for local weather and verified river warnings within 2 km. Background location is used only for user-enabled monitoring. Microphone is used for SATHI voice. FCM may process a device token for notification delivery. Android can stop background work after an explicit Force stop.")).setPositiveButton("OK",null).show();}
+    private void showPrivacy(){new AlertDialog.Builder(this).setTitle(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety")).setMessage(t("FloodSafe ले location स्थानीय मौसम र 2 km verified river warning मिलाउन प्रयोग गर्छ। Background location user-enabled monitoring का लागि मात्र हो। Microphone FloodSafe Sathi AI voice का लागि मात्र प्रयोग हुन्छ। FCM notification delivery का लागि device token प्रयोग हुन सक्छ। Force stop पछि Android ले background काम रोक्न सक्छ।","FloodSafe uses location for local weather and verified river warnings within 2 km. Background location is used only for user-enabled monitoring. Microphone is used for FloodSafe Sathi AI voice. FCM may process a device token for notification delivery. Android can stop background work after an explicit Force stop.")).setPositiveButton("OK",null).show();}
 
     private void showSathiDialog(String initial){
         LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(dp(14),dp(8),dp(14),0);
+        box.setPadding(dp(14),dp(8),dp(14),dp(8));
+        box.setBackgroundColor(Color.rgb(255,253,247));
+        box.setFocusableInTouchMode(true);
+        final android.app.Dialog dialog=new android.app.Dialog(this);
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+        LinearLayout titleRow=new LinearLayout(this);titleRow.setOrientation(LinearLayout.HORIZONTAL);titleRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        TextView chatTitle=text("🤖 FloodSafe Sathi AI",19,true,Color.rgb(16,39,70));
+        titleRow.addView(chatTitle,new LinearLayout.LayoutParams(0,-2,1f));
+        Button close=smallButton(t("बन्द","Close"));close.setOnClickListener(v->dialog.dismiss());
+        titleRow.addView(close,new LinearLayout.LayoutParams(dp(70),dp(44)));
+        box.addView(titleRow);
         ScrollView messages=new ScrollView(this);messages.setFillViewport(false);
-        TextView history=text(t("SATHI · नदी/मौसम/चेतावनीसँगै गीता, जीवन, विज्ञान र बाढी सुरक्षाको ज्ञान पनि सोध्नुहोस्।","SATHI · Ask about river gauges, warnings, Gita, life skills, science or flood safety."),14,false,Color.rgb(30,52,72));
+        TextView history=text(t("FloodSafe Sathi AI · नदी/मौसम/चेतावनीसँगै गीता, जीवन, विज्ञान र बाढी सुरक्षाको ज्ञान पनि सोध्नुहोस्।","FloodSafe Sathi AI · Ask about river gauges, warnings, Gita, life skills, science or flood safety."),14,false,Color.rgb(30,52,72));
         // Text selection previously grabbed focus and kept the old response in view.
         history.setFocusable(false);
         messages.setSmoothScrollingEnabled(true);
@@ -1153,16 +1163,15 @@ public final class NativeFullActivity extends Activity implements LocationListen
             // Keep the newest reply visible after the software keyboard resizes the dialog.
             if(b-t!=ob-ot)scrollSathiToLatest(messages,history);
         });
-        box.addView(messages,lp(-1,Math.min(dp(300),getResources().getDisplayMetrics().heightPixels/3),0,0,0,dp(8)));
+        LinearLayout.LayoutParams historyParams=new LinearLayout.LayoutParams(-1,0,1f);historyParams.bottomMargin=dp(6);box.addView(messages,historyParams);
         EditText question=new EditText(this);question.setSingleLine(true);
         question.setTextSize(15);question.setHint(t("यहाँ प्रश्न लेख्नुहोस्…","Type your question…"));
-        box.addView(question,lp(-1,dp(54),0,0,0,dp(5)));
+        question.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEND);
         LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
         Button send=smallButton(t("पठाउनुहोस् ↗","Send ↗"));
         Button mic=smallButton(t("🎙️ बोल्नुहोस्","🎙️ Voice"));
         actions.addView(send,new LinearLayout.LayoutParams(0,dp(48),1));
         actions.addView(mic,new LinearLayout.LayoutParams(0,dp(48),1));
-        box.addView(actions);
         final String[] lastSubject={""};
         final int[] lessonStep={0};
         Runnable sendQuestion=()->{
@@ -1180,12 +1189,13 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 lastSubject[0]=q;
             } else if(!lastSubject[0].isEmpty())lessonStep[0]++;
             String a=answerSathi(effective,lessonStep[0]);
-            String old=history.getText().toString(),next=old+"\n\n👤 "+q+"\n🤖 SATHI: "+a;
+            String old=history.getText().toString(),next=old+"\n\n👤 "+q+"\n🤖 FloodSafe Sathi AI: "+a;
             history.setText(next.length()>13000?next.substring(next.length()-12000):next);
             question.setText("");
             scrollSathiToLatest(messages,history);
         };
         send.setOnClickListener(v->sendQuestion.run());
+        question.setOnEditorActionListener((view,action,event)->{if(action==android.view.inputmethod.EditorInfo.IME_ACTION_SEND){sendQuestion.run();return true;}return false;});
         mic.setOnClickListener(v->startVoice(history,messages));
         LinearLayout topics=new LinearLayout(this);topics.setOrientation(LinearLayout.HORIZONTAL);
         String[] prompts={t("गीता जीवन ज्ञान","Gita life lesson"),t("बाढीमा के गर्ने","Flood safety"),t("नदीको अवस्था","River status")};
@@ -1193,16 +1203,29 @@ public final class NativeFullActivity extends Activity implements LocationListen
            LinearLayout.LayoutParams qp=new LinearLayout.LayoutParams(0,dp(47),1f);qp.setMargins(dp(2),dp(7),dp(2),0);
            topics.addView(quick,qp);quick.setOnClickListener(v->{question.setText(prompt);sendQuestion.run();});}
         box.addView(topics);
-        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("🤖 SATHI · Chat + Voice")
-            .setView(box).setPositiveButton(t("बन्द","Close"),null).create();
-        dialog.getWindow();
+        box.addView(question,lp(-1,dp(48),0,3,0,3));
+        box.addView(actions);
+        dialog.setContentView(box);
         dialog.show();
-        dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        // A lower fixed maximum chat height leaves space for editor and reply on short phones.
+        android.view.Window chatWindow=dialog.getWindow();
+        if(chatWindow!=null){
+            chatWindow.setBackgroundDrawableResource(android.R.color.transparent);
+            chatWindow.setLayout(-1,-1);
+            chatWindow.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE|android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        }
+        box.requestFocus();
+        // Shrink only the message pane when the keyboard opens; the composer stays visible.
+        box.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{
+            int minimumChat=dp(150);
+            boolean compact=(b-t)<dp(420);
+            int desired=compact?View.GONE:View.VISIBLE;
+            if(topics.getVisibility()!=desired)topics.setVisibility(desired);
+            if(b-t!=ob-ot)scrollSathiToLatest(messages,history);
+        });
         scrollSathiToLatest(messages,history);
         if(initial!=null&&!initial.trim().isEmpty()){
             String a=answerSathi(initial);
-            history.append("\n\n👤 "+initial+"\n🤖 SATHI: "+a);
+            history.append("\n\n👤 "+initial+"\n🤖 FloodSafe Sathi AI: "+a);
             scrollSathiToLatest(messages,history);
         }
     }
@@ -1221,7 +1244,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         });
     }
     private void startVoice(TextView out){startVoice(out,null);}
-    private void startVoice(TextView out,ScrollView chatScroll){if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},REQ_MIC);return;}if(!SpeechRecognizer.isRecognitionAvailable(this)){out.setText(t("यो फोनमा voice recognition उपलब्ध छैन।","Voice recognition is unavailable on this phone."));return;}if(speech!=null)try{speech.destroy();}catch(Exception ignored){}speech=SpeechRecognizer.createSpeechRecognizer(this);speech.setRecognitionListener(new RecognitionListener(){public void onReadyForSpeech(Bundle b){out.append("\n"+t("🎙 सुन्दैछु…","🎙 Listening…"));}public void onBeginningOfSpeech(){}public void onRmsChanged(float x){}public void onBufferReceived(byte[]b){}public void onEndOfSpeech(){}public void onError(int e){out.append("\n"+t("आवाज बुझिएन। फेरि प्रयास गर्नुहोस्।","Could not understand. Try again."));}public void onPartialResults(Bundle b){}public void onEvent(int t,Bundle b){}public void onResults(Bundle b){ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);String q=r==null||r.isEmpty()?"":r.get(0);String a=answerSathi(q);out.append("\n\n👤 "+q+"\n🤖 SATHI: "+a);if(chatScroll!=null)scrollSathiToLatest(chatScroll,out);speak(a);}});speech.startListening(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,english?"en-GB":"ne-NP").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5));}
+    private void startVoice(TextView out,ScrollView chatScroll){if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},REQ_MIC);return;}if(!SpeechRecognizer.isRecognitionAvailable(this)){out.setText(t("यो फोनमा voice recognition उपलब्ध छैन।","Voice recognition is unavailable on this phone."));return;}if(speech!=null)try{speech.destroy();}catch(Exception ignored){}speech=SpeechRecognizer.createSpeechRecognizer(this);speech.setRecognitionListener(new RecognitionListener(){public void onReadyForSpeech(Bundle b){out.append("\n"+t("🎙 सुन्दैछु…","🎙 Listening…"));}public void onBeginningOfSpeech(){}public void onRmsChanged(float x){}public void onBufferReceived(byte[]b){}public void onEndOfSpeech(){}public void onError(int e){out.append("\n"+t("आवाज बुझिएन। फेरि प्रयास गर्नुहोस्।","Could not understand. Try again."));}public void onPartialResults(Bundle b){}public void onEvent(int t,Bundle b){}public void onResults(Bundle b){ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);String q=r==null||r.isEmpty()?"":r.get(0);String a=answerSathi(q);out.append("\n\n👤 "+q+"\n🤖 FloodSafe Sathi AI: "+a);if(chatScroll!=null)scrollSathiToLatest(chatScroll,out);speak(a);}});speech.startListening(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,english?"en-GB":"ne-NP").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5));}
     private String answerSathi(String q){return answerSathi(q,0);}
     private String answerSathi(String q,int lessonOffset){
         JSONArray rs=new JSONArray();

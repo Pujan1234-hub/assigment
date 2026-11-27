@@ -153,7 +153,7 @@ public final class SathiWakeService extends Service implements LocationListener 
                 : new android.app.Notification.Builder(this);
         android.app.Notification n = builder
                 .setSmallIcon(R.drawable.ic_floodsafe)
-                .setContentTitle("FloodSafe Nepal • SATHI")
+                .setContentTitle("FloodSafe Sathi AI")
                 .setContentText(detail)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
@@ -183,13 +183,13 @@ public final class SathiWakeService extends Service implements LocationListener 
         if (manager == null || Build.VERSION.SDK_INT < 26) return;
 
         NotificationChannel service = new NotificationChannel(
-                CHANNEL_ID, "SATHI voice and live location", NotificationManager.IMPORTANCE_LOW);
+                CHANNEL_ID, "FloodSafe Sathi AI voice and live location", NotificationManager.IMPORTANCE_LOW);
         service.setDescription("Keeps user-enabled Ye Sathi listening and FloodSafe live monitoring active.");
         service.setShowBadge(false);
         manager.createNotificationChannel(service);
 
         NotificationChannel wake = new NotificationChannel(
-                WAKE_CHANNEL_ID, "SATHI wake requests", NotificationManager.IMPORTANCE_HIGH);
+                WAKE_CHANNEL_ID, "FloodSafe Sathi AI wake requests", NotificationManager.IMPORTANCE_HIGH);
         wake.setDescription("Backup prompt when Android does not allow the app to open automatically.");
         manager.createNotificationChannel(wake);
     }
@@ -322,7 +322,7 @@ public final class SathiWakeService extends Service implements LocationListener 
                 : new android.app.Notification.Builder(this);
         android.app.Notification n = builder
                 .setSmallIcon(R.drawable.ic_floodsafe)
-                .setContentTitle("🤖 SATHI ले तपाईंको प्रश्न सुन्यो")
+                .setContentTitle("🤖 FloodSafe Sathi AI ले तपाईंको प्रश्न सुन्यो")
                 .setContentText(shown)
                 .setStyle(new android.app.Notification.BigTextStyle().bigText(shown))
                 .setAutoCancel(true)

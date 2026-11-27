@@ -49,7 +49,9 @@ public final class MainActivity extends Activity {
     @Override protected void onPause(){visible=false;timer.removeCallbacks(tick);super.onPause();}
     @Override protected void onDestroy(){session++;timer.removeCallbacks(tick);io.shutdownNow();token="";super.onDestroy();}
     @Override public void onRequestPermissionsResult(int code,String[] perms,int[] results){super.onRequestPermissionsResult(code,perms,results);if(code==41&&results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED&&!token.isEmpty())enableAlerts();}
-    private void enableAlerts(){try{FeedbackAlerts.enable(this,token,records);Toast.makeText(this,"Background checks enabled (Android schedules them approximately every 15 minutes or later).",Toast.LENGTH_LONG).show();}catch(Exception e){Toast.makeText(this,"Could not enable background checks",Toast.LENGTH_LONG).show();}}
+    private TextView alertState;
+    private void showAlertState(){if(alertState!=null)alertState.setText(FeedbackAlerts.enabled(this)?"Background checks: enabled · about 15 min or later":"Background checks: disabled");}
+    private void enableAlerts(){try{FeedbackAlerts.enable(this,token,records);showAlertState();Toast.makeText(this,"Background checks enabled (Android schedules them approximately every 15 minutes or later).",Toast.LENGTH_LONG).show();}catch(Exception e){showAlertState();Toast.makeText(this,"Background checks failed: "+e.getClass().getSimpleName(),Toast.LENGTH_LONG).show();}}
     private int dp(int n){return (int)(getResources().getDisplayMetrics().density*n+.5f);}
     private GradientDrawable bg(int color,int border){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(17));if(border!=0)d.setStroke(dp(1),border);return d;}
     private TextView t(String s,int size,int color,boolean bold){TextView v=new TextView(this);v.setText(s);v.setTextSize(size);v.setTextColor(color);if(bold)v.setTypeface(null,Typeface.BOLD);return v;}
@@ -92,7 +94,8 @@ public final class MainActivity extends Activity {
         logout.setOnClickListener(view->{TokenStore.clear(this);FeedbackAlerts.disable(this);records=new JSONArray();showLogin("Inbox locked.");});
         Button alerts=b("Enable background alerts",false);page.addView(alerts,p(-1,45,8));
         alerts.setOnClickListener(view->{if(busy||token.isEmpty())return;if(android.os.Build.VERSION.SDK_INT>=33&&checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},41);return;}enableAlerts();});
-        Button stopAlerts=b("Disable background alerts",false);page.addView(stopAlerts,p(-1,42,10));stopAlerts.setOnClickListener(view->{FeedbackAlerts.disable(this);Toast.makeText(this,"Background alerts disabled",Toast.LENGTH_SHORT).show();});
+        alertState=t("",13,MUTED,false);page.addView(alertState,p(-1,-2,8));showAlertState();
+        Button stopAlerts=b("Disable background alerts",false);page.addView(stopAlerts,p(-1,42,10));stopAlerts.setOnClickListener(view->{FeedbackAlerts.disable(this);showAlertState();Toast.makeText(this,"Background alerts disabled",Toast.LENGTH_SHORT).show();});
         state=t("Loading feedback...",13,MUTED,false);page.addView(state,p(-1,-2,12));
         summary=v();page.addView(summary,p(-1,-2,8));
         LinearLayout filterCard=card();page.addView(filterCard,p(-1,-2,14));

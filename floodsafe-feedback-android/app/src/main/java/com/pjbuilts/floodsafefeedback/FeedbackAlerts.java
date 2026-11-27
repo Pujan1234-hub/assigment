@@ -44,8 +44,9 @@ public final class FeedbackAlerts extends JobService {
   prefs(c).edit().putString("iv",iv).putString("cipher",encrypted).putString("watermark",baseline).commit();
   JobScheduler scheduler=c.getSystemService(JobScheduler.class);
   JobInfo job=new JobInfo.Builder(JOB,new ComponentName(c,FeedbackAlerts.class)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPeriodic(15*60*1000L).setPersisted(true).build();
-  if(scheduler.schedule(job)!=JobScheduler.RESULT_SUCCESS){disable(c);throw new IllegalStateException("Unable to schedule");}
+  try{if(scheduler.schedule(job)!=JobScheduler.RESULT_SUCCESS)throw new IllegalStateException("Scheduler rejected request");}catch(RuntimeException e){disable(c);throw e;}
  }
+ static boolean enabled(Context c){JobScheduler s=c.getSystemService(JobScheduler.class);return s!=null&&s.getPendingJob(JOB)!=null&&!prefs(c).getString("cipher","").isEmpty();}
  static synchronized void disable(Context c){
   c.getSystemService(JobScheduler.class).cancel(JOB);prefs(c).edit().clear().commit();
   c.getSystemService(NotificationManager.class).cancel(JOB);

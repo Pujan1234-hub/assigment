@@ -45,13 +45,13 @@ final class SathiKnowledge {
                 int variant=lessonOffset%3;
                 if(variant==1)return en?"More detail: the temperature/rain/cloud values in the district view come from the Open-Meteo representative-point model, not a nearby DHM rain gauge. For measured rain, check the Home DHM rain-gauge card."
                                     :"थप जानकारी: जिल्लाको तापक्रम, बादल र वर्षा Open-Meteo को प्रतिनिधि स्थानको मोडेल हो। वास्तविक मापनका लागि Home मा DHM वर्षामापक हेर्नुहोस्।";
-                if(variant==2)return en?"For Kathmandu or another district, ask by name to see a loaded model. If it is unavailable, SATHI should not replace it with your phone's GPS weather."
+                if(variant==2)return en?"For Kathmandu or another district, ask by name to see the local forecast. If it is unavailable, Your local weather is not a substitute for another district's forecast."
                                     :"काठमाडौँ वा अर्को जिल्लाको नामसहित सोध्दा उपलब्ध भए जिल्लाकै मौसम देखिन्छ। उपलब्ध नभए फोनको GPS मौसमलाई त्यस जिल्लाको भनेर देखाउँदैन।";
                 return en?"Weather changes over time. Please compare the model update time with the current reading and check official DHM alerts for hazards."
                           :"मौसम बदलिरहन्छ। अनुमानको अपडेट समय जाँच्नुहोस् र जोखिमका लागि आधिकारिक DHM चेतावनी हेर्नुहोस्।";
             }
-            if(newsQ)return en?"SATHI shows only headlines delivered by the existing three-source feed. If no fresh verified items arrive in the past 30 minutes, the News slot automatically shows Knowledge. The app checks the sources again while Home is open."
-                                :"SATHI ले उपलब्ध तीन स्रोतको समाचार मात्र देखाउँछ। पछिल्लो ३० मिनेटमा ताजा खबर नभए News खण्डमा आफैँ ज्ञानका कुरा आउँछन्। Home खुला हुँदा एपले स्रोत पुनः जाँचिरहन्छ।";
+            if(newsQ)return en?"FloodSafe Sathi AI shows recent news from available sources. When there is no recent news, you can read helpful knowledge articles."
+                                :"FloodSafe Sathi AI ले उपलब्ध स्रोतका नयाँ समाचार देखाउँछ। नयाँ खबर नभए जीवनोपयोगी ज्ञान पढ्न सक्नुहुन्छ।";
             if(govtQ || (alertQ&&!riverQ))return en?"Only government DHM/NDRRMA bulletins within validFrom–validUntil count as active; app refreshes while open. The absence of a verified notice does not prove that river conditions are safe."
                                                     :"validFrom–validUntil भित्रका DHM/NDRRMA सूचना मात्र लागू मानिन्छन्। एप खुला हुँदा पुनः जाँचिन्छ। सूचना नभेटिनु नदी सुरक्षित छ भन्ने प्रमाण होइन।";
             if(riverQ)return en?"River levels are station-specific: compare the measured level, warning/danger threshold, observation timestamp and station location. An old reading cannot establish a live emergency."
@@ -71,7 +71,7 @@ final class SathiKnowledge {
                :(en?"Nepal nearby-river alert is inactive outside Nepal. Local weather uses GPS, not a Nepal river gauge."
                     :"नेपालबाहिर नेपालको नजिकको नदी अलर्ट लागू हुँदैन। GPS मौसम र नेपालका नदी मापन अलग हुन्।");
         if(has(q,"what can","what do","who are","तिम्रो काम","के गर्न सक्छ","help","मद्दत","feature","फिचर"))
-           return en?"I can explain current loaded DHM river levels, district weather models, verified government notices, source-linked news and curated general knowledge. Ask a specific question."
+           return en?"I can explain available official river readings, district weather models, verified government notices, source-linked news and curated general knowledge. Ask a specific question."
                     :"म उपलब्ध DHM नदी मापन, जिल्लाको मौसम अनुमान, प्रमाणित सरकारी सूचना, स्रोतसहितको समाचार र सामान्य ज्ञान बुझाउँछु। कुनै खास प्रश्न सोध्नुहोस्।";
         return en?"I cannot identify the topic yet. For example ask ‘KTM weather k cha?’, ‘Bagmati river level?’, ‘government notice?’, ‘Gita advice?’ or ‘news?’"
                  :"प्रश्नको विषय स्पष्ट भएन। उदाहरण: ‘ktm weather k cha?’, ‘बागमती नदीको सतह?’, ‘सरकारी सूचना?’, ‘गीता ज्ञान?’ वा ‘समाचार?’";
@@ -114,16 +114,16 @@ final class SathiKnowledge {
             return b.toString()+(en?"\nOpen-Meteo estimate for a representative district point, not DHM measured rainfall."
                                  :"\nयो Open-Meteo को प्रतिनिधि स्थानको अनुमान हो, DHM को वास्तविक वर्षामापक होइन।");
         }
-        if(ktm)return en?"Kathmandu's current district model is not loaded. Try again after weather refresh or choose Kathmandu in district search; I will not substitute your phone's UK weather."
+        if(ktm)return en?"Kathmandu's current forecast is unavailable. Try again after weather refresh or choose Kathmandu in district search; Your local weather is shown separately."
                         :"काठमाडौँको ताजा जिल्ला मौसम अहिले load भएको छैन। Weather refresh भएपछि पुनः सोध्नुहोस्। UK मा रहेको फोनको मौसमलाई काठमाडौँको भनेर देखाउँदिनँ।";
         // If a location word is specified but its district model is missing, never substitute local GPS data.
         if(has(q,"pokhara","chitwan","biratnagar","butwal","birgunj","dharan","नेपालगञ्ज","बिर्तामोड"))
-           return en?"The requested place is not matched in the loaded 77-district model. Choose the relevant district in the app."
+           return en?"A forecast for that place is unavailable. Choose the relevant district in the app."
                     :"सोधिएको ठाउँको मौसम हालको ७७-जिल्ला मोडेलसँग मिलेन। सम्बन्धित जिल्ला छानेर जाँच्नुहोस्।";
         if(localWeather!=null&&!localWeather.isEmpty())
            return (en?"🌤 Phone GPS weather: ":"🌤 फोनको GPS मौसम: ")+localWeather+
                (en?"\nThis is a local model estimate, not a DHM station reading.":"\nयो स्थानीय मोडेल अनुमान हो, DHM स्टेशनको मापन होइन।");
-        return en?"Local weather has not loaded. Allow GPS or select a district to see its model."
+        return en?"Local weather is unavailable. Allow GPS or select a district to see its model."
                  :"हाल GPS मौसम load भएको छैन। GPS अनुमति दिनुहोस् वा जिल्ला छान्नुहोस्।";
     }
     private static String newsAnswer(boolean en,JSONArray news){

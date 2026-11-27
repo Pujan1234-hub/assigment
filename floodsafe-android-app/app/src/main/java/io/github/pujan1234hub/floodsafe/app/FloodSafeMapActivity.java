@@ -186,10 +186,10 @@ public final class FloodSafeMapActivity extends Activity {
                         else if("alert".equals(p.stage))watchCount++;
                         else if("normal".equals(p.stage))normalCount++;
                     }
-                    String feed="dhm".equals(currentObservationSource)?(english?"DHM fallback":"DHM वैकल्पिक स्रोत"):
-                        "bipad".equals(currentObservationSource)?(english?"BIPAD primary":"BIPAD मुख्य स्रोत"):
+                    String feed="dhm".equals(currentObservationSource)?(english?"Source: DHM":"स्रोत: DHM"):
+                        "bipad".equals(currentObservationSource)?(english?"Source: BIPAD":"स्रोत: BIPAD"):
                         (english?"No current official reading":"सरकारी ताजा मापन छैन");
-                    status.setText(feed+("bipad".equals(currentObservationSource)&&portalWatchCount>=0?" · BIPAD River Watch "+portalWatchCount:"")+"\n🔴 "+dangerCount+" 🟠 "+warningCount+" 🟡 "+watchCount+" 🔵 "+normalCount+" · "+(english?"last reported":"पछिल्लो स्थिति")+"\n"+(english?"Mapped gauges: ":"नक्सामा स्टेशन: ")+nativeMap.stationCount());
+                    status.setText(feed+("bipad".equals(currentObservationSource)&&portalWatchCount>=0?" · "+portalWatchCount:"")+"\n🔴 "+dangerCount+" 🟠 "+warningCount+" 🟡 "+watchCount+" 🔵 "+normalCount+" · "+(english?"last reported":"पछिल्लो स्थिति")+"\n"+(english?"Stations on map: ":"नक्सामा स्टेशन: ")+nativeMap.stationCount());
                 });
             }catch(Exception e){
                 runOnUiThread(()->{

@@ -123,7 +123,7 @@ final class StationDetailSheet {
                 double gap=Math.abs(target-level);
                 String comparison=String.format(Locale.US,"%.2f m",gap)+" "+
                     (english?(level>=target?"above ":"below "):(level>=target?"माथि · ":"तल · "))+which;
-                TextView delta=text(context,(english?"📏 Numerical comparison: ":"📏 संख्यात्मक तुलना: ")+comparison+((overDanger&&!"danger".equals(status))?(english?" · conflicts with source status; verify gauge datum":" · स्रोत स्थितिसँग फरक; मापन आधार जाँच्नुहोस्"):""),12,true,
+                TextView delta=text(context,(english?"📏 Numerical comparison: ":"📏 संख्यात्मक तुलना: ")+comparison+((overDanger&&!"danger".equals(status))?(english?" · differs from the official status; check the source":" · आधिकारिक स्थितिसँग फरक; स्रोतमा जाँच्नुहोस्"):""),12,true,
                     level>=target?Color.rgb(202,67,69):Color.rgb(56,103,134));
                 panel.addView(delta,params(context,0,0,0,12));
             } else if(!Double.isFinite(warn)&&!Double.isFinite(danger)){

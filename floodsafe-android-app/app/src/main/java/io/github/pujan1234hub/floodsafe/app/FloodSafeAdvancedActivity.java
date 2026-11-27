@@ -125,8 +125,9 @@ public final class FloodSafeAdvancedActivity extends Activity {
      try{JSONObject j=get(url);if("events".equals(newMode))j=nepalEarthquakes(j);if("river".equals(newMode)||"rain".equals(newMode))resolveStationDistricts(j,newMode);final JSONObject response=j;runOnUiThread(()->{
        if(seq!=requestSeq||isFinishing()||isDestroyed())return;
        if(mode.equals("river")||mode.equals("rain")){
-         activeSource=response.optString("source","Official source unavailable");
-         int watchCount=response.optInt("watchCount",-1);if(watchCount>=0)activeSource+=" · BIPAD "+(mode.equals("river")?"River":"Rain")+" Watch "+watchCount;
+         String provider=response.optString("activeObservationSource","");
+         activeSource="bipad".equals(provider)?tr("स्रोत: BIPAD","Source: BIPAD"):"dhm".equals(provider)?tr("स्रोत: DHM","Source: DHM"):tr("उपलब्ध जानकारी","Available information");
+         int watchCount=response.optInt("watchCount",-1);if(watchCount>=0&&"bipad".equals(provider))activeSource+=" · "+tr("निगरानी स्टेशन ","Watch stations ")+watchCount;
          portalRows.clear();JSONArray watch=response.optJSONArray("watchStations");if(watch!=null)for(int i=0;i<watch.length();i++){JSONObject p=watch.optJSONObject(i);if(p!=null)portalRows.put(p.optString("id"),p);}
          entries=response.optJSONArray(mode.equals("river")?"stations":"items");
          if(entries==null)entries=new JSONArray();renderEntries();

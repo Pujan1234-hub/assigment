@@ -153,11 +153,43 @@ final class FloodLiveGaugeMonitor {
             String raw=str(row,f,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT),stage=row.optBoolean("bipadOfficial")?OfficialStationFeeds.officialStage(raw):stage(level,warning,danger,raw);
             String id=str(row,f,"stationSeriesId","station_series_id","stationId","station_id","stationIndex","station_index","id"),name=str(row,f,"river_name","riverName","station_name","stationName","title","name");if(name.isEmpty())name="Official hydrology station";if(id.isEmpty())id=name+"@"+String.format(Locale.US,"%.5f,%.5f",la,lo);
             double distance=NativeRiverRiskDistance.associatedDistanceKm(app,homeLat,homeLon,la,lo,name);if(!Double.isFinite(distance)||distance>RADIUS_KM)continue;
-            if(!"warning".equals(stage)&&!"danger".equals(stage))continue;
+            if(!"warning".equals(stage)&&!"danger".equals(stage)){
+                String source=root.optString("activeObservationSource","none");
+                if(("bipad".equals(source)||"dhm".equals(source))&&"normal".equals(stage)&&observeRise(source,id,level,measured,now)){
+                    notifyRise(id,name,distance,level);shown++;
+                }
+                continue;
+            }
             if(!claim(id,stage,level,now))continue;notifyHazard(id,name,stage,distance,level);shown++;
         }
     } // V0872_BACKGROUND_2KM_SOURCE_ALERTS
 
+    // Separate informational trend; not an emergency or a flood prediction.
+    private boolean observeRise(String source,String id,double level,long measured,long now){
+        if(!Double.isFinite(level)||level<0||level>200)return false;
+        SharedPreferences prefs=app.getSharedPreferences("floodsafe_local_rise",Context.MODE_PRIVATE);
+        String key=source+"_"+Integer.toHexString(id.hashCode());
+        long previous=prefs.getLong(key+"_time",0L);
+        if(measured<=previous)return false;
+        double old=Double.longBitsToDouble(prefs.getLong(key+"_value",Double.doubleToRawLongBits(Double.NaN)));
+        long interval=measured-previous;
+        prefs.edit().putLong(key+"_time",measured).putLong(key+"_value",Double.doubleToRawLongBits(level)).apply();
+        if(previous<=0||interval<60000L||interval>30L*60000L||!Double.isFinite(old)||level-old<0.20d)return false;
+        if(now-prefs.getLong(key+"_sent",0L)<60L*60000L)return false;
+        prefs.edit().putLong(key+"_sent",now).apply();return true;
+    }
+    private void notifyRise(String id,String name,double distance,double level){
+        NotificationManager nm=app.getSystemService(NotificationManager.class);if(nm==null)return;
+        String channel="river_rise_advisory_v1";
+        if(Build.VERSION.SDK_INT>=26)nm.createNotificationChannel(new NotificationChannel(channel,"River level trend (informational)",NotificationManager.IMPORTANCE_DEFAULT));
+        String title="🌊 नजिकको नदीमा पानीको तह बढेको मापन";
+        String body=name+String.format(Locale.US," • नदीबाट %.1f km • मापन %.2f m",distance,level)+" • दुई फरक समयका मापनको तुलना; बाढीको चेतावनी होइन।";
+        Intent launch=new Intent(app,NativeFullActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        int rc=8300+Math.abs(id.hashCode()%300);
+        PendingIntent pi=PendingIntent.getActivity(app,rc,launch,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+        Notification.Builder nb=Build.VERSION.SDK_INT>=26?new Notification.Builder(app,channel):new Notification.Builder(app);
+        nm.notify(rc,nb.setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(title).setContentText(body).setStyle(new Notification.BigTextStyle().bigText(body)).setAutoCancel(true).setContentIntent(pi).build());
+    }
     private boolean claim(String id,String stage,double level,long now){SharedPreferences g=app.getSharedPreferences(PUSH_PREFS,Context.MODE_PRIVATE);String key="river_"+Integer.toHexString(id.hashCode());String oldStage=g.getString(key+"_stage","");double oldLevel=Double.longBitsToDouble(g.getLong(key+"_level",Double.doubleToRawLongBits(Double.NaN)));long oldAt=g.getLong(key+"_at",0L);boolean changed=!stage.equals(oldStage),risen=Double.isFinite(level)&&Double.isFinite(oldLevel)&&level>=oldLevel+MATERIAL_RISE_METRES;long gap="danger".equals(stage)?DANGER_REPEAT_MS:WARNING_REPEAT_MS;if(!changed&&!risen&&oldAt>0L&&now-oldAt<gap)return false;SharedPreferences.Editor e=g.edit().putString(key+"_stage",stage).putLong(key+"_at",now);if(Double.isFinite(level))e.putLong(key+"_level",Double.doubleToRawLongBits(level));e.apply();return true;}
 
     private void notifyHazard(String id,String name,String stage,double distance,double level){NotificationManager nm=app.getSystemService(NotificationManager.class);if(nm==null)return;if(Build.VERSION.SDK_INT>=26){NotificationChannel ch=new NotificationChannel(ALERT_CHANNEL,"Nearby river and Nepal alerts",NotificationManager.IMPORTANCE_HIGH);ch.enableVibration(true);Uri sound=android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;AudioAttributes aa=new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();ch.setSound(sound,aa);nm.createNotificationChannel(ch);}String title="danger".equals(stage)?"🚨 नजिकको जलस्रोत खतरा चेतावनी":"⚠️ नजिकको जलस्रोत चेतावनी";String text=name+String.format(Locale.US," • %.1f km",distance)+(Double.isFinite(level)?String.format(Locale.US," • %.3f m",level):"")+" • BIPAD/DHM official";Intent launch=new Intent(app,NativeFullActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);int rc=7600+Math.abs(id.hashCode()%300);PendingIntent pi=PendingIntent.getActivity(app,rc,launch,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);Notification.Builder nb=Build.VERSION.SDK_INT>=26?new Notification.Builder(app,ALERT_CHANNEL):new Notification.Builder(app);Notification n=nb.setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(title).setContentText(text).setStyle(new Notification.BigTextStyle().bigText(text)).setAutoCancel(true).setContentIntent(pi).build();nm.notify(rc,n);}

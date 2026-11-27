@@ -108,6 +108,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private final Runnable weatherAutoRefresh=new Runnable(){@Override public void run(){if(isFinishing()||isDestroyed())return;if(System.currentTimeMillis()-locAt>120000L)requestLocation();if(Double.isFinite(lat)&&Double.isFinite(lon)&&System.currentTimeMillis()-locAt<=300000L&&System.currentTimeMillis()-weatherLastAttempt>=15000L)pollCurrentWeather(lat,lon);main.postDelayed(this,15000L);}};
     private FrameLayout root;
     private ScrollView scroll;
+    private View floatingSathi;
+    private long lastManualRefresh=0L;
     private LinearLayout content,nearList,nationalList,newsList,humanCard,alarmBanner,governmentList;
     private TextView brandSub,langBtn,place,clock,temp,weatherText,weatherSupport,rainTiming,rain,humidity,wind;
     private TextView alarmTitle,alarmText,riskBadge,riskValue,riskText,stationCount,warningCount,dangerCount,feedFresh;
@@ -274,7 +276,15 @@ public final class NativeFullActivity extends Activity implements LocationListen
 
     private View buildScreen(){
         root=new FrameLayout(this);root.setBackgroundColor(Color.rgb(8,32,57));
-        scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setClipToPadding(false);scroll.setPadding(0,0,0,dp(78));scroll.setBackgroundColor(Color.rgb(245,242,233));
+        scroll=new ScrollView(this){
+            private float downX,downY;private boolean atTop;
+            @Override public boolean dispatchTouchEvent(android.view.MotionEvent e){
+                if(e.getActionMasked()==android.view.MotionEvent.ACTION_DOWN){downX=e.getX();downY=e.getY();atTop=!canScrollVertically(-1);}
+                if(e.getActionMasked()==android.view.MotionEvent.ACTION_POINTER_DOWN||e.getActionMasked()==android.view.MotionEvent.ACTION_CANCEL)atTop=false;
+                if(e.getActionMasked()==android.view.MotionEvent.ACTION_UP&&atTop&&!canScrollVertically(-1)&&e.getY()-downY>dp(100)&&Math.abs(e.getX()-downX)<dp(70)){atTop=false;manualRefresh();}
+                return super.dispatchTouchEvent(e);
+            }
+        };scroll.setFillViewport(true);scroll.setClipToPadding(false);scroll.setPadding(0,0,0,dp(140));scroll.setBackgroundColor(Color.rgb(245,242,233));
         content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(dp(10),dp(6),dp(10),dp(10));
         scroll.addView(content,new ScrollView.LayoutParams(-1,-2));root.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
         scroll.setOnScrollChangeListener((v,x,y,oldX,oldY)->{main.removeCallbacks(mapVisibilityTick);main.postDelayed(mapVisibilityTick,160L);});
@@ -299,9 +309,25 @@ public final class NativeFullActivity extends Activity implements LocationListen
         nearSection=nearCard();LinearLayout riverGroup=new LinearLayout(this);riverGroup.setOrientation(LinearLayout.VERTICAL);riverGroup.addView(nearSection);nationalAnchor=nationalCard();riverGroup.addView(nationalAnchor);detailPanel.addView(riverGroup);humanCard=humanCard();detailPanel.addView(humanCard);privacyAnchor=privacyCard();detailPanel.addView(privacyAnchor);
         morePanel=buildMorePanel();content.addView(morePanel);morePanel.setVisibility(View.GONE);
         root.addView(bottomNav(),bottomParams());
+        floatingSathi=buildFloatingSathi();FrameLayout.LayoutParams aiParams=new FrameLayout.LayoutParams(-2,dp(54),Gravity.BOTTOM|Gravity.END);aiParams.setMargins(dp(12),0,dp(14),dp(79));root.addView(floatingSathi,aiParams);
         applyLanguage();updateOwnerNotice();SafeInsets.apply(root);root.post(mapVisibilityTick);return root;
     }
 
+    private View buildFloatingSathi(){
+        LinearLayout chip=new LinearLayout(this);chip.setOrientation(LinearLayout.HORIZONTAL);chip.setGravity(Gravity.CENTER_VERTICAL);
+        chip.setPadding(dp(7),dp(4),dp(13),dp(4));chip.setBackground(round(Color.rgb(255,250,240),28,Color.rgb(196,158,88),1));chip.setElevation(dp(5));
+        ImageView logo=new ImageView(this);logo.setImageResource(R.mipmap.ic_launcher);logo.setScaleType(ImageView.ScaleType.FIT_CENTER);chip.addView(logo,new LinearLayout.LayoutParams(dp(38),dp(38)));
+        TextView name=text("FloodSafe Sathi AI",12,true,Color.rgb(35,60,75));LinearLayout.LayoutParams np=new LinearLayout.LayoutParams(-2,-2);np.leftMargin=dp(6);chip.addView(name,np);
+        chip.setContentDescription("FloodSafe Sathi AI");chip.setOnClickListener(v->showSathiDialog(null));return chip;
+    }
+    private void manualRefresh(){
+        long now=android.os.SystemClock.elapsedRealtime();
+        if(lastManualRefresh>0&&now-lastManualRefresh<8000L)return;
+        lastManualRefresh=now;
+        lastRainGaugeRequestAt=0L;
+        android.widget.Toast.makeText(this,t("जानकारी अद्यावधिक गर्दै…","Refreshing information…"),android.widget.Toast.LENGTH_SHORT).show();
+        refreshAll();if(hasLocationPermission())requestLocation();
+    }
     private View header(){
         LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(0,0,0,dp(9));
         ImageView icon=new ImageView(this);icon.setImageResource(R.mipmap.ic_launcher);GradientDrawable ib=round(Color.WHITE,16,Color.rgb(209,229,239),1);icon.setBackground(ib);icon.setPadding(dp(3),dp(3),dp(3),dp(3));row.addView(icon,new LinearLayout.LayoutParams(dp(44),dp(44)));
@@ -326,6 +352,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
             }
             translateExistingViews(root);
         });row.addView(langBtn);
+        TextView refresh=text("↻",22,true,Color.WHITE);refresh.setGravity(Gravity.CENTER);refresh.setContentDescription(t("सबै अद्यावधिक गर्नुहोस्","Refresh all information"));refresh.setOnClickListener(v->manualRefresh());row.addView(refresh,new LinearLayout.LayoutParams(dp(44),dp(44)));
         return row;
     }
 
@@ -370,14 +397,14 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private void openAdvancedPreview(){Intent i=new Intent(this,FloodSafeAdvancedActivity.class);i.putExtra("lat",lat);i.putExtra("lon",lon);startActivity(i);}
     private LinearLayout buildMorePanel(){
         LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);LinearLayout heading=card();heading.addView(text(t("अन्य सुविधाहरू","More features"),23,true,Color.rgb(16,39,70)));heading.addView(text(t("आवश्यक जानकारी छानेर हेर्नुहोस्","Choose the information you need"),12,false,Color.rgb(70,101,122)));panel.addView(heading);
-        String[] labels={t("🌧 वर्षा स्टेशन","🌧 Rain gauge"),t("☁ ७ दिनको पूर्वानुमान","☁ 7-day forecast"),t("🌊 जिल्ला नदी स्टेशन","🌊 District rivers"),t("⚠ सरकारी सूचना","⚠ Government notices"),t("📚 समाचार / ज्ञान","📚 News / knowledge"),t("✚ विपद् विवरण","✚ Disaster status"),t("🛰 उन्नत / NASA","🛰 Advanced / NASA"),"🤖 FloodSafe Sathi AI",t("🔒 गोपनीयता","🔒 Privacy")};
+        String[] labels={t("🌧 वर्षा स्टेशन","🌧 Rain gauge"),t("☁ ७ दिनको पूर्वानुमान","☁ 7-day forecast"),t("🌊 जिल्ला नदी स्टेशन","🌊 District rivers"),t("⚠ सरकारी सूचना","⚠ Government notices"),t("📚 समाचार / ज्ञान","📚 News / knowledge"),t("✚ विपद् विवरण","✚ Disaster status"),t("🛰 उन्नत / NASA","🛰 Advanced / NASA"),"FloodSafe Sathi AI",t("🔒 गोपनीयता","🔒 Privacy")};
         Runnable[] actions={()->smoothTo(rainAnchor),()->smoothTo(forecastAnchor),()->smoothTo(nationalAnchor),()->smoothTo(governmentAnchor),()->smoothTo(newsAnchor),()->smoothTo(humanCard),()->openAdvancedPreview(),()->showSathiDialog(null),()->smoothTo(privacyAnchor)};
         for(int i=0;i<labels.length;i+=2){LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);for(int j=i;j<Math.min(i+2,labels.length);j++){Button b=button(labels[j]);b.setTextSize(14);b.setBackground(round(Color.rgb(249,244,232),16,Color.rgb(214,218,206),1));Runnable action=actions[j];b.setOnClickListener(v->action.run());row.addView(b,weight());}if(i+1==labels.length){View space=new View(this);row.addView(space,weight());}panel.addView(row,lp(-1,dp(57),0,0,0,6));}
         return panel;
     }
     private void showPreviewMore(){homePanel.setVisibility(View.GONE);detailPanel.setVisibility(View.GONE);morePanel.setVisibility(View.VISIBLE);selectDashboardNav(4);scroll.scrollTo(0,0);}
     private void showHomeDashboard(){detailPanel.setVisibility(View.GONE);morePanel.setVisibility(View.GONE);homePanel.setVisibility(View.VISIBLE);selectDashboardNav(0);scroll.scrollTo(0,0);}
-    private void selectDashboardNav(int page){dashboardPage=page;if(dashboardNav==null)return;for(int i=0;i<dashboardNav.length;i++){Button b=dashboardNav[i];b.setBackground(round(i==page?Color.rgb(224,187,114):Color.rgb(13,49,76),14,Color.TRANSPARENT,0));b.setTextColor(i==page?Color.rgb(37,45,49):Color.WHITE);}}
+    private void selectDashboardNav(int page){dashboardPage=page;if(floatingSathi!=null)floatingSathi.setVisibility(page==0?View.VISIBLE:View.GONE);if(dashboardNav==null)return;for(int i=0;i<dashboardNav.length;i++){Button b=dashboardNav[i];b.setBackground(round(i==page?Color.rgb(224,187,114):Color.rgb(13,49,76),14,Color.TRANSPARENT,0));b.setTextColor(i==page?Color.rgb(37,45,49):Color.WHITE);}}
     @Override public void onBackPressed(){if(homePanel!=null&&homePanel.getVisibility()!=View.VISIBLE){showHomeDashboard();return;}super.onBackPressed();}
 
     private void openMapScreen(){
@@ -1145,8 +1172,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
         final android.app.Dialog dialog=new android.app.Dialog(this);
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
         LinearLayout titleRow=new LinearLayout(this);titleRow.setOrientation(LinearLayout.HORIZONTAL);titleRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        TextView chatTitle=text("🤖 FloodSafe Sathi AI",19,true,Color.rgb(16,39,70));
-        titleRow.addView(chatTitle,new LinearLayout.LayoutParams(0,-2,1f));
+        TextView chatTitle=text("FloodSafe Sathi AI",19,true,Color.rgb(16,39,70));
+        ImageView sathiLogo=new ImageView(this);sathiLogo.setImageResource(R.mipmap.ic_launcher);titleRow.addView(sathiLogo,new LinearLayout.LayoutParams(dp(36),dp(36)));titleRow.addView(chatTitle,new LinearLayout.LayoutParams(0,-2,1f));
         Button close=smallButton(t("बन्द","Close"));close.setOnClickListener(v->dialog.dismiss());
         titleRow.addView(close,new LinearLayout.LayoutParams(dp(70),dp(44)));
         box.addView(titleRow);
@@ -1189,7 +1216,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 lastSubject[0]=q;
             } else if(!lastSubject[0].isEmpty())lessonStep[0]++;
             String a=answerSathi(effective,lessonStep[0]);
-            String old=history.getText().toString(),next=old+"\n\n👤 "+q+"\n🤖 FloodSafe Sathi AI: "+a;
+            String old=history.getText().toString(),next=old+"\n\n👤 "+q+"\nFloodSafe Sathi AI: "+a;
             history.setText(next.length()>13000?next.substring(next.length()-12000):next);
             question.setText("");
             scrollSathiToLatest(messages,history);
@@ -1225,7 +1252,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         scrollSathiToLatest(messages,history);
         if(initial!=null&&!initial.trim().isEmpty()){
             String a=answerSathi(initial);
-            history.append("\n\n👤 "+initial+"\n🤖 FloodSafe Sathi AI: "+a);
+            history.append("\n\n👤 "+initial+"\nFloodSafe Sathi AI: "+a);
             scrollSathiToLatest(messages,history);
         }
     }
@@ -1244,7 +1271,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         });
     }
     private void startVoice(TextView out){startVoice(out,null);}
-    private void startVoice(TextView out,ScrollView chatScroll){if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},REQ_MIC);return;}if(!SpeechRecognizer.isRecognitionAvailable(this)){out.setText(t("यो फोनमा voice recognition उपलब्ध छैन।","Voice recognition is unavailable on this phone."));return;}if(speech!=null)try{speech.destroy();}catch(Exception ignored){}speech=SpeechRecognizer.createSpeechRecognizer(this);speech.setRecognitionListener(new RecognitionListener(){public void onReadyForSpeech(Bundle b){out.append("\n"+t("🎙 सुन्दैछु…","🎙 Listening…"));}public void onBeginningOfSpeech(){}public void onRmsChanged(float x){}public void onBufferReceived(byte[]b){}public void onEndOfSpeech(){}public void onError(int e){out.append("\n"+t("आवाज बुझिएन। फेरि प्रयास गर्नुहोस्।","Could not understand. Try again."));}public void onPartialResults(Bundle b){}public void onEvent(int t,Bundle b){}public void onResults(Bundle b){ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);String q=r==null||r.isEmpty()?"":r.get(0);String a=answerSathi(q);out.append("\n\n👤 "+q+"\n🤖 FloodSafe Sathi AI: "+a);if(chatScroll!=null)scrollSathiToLatest(chatScroll,out);speak(a);}});speech.startListening(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,english?"en-GB":"ne-NP").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5));}
+    private void startVoice(TextView out,ScrollView chatScroll){if(checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},REQ_MIC);return;}if(!SpeechRecognizer.isRecognitionAvailable(this)){out.setText(t("यो फोनमा voice recognition उपलब्ध छैन।","Voice recognition is unavailable on this phone."));return;}if(speech!=null)try{speech.destroy();}catch(Exception ignored){}speech=SpeechRecognizer.createSpeechRecognizer(this);speech.setRecognitionListener(new RecognitionListener(){public void onReadyForSpeech(Bundle b){out.append("\n"+t("🎙 सुन्दैछु…","🎙 Listening…"));}public void onBeginningOfSpeech(){}public void onRmsChanged(float x){}public void onBufferReceived(byte[]b){}public void onEndOfSpeech(){}public void onError(int e){out.append("\n"+t("आवाज बुझिएन। फेरि प्रयास गर्नुहोस्।","Could not understand. Try again."));}public void onPartialResults(Bundle b){}public void onEvent(int t,Bundle b){}public void onResults(Bundle b){ArrayList<String> r=b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);String q=r==null||r.isEmpty()?"":r.get(0);String a=answerSathi(q);out.append("\n\n👤 "+q+"\nFloodSafe Sathi AI: "+a);if(chatScroll!=null)scrollSathiToLatest(chatScroll,out);speak(a);}});speech.startListening(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,english?"en-GB":"ne-NP").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5));}
     private String answerSathi(String q){return answerSathi(q,0);}
     private String answerSathi(String q,int lessonOffset){
         JSONArray rs=new JSONArray();

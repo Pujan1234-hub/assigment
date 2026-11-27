@@ -222,18 +222,7 @@ public final class RiverAlertWorker extends Worker {
         NotificationManager manager = app.getSystemService(NotificationManager.class);
         if (manager == null) return;
 
-        if (Build.VERSION.SDK_INT >= 26) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                    "Nearby river and Nepal alerts", NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("Nearby official river warning/danger and verified Nepal alerts within 2 km");
-            channel.enableVibration(true);
-            Uri sound = android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;
-            AudioAttributes audio = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();
-            channel.setSound(sound, audio);
-            manager.createNotificationChannel(channel);
-        }
+        String alertChannel=FloodSafeSounds.channel(app,"danger".equals(hazard.stage)&&hazard.riverDistance&&Double.isFinite(hazard.distanceKm)&&hazard.distanceKm<=2d,true);
 
         String title = "danger".equals(hazard.stage)
                 ? "🚨 नजिकको नदी खतरा चेतावनी"
@@ -253,7 +242,7 @@ public final class RiverAlertWorker extends Worker {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         android.app.Notification.Builder builder = Build.VERSION.SDK_INT >= 26
-                ? new android.app.Notification.Builder(app, CHANNEL_ID)
+                ? new android.app.Notification.Builder(app, alertChannel)
                 : new android.app.Notification.Builder(app);
         android.app.Notification notification = builder
                 .setSmallIcon(R.drawable.ic_floodsafe)
@@ -262,7 +251,6 @@ public final class RiverAlertWorker extends Worker {
                 .setStyle(new android.app.Notification.BigTextStyle().bigText(body.toString()))
                 .setAutoCancel(true)
                 .setContentIntent(open)
-                .setSound(Build.VERSION.SDK_INT < 26 ? android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI : null)
                 .build();
         manager.notify(requestCode, notification);
     }

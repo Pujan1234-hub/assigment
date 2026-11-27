@@ -394,7 +394,7 @@ public final class RainAlertWorker extends Worker {
         PendingIntent open = PendingIntent.getActivity(app, id, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         android.app.Notification.Builder builder = Build.VERSION.SDK_INT >= 26
-                ? new android.app.Notification.Builder(app, SUN_CHANNEL_ID)
+                ? new android.app.Notification.Builder(app, FloodSafeSounds.channel(app,false,false))
                 : new android.app.Notification.Builder(app);
         manager.notify(id, builder.setSmallIcon(R.drawable.ic_floodsafe)
                 .setContentTitle(title).setContentText(text)
@@ -543,7 +543,7 @@ public final class RainAlertWorker extends Worker {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         android.app.Notification.Builder builder = Build.VERSION.SDK_INT >= 26
-                ? new android.app.Notification.Builder(app, WEATHER_CHANNEL_ID)
+                ? new android.app.Notification.Builder(app, FloodSafeSounds.channel(app,false,false))
                 : new android.app.Notification.Builder(app);
         android.app.Notification notification = builder
                 .setSmallIcon(R.drawable.ic_floodsafe)
@@ -599,7 +599,7 @@ public final class RainAlertWorker extends Worker {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         android.app.Notification.Builder builder = Build.VERSION.SDK_INT >= 26
-                ? new android.app.Notification.Builder(getApplicationContext(), CHANNEL_ID)
+                ? new android.app.Notification.Builder(getApplicationContext(), FloodSafeSounds.channel(getApplicationContext(),false,false))
                 : new android.app.Notification.Builder(getApplicationContext());
         android.app.Notification notification = builder
                 .setSmallIcon(R.drawable.ic_floodsafe)

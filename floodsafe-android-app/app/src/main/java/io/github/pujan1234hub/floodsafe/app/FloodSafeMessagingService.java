@@ -43,24 +43,9 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
         if(data.containsKey("title"))title=data.get("title");if(data.containsKey("body"))body=data.get("body");
         if(riverAlert&&Double.isFinite(acceptedRiverDistanceKm)){String stage=safe(data.get("stage")),river=safe(data.get("river_name")),level=safe(data.get("water_level"));title="danger".equals(stage)?"🚨 नजिकको नदी खतरा चेतावनी":"⚠️ नजिकको नदी चेतावनी";body=(river.isEmpty()?"Official river station":river)+" • "+String.format(Locale.US,"%.1f km",acceptedRiverDistanceKm)+(acceptedByRiverGeometry?" नदी किनारबाट":"")+(level.isEmpty()?"":" • "+level+" m")+" • BIPAD/DHM official";}
         NotificationManager manager=getSystemService(NotificationManager.class);if(manager==null)return;
-        if(Build.VERSION.SDK_INT>=26){
-            if(serviceNotice){
-                NotificationChannel notice=new NotificationChannel(SERVICE_CHANNEL_ID,
-                    "FloodSafe Nepal app notices",NotificationManager.IMPORTANCE_DEFAULT);
-                notice.setDescription("Service updates and non-emergency announcements from FloodSafe Nepal");
-                manager.createNotificationChannel(notice);
-            }else{
-                NotificationChannel channel=new NotificationChannel(CHANNEL_ID,"Nearby river and Nepal alerts",NotificationManager.IMPORTANCE_HIGH);
-                channel.setDescription("Nearby official river warning/danger and verified Nepal alerts within 2 km");
-                channel.enableVibration(true);
-                Uri sound=android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;
-                AudioAttributes audio=new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();
-                channel.setSound(sound,audio);
-                manager.createNotificationChannel(channel);
-            }
-        }
-        Intent launch=new Intent(this, NativeFullActivity.class).putExtra(NativeFullActivity.EXTRA_OPEN_HOME,true).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);PendingIntent open=PendingIntent.getActivity(this,0,launch,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);android.app.Notification.Builder builder=Build.VERSION.SDK_INT>=26?new android.app.Notification.Builder(this,serviceNotice?SERVICE_CHANNEL_ID:CHANNEL_ID):new android.app.Notification.Builder(this);android.app.Notification notification=builder.setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(title).setContentText(body).setStyle(new android.app.Notification.BigTextStyle().bigText(body)).setAutoCancel(true).setSound(Build.VERSION.SDK_INT<26&&!serviceNotice?android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI:null).setContentIntent(open).build();manager.notify((int)(System.currentTimeMillis()&0x7fffffff),notification);
+        boolean dangerAlarm=riverAlert&&"danger".equals(safe(data.get("stage")))&&acceptedByRiverGeometry&&Double.isFinite(acceptedRiverDistanceKm)&&acceptedRiverDistanceKm<=2d;
+        String alertChannel=FloodSafeSounds.channel(this,dangerAlarm,riverAlert);
+        Intent launch=new Intent(this, NativeFullActivity.class).putExtra(NativeFullActivity.EXTRA_OPEN_HOME,true).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);PendingIntent open=PendingIntent.getActivity(this,0,launch,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);android.app.Notification.Builder builder=Build.VERSION.SDK_INT>=26?new android.app.Notification.Builder(this,alertChannel):new android.app.Notification.Builder(this);android.app.Notification notification=builder.setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(title).setContentText(body).setStyle(new android.app.Notification.BigTextStyle().bigText(body)).setAutoCancel(true).setContentIntent(open).build();manager.notify((int)(System.currentTimeMillis()&0x7fffffff),notification);
     }
 
     private boolean acceptNearbyRiver(Map<String,String> data){

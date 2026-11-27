@@ -41,14 +41,13 @@ public final class GovernmentWarningWorker extends Worker {
    // Mark after notification only, not after a failed fetch.
    NotificationManager m=(NotificationManager)app.getSystemService(Context.NOTIFICATION_SERVICE);
    if(m==null)return Result.retry();
-   final String channel="floodsafe_gov_bulletins";
-   if(Build.VERSION.SDK_INT>=26)m.createNotificationChannel(new NotificationChannel(channel,"नेपाल सरकारका मौसम/बाढी सूचना",NotificationManager.IMPORTANCE_DEFAULT));
-   PendingIntent open=PendingIntent.getActivity(app,1402,new Intent(Intent.ACTION_VIEW,Uri.parse(link)),
+   final String channel=FloodSafeSounds.channel(app,false,false);
+   PendingIntent open=PendingIntent.getActivity(app,1402,new Intent(app,NativeFullActivity.class).putExtra(NativeFullActivity.EXTRA_OPEN_HOME,true).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP),
     PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
    String title="DHM / NDRRMA · "+a.length()+" लागू सरकारी सूचना";
    String body=first.optString("titleNe","सरकारी चेतावनी हेर्नुहोस्");
    Notification.Builder b=Build.VERSION.SDK_INT>=26?new Notification.Builder(app,channel):new Notification.Builder(app);
-   b.setSmallIcon(android.R.drawable.ic_dialog_alert).setContentTitle(title).setContentText(body)
+   b.setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(title).setContentText(body)
     .setStyle(new Notification.BigTextStyle().bigText(body+"\nमूल सरकारी प्रकाशनबाट पुष्टि गर्नुहोस्।"));
    // Android automatically removes a stale bulletin notification at its validity end,
    // even if background WorkManager is delayed or the user never taps the notice.

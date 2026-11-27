@@ -1,49 +1,63 @@
 {
-  "generated_at": "2026-11-27T08:57:16.332680+05:45",
-  "updated_at_npt": "27 Nov 08:57 NPT",
+  "generated_at": "2026-11-27T18:17:38.824796+05:45",
+  "updated_at_npt": "27 Nov 18:17 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "वैदेशिक रोजगारीको ठगी रोक्न कानुन र श्रम मन्त्रालयले संयुक्त पहल थाल्ने",
+      "title": "स्थानीय तहबाटै नापी र मालपोत सेवा दिने तयारी गर्न मन्त्री रावलको निर्देशन",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607872/law-and-labor-ministries-to-launch-joint-initiative-to-prevent-foreign-employment-fraud",
-      "published_at": "2026-11-27T08:48:07+05:45",
+      "url": "https://www.ratopati.com/story/608034/minister-rawal-directs-to-prepare-for-providing-survey-and-land-revenue-services-at-the-local-level",
+      "published_at": "2026-11-27T18:16:16+05:45",
       "flash": true
     },
     {
-      "title": "दूधको मूल्य ८० रुपैयाँ तोक्न कास्कीका किसानको माग, नत्र गोबर लिएर आन्दोलन गर्ने",
+      "title": "उपत्यकामा प्रहरीको सेफ्टी पिन अपरेसन : ११५ जना पक्राउ",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607868/kaski-farmers-demand-that-the-price-of-milk-be-fixed-at-rs-80-otherwise-they-will-protest-with-cow-dung",
-      "published_at": "2026-11-27T08:22:30+05:45",
-      "flash": true
-    },
-    {
-      "title": "अमेरिकाको पूर्वी क्षेत्रमा आँधी, थ्याङ्क्सगिभिङ प्रभावित, ९ लाखभन्दा बढी घरमा विद्युत् अवरुद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607865/storms-hit-eastern-us-disrupting-power-to-more-than-900000-homes-on-thanksgiving",
-      "published_at": "2026-11-27T08:00:11+05:45",
-      "flash": true
-    },
-    {
-      "title": "निर्माण थालेको डेढ दशकपछि उत्पादनको चरणमा राहुघाट जलविद्युत् आयोजना",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607857/rahughat-hydropower-project-in-production-phase-after-a-decade-and-a-half-of-construction",
-      "published_at": "2026-11-27T06:53:08+05:45",
+      "url": "https://www.ratopati.com/story/608003/police-safety-pin-operation-in-kathmandu-valley-115-people-arrested",
+      "published_at": "2026-11-27T16:46:57+05:45",
       "flash": false
     },
     {
-      "title": "कोशी प्रदेशमा हल्का वर्षा, अन्यत्रको मौसम कस्तो रहला ?",
+      "title": "८. शीतल निवासमा प्रधानमन्त्रीको २० मिनेट, ‘होल्ड’ अध्यादेशबारे चासो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607855/light-rain-in-koshi-region-whats-the-weather-like-elsewhere",
-      "published_at": "2026-11-27T06:28:53+05:45",
+      "url": "https://www.ratopati.com/story/608001/pms-20-minute-stay-at-sheetal-niwas-raises-concerns-over-hold-ordinance",
+      "published_at": "2026-11-27T16:40:28+05:45",
+      "flash": false
+    },
+    {
+      "title": "सप्तकोशी पानीबोट दुर्घटना प्रकरणको छानबिन प्रतिवेदन सार्वजनिक",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607998/investigation-report-on-saptakoshi-water-boat-accident-made-public",
+      "published_at": "2026-11-27T16:34:18+05:45",
+      "flash": false
+    },
+    {
+      "title": "५. रविले भेटेलगत्तै राष्ट्रपति पौडेल भेट्न प्रधानमन्त्री शाह शीतल निवासमा",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607972/prime-minister-shah-meets-president-poudel-at-sheetal-niwas",
+      "published_at": "2026-11-27T15:26:34+05:45",
+      "flash": false
+    },
+    {
+      "title": "बाढी प्रभावितको पुनर्निर्माण र पुनःस्थापनाका लागि बागमती प्रदेशले ६ अर्ब रुपैयाँ जुटाउने",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607935/bagmati-province-to-raise-rs-6-billion-for-reconstruction-and-rehabilitation-of-flood-victims",
+      "published_at": "2026-11-27T12:48:41+05:45",
+      "flash": false
+    },
+    {
+      "title": "सर्लाहीमा मोटरसाइकल नहरमा खस्दा एक युवकको मृत्यु, एक घाइते",
+      "source": "Ratopati",
+      "url": "https://www.ratopati.com/story/607932/a-young-man-died-another-was-injured-when-his-motorcycle-fell-into-a-canal-in-sarlahi",
+      "published_at": "2026-11-27T12:39:58+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 13,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     },
@@ -56,8 +70,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 4,
-      "recent": 6
+      "flash": 1,
+      "recent": 7
     },
     "Kathmandu Post": {
       "ok": true,
@@ -67,7 +81,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 5,
+      "candidates": 9,
       "flash": 0,
       "recent": 0
     }

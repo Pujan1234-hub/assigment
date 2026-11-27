@@ -33,7 +33,7 @@ final class StationDetailSheet {
         if(context==null)return;
         final int ink=Color.rgb(28,49,72),muted=Color.rgb(95,111,126),gold=Color.rgb(176,126,54);
         final int pad=dp(context,18);
-        String status=normalized(stage,fresh);
+        String status=normalized(stage,fresh||(!riverSegment&&!"unknown".equals(stage)&&!"stale".equals(stage)));
         int accent="danger".equals(status)?Color.rgb(225,53,76):
                    "warning".equals(status)?Color.rgb(236,118,35):
                    "alert".equals(status)?Color.rgb(225,171,32):
@@ -64,7 +64,7 @@ final class StationDetailSheet {
             (english?"River station":"नदी स्टेशन"):name,22,true,ink);
         panel.addView(heading,params(context,0,6,0,14));
 
-        TextView badge=text(context,"● "+statusText(status,english),13,true,accent);
+        TextView badge=text(context,"● "+statusText(status,english)+(!fresh&&!riverSegment&&!"unknown".equals(status)&&!"stale".equals(status)?(english?" · last reported":" · पछिल्लो स्थिति"):""),13,true,accent);
         badge.setBackground(bg(context,Color.rgb(255,255,255),accent,14));
         badge.setPadding(dp(context,13),dp(context,8),dp(context,13),dp(context,8));
         LinearLayout.LayoutParams badgeP=new LinearLayout.LayoutParams(-2,-2);
@@ -123,7 +123,7 @@ final class StationDetailSheet {
                 double gap=Math.abs(target-level);
                 String comparison=String.format(Locale.US,"%.2f m",gap)+" "+
                     (english?(level>=target?"above ":"below "):(level>=target?"माथि · ":"तल · "))+which;
-                TextView delta=text(context,(english?"📏 ":"📏 ")+comparison,12,true,
+                TextView delta=text(context,(english?"📏 Numerical comparison: ":"📏 संख्यात्मक तुलना: ")+comparison+((overDanger&&!"danger".equals(status))?(english?" · conflicts with source status; verify gauge datum":" · स्रोत स्थितिसँग फरक; मापन आधार जाँच्नुहोस्"):""),12,true,
                     level>=target?Color.rgb(202,67,69):Color.rgb(56,103,134));
                 panel.addView(delta,params(context,0,0,0,12));
             } else if(!Double.isFinite(warn)&&!Double.isFinite(danger)){

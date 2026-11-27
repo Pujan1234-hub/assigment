@@ -149,7 +149,7 @@ public final class RiverAlertWorker extends Worker {
                 "riskLevel", "risk_level", "_officialStatus").toUpperCase(Locale.ROOT);
 
         String stage = "";
-        if(row.optBoolean("bipadOfficial")) { stage=OfficialStationFeeds.officialStage(official);if(!"warning".equals(stage)&&!"danger".equals(stage))return null; }
+        if(row.optBoolean("officialFeed")) { stage=OfficialStationFeeds.officialStage(official);if(!"warning".equals(stage)&&!"danger".equals(stage))return null; }
         else if (Double.isFinite(level) && Double.isFinite(danger) && danger > 0d && level >= danger) {
             stage = "danger";
         } else if ((official.contains("DANGER") || official.contains("RED"))

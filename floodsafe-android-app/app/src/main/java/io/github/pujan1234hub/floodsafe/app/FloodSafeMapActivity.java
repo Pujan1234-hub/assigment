@@ -155,7 +155,8 @@ public final class FloodSafeMapActivity extends Activity {
                     String stage="unknown";
                     // Match the Home dashboard's official classification exactly.
                     // Do not invent WATCH solely because level >= 80% of warning.
-                    if(fresh&&o.optBoolean("bipadOfficial"))stage=OfficialStationFeeds.officialStage(raw);
+                    if(o.optBoolean("bipadOfficial"))stage=o.optString("portalStatus","unknown");
+                    else if(fresh&&o.optBoolean("officialFeed"))stage=OfficialStationFeeds.officialStage(raw);
                     else if(fresh){
                         if((Double.isFinite(level)&&Double.isFinite(danger)&&danger>0&&level>=danger)
                                 ||raw.contains("DANGER")&&!raw.contains("BELOW DANGER")||raw.contains("RED"))
@@ -178,17 +179,17 @@ public final class FloodSafeMapActivity extends Activity {
                     lastMapStations.addAll(points);
                     currentObservationSource="dhm".equals(source)?"dhm":("bipad".equals(source)?"bipad":"none");
                     nativeMap.setStations(points,deviceLat,deviceLon);
-                    int dangerCount=0,warningCount=0,watchCount=0;
+                    int dangerCount=0,warningCount=0,watchCount=0,normalCount=0;
                     for(MapStation p:points){
                         if("danger".equals(p.stage))dangerCount++;
                         else if("warning".equals(p.stage))warningCount++;
                         else if("alert".equals(p.stage))watchCount++;
+                        else if("normal".equals(p.stage))normalCount++;
                     }
                     String feed="dhm".equals(currentObservationSource)?(english?"DHM fallback":"DHM वैकल्पिक स्रोत"):
                         "bipad".equals(currentObservationSource)?(english?"BIPAD primary":"BIPAD मुख्य स्रोत"):
                         (english?"No current official reading":"सरकारी ताजा मापन छैन");
-                    status.setText(feed+(portalWatchCount>=0?" · BIPAD River Watch "+portalWatchCount:"")+"\n"+points.size()+(english?" stations loaded":" स्टेशन लोड")+" · 📍 "+nativeMap.stationCount()+
-                        (english?" on map":" नक्सामा")+" · 🔴 "+dangerCount+" 🟠 "+warningCount+" 🟡 "+watchCount);
+                    status.setText(feed+("bipad".equals(currentObservationSource)&&portalWatchCount>=0?" · BIPAD River Watch "+portalWatchCount:"")+"\n🔴 "+dangerCount+" 🟠 "+warningCount+" 🟡 "+watchCount+" 🔵 "+normalCount+" · "+(english?"last reported":"पछिल्लो स्थिति")+"\n"+(english?"Mapped gauges: ":"नक्सामा स्टेशन: ")+nativeMap.stationCount());
                 });
             }catch(Exception e){
                 runOnUiThread(()->{
@@ -220,7 +221,7 @@ public final class FloodSafeMapActivity extends Activity {
         for(MapStation p:lastMapStations){
             boolean fresh=p.fresh&&p.at>0&&p.at<=now+300000L&&now-p.at<=MAP_READING_FRESH_MS;
             if(p.fresh&&!fresh)changed=true;
-            updated.add(fresh?p:new MapStation(p.name,p.lat,p.lon,p.level,p.warning,p.danger,false,"unknown",p.at));
+            updated.add(fresh?p:new MapStation(p.name,p.lat,p.lon,p.level,p.warning,p.danger,false,"bipad".equals(currentObservationSource)?p.stage:"unknown",p.at));
         }
         if(changed){
             lastMapStations.clear();lastMapStations.addAll(updated);
@@ -230,7 +231,7 @@ public final class FloodSafeMapActivity extends Activity {
     private void showStation(MapStation s){
         // Already loaded station measurement: open instantly, no extra network round-trip.
         StationDetailSheet.show(this,s.name,s.stage,s.level,s.fresh,s.at,
-            english?"Verified DHM/BIPAD station. Tap a new marker to inspect that gauge.":
+            english?"Reported source status. Check observation time; an old reading is not a current safety assessment.":
                     "DHM/BIPAD स्टेशनको उपलब्ध मापन। अर्को स्टेशन हेर्न नक्साको बिन्दु थिच्नुहोस्।",
             english,false,s.warning,s.danger);
     }

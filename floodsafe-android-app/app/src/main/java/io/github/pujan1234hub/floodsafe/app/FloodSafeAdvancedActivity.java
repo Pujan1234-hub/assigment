@@ -37,6 +37,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
  private EditText search;
  private TextView summary;
  private JSONArray entries;
+ private final java.util.Map<String,JSONObject> portalRows=new java.util.HashMap<>();
  private String mode="river", activeSource="";
  private boolean english;
  private double lat=Double.NaN,lon=Double.NaN;
@@ -126,6 +127,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
        if(mode.equals("river")||mode.equals("rain")){
          activeSource=response.optString("source","Official source unavailable");
          int watchCount=response.optInt("watchCount",-1);if(watchCount>=0)activeSource+=" · BIPAD "+(mode.equals("river")?"River":"Rain")+" Watch "+watchCount;
+         portalRows.clear();JSONArray watch=response.optJSONArray("watchStations");if(watch!=null)for(int i=0;i<watch.length();i++){JSONObject p=watch.optJSONObject(i);if(p!=null)portalRows.put(p.optString("id"),p);}
          entries=response.optJSONArray(mode.equals("river")?"stations":"items");
          if(entries==null)entries=new JSONArray();renderEntries();
        }else if(mode.equals("forecast"))renderForecast(response);
@@ -142,11 +144,11 @@ public final class FloodSafeAdvancedActivity extends Activity {
      String name=r.optString("name"),district=r.optString("district"),basin=r.optString("basin");
      if(!q.isEmpty()&&!(name+" "+district+" "+basin).toLowerCase(Locale.ROOT).contains(q))continue;
      found++;
-     if(displayed>=8)continue;
+     if(displayed>=60)continue;
      displayed++;
      String stamp=r.optString(mode.equals("river")?"observed":"observedAt","");
      String val=mode.equals("river")?number(r,"level")+" m":number(r,"value")+" mm";
-     if(mode.equals("river")&&!"observed".equals(r.optString("status")))val=tr("नयाँ मापन छैन","No current reading");
+     if(mode.equals("river")&&!"observed".equals(r.optString("status"))){JSONObject p=portalRows.get(r.optString("id"));val=p==null?tr("नयाँ मापन छैन","No current reading"):number(p,"lastReportedValue")+" m · "+tr("पछिल्लो मापन","last reported");}
      final JSONObject station=r;
      LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setBackgroundColor(Color.WHITE);
      TextView header=label("🌊 "+name,15,true);box.addView(header);
@@ -155,7 +157,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
      box.setOnClickListener(v->showStation(station));
    }
    summary.setText(activeSource+" · "+tr("जम्मा "+found+" स्टेशन · विवरण हेर्नुहोस्","Found "+found+" stations · Tap for details"));
-   if(found>8)card(tr("स्टेशन खोज्नुहोस्","Search stations"),tr("माथि जिल्ला वा स्टेशनको नाम लेख्दा सूची छोटिन्छ।","Type a district or station name above to narrow results."));
+   if(found>60)card(tr("स्टेशन खोज्नुहोस्","Search stations"),tr("माथि जिल्ला वा स्टेशनको नाम लेख्दा सूची छोटिन्छ।","Type a district or station name above to narrow results."));
  }
  private static String number(JSONObject j,String key){
    double v=j.optDouble(key,Double.NaN);
@@ -166,11 +168,12 @@ public final class FloodSafeAdvancedActivity extends Activity {
    String name=r.optString("name"),district=r.optString("district"),basin=r.optString("basin");
    String text;
    if(mode.equals("river")){
+     JSONObject portal=portalRows.get(r.optString("id"));String reported=portal==null?"":portal.optString("reportedStatus","");
      text=tr("जिल्ला: ","District: ")+district+"\n"+
      tr("जलाधार: ","Basin: ")+basin+"\n"+
-     tr("पानीको सतह: ","Water level: ")+number(r,"level")+" m\n"+
+     tr("पानीको सतह: ","Water level: ")+(portal==null?number(r,"level"):number(portal,"lastReportedValue"))+" m\n"+
      "Warning: "+number(r,"warning")+" m · Danger: "+number(r,"danger")+" m\n"+
-     tr("मापन समय: ","Observed: ")+r.optString("observed","—")+"\n"+
+     tr("मापन समय: ","Observed: ")+(portal==null?r.optString("observed","—"):portal.optString("lastReportedAt","—"))+"\n"+tr("स्रोतको स्थिति: ","Reported status: ")+reported+"\n"+
      tr("स्रोत: ","Source: ")+r.optString("measurementSource","DHM/BIPAD");
    }else{
      StringBuilder sb=new StringBuilder(tr("जिल्ला: ","District: ")+district+"\n");

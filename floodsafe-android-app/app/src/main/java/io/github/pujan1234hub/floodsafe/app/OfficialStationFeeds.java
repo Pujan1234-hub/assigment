@@ -51,7 +51,7 @@ final class OfficialStationFeeds {
             JSONObject out = new JSONObject();
             out.put("stationSeriesId", s.optString("id",""));
             JSONObject portal=watchById.get(s.optString("id"));if(portal!=null){out.put("portalStatus",officialStage(portal.optString("reportedStatus")));out.put("portalReportedAt",portal.optString("lastReportedAt",""));if(Double.isFinite(portal.optDouble("lastReportedValue",Double.NaN)))out.put("portalReportedLevel",portal.optDouble("lastReportedValue"));}
-            if(bipad)out.put("bipadOfficial",true);
+            if(bipad)out.put("bipadOfficial",true);out.put("officialFeed",true);
             out.put("stationName", s.optString("name","River station"));
             out.put("districtName", s.optString("district",""));
             out.put("latitude",lat);out.put("longitude",lon);

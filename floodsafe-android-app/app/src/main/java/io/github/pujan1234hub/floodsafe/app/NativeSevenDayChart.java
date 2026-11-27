@@ -38,6 +38,19 @@ final class NativeSevenDayChart extends View {
    source=j.optJSONObject("sources")==null?"":j.optJSONObject("sources").optString("rainfall","");
    invalidate();
  }
+ String describe(){
+   StringBuilder b=new StringBuilder(english?"Daily rainfall outlook (model estimate)":"दैनिक वर्षा पूर्वानुमान (मोडेलको अनुमान)");
+   int count=0;for(int i=0;i<7;i++){
+     if("—".equals(dates[i])||!Double.isFinite(rain[i]))continue;count++;
+     String day=english?dates[i]:NepalBs.shortDate(dates[i]);
+     b.append("\n\n").append(day).append(" · ").append(String.format(Locale.US,"%.1f mm",rain[i]));
+     if(Double.isFinite(prob[i])&&prob[i]>=0&&prob[i]<=100)b.append(english?" · rain chance ":" · वर्षाको सम्भावना ").append(Math.round(prob[i])).append("%");
+     b.append("\n").append(rain[i]==0?(english?"No rainfall indicated by the model.":"मोडेलमा वर्षाको संकेत छैन।"):(english?"Rainfall is possible; actual amount and timing can differ.":"वर्षा हुन सक्छ; वास्तविक मात्रा र समय फरक हुन सक्छ।"));
+   }
+   if(count==0)b.append("\n").append(english?"No rainfall forecast available.":"वर्षाको पूर्वानुमान उपलब्ध छैन।");
+   b.append("\n\n").append(english?"Source: Open-Meteo forecast. Tap chart for GloFAS modelled river discharge, not measured water level.":"स्रोत: Open-Meteo पूर्वानुमान। चार्ट थिच्दा GloFAS को अनुमानित नदी बहाव देखिन्छ; यो मापन गरिएको पानीको तह होइन।");
+   return b.toString();
+ }
  @Override protected void onDraw(Canvas c){
    super.onDraw(c);
    float den=getResources().getDisplayMetrics().density,w=getWidth(),h=getHeight();

@@ -105,6 +105,7 @@ public final class RainAlertWorker extends Worker {
             maybeNotifyWeatherDigest(data, prefs, now, temperature, apparent, humidity, wind, weatherCode, cachedWeatherLocation);
             maybeNotifySunEvents(data, prefs, now, temperature, humidity, wind, cachedWeatherLocation);
 
+            if(cachedWeatherLocation||!MonitoringLocationPolicy.freshDeviceLocation(locationTime,System.currentTimeMillis(),lat,lon))return Result.success();
             RainEvent event = findEvent(data.optJSONObject("minutely_15"), now);
             boolean rainingNow = current >= WET_MM || (event != null && event.activeNow);
 
@@ -575,8 +576,8 @@ public final class RainAlertWorker extends Worker {
         String title;
         String timing;
         if (rainingNow) {
-            title = "🌧️ तपाईंको क्षेत्रमा वर्षा सुरु भएको देखिन्छ";
-            timing = "Open-Meteo पूर्वानुमानमा अहिले वर्षा देखिएको छ।";
+            title = "🌧️ स्थानीय मौसम मोडेलमा वर्षा सम्भावना";
+            timing = "Open-Meteo मोडेलले अहिले वर्षा हुन सक्ने देखाएको छ; प्रत्यक्ष मापन होइन।";
         } else {
             long shownLead = Math.max(1L, leadMinutes);
             title = "🌧️ करिब " + shownLead + " मिनेटपछि वर्षा हुनसक्छ";

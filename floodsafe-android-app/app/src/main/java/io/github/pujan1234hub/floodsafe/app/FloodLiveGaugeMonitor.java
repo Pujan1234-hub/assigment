@@ -74,7 +74,7 @@ final class FloodLiveGaugeMonitor {
     }};
 
     private void pollRiverOnce() throws Exception{
-        long now=System.currentTimeMillis();if(now-lastOfficialRiverAttempt<60000L)return;lastOfficialRiverAttempt=now;
+        long now=System.currentTimeMillis();if(now-lastOfficialRiverAttempt<15000L)return;lastOfficialRiverAttempt=now;
         JSONObject source=OfficialStationFeeds.rivers();
         lastRiverObservationSource=source.optString("activeObservationSource","none");
         String body=source.toString();if(body.isEmpty())return;
@@ -139,10 +139,10 @@ final class FloodLiveGaugeMonitor {
         if(!monitor.getBoolean("enabled",false)||!monitor.getBoolean("follow_device",false))return;
         if(Build.VERSION.SDK_INT>=33&&app.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)return;
         double homeLat=Double.longBitsToDouble(monitor.getLong("lat",Double.doubleToRawLongBits(Double.NaN))),homeLon=Double.longBitsToDouble(monitor.getLong("lon",Double.doubleToRawLongBits(Double.NaN)));
-        if(!insideNepal(homeLat,homeLon))return;JSONArray rows=array(root,"results","current","stations","data");if(rows==null)return;
+        if(!MonitoringLocationPolicy.freshNepalDeviceLocation(monitor.getLong("location_time",0L),System.currentTimeMillis(),homeLat,homeLon))return;JSONArray rows=array(root,"results","current","stations","data");if(rows==null)return;
         long now=System.currentTimeMillis();int shown=0;
         for(int i=0;i<rows.length()&&shown<3;i++){
-            JSONObject row=rows.optJSONObject(i);if(row==null)continue;JSONObject f=row.optJSONObject("fields");double[] p=coord(row,f);double la=p[0],lo=p[1];double distance=haversineKm(homeLat,homeLon,la,lo);if(!insideNepal(la,lo)||distance>RADIUS_KM)continue;
+            JSONObject row=rows.optJSONObject(i);if(row==null)continue;JSONObject f=row.optJSONObject("fields");double[] p=coord(row,f);double la=p[0],lo=p[1];if(!insideNepal(la,lo))continue;
             // A change in old status or delayed BIPAD/DHM cache MUST NOT issue a new emergency alert.
             String atText=str(row,f,"waterLevelOn","water_level_on","observedAt","observed_at","observationTime","measurementTime","measurement_time","measuredOn","measured_on","timestamp");
             long measured=measurementMillis(atText);
@@ -150,8 +150,10 @@ final class FloodLiveGaugeMonitor {
             if(!Double.isFinite(num(row,f,"waterLevel","water_level","currentWaterLevel","current_water_level","_lastWaterLevel","level")))continue;
             double level=num(row,f,"_lastWaterLevel","waterLevel","water_level","currentWaterLevel","current_water_level","currentLevel","current_level","level","value");
             double warning=num(row,f,"_lastWarningLevel","warningLevel","warning_level","warningThreshold","warning_threshold"),danger=num(row,f,"_lastDangerLevel","dangerLevel","danger_level","dangerThreshold","danger_threshold");
-            String raw=str(row,f,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT),stage=stage(level,warning,danger,raw);if(!"warning".equals(stage)&&!"danger".equals(stage))continue;
+            String raw=str(row,f,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT),stage=row.optBoolean("bipadOfficial")?OfficialStationFeeds.officialStage(raw):stage(level,warning,danger,raw);
             String id=str(row,f,"stationSeriesId","station_series_id","stationId","station_id","stationIndex","station_index","id"),name=str(row,f,"river_name","riverName","station_name","stationName","title","name");if(name.isEmpty())name="Official hydrology station";if(id.isEmpty())id=name+"@"+String.format(Locale.US,"%.5f,%.5f",la,lo);
+            double distance=NativeRiverRiskDistance.associatedDistanceKm(app,homeLat,homeLon,la,lo,name);if(!Double.isFinite(distance)||distance>RADIUS_KM)continue;
+            if(!"warning".equals(stage)&&!"danger".equals(stage))continue;
             if(!claim(id,stage,level,now))continue;notifyHazard(id,name,stage,distance,level);shown++;
         }
     } // V0872_BACKGROUND_2KM_SOURCE_ALERTS

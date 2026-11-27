@@ -195,6 +195,7 @@ public final class FloodMonitorService extends Service implements LocationListen
     }
 
     private void saveLocation(Location location, long now) {
+        long fix=location.getTime();if(fix<=0||now-fix>300000L||fix-now>30000L)return;
         double lat = location.getLatitude();
         double lon = location.getLongitude();
         if (!Double.isFinite(lat) || !Double.isFinite(lon)
@@ -203,13 +204,13 @@ public final class FloodMonitorService extends Service implements LocationListen
                 // Keep last verified GPS weather location independent of river safety freshness.
                 .putLong("weather_last_lat", Double.doubleToRawLongBits(lat))
                 .putLong("weather_last_lon", Double.doubleToRawLongBits(lon))
-                .putLong("weather_last_fix_at", now)
+                .putLong("weather_last_fix_at", fix)
                 .putLong("device_lat", Double.doubleToRawLongBits(lat))
                 .putLong("device_lon", Double.doubleToRawLongBits(lon))
-                .putLong("device_location_time", now)
+                .putLong("device_location_time", fix)
                 .putLong("lat", Double.doubleToRawLongBits(lat))
                 .putLong("lon", Double.doubleToRawLongBits(lon))
-                .putLong("location_time", now)
+                .putLong("location_time", fix)
                 .putBoolean("follow_device", true)
                 .putBoolean("location_stale", false)
                 .apply();

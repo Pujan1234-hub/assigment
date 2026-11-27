@@ -42,6 +42,21 @@ final class NativeRiverRiskDistance {
         }
     }
 
+    // Conservative association: the gauge must be near the SAME named mapped
+    // segment. Do not infer downstream flood extent from a shared river name.
+    static double associatedDistanceKm(Context context,double userLat,double userLon,double stationLat,double stationLon,String name){
+        String wanted=normalize(name);if(wanted.isEmpty())return Double.NaN;
+        try{double best=Double.POSITIVE_INFINITY;
+            for(RiverShape r:load(context)){
+                if(!nameMatches(wanted,r.normalizedName))continue;
+                double anchor=distanceToPolylineKm(stationLat,stationLon,r.points);
+                if(!Double.isFinite(anchor)||anchor>0.5d)continue;
+                double d=distanceToPolylineKm(userLat,userLon,r.points);
+                if(Double.isFinite(d))best=Math.min(best,d);
+            }
+            return Double.isFinite(best)?best:Double.NaN;
+        }catch(Exception e){return Double.NaN;}
+    }
     private static List<RiverShape> load(Context context) throws Exception {
         List<RiverShape> result = cached;
         if (result != null) return result;

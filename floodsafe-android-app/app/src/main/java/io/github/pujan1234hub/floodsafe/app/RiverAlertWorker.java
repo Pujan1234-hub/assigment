@@ -149,7 +149,8 @@ public final class RiverAlertWorker extends Worker {
                 "riskLevel", "risk_level", "_officialStatus").toUpperCase(Locale.ROOT);
 
         String stage = "";
-        if (Double.isFinite(level) && Double.isFinite(danger) && danger > 0d && level >= danger) {
+        if(row.optBoolean("bipadOfficial")) { stage=OfficialStationFeeds.officialStage(official);if(!"warning".equals(stage)&&!"danger".equals(stage))return null; }
+        else if (Double.isFinite(level) && Double.isFinite(danger) && danger > 0d && level >= danger) {
             stage = "danger";
         } else if ((official.contains("DANGER") || official.contains("RED"))
                 && !official.contains("BELOW DANGER")) {
@@ -178,9 +179,9 @@ public final class RiverAlertWorker extends Worker {
         if (stationId.isEmpty()) stationId = name + "@" + String.format(Locale.US, "%.5f,%.5f", lat, lon);
 
         double stationDistance = haversineKm(homeLat, homeLon, lat, lon);
-        double geometryDistance = NativeRiverRiskDistance.distanceKm(app, homeLat, homeLon, name);
+        double geometryDistance = NativeRiverRiskDistance.associatedDistanceKm(app, homeLat, homeLon, lat, lon, name);
         boolean useRiverDistance = Double.isFinite(geometryDistance);
-        double distance = useRiverDistance ? geometryDistance : stationDistance;
+        double distance = geometryDistance;
         if (!Double.isFinite(distance) || distance > RADIUS_KM) return null;
 
         return new Hazard(stage, stationId, name, distance, useRiverDistance,

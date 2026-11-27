@@ -32,7 +32,7 @@ public final class FloodSafeMapActivity extends Activity {
     private TextView status;
     private boolean english;
     private double deviceLat=Double.NaN,deviceLon=Double.NaN;
-    private static final long MAP_STATION_REFRESH_MS=30_000L;
+    private static final long MAP_STATION_REFRESH_MS=15_000L;
     private static final long MAP_READING_FRESH_MS=30L*60L*1000L;
     private final Handler handler=new Handler(Looper.getMainLooper());
     private final List<MapStation> lastMapStations=new ArrayList<>();
@@ -155,7 +155,8 @@ public final class FloodSafeMapActivity extends Activity {
                     String stage="unknown";
                     // Match the Home dashboard's official classification exactly.
                     // Do not invent WATCH solely because level >= 80% of warning.
-                    if(fresh){
+                    if(fresh&&o.optBoolean("bipadOfficial"))stage=OfficialStationFeeds.officialStage(raw);
+                    else if(fresh){
                         if((Double.isFinite(level)&&Double.isFinite(danger)&&danger>0&&level>=danger)
                                 ||raw.contains("DANGER")&&!raw.contains("BELOW DANGER")||raw.contains("RED"))
                             stage="danger";

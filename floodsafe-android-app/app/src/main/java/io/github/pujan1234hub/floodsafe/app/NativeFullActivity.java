@@ -105,7 +105,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private boolean weatherInFlight=false;
     private long weatherLastAttempt=0L, weatherLastSuccess=0L;
     private String weatherModelTime="";
-    private final Runnable weatherAutoRefresh=new Runnable(){@Override public void run(){if(isFinishing()||isDestroyed())return;if(Double.isFinite(lat)&&Double.isFinite(lon)&&System.currentTimeMillis()-weatherLastAttempt>=15000L)pollCurrentWeather(lat,lon);main.postDelayed(this,15000L);}};
+    private final Runnable weatherAutoRefresh=new Runnable(){@Override public void run(){if(isFinishing()||isDestroyed())return;if(System.currentTimeMillis()-locAt>120000L)requestLocation();if(Double.isFinite(lat)&&Double.isFinite(lon)&&System.currentTimeMillis()-locAt<=300000L&&System.currentTimeMillis()-weatherLastAttempt>=15000L)pollCurrentWeather(lat,lon);main.postDelayed(this,15000L);}};
     private FrameLayout root;
     private ScrollView scroll;
     private LinearLayout content,nearList,nationalList,newsList,humanCard,alarmBanner,governmentList;
@@ -143,12 +143,12 @@ public final class NativeFullActivity extends Activity implements LocationListen
     // Native river observations expire after 2 minutes. Recheck the official
     // feed while visible and downgrade expired station classifications even
     // when the network is offline; never relabel stale data as NORMAL.
-    private static final long RIVER_FOREGROUND_REFRESH_MS=30_000L;
-    private static final long RIVER_STATUS_EXPIRY_TICK_MS=30_000L;
+    private static final long RIVER_FOREGROUND_REFRESH_MS=15_000L;
+    private static final long RIVER_STATUS_EXPIRY_TICK_MS=15_000L;
     private long lastRiverFetchAt=0L;
     private boolean riverRefreshing=false;
     private String riverObservationSource="none";
-    private int riverWatchCount=-1;
+    private int riverWatchCount=-1,portalNormal=0,portalWarning=0,portalDanger=0,portalAlert=0;
     private final Runnable riverAutoRefresh=new Runnable(){
         @Override public void run(){
             if(isFinishing()||isDestroyed())return;
@@ -275,6 +275,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         alarmBanner=new LinearLayout(this);alarmBanner.setOrientation(LinearLayout.VERTICAL);alarmBanner.setPadding(dp(12),dp(8),dp(12),dp(8));alarmBanner.setBackground(round(Color.rgb(255,235,239),16,Color.rgb(239,138,152),2));
         alarmTitle=text(t("⚠️ नदी चेतावनी","⚠️ River warning"),18,true,Color.rgb(146,34,56));alarmText=text("",12,true,Color.rgb(146,34,56));alarmBanner.addView(alarmTitle);alarmBanner.addView(alarmText);alarmBanner.setVisibility(View.GONE);homePanel.addView(alarmBanner,lp(-1,-2,0,0,0,6));
         homePanel.addView(riskCard());
+        Button forecastShortcut=button(t("📈 ७ दिनको स्थानीय मौसम पूर्वानुमान","📈 7-day local weather forecast"));forecastShortcut.setOnClickListener(v->smoothTo(forecastAnchor));homePanel.addView(forecastShortcut,lp(-1,dp(44),0,3,0,5));
         TextView outside=text("",11,true,Color.rgb(40,85,111));outside.setId(android.R.id.hint);outside.setPadding(dp(10),dp(6),dp(10),dp(6));outside.setBackground(round(Color.rgb(239,249,255),12,Color.rgb(159,205,232),1));outside.setMaxLines(2);outside.setEllipsize(android.text.TextUtils.TruncateAt.END);outside.setOnClickListener(v->new AlertDialog.Builder(this).setTitle(t("निगरानी जानकारी","Monitoring information")).setMessage(outside.getText()).setPositiveButton("OK",null).show());homePanel.addView(outside,lp(-1,-2,0,0,0,6));
         homePanel.addView(quickActions(),lp(-1,dp(58),0,0,0,6));
         mapAnchor=mapCard();homePanel.addView(mapAnchor);
@@ -330,7 +331,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         rainTiming=text("",10,true,Color.WHITE);rainTiming.setPadding(dp(6),dp(3),dp(6),dp(3));rainTiming.setBackground(round(Color.argb(145,8,38,60),10,Color.argb(65,255,255,255),1));card.addView(rainTiming,lp(-1,-2,0,4,0,0));wrap.addView(card);
         LinearLayout location=new LinearLayout(this);location.setOrientation(LinearLayout.HORIZONTAL);location.setGravity(Gravity.CENTER_VERTICAL);location.setPadding(dp(8),0,dp(5),0);location.setBackground(round(Color.rgb(17,58,86),13,Color.rgb(61,115,145),1));
         TextView locTitle=text(t("📍 मेरो स्थान","📍 My location"),13,true,Color.WHITE);location.addView(locTitle,new LinearLayout.LayoutParams(0,-2,1));
-        Button locate=smallButton(t("◎ GPS बदल्नुहोस्","◎ Change GPS"));locate.setTextColor(Color.WHITE);locate.setBackground(round(Color.rgb(31,79,108),12,Color.rgb(72,130,157),1));locate.setOnClickListener(v->requestLocation(true));location.addView(locate,new LinearLayout.LayoutParams(dp(120),dp(44)));wrap.addView(location,lp(-1,dp(46),0,4,0,0));
+        Button locate=smallButton(t("◎ GPS बदल्नुहोस्","◎ Change GPS"));locate.setTextColor(Color.WHITE);locate.setBackground(round(Color.rgb(31,79,108),12,Color.rgb(72,130,157),1));locate.setOnClickListener(v->{requestLocation(true);offerBackgroundLocation();});location.addView(locate,new LinearLayout.LayoutParams(dp(120),dp(44)));wrap.addView(location,lp(-1,dp(46),0,4,0,0));
         TextView credit=text("Photo: Samdesherpa / Wikimedia Commons · CC BY-SA 4.0",9,false,Color.rgb(171,207,226));credit.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Landscape photo credit").setMessage("Annapurna range as seen from Kathmandu — Samdesherpa, Wikimedia Commons. CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Displayed with a crop and dark overlay; not current weather imagery. Source: https://commons.wikimedia.org/wiki/File:Annapurna_range_as_seen_from_kathmandu.jpg").setPositiveButton("OK",null).show());wrap.addView(credit,lp(-1,-2,0,2,0,0));miniForecast=new NativeSevenDayChart(this);miniForecast.useLanguage(english);return wrap;
     }
 
@@ -712,6 +713,10 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private void restoreLocation(){if(Double.isFinite(lat)&&Double.isFinite(lon)){place.setText(isNepal(lat,lon)?t("📍 पछिल्लो GPS • Nepal","📍 Last GPS • Nepal"):t("🌍 हालको GPS Nepal बाहिर • weather यही स्थानको हो","🌍 GPS outside Nepal • weather follows this location"));updateOutsideNotice();}}
     private void updateOutsideNotice(){TextView v=root==null?null:root.findViewById(android.R.id.hint);if(v==null)return;boolean out=Double.isFinite(lat)&&Double.isFinite(lon)&&!isNepal(lat,lon);v.setVisibility(out?View.VISIBLE:View.GONE);v.setText(t("🇳🇵 FloodSafe नेपालभित्रको निगरानी\nतपाईं नेपाल बाहिर हुँदा नजिकको नदी चेतावनी पठाइँदैन। नेपालभित्र हालको GPS हुँदा २ किमिभित्रको प्रमाणित चेतावनी/खतरा अवस्थामा मात्र आपत्कालीन नदी सूचना आउँछ।","🇳🇵 FloodSafe Nepal-only monitoring\nOutside Nepal, nearby river warnings are not sent. In Nepal, only verified Warning/Danger within 2 km can trigger the emergency river alert."));}
 
+    private void offerBackgroundLocation(){
+        if(android.os.Build.VERSION.SDK_INT<29||!hasLocationPermission()||checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)==PackageManager.PERMISSION_GRANTED)return;
+        new AlertDialog.Builder(this).setTitle(t("पृष्ठभूमि स्थान अनुमति","Background location")).setMessage(t("नदी नजिकको चेतावनी र तपाईंको स्थानको मौसमका लागि app बन्द हुँदा पनि GPS प्रयोग गर्न Settings मा Location → Allow all the time छान्नुहोस्। तपाईंले अनुमति नदिए पनि app चल्छ।","For nearby river alerts and local weather when the app is closed, choose Location → Allow all the time in Settings. Optional; the app works without it.")).setNegativeButton(t("पछि","Later"),null).setPositiveButton(t("Settings खोल्नुहोस्","Open settings"),(d,k)->startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,android.net.Uri.parse("package:"+getPackageName())))).show();
+    }
     private void requestLocation(){requestLocation(false);}
     private void requestLocation(boolean fromTap){
         if(!hasLocationPermission()){
@@ -733,7 +738,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
             // callback seconds later: two location labels, two requests and visible flicker.
             // The button now waits for the fresh fix if we already have coordinates.
             if((!fromTap||!Double.isFinite(lat)||!Double.isFinite(lon))&&best!=null
-                    &&System.currentTimeMillis()-best.getTime()<24L*60*60*1000)
+                    &&System.currentTimeMillis()-best.getTime()<5L*60*1000)
                 onLocationChanged(best);
             if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
                 lm.requestSingleUpdate(LocationManager.GPS_PROVIDER,this,getMainLooper());
@@ -744,6 +749,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     @Override public void onLocationChanged(Location l){
         if(l==null||!Double.isFinite(l.getLatitude())||!Double.isFinite(l.getLongitude()))return;
         long now=System.currentTimeMillis();
+        if(l.getTime()<=0||now-l.getTime()>5L*60*1000||l.getTime()-now>30000L)return;
         float[] meters={Float.POSITIVE_INFINITY};
         if(Double.isFinite(lat)&&Double.isFinite(lon)){
             try{Location.distanceBetween(lat,lon,l.getLatitude(),l.getLongitude(),meters);}
@@ -754,7 +760,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         // weather screen twice within the same 90-second window.
         boolean sameRecentFix=meters[0]<65f&&lastLocationRenderAt>0
                 &&now-lastLocationRenderAt<90_000L;
-        lat=l.getLatitude();lon=l.getLongitude();locAt=now;
+        lat=l.getLatitude();lon=l.getLongitude();locAt=l.getTime();
         getSharedPreferences(PREFS,MODE_PRIVATE).edit()
             .putLong(KEY_LAT,Double.doubleToRawLongBits(lat))
             .putLong(KEY_LON,Double.doubleToRawLongBits(lon))
@@ -814,7 +820,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         pollCurrentWeather(a,o);
     }
     private void pollCurrentWeather(double a,double o){
-        if(weatherInFlight)return;
+        if(weatherInFlight||System.currentTimeMillis()-locAt>300000L)return;
         weatherInFlight=true;weatherLastAttempt=System.currentTimeMillis();
         final long version=++weatherRequestVersion;
         weatherIo.execute(()->{
@@ -834,7 +840,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
                     // Translate only when displaying the completed result. Previous
                     // background requests must not alternate Nepali and English text.
                     String ws=code>=95?t("⛈️ चट्याङ/हुरीको सम्भावना","⛈️ Thunderstorm"):
-                        pr>=.5?t("🌧️ वर्षा भइरहेको छ","🌧️ Rain now"):
+                        pr>=.5?t("🌧️ मोडेलमा वर्षा सम्भावना","🌧️ Model indicates rain"):
                         cloud>65?t("☁️ बादल","☁️ Cloudy"):
                         cloud>25?t("⛅ आंशिक बादल","⛅ Partly cloudy"):
                         t("☀️ सफा मौसम","☀️ Sunny");
@@ -935,7 +941,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 runOnUiThread(()->{
                     riverRefreshing=false;
                     if(isFinishing()||isDestroyed())return;
-                    riverObservationSource=("dhm".equals(source)||"bipad".equals(source))?source:"none";riverWatchCount=watchCount;
+                    riverObservationSource=("dhm".equals(source)||"bipad".equals(source))?source:"none";riverWatchCount=watchCount;portalNormal=root.optInt("portalNormal");portalWarning=root.optInt("portalWarning");portalDanger=root.optInt("portalDanger");portalAlert=root.optInt("portalAlert");
                     synchronized(stations){stations.clear();stations.addAll(out);}
                     refreshRiverUi();
                 });
@@ -954,7 +960,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
             }
         });
     }
-    private RiverStation parseStation(JSONObject r,long now){if(r==null)return null;double a=num(r,"latitude","lat","stationLatitude","station_latitude"),o=num(r,"longitude","lon","lng","stationLongitude","station_longitude");if(!Double.isFinite(a)||!Double.isFinite(o)||!isNepal(a,o))return null;NepalRiverBoundary polygon=nepalDistrictBorder();if(polygon==null||!polygon.contains(o,a))return null;double level=num(r,"waterLevel","water_level","currentWaterLevel","current_water_level","currentLevel","current_level","_lastWaterLevel"),warning=num(r,"warningLevel","warning_level","warningThreshold","warning_threshold","_lastWarningLevel"),danger=num(r,"dangerLevel","danger_level","dangerThreshold","danger_threshold","_lastDangerLevel");long at=parseTime(str(r,"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime"));boolean fresh=at>0&&now-at<=RIVER_FRESH_MS&&at-now<=5*60_000L;String raw=str(r,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT);String stage="unknown";int rank=4;if(fresh){if((Double.isFinite(level)&&Double.isFinite(danger)&&danger>0&&level>=danger)||(raw.contains("DANGER")&&!raw.contains("BELOW DANGER"))||raw.contains("RED")){stage="danger";rank=0;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning)||(raw.contains("WARNING")&&!raw.contains("BELOW WARNING"))||raw.contains("ORANGE")){stage="warning";rank=1;}else if(raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW")){stage="alert";rank=2;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level<warning)||raw.contains("NORMAL")||raw.contains("BLUE")){stage="normal";rank=3;}}String name=str(r,"river_name","riverName","station_name","stationName","title","name");if(name.isEmpty())name="Official river station";String district=str(r,"districtName","district_name","district");return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank);}
+    private RiverStation parseStation(JSONObject r,long now){if(r==null)return null;double a=num(r,"latitude","lat","stationLatitude","station_latitude"),o=num(r,"longitude","lon","lng","stationLongitude","station_longitude");if(!Double.isFinite(a)||!Double.isFinite(o)||!isNepal(a,o))return null;NepalRiverBoundary polygon=nepalDistrictBorder();if(polygon==null||!polygon.contains(o,a))return null;double level=num(r,"waterLevel","water_level","currentWaterLevel","current_water_level","currentLevel","current_level","_lastWaterLevel"),warning=num(r,"warningLevel","warning_level","warningThreshold","warning_threshold","_lastWarningLevel"),danger=num(r,"dangerLevel","danger_level","dangerThreshold","danger_threshold","_lastDangerLevel");long at=parseTime(str(r,"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime"));boolean fresh=at>0&&now-at<=RIVER_FRESH_MS&&at-now<=5*60_000L;String raw=str(r,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT);String stage="unknown";int rank=4;if(fresh&&r.optBoolean("bipadOfficial")){stage=OfficialStationFeeds.officialStage(raw);rank="danger".equals(stage)?0:"warning".equals(stage)?1:"alert".equals(stage)?2:"normal".equals(stage)?3:4;}else if(fresh){if((Double.isFinite(level)&&Double.isFinite(danger)&&danger>0&&level>=danger)||(raw.contains("DANGER")&&!raw.contains("BELOW DANGER"))||raw.contains("RED")){stage="danger";rank=0;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning)||(raw.contains("WARNING")&&!raw.contains("BELOW WARNING"))||raw.contains("ORANGE")){stage="warning";rank=1;}else if(raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW")){stage="alert";rank=2;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level<warning)||raw.contains("NORMAL")||raw.contains("BLUE")){stage="normal";rank=3;}}String name=str(r,"river_name","riverName","station_name","stationName","title","name");if(name.isEmpty())name="Official river station";String district=str(r,"districtName","district_name","district");return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank);}
     private void refreshRiverUi(){if(nearList==null||isFinishing()||isDestroyed())return;
       List<RiverStation> copy;
       long checkedAt=System.currentTimeMillis();
@@ -979,7 +985,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
        fingerprint=31*fingerprint+Double.hashCode(q.level);
        fingerprint=31*fingerprint+q.stage.hashCode();}
       if(fingerprint!=lastStationMapHash){lastStationMapHash=fingerprint;if(map!=null)map.setStations(copy,lat,lon);}
-      else if(map!=null)map.updateUserLocation(lat,lon);int d=0,w=0,a=0,n=0,stale=0;for(RiverStation s:copy){switch(s.stage){case"danger":d++;break;case"warning":w++;break;case"alert":a++;break;case"normal":n++;break;default:stale++;}}stationCount.setText(String.valueOf(copy.size()));warningCount.setText(String.valueOf(w));dangerCount.setText(String.valueOf(d));String sourceName="dhm".equals(riverObservationSource)?t("DHM वैकल्पिक स्रोत","DHM fallback"):("bipad".equals(riverObservationSource)?t("BIPAD मुख्य स्रोत","BIPAD primary"):t("सरकारी ताजा मापन छैन","No current official measurement"));feedFresh.setText(sourceName+(riverWatchCount>=0?" · BIPAD River Watch "+riverWatchCount:"")+"\n"+t("ताजा वर्गीकृत ","Fresh classified ")+(d+w+a+n)+"/"+copy.size()+" · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · "+t("मापन नभएका ","unavailable ")+stale);nationalFresh.setText(feedFresh.getText());updateRisk(copy);nearList.removeAllViews();
+      else if(map!=null)map.updateUserLocation(lat,lon);int d=0,w=0,a=0,n=0,stale=0;for(RiverStation s:copy){switch(s.stage){case"danger":d++;break;case"warning":w++;break;case"alert":a++;break;case"normal":n++;break;default:stale++;}}stationCount.setText(String.valueOf(copy.size()));warningCount.setText(String.valueOf("bipad".equals(riverObservationSource)?portalWarning:w));dangerCount.setText(String.valueOf("bipad".equals(riverObservationSource)?portalDanger:d));String sourceName="dhm".equals(riverObservationSource)?t("DHM वैकल्पिक स्रोत","DHM fallback"):("bipad".equals(riverObservationSource)?t("BIPAD मुख्य स्रोत","BIPAD primary"):t("सरकारी ताजा मापन छैन","No current official measurement"));feedFresh.setText(sourceName+(riverWatchCount>=0?" · BIPAD River Watch "+riverWatchCount:"") + ("bipad".equals(riverObservationSource)?"\nBIPAD: 🔴 "+portalDanger+" 🟠 "+portalWarning+" 🟡 "+portalAlert+" 🔵 "+portalNormal+" ("+t("स्रोत स्थिति","reported status")+")":"")+"\n"+t("ताजा वर्गीकृत ","Fresh classified ")+(d+w+a+n)+"/"+copy.size()+" · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · "+t("मापन नभएका ","unavailable ")+stale);nationalFresh.setText(feedFresh.getText());updateRisk(copy);nearList.removeAllViews();
         boolean inNepal=isNepal(lat,lon)&&locAt>0&&System.currentTimeMillis()-locAt<24L*60*60*1000;
         if(nearSection!=null)nearSection.setVisibility(inNepal?View.VISIBLE:View.GONE);
         if(inNepal){
@@ -991,7 +997,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         }
         refreshNationalList();}
     private View stationRow(RiverStation s){TextView v=text(stageDot(s.stage)+"  "+s.name+"\n"+stationLine(s),14,true,Color.rgb(30,52,72));v.setPadding(dp(12),dp(10),dp(12),dp(10));v.setBackground(round(stageBg(s.stage),17,Color.rgb(216,234,243),1));v.setOnClickListener(x->showStation(s));LinearLayout.LayoutParams p=lp(-1,-2,0,0,0,dp(7));v.setLayoutParams(p);return v;}
-    private void updateRisk(List<RiverStation> copy){RiverStation best=null;double bestD=Double.POSITIVE_INFINITY;for(RiverStation s:copy){double km=distanceKm(s.lat,s.lon);if(!Double.isFinite(km))continue;if(km<bestD){bestD=km;best=s;}}if(best==null){if(riskSurface!=null)riskSurface.setBackground(round(Color.rgb(234,239,242),20,Color.rgb(193,208,218),1));riskValue.setTextColor(Color.rgb(85,117,139));riskBadge.setTextColor(Color.rgb(23,116,174));riskValue.setText("—");riskBadge.setText(t("प्रतीक्षा","WAIT"));riskText.setText(t("नेपालमा location लिएपछि नजिकको official gauge risk देखिन्छ।","Take a Nepal location to see nearby official gauge risk."));alarmBanner.setVisibility(View.GONE);return;}riskValue.setText(stageName(best.stage));riskBadge.setText(stageName(best.stage));riskText.setText(best.name+" • "+String.format(Locale.US,"%.1f km",bestD)+" • "+stationLine(best));int col=stageColor(best.stage);if(riskSurface!=null)riskSurface.setBackground(round(stageBg(best.stage),20,col,1));riskValue.setTextColor(col);riskBadge.setTextColor(col);boolean emergency=bestD<=2d&&best.fresh&&best.at>0&&System.currentTimeMillis()-best.at<=EMERGENCY_FRESH_MS&&(best.stage.equals("warning")||best.stage.equals("danger"));alarmBanner.setVisibility(emergency?View.VISIBLE:View.GONE);if(emergency){alarmTitle.setText(best.stage.equals("danger")?t("🚨 DANGER — 2 km भित्र","🚨 DANGER — within 2 km"):t("⚠️ WARNING — 2 km भित्र","⚠️ WARNING — within 2 km"));alarmText.setText(best.name+" • "+stationLine(best));}}
+    private void updateRisk(List<RiverStation> copy){RiverStation best=null;double bestD=Double.POSITIVE_INFINITY;for(RiverStation s:copy){double km=distanceKm(s.lat,s.lon);if(!Double.isFinite(km))continue;if(km<bestD){bestD=km;best=s;}}if(best==null){if(riskSurface!=null)riskSurface.setBackground(round(Color.rgb(234,239,242),20,Color.rgb(193,208,218),1));riskValue.setTextColor(Color.rgb(85,117,139));riskBadge.setTextColor(Color.rgb(23,116,174));riskValue.setText("—");riskBadge.setText(t("प्रतीक्षा","WAIT"));riskText.setText(t("नेपालमा location लिएपछि नजिकको official gauge risk देखिन्छ।","Take a Nepal location to see nearby official gauge risk."));alarmBanner.setVisibility(View.GONE);return;}riskValue.setText(stageName(best.stage));riskBadge.setText(stageName(best.stage));riskText.setText(best.name+" • "+String.format(Locale.US,"%.1f km",bestD)+" • "+stationLine(best));int col=stageColor(best.stage);if(riskSurface!=null)riskSurface.setBackground(round(stageBg(best.stage),20,col,1));riskValue.setTextColor(col);riskBadge.setTextColor(col);boolean emergency=NativeRiverRiskDistance.associatedDistanceKm(this,lat,lon,best.lat,best.lon,best.name)<=2d&&best.fresh&&best.at>0&&System.currentTimeMillis()-best.at<=EMERGENCY_FRESH_MS&&(best.stage.equals("warning")||best.stage.equals("danger"));alarmBanner.setVisibility(emergency?View.VISIBLE:View.GONE);if(emergency){alarmTitle.setText(best.stage.equals("danger")?t("🚨 DANGER — 2 km भित्र","🚨 DANGER — within 2 km"):t("⚠️ WARNING — 2 km भित्र","⚠️ WARNING — within 2 km"));alarmText.setText(best.name+" • "+stationLine(best));}}
     private String stationLine(RiverStation s){String age=s.at>0?Math.max(0,(System.currentTimeMillis()-s.at)/60000)+" "+t("मिनेटअघि","min ago"):t("मापन समय उपलब्ध छैन","No time");String lev=Double.isFinite(s.level)?String.format(Locale.US,"%.2f m",s.level):t("मापन छैन","No level");double d=distanceKm(s.lat,s.lon);return stageName(s.stage)+" • "+lev+" • "+age+(Double.isFinite(d)?String.format(Locale.US," • %.1f km",d):"");}
     private void showStation(RiverStation s){StringBuilder b=new StringBuilder();b.append(stageDot(s.stage)).append(" ").append(stageName(s.stage)).append("\n\n").append(t("पानीको सतह: ","Water level: ")).append(Double.isFinite(s.level)?String.format(Locale.US,"%.2f m",s.level):"—");if(Double.isFinite(s.warning))b.append("\nWarning: ").append(String.format(Locale.US,"%.2f m",s.warning));if(Double.isFinite(s.danger))b.append("\nDanger: ").append(String.format(Locale.US,"%.2f m",s.danger));b.append("\n").append(t("Official observation: ","Official observation: ")).append(s.at>0?Instant.ofEpochMilli(s.at).atZone(ZoneId.of("Asia/Kathmandu")).toLocalDateTime():"—").append("\nSource: BIPAD / DHM");new AlertDialog.Builder(this).setTitle(s.name).setMessage(b.toString()).setPositiveButton("OK",null).show();}
 
@@ -1233,7 +1239,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         }
         main.postDelayed(this,1000);}};
     private void initTts(){tts=new TextToSpeech(getApplicationContext(),s->{if(s==TextToSpeech.SUCCESS&&tts!=null){int r=tts.setLanguage(Locale.forLanguageTag("ne-NP"));if(r==TextToSpeech.LANG_MISSING_DATA||r==TextToSpeech.LANG_NOT_SUPPORTED)tts.setLanguage(new Locale("ne"));tts.setSpeechRate(.92f);}});}private void speak(String s){if(tts!=null&&s!=null&&!s.isEmpty())tts.speak(s,TextToSpeech.QUEUE_FLUSH,null,"sathi-native-full");}
-    @Override public void onRequestPermissionsResult(int code,String[]p,int[]g){super.onRequestPermissionsResult(code,p,g);if(code==REQ_LOCATION&&hasLocationPermission())requestLocation();else if(code==REQ_MIC&&checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)showSathiDialog(null);}
+    @Override public void onRequestPermissionsResult(int code,String[]p,int[]g){super.onRequestPermissionsResult(code,p,g);if(code==REQ_LOCATION&&hasLocationPermission()){requestLocation();offerBackgroundLocation();}else if(code==REQ_MIC&&checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)showSathiDialog(null);}
     private boolean hasLocationPermission(){return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED||checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED;}
     private synchronized NepalRiverBoundary nepalDistrictBorder(){
         if(nepalDistrictBorder!=null)return nepalDistrictBorder;

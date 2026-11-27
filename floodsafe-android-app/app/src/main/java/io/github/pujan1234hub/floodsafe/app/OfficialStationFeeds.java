@@ -20,6 +20,15 @@ final class OfficialStationFeeds {
     private static final long MAX_AGE_MS = 30L * 60L * 1000L; // Preview source freshness.
     private static final long RIVER_DISPLAY_MAX_AGE_MS = 30L * 60L * 1000L; // Display only, emergency alerts still require <=10 min.
     private OfficialStationFeeds() {}
+    static String officialStage(String raw){
+        String s=raw==null?"":raw.trim().toUpperCase(java.util.Locale.ROOT).replace('_',' ');
+        if(s.equals("NORMAL")||s.equals("BLUE")||s.equals("BELOW WARNING LEVEL")||s.equals("BELOW WARNING"))return "normal";
+        if(s.equals("DANGER")||s.equals("RED")||s.equals("ABOVE DANGER LEVEL")||s.equals("ABOVE DANGER"))return "danger";
+        if(s.equals("WARNING")||s.equals("ORANGE")||s.equals("ABOVE WARNING LEVEL")||s.equals("ABOVE WARNING"))return "warning";
+        if(s.equals("WATCH")||s.equals("ALERT")||s.equals("YELLOW"))return "alert";
+        return "unknown";
+    }
+
 
     static JSONObject rivers() throws Exception {
         JSONObject src = get(ROOT + "floodsafe-live-preview?kind=stations");
@@ -29,6 +38,11 @@ final class OfficialStationFeeds {
         JSONArray stations = src.optJSONArray("stations"), results = new JSONArray();
         if (stations == null) throw new IllegalStateException("No river catalogue");
         final long now = System.currentTimeMillis();
+        boolean bipad="bipad".equals(src.optString("activeObservationSource"));
+        JSONArray watch=src.optJSONArray("watchStations");
+        int normal=0,warningCount=0,dangerCount=0,alertCount=0;
+        java.util.Map<String,JSONObject> watchById=new java.util.HashMap<>();
+        if(bipad&&watch!=null)for(int i=0;i<watch.length();i++){JSONObject q=watch.optJSONObject(i);if(q==null)continue;watchById.put(q.optString("id"),q);switch(officialStage(q.optString("reportedStatus"))){case "normal":normal++;break;case "warning":warningCount++;break;case "danger":dangerCount++;break;case "alert":alertCount++;break;}}
         for (int i=0;i<stations.length();i++) {
             JSONObject s = stations.optJSONObject(i);
             if (s == null) continue;
@@ -36,6 +50,8 @@ final class OfficialStationFeeds {
             if (!nepal(lat,lon)) continue;
             JSONObject out = new JSONObject();
             out.put("stationSeriesId", s.optString("id",""));
+            JSONObject portal=watchById.get(s.optString("id"));if(portal!=null){out.put("portalStatus",officialStage(portal.optString("reportedStatus")));out.put("portalReportedAt",portal.optString("lastReportedAt",""));if(Double.isFinite(portal.optDouble("lastReportedValue",Double.NaN)))out.put("portalReportedLevel",portal.optDouble("lastReportedValue"));}
+            if(bipad)out.put("bipadOfficial",true);
             out.put("stationName", s.optString("name","River station"));
             out.put("districtName", s.optString("district",""));
             out.put("latitude",lat);out.put("longitude",lon);
@@ -47,6 +63,7 @@ final class OfficialStationFeeds {
             double verifiedLevel=s.optDouble("level",Double.NaN);
             boolean hasLastVerified="observed".equals(s.optString("status"))&&when>0&&
                  when-now<=5L*60L*1000L&&Double.isFinite(verifiedLevel);
+            if(portal!=null&&Double.isFinite(portal.optDouble("lastReportedValue",Double.NaN))&&timestamp(portal.optString("lastReportedAt"))>0){out.put("lastVerifiedWaterLevel",portal.optDouble("lastReportedValue"));out.put("lastVerifiedWaterLevelOn",portal.optString("lastReportedAt"));}
             if(hasLastVerified){
                 out.put("lastVerifiedWaterLevel",verifiedLevel);
                 out.put("lastVerifiedWaterLevelOn",s.optString("observed"));
@@ -58,7 +75,8 @@ final class OfficialStationFeeds {
                 // DHM/BIPAD status is based on current reading and validated thresholds.
                 String official=s.optString("reportedStatus","").toUpperCase(java.util.Locale.ROOT);
                 // Guard against misreading "BELOW WARNING LEVEL" as a warning.
-                if(official.contains("BELOW WARNING")||official.contains("NORMAL")) out.put("_officialStatus","normal");
+                if(bipad)out.put("_officialStatus",officialStage(official));
+                else if(official.contains("BELOW WARNING")||official.contains("NORMAL")) out.put("_officialStatus","normal");
                 else if(official.contains("DANGER")&&!official.contains("BELOW"))out.put("_officialStatus","danger");
                 else if(official.contains("WARNING")&&!official.contains("BELOW"))out.put("_officialStatus","warning");
                 else if(official.contains("WATCH")||official.contains("ALERT")||official.contains("YELLOW"))out.put("_officialStatus","alert");
@@ -75,6 +93,7 @@ final class OfficialStationFeeds {
         result.put("bipadFallbackStatus",src.optString("bipadFallbackStatus","unknown"));
         result.put("count",results.length());
         result.put("watchCount",src.optInt("watchCount",-1));
+        result.put("portalNormal",normal);result.put("portalWarning",warningCount);result.put("portalDanger",dangerCount);result.put("portalAlert",alertCount);
         return result;
     }
 

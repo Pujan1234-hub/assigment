@@ -5,6 +5,7 @@ on:
       - ui/floodsafe-v0923-public-beta-20261125
     paths:
       - '.github/workflows/floodsafe-ui-preview-apk.yml'
+      - 'floodsafe-android-app/app/src/main/java/**'
   workflow_dispatch:
 permissions:
   contents: write

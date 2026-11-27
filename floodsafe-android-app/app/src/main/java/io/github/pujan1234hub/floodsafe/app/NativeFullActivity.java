@@ -101,6 +101,11 @@ public final class NativeFullActivity extends Activity implements LocationListen
     // Only the manually tapped GPS button needs extra duplicate-callback protection.
     private long lastLocationRenderAt=0L, lastLocateTapElapsed=0L;
     private long weatherRequestVersion=0L, forecastRequestVersion=0L;
+    private final ExecutorService weatherIo=Executors.newSingleThreadExecutor();
+    private boolean weatherInFlight=false;
+    private long weatherLastAttempt=0L, weatherLastSuccess=0L;
+    private String weatherModelTime="";
+    private final Runnable weatherAutoRefresh=new Runnable(){@Override public void run(){if(isFinishing()||isDestroyed())return;if(Double.isFinite(lat)&&Double.isFinite(lon)&&System.currentTimeMillis()-weatherLastAttempt>=15000L)pollCurrentWeather(lat,lon);main.postDelayed(this,15000L);}};
     private FrameLayout root;
     private ScrollView scroll;
     private LinearLayout content,nearList,nationalList,newsList,humanCard,alarmBanner,governmentList;
@@ -805,9 +810,14 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
 
     private void fetchWeather(double a,double o){
-        final long version=++weatherRequestVersion;
         fetchSevenDay(a,o);
-        io.execute(()->{
+        pollCurrentWeather(a,o);
+    }
+    private void pollCurrentWeather(double a,double o){
+        if(weatherInFlight)return;
+        weatherInFlight=true;weatherLastAttempt=System.currentTimeMillis();
+        final long version=++weatherRequestVersion;
+        weatherIo.execute(()->{
             try{
                 String u=String.format(Locale.US,
                     "https://api.open-meteo.com/v1/forecast?latitude=%.6f&longitude=%.6f&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,weather_code,wind_speed_10m&hourly=precipitation_probability,precipitation&forecast_hours=6&timezone=auto",a,o);
@@ -817,7 +827,10 @@ public final class NativeFullActivity extends Activity implements LocationListen
                     wi=c.optDouble("wind_speed_10m",Double.NaN),cloud=c.optDouble("cloud_cover",0);
                 final int code=c.optInt("weather_code",0);
                 runOnUiThread(()->{
-                    if(isFinishing()||isDestroyed()||version!=weatherRequestVersion)return;
+                    weatherInFlight=false;
+                    if(isFinishing()||isDestroyed()||version!=weatherRequestVersion||Math.abs(lat-a)>0.00065||Math.abs(lon-o)>0.00065)return;
+                    weatherLastSuccess=System.currentTimeMillis();weatherModelTime=c.optString("time","");
+                    weatherSupport.setText(t("मौसम मोडेल · जाँच: ","Weather model · checked: ")+java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Kathmandu")).format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"))+" NPT");
                     // Translate only when displaying the completed result. Previous
                     // background requests must not alternate Nepali and English text.
                     String ws=code>=95?t("⛈️ चट्याङ/हुरीको सम्भावना","⛈️ Thunderstorm"):
@@ -837,8 +850,10 @@ public final class NativeFullActivity extends Activity implements LocationListen
                 });
             }catch(Exception e){
                 runOnUiThread(()->{
-                    if(version==weatherRequestVersion&&currentWeather.isEmpty())
-                        weatherText.setText(t("मौसम refresh हुन सकेन","Weather refresh failed"));
+                    weatherInFlight=false;
+                    if(isFinishing()||isDestroyed()||version!=weatherRequestVersion)return;
+                    weatherSupport.setText(t("मौसम पुनः जाँच असफल · पछिल्लो मान","Weather check failed · last values"));
+                    if(currentWeather.isEmpty())weatherText.setText(t("मौसम refresh हुन सकेन","Weather refresh failed"));
                     // Keep the previous weather card visible on temporary request failures.
                 });
             }
@@ -1312,8 +1327,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
         @Override public boolean mapFresh() { return fresh; }
     }
     private static final class NewsItem{final String title,source,url;final long at;NewsItem(String t,String s,String u,long a){title=t;source=s;url=u;at=a;}}
-    @Override protected void onPause(){main.removeCallbacks(riverAutoRefresh);main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(newsAutoRefreshTick);main.removeCallbacks(newsKnowledgeTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
-    @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();
+    @Override protected void onPause(){main.removeCallbacks(weatherAutoRefresh);main.removeCallbacks(riverAutoRefresh);main.removeCallbacks(governmentAutoRefresh);main.removeCallbacks(newsAutoRefreshTick);main.removeCallbacks(newsKnowledgeTick);if(gyanRotator!=null)gyanRotator.animate().cancel();if(map!=null)map.onHostPause();super.onPause();}
+    @Override protected void onResume(){super.onResume();if(map!=null)map.onHostResume();main.removeCallbacks(weatherAutoRefresh);main.post(weatherAutoRefresh);
         main.post(mapVisibilityTick);
         updateOwnerNotice();
         // Recalculate station ages as soon as the app is visible; do not wait for a tap.
@@ -1325,5 +1340,5 @@ public final class NativeFullActivity extends Activity implements LocationListen
         main.removeCallbacks(newsAutoRefreshTick);main.postDelayed(newsAutoRefreshTick,20000L);
         if(newsShowingKnowledge){main.removeCallbacks(newsKnowledgeTick);main.postDelayed(newsKnowledgeTick,FloodSafeRemoteConfig.knowledgeRotateMillis());}
     }
-    @Override protected void onDestroy(){if(playUpdates!=null)playUpdates.close();main.removeCallbacksAndMessages(null);if(speech!=null){try{speech.destroy();}catch(Exception ignored){}}if(tts!=null){tts.stop();tts.shutdown();}io.shutdownNow();super.onDestroy();}
+    @Override protected void onDestroy(){if(playUpdates!=null)playUpdates.close();main.removeCallbacksAndMessages(null);if(speech!=null){try{speech.destroy();}catch(Exception ignored){}}if(tts!=null){tts.stop();tts.shutdown();}weatherIo.shutdownNow();io.shutdownNow();super.onDestroy();}
 }

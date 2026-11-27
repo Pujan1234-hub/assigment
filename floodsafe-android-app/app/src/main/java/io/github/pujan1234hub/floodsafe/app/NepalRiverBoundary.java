@@ -13,6 +13,7 @@ import java.util.List;
  */
 final class NepalRiverBoundary {
     private final List<Polygon> polygons = new ArrayList<>();
+    private final List<String> districtNames=new ArrayList<>();
     private static final class Ring {
         final double[] longitude, latitude;
         final double minX, maxX, minY, maxY;
@@ -71,21 +72,24 @@ final class NepalRiverBoundary {
             String type=geometry.optString("type");
             JSONArray data=geometry.optJSONArray("coordinates");
             if(data==null)continue;
-            if("Polygon".equals(type))add(data);
-            if("MultiPolygon".equals(type))for(int p=0;p<data.length();p++)add(data.optJSONArray(p));
+            JSONObject props=f.optJSONObject("properties");String district="";
+            if(props!=null)for(String k:new String[]{"DISTRICT","district","District","DISTRICT_N","district_name","name","NAME_2","DISTRICT_NAME"}){String candidate=props.optString(k,"").trim();if(!candidate.isEmpty()&&!candidate.equals("null")){district=candidate;break;}}
+            if("Polygon".equals(type))add(data,district);
+            if("MultiPolygon".equals(type))for(int p=0;p<data.length();p++)add(data.optJSONArray(p),district);
         }
         if(polygons.size()<50)throw new IllegalStateException("Insufficient Nepal boundary polygons");
     }
-    private void add(JSONArray rings){
+    private void add(JSONArray rings,String district){
         if(rings==null||rings.length()==0)return;
         JSONArray shell=rings.optJSONArray(0);
-        if(shell!=null&&shell.length()>=4)polygons.add(new Polygon(rings));
+        if(shell!=null&&shell.length()>=4){polygons.add(new Polygon(rings));districtNames.add(district);}
     }
     boolean contains(double lon,double lat){
         if(!Double.isFinite(lon)||!Double.isFinite(lat)||lat<26||lat>31||lon<79||lon>89)return false;
         for(Polygon p:polygons)if(p.contains(lon,lat))return true;
         return false;
     }
+    String districtAt(double lon,double lat){if(!Double.isFinite(lon)||!Double.isFinite(lat))return "";for(int i=0;i<polygons.size();i++)if(polygons.get(i).contains(lon,lat))return districtNames.get(i);return "";}
     static double[] between(double[] a,double[] b,double t){
         return new double[]{a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t};
     }

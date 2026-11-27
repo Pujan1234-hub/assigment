@@ -41,6 +41,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
  private boolean english;
  private double lat=Double.NaN,lon=Double.NaN;
  private int requestSeq=0;
+ private NepalRiverBoundary earthquakeBoundary;
  private int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
  private String tr(String ne,String en){return english?en:ne;}
  @Override public void onCreate(Bundle state){
@@ -56,20 +57,22 @@ public final class FloodSafeAdvancedActivity extends Activity {
   ScrollView scroll=new ScrollView(this);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(0,dp(10),0,dp(30));scroll.addView(content);
   controls=new LinearLayout(this);controls.setOrientation(LinearLayout.VERTICAL);content.addView(controls);
+  LinearLayout menuRow=null;int menuIndex=0;
   for(String[] segment:new String[][]{
     {"river","🌊 "+tr("नदी स्टेशन","Rivers")},
     {"rain","🌧 "+tr("वर्षा स्टेशन","Rainfall")},
     {"forecast","📈 "+tr("७ दिनको पूर्वानुमान","7-day forecast")},
     {"warning","⚠ "+tr("सरकारी चेतावनी","Govt warning")},
-    {"events","⚡ "+tr("घटनाहरू","Events")}
+    {"events","⚡ "+tr("नेपालका भूकम्प","Nepal earthquakes")}
   }){
     final String key=segment[0];
     Button btn=button(segment[1]);btn.setOnClickListener(v->showMode(key));
-    controls.addView(btn,new LinearLayout.LayoutParams(-1,dp(45)));
+    if(menuIndex%2==0){menuRow=new LinearLayout(this);menuRow.setOrientation(LinearLayout.HORIZONTAL);controls.addView(menuRow);}
+    LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(0,dp(48),1);bp.setMargins(dp(3),dp(3),dp(3),dp(3));menuRow.addView(btn,bp);menuIndex++;
   }
   Button nasa=button("🛰 NASA "+tr("नेपालको वर्षा/पहिरो नक्सा","Rain/landslide map"));
   nasa.setOnClickListener(v->startActivity(new Intent(this,FloodSafeNasaSatelliteActivity.class)));
-  controls.addView(nasa,new LinearLayout.LayoutParams(-1,dp(45)));
+  LinearLayout.LayoutParams np=new LinearLayout.LayoutParams(0,dp(48),1);np.setMargins(dp(3),dp(3),dp(3),dp(3));menuRow.addView(nasa,np);
   search=new EditText(this);search.setSingleLine(true);search.setTextSize(14);
   search.setHint(tr("जिल्ला वा नदी/स्टेशनको नाम लेख्नुहोस्","Type district or station"));
   content.addView(search,new LinearLayout.LayoutParams(-1,dp(52)));
@@ -92,7 +95,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
  }
  private Button button(String text){
    Button b=new Button(this);b.setText(text);b.setTextSize(12);b.setAllCaps(false);b.setTextColor(ink);
-   b.setBackgroundColor(Color.WHITE);return b;
+   GradientDrawable bg=new GradientDrawable();bg.setColor(Color.rgb(255,253,247));bg.setCornerRadius(dp(12));bg.setStroke(dp(1),Color.rgb(221,221,207));b.setBackground(bg);return b;
  }
  private void card(String heading,String body){
    LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(12),dp(9),dp(12),dp(8));
@@ -118,15 +121,15 @@ public final class FloodSafeAdvancedActivity extends Activity {
    final int seq=++requestSeq;String url=urlFor(mode);
    if(url==null){summary.setText(tr("GPS अनुमति लिएपछि स्थानीय पूर्वानुमान देखिन्छ।","Enable GPS to see your local forecast."));return;}
    pool.execute(()->{
-     try{JSONObject j=get(url);runOnUiThread(()->{
+     try{JSONObject j=get(url);if("events".equals(newMode))j=nepalEarthquakes(j);final JSONObject response=j;runOnUiThread(()->{
        if(seq!=requestSeq||isFinishing()||isDestroyed())return;
        if(mode.equals("river")||mode.equals("rain")){
-         activeSource=j.optString("source","Official source unavailable");
-         int watchCount=j.optInt("watchCount",-1);if(watchCount>=0)activeSource+=" · BIPAD "+(mode.equals("river")?"River":"Rain")+" Watch "+watchCount;
-         entries=j.optJSONArray(mode.equals("river")?"stations":"items");
+         activeSource=response.optString("source","Official source unavailable");
+         int watchCount=response.optInt("watchCount",-1);if(watchCount>=0)activeSource+=" · BIPAD "+(mode.equals("river")?"River":"Rain")+" Watch "+watchCount;
+         entries=response.optJSONArray(mode.equals("river")?"stations":"items");
          if(entries==null)entries=new JSONArray();renderEntries();
-       }else if(mode.equals("forecast"))renderForecast(j);
-       else renderNotices(j);
+       }else if(mode.equals("forecast"))renderForecast(response);
+       else renderNotices(response);
      });}catch(Exception e){runOnUiThread(()->{if(seq==requestSeq&&!isFinishing()&&!isDestroyed())summary.setText(tr("मापन उपलब्ध छैन। फेरि प्रयास गर्नुहोस्।","Data unavailable. Try again."));});}
    });
  }
@@ -193,10 +196,25 @@ public final class FloodSafeAdvancedActivity extends Activity {
      card(day,tr("अनुमानित वर्षा: ","Rain: ")+r+"\n"+tr("अनुमानित नदी बहाव: ","Discharge: ")+f);
    }
  }
+ private JSONObject nepalEarthquakes(JSONObject j)throws Exception{
+   if(earthquakeBoundary==null){
+     try(java.io.InputStream in=getAssets().open("floodsafe-nepal/v24/nepal-districts.geojson");BufferedReader r=new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8))){
+       StringBuilder b=new StringBuilder();String line;while((line=r.readLine())!=null)b.append(line);earthquakeBoundary=new NepalRiverBoundary(b.toString());
+     }
+   }
+   JSONArray rows=j.optJSONArray("items"),filtered=new JSONArray();
+   if(rows!=null)for(int i=0;i<rows.length();i++){
+     JSONObject e=rows.optJSONObject(i);if(e==null)continue;
+     double a=e.optDouble("lat",Double.NaN),o=e.optDouble("lon",Double.NaN);
+     if(!earthquakeBoundary.contains(o,a))continue;
+     JSONObject copy=new JSONObject(e.toString());copy.put("nepalDistrict",earthquakeBoundary.districtAt(o,a));filtered.put(copy);
+   }
+   j.put("items",filtered);return j;
+ }
  private void renderNotices(JSONObject j){
    holder.removeAllViews();entries=null;
    JSONArray rows=mode.equals("warning")?GovernmentNotices.active(j,System.currentTimeMillis()):j.optJSONArray("items");
-   if(rows==null||rows.length()==0){summary.setText(tr("नयाँ घटना वा सूचना भेटिएन।","No recent events or notices found."));return;}
+   if(rows==null||rows.length()==0){summary.setText("unavailable".equals(j.optString("status"))?tr("स्रोत उपलब्ध छैन।","Source unavailable."):mode.equals("events")?tr("पछिल्लो १४ दिनमा नेपालभित्र स्रोतमा दर्ता भएका भूकम्प भेटिएनन्।","No recorded Nepal epicentres in the last 14 days. Not an all-clear."):tr("नयाँ घटना वा सूचना भेटिएन।","No recent events or notices found."));return;}
    summary.setText(tr(rows.length()+" उपलब्ध सूचना",""+rows.length()+" entries"));
    for(int i=0;i<Math.min(15,rows.length());i++){
      JSONObject row=rows.optJSONObject(i);if(row==null)continue;
@@ -206,8 +224,13 @@ public final class FloodSafeAdvancedActivity extends Activity {
      String body=(time.isEmpty()?"":tr("सुरु: ","From: ")+time+"\n")+
                   (until.isEmpty()?"":tr("समाप्त: ","Until: ")+until+"\n")+
                   row.optString(english?"summaryEn":"summaryNe",row.optString("place",""));
+     if(mode.equals("events")){
+       String district=row.optString("nepalDistrict","");
+       title=tr("नेपालमा भूकम्प","Earthquake in Nepal")+(district.isEmpty()?"":" · "+district)+" · M "+number(row,"mag");
+       body=tr("समय: ","Time: ")+time+"\n"+tr("गहिराइ: ","Depth: ")+number(row,"depth")+" km\n"+tr("केन्द्र: ","Epicentre: ")+number(row,"lat")+", "+number(row,"lon")+"\nUSGS · "+tr("नेपालको सीमाभित्र","Inside Nepal boundary");
+     }
      card(title,body);
-     String link=row.optString("sourceUrl","");
+     String link=row.optString("sourceUrl",row.optString("url",""));
      if(link.startsWith("https://")){
        Button source=button(tr("मूल सरकारी सूचना ↗","Original source ↗"));
        source.setOnClickListener(v->startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(link))));

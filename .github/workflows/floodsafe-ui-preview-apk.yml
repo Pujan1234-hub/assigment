@@ -1,4 +1,4 @@
-name: FloodSafe Nepal UI Preview 11 - separate install APK
+name: FloodSafe Nepal UI Preview 12 - separate install APK
 on:
   push:
     branches:
@@ -28,22 +28,22 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
       - name: Set next release version without changing stable source
         run: |
-          sed -i "s/versionCode 121/versionCode 132/" floodsafe-android-app/app/build.gradle
-          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-ui-preview11'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionCode 121/versionCode 133/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-ui-preview12'/" floodsafe-android-app/app/build.gradle
       - name: Prepare isolated preview package and approved launcher icon
         shell: bash
         run: |
           set -euo pipefail
-          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.uipreview11'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.uipreview12'/" floodsafe-android-app/app/build.gradle
           sed -i '/if (hasReleaseSigning) signingConfig signingConfigs.release/c\            signingConfig signingConfigs.debug' floodsafe-android-app/app/build.gradle
-          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal UI TEST 11</' floodsafe-android-app/app/src/main/res/values/strings.xml
+          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal UI TEST 12</' floodsafe-android-app/app/src/main/res/values/strings.xml
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=Path('floodsafe-android-app/app/google-services.json')
           j=json.loads(p.read_text())
           for client in j['client']:
-              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.uipreview11'
+              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.uipreview12'
           p.write_text(json.dumps(j,indent=2))
           PY
           mkdir -p floodsafe-android-app/app/src/main/res/drawable-nodpi
@@ -158,15 +158,15 @@ jobs:
           test -s "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > preview-badging.txt
-          grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview11'" preview-badging.txt
-          grep -F "application-label:'FloodSafe Nepal UI TEST 11'" preview-badging.txt
+          grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview12'" preview-badging.txt
+          grep -F "application-label:'FloodSafe Nepal UI TEST 12'" preview-badging.txt
           mkdir -p preview-output
-          cp "$APK" preview-output/FloodSafe-Nepal-v0.9.23-UI-TEST-11.apk
+          cp "$APK" preview-output/FloodSafe-Nepal-v0.9.23-UI-TEST-12.apk
           sha256sum preview-output/*.apk
       - name: Upload isolated preview APK only
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0.9.23-UI-TEST-11
+          name: FloodSafe-Nepal-v0.9.23-UI-TEST-12
           path: preview-output/*.apk
           if-no-files-found: error
           retention-days: 14
@@ -176,6 +176,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=floodsafe-v0923-ui-test11-verified-watch-forecast
+          TAG=floodsafe-v0923-ui-test12-home-notification
           if gh release view "$TAG" >/dev/null 2>&1; then echo 'Existing release retained'; exit 0; fi
-          gh release create "$TAG" preview-output/*.apk --target "$GITHUB_SHA" --title 'FloodSafe Nepal UI TEST 11 — BIPAD-first preview' --notes 'Separate test APK. Existing Play beta untouched. Official watch status and optional background location; conservative geometry and separate measured-rise advisory. Preview only. Not a production release; live source and device acceptance tests required.' --prerelease
+          gh release create "$TAG" preview-output/*.apk --target "$GITHUB_SHA" --title 'FloodSafe Nepal UI TEST 12 — BIPAD-first preview' --notes 'Separate test APK. Existing Play beta untouched. Official watch status and optional background location; conservative geometry and separate measured-rise advisory. Preview only. Not a production release; live source and device acceptance tests required.' --prerelease

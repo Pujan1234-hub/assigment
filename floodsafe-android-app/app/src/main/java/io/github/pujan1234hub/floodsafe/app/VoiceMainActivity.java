@@ -22,12 +22,13 @@ public final class VoiceMainActivity extends Activity {
     }
 
     private void forwardToNative(Intent source) {
-        Intent nativeIntent = new Intent(this, FloodSafeNativeActivity.class)
+        Intent nativeIntent = new Intent(this, NativeFullActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (source != null) {
             nativeIntent.setData(source.getData());
             if (source.getExtras() != null) nativeIntent.putExtras(source.getExtras());
         }
+        nativeIntent.putExtra(NativeFullActivity.EXTRA_OPEN_HOME,true);
         startActivity(nativeIntent);
         finish();
         overridePendingTransition(0, 0);

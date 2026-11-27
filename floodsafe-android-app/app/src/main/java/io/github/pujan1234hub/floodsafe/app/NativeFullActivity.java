@@ -239,6 +239,15 @@ public final class NativeFullActivity extends Activity implements LocationListen
     };
     private long lastStationMapHash=Long.MIN_VALUE;
 
+    static final String EXTRA_OPEN_HOME="floodsafe_open_home";
+    private void handleEntryIntent(Intent i){
+        if(i!=null&&i.getBooleanExtra(EXTRA_OPEN_HOME,false)){
+            i.removeExtra(EXTRA_OPEN_HOME);
+            showHomeDashboard();
+            if(System.currentTimeMillis()-lastRiverFetchAt>=RIVER_FOREGROUND_REFRESH_MS)refreshRivers();
+        }
+        consumeSathiIntent(i);
+    }
     @Override public void onCreate(Bundle state){
         super.onCreate(state);
         getWindow().setStatusBarColor(Color.rgb(18,39,48));
@@ -257,11 +266,11 @@ public final class NativeFullActivity extends Activity implements LocationListen
         // Live MapLibre map owns the Nepal border-clipped geometry; no static overview map.
         refreshAll();
         requestLocation();
-        consumeSathiIntent(getIntent());
+        handleEntryIntent(getIntent());
         main.post(clockTick);
     }
 
-    @Override protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);consumeSathiIntent(i);}
+    @Override protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);handleEntryIntent(i);}
 
     private View buildScreen(){
         root=new FrameLayout(this);root.setBackgroundColor(Color.rgb(8,32,57));

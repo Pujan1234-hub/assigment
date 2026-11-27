@@ -108,7 +108,7 @@ public final class FloodMonitorService extends Service implements LocationListen
     }
 
     private Notification monitorNotification() {
-        Intent launch = new Intent(this, NativeFullActivity.class)
+        Intent launch = new Intent(this, NativeFullActivity.class).putExtra(NativeFullActivity.EXTRA_OPEN_HOME,true)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(this, 7301, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);

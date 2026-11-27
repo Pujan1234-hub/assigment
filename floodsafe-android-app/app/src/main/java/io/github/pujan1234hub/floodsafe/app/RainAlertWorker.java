@@ -389,7 +389,7 @@ public final class RainAlertWorker extends Worker {
             channel.enableVibration(true);
             manager.createNotificationChannel(channel);
         }
-        Intent launch = new Intent(app, VoiceMainActivity.class)
+        Intent launch = new Intent(app, NativeFullActivity.class).putExtra(NativeFullActivity.EXTRA_OPEN_HOME,true)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(app, id, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -537,7 +537,7 @@ public final class RainAlertWorker extends Worker {
             manager.createNotificationChannel(channel);
         }
 
-        Intent launch = new Intent(app, VoiceMainActivity.class)
+        Intent launch = new Intent(app, NativeFullActivity.class).putExtra(NativeFullActivity.EXTRA_OPEN_HOME,true)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(app, 7102, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -593,7 +593,7 @@ public final class RainAlertWorker extends Worker {
                 + (Double.isFinite(wind) ? " • हावा " + Math.round(wind) + " km/h" : "");
         String text = timing + amount + weather + " यो पूर्वानुमान हो; स्थानीय वर्षा ठ्याक्कै समयभन्दा अगाडि/पछि हुन सक्छ।";
 
-        Intent launch = new Intent(getApplicationContext(), VoiceMainActivity.class)
+        Intent launch = new Intent(getApplicationContext(), NativeFullActivity.class).putExtra(NativeFullActivity.EXTRA_OPEN_HOME,true)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(getApplicationContext(), 7101, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);

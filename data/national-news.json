@@ -1,63 +1,35 @@
 {
-  "generated_at": "2026-11-27T18:17:38.824796+05:45",
-  "updated_at_npt": "27 Nov 18:17 NPT",
+  "generated_at": "2026-11-28T03:21:23.456633+05:45",
+  "updated_at_npt": "28 Nov 03:21 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "स्थानीय तहबाटै नापी र मालपोत सेवा दिने तयारी गर्न मन्त्री रावलको निर्देशन",
+      "title": "तुइनखोला पहिरो रोकथाम गर्न नारायणगढ–मुग्लिङ सडक दैनिक पाँच घण्टा बन्द हुने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608034/minister-rawal-directs-to-prepare-for-providing-survey-and-land-revenue-services-at-the-local-level",
-      "published_at": "2026-11-27T18:16:16+05:45",
-      "flash": true
-    },
-    {
-      "title": "उपत्यकामा प्रहरीको सेफ्टी पिन अपरेसन : ११५ जना पक्राउ",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608003/police-safety-pin-operation-in-kathmandu-valley-115-people-arrested",
-      "published_at": "2026-11-27T16:46:57+05:45",
+      "url": "https://www.ratopati.com/story/608075/narayangadh-mugling-road-to-be-closed-for-five-hours-daily-to-prevent-tuinkhola-landslides",
+      "published_at": "2026-11-28T01:02:42+05:45",
       "flash": false
     },
     {
-      "title": "८. शीतल निवासमा प्रधानमन्त्रीको २० मिनेट, ‘होल्ड’ अध्यादेशबारे चासो",
+      "title": "आजदेखि मंसिर १५ गतेसम्म काठमाडौंका यी स्थानमा विद्युत् आपूर्ति प्रभावित हुने",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608001/pms-20-minute-stay-at-sheetal-niwas-raises-concerns-over-hold-ordinance",
-      "published_at": "2026-11-27T16:40:28+05:45",
+      "url": "https://www.ratopati.com/story/608074/electricity-supply-to-be-affected-in-these-places-in-kathmandu-from-today-to-november-15",
+      "published_at": "2026-11-28T00:58:00+05:45",
       "flash": false
     },
     {
-      "title": "सप्तकोशी पानीबोट दुर्घटना प्रकरणको छानबिन प्रतिवेदन सार्वजनिक",
+      "title": "बाजुरामा ट्याक्टर दुर्घटना, २ जनाको मृत्यु",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607998/investigation-report-on-saptakoshi-water-boat-accident-made-public",
-      "published_at": "2026-11-27T16:34:18+05:45",
-      "flash": false
-    },
-    {
-      "title": "५. रविले भेटेलगत्तै राष्ट्रपति पौडेल भेट्न प्रधानमन्त्री शाह शीतल निवासमा",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607972/prime-minister-shah-meets-president-poudel-at-sheetal-niwas",
-      "published_at": "2026-11-27T15:26:34+05:45",
-      "flash": false
-    },
-    {
-      "title": "बाढी प्रभावितको पुनर्निर्माण र पुनःस्थापनाका लागि बागमती प्रदेशले ६ अर्ब रुपैयाँ जुटाउने",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607935/bagmati-province-to-raise-rs-6-billion-for-reconstruction-and-rehabilitation-of-flood-victims",
-      "published_at": "2026-11-27T12:48:41+05:45",
-      "flash": false
-    },
-    {
-      "title": "सर्लाहीमा मोटरसाइकल नहरमा खस्दा एक युवकको मृत्यु, एक घाइते",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/607932/a-young-man-died-another-was-injured-when-his-motorcycle-fell-into-a-canal-in-sarlahi",
-      "published_at": "2026-11-27T12:39:58+05:45",
+      "url": "https://www.ratopati.com/story/608060/two-killed-five-injured-in-tractor-accident-in-bajura",
+      "published_at": "2026-11-27T21:50:51+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 7,
+      "candidates": 13,
       "flash": 0,
       "recent": 0
     },
@@ -70,8 +42,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 1,
-      "recent": 7
+      "flash": 0,
+      "recent": 3
     },
     "Kathmandu Post": {
       "ok": true,

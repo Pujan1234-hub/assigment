@@ -51,17 +51,17 @@ jobs:
           test -s "$SRC"
           "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4 "$SRC" dist/aligned.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$KEY" --ks-key-alias fs_feedback --ks-pass "pass:$PASS" \
-            --key-pass "pass:$PASS" --out dist/FloodSafe-Feedback-v1.0.0.apk dist/aligned.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/FloodSafe-Feedback-v1.0.0.apk
-          sha256sum dist/FloodSafe-Feedback-v1.0.0.apk > dist/FloodSafe-Feedback-v1.0.0.sha256
+            --key-pass "pass:$PASS" --out dist/FloodSafe-Feedback-v1.0.1.apk dist/aligned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/FloodSafe-Feedback-v1.0.1.apk
+          sha256sum dist/FloodSafe-Feedback-v1.0.1.apk > dist/FloodSafe-Feedback-v1.0.1.sha256
           rm -f "$KEY" dist/aligned.apk
       - name: Archive APK
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Feedback-v1.0.0-APK
+          name: FloodSafe-Feedback-v1.0.1-APK
           path: |
-            dist/FloodSafe-Feedback-v1.0.0.apk
-            dist/FloodSafe-Feedback-v1.0.0.sha256
+            dist/FloodSafe-Feedback-v1.0.1.apk
+            dist/FloodSafe-Feedback-v1.0.1.sha256
           retention-days: 30
           if-no-files-found: error
       - name: Publish APK release
@@ -69,10 +69,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if gh release view floodsafe-feedback-v1.0.0 >/dev/null 2>&1; then
+          if gh release view floodsafe-feedback-v1.0.1 >/dev/null 2>&1; then
             echo 'Release already exists; retaining original APK signature'
             exit 0
           fi
-          gh release create floodsafe-feedback-v1.0.0 dist/FloodSafe-Feedback-v1.0.0.apk dist/FloodSafe-Feedback-v1.0.0.sha256 \
-            --target "$GITHUB_SHA" --title 'FloodSafe Feedback v1.0.0 — Android Admin' \
-            --notes 'Standalone native PJBUILTS feedback inbox, live existing API, private admin token, search, status change and notes. Original FloodSafe Nepal v0.9.23 is not touched.' --prerelease
+          gh release create floodsafe-feedback-v1.0.1 dist/FloodSafe-Feedback-v1.0.1.apk dist/FloodSafe-Feedback-v1.0.1.sha256 \
+            --target "$GITHUB_SHA" --title 'FloodSafe Feedback v1.0.1 — Android Admin' \
+            --notes 'Standalone native PJBUILTS feedback inbox, new separate feedback API, private admin token, 15-second foreground refresh and opt-in Android-scheduled background notification checks. Not instantaneous server push. A new signing certificate requires uninstalling v1.0.0 first. Original FloodSafe Nepal v0.9.23 is not touched.' --prerelease

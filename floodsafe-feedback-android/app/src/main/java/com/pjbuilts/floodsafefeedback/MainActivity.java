@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public final class MainActivity extends Activity {
-    private static final String API="https://camkoacuokffryyrygda.supabase.co/functions/v1/feedback-api";
+    static final String API="https://tbsbocnqaufrlgbsnzrf.supabase.co/functions/v1/feedback-api";
     private static final String[] STATUS={"new","reviewing","fixed","closed"};
     private static final int NAVY=Color.rgb(16,49,79), INK=Color.rgb(30,51,74), MUTED=Color.rgb(105,126,144), BG=Color.rgb(244,249,251), GOLD=Color.rgb(223,192,128);
     private final ExecutorService io=Executors.newSingleThreadExecutor();
@@ -33,6 +33,10 @@ public final class MainActivity extends Activity {
     private TextView state;
     private EditText search;
     private boolean busy=false;
+    private boolean visible=false;
+    private int session=0;
+    private final android.os.Handler timer=new android.os.Handler(android.os.Looper.getMainLooper());
+    private final Runnable tick=new Runnable(){public void run(){if(!visible)return;if(!token.isEmpty())load();timer.postDelayed(this,15000);}};
 
     @Override public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -40,7 +44,11 @@ public final class MainActivity extends Activity {
         getWindow().setNavigationBarColor(BG);
         showLogin("");
     }
-    @Override protected void onDestroy(){io.shutdownNow();token="";super.onDestroy();}
+    @Override protected void onResume(){super.onResume();visible=true;timer.removeCallbacks(tick);timer.post(tick);}
+    @Override protected void onPause(){visible=false;timer.removeCallbacks(tick);super.onPause();}
+    @Override protected void onDestroy(){session++;timer.removeCallbacks(tick);io.shutdownNow();token="";super.onDestroy();}
+    @Override public void onRequestPermissionsResult(int code,String[] perms,int[] results){super.onRequestPermissionsResult(code,perms,results);if(code==41&&results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED&&!token.isEmpty())enableAlerts();}
+    private void enableAlerts(){try{FeedbackAlerts.enable(this,token,records);Toast.makeText(this,"Background checks enabled (Android schedules them approximately every 15 minutes or later).",Toast.LENGTH_LONG).show();}catch(Exception e){Toast.makeText(this,"Could not enable background checks",Toast.LENGTH_LONG).show();}}
     private int dp(int n){return (int)(getResources().getDisplayMetrics().density*n+.5f);}
     private GradientDrawable bg(int color,int border){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(17));if(border!=0)d.setStroke(dp(1),border);return d;}
     private TextView t(String s,int size,int color,boolean bold){TextView v=new TextView(this);v.setText(s);v.setTextSize(size);v.setTextColor(color);if(bold)v.setTypeface(null,Typeface.BOLD);return v;}
@@ -60,7 +68,7 @@ public final class MainActivity extends Activity {
         page=v();page.setPadding(dp(15),dp(17),dp(15),dp(28));scroll.addView(page);
     }
     private void showLogin(String reason){
-        token="";base("Private owner access · Live submissions");
+        session++;busy=false;token="";base("Private owner access · Live submissions");
         LinearLayout box=card();page.addView(box,p(-1,-2,10));
         box.addView(t("Open your admin inbox",20,INK,true),p(-1,-2,7));
         box.addView(t("Enter the SAME private token used on the FloodSafe Nepal feedback admin webpage. No password is built into this APK.",14,MUTED,false),p(-1,-2,17));
@@ -69,7 +77,7 @@ public final class MainActivity extends Activity {
         field.setPadding(dp(10),dp(8),dp(10),dp(8));field.setBackground(bg(BG,0xffd7e6ef));
         box.addView(field,p(-1,48,12));
         Button open=b("View live feedback",true);box.addView(open,p(-1,48,12));
-        state=t(reason.isEmpty()?"Token stays in memory only; closing the app signs you out.":reason,13,reason.isEmpty()?MUTED:0xffad3434,false);
+        state=t(reason.isEmpty()?"Token stays in memory unless you explicitly enable encrypted background checks. Lock inbox disables them.":reason,13,reason.isEmpty()?MUTED:0xffad3434,false);
         box.addView(state,p(-1,-2,0));
         open.setOnClickListener(view->{String entered=field.getText().toString().trim();if(entered.isEmpty()){state.setText("Please enter your admin token.");return;}token=entered;showInbox();load();});
     }
@@ -80,7 +88,10 @@ public final class MainActivity extends Activity {
         LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(45),1);a.rightMargin=dp(8);
         tools.addView(refresh,a);tools.addView(logout,new LinearLayout.LayoutParams(0,dp(45),1));
         refresh.setOnClickListener(view->load());
-        logout.setOnClickListener(view->{records=new JSONArray();showLogin("Inbox locked.");});
+        logout.setOnClickListener(view->{FeedbackAlerts.disable(this);records=new JSONArray();showLogin("Inbox locked.");});
+        Button alerts=b("Enable background alerts",false);page.addView(alerts,p(-1,45,8));
+        alerts.setOnClickListener(view->{if(busy||token.isEmpty())return;if(android.os.Build.VERSION.SDK_INT>=33&&checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},41);return;}enableAlerts();});
+        Button stopAlerts=b("Disable background alerts",false);page.addView(stopAlerts,p(-1,42,10));stopAlerts.setOnClickListener(view->{FeedbackAlerts.disable(this);Toast.makeText(this,"Background alerts disabled",Toast.LENGTH_SHORT).show();});
         state=t("Loading feedback...",13,MUTED,false);page.addView(state,p(-1,-2,12));
         summary=v();page.addView(summary,p(-1,-2,8));
         LinearLayout filterCard=card();page.addView(filterCard,p(-1,-2,14));
@@ -154,32 +165,32 @@ public final class MainActivity extends Activity {
             .setNegativeButton("Close",null).setPositiveButton("Save changes",(dialog,which)->save(get(j,"id"),STATUS[spinner.getSelectedItemPosition()],note.getText().toString().trim())).show();
     }
     private void load(){
-        if(busy||token.isEmpty())return;busy=true;state.setText("Loading live feedback...");
+        if(busy||token.isEmpty())return;busy=true;final int current=session;final String entered=token;if(records.length()==0)state.setText("Loading live feedback...");
         io.execute(()->{try{
-            Reply r=request("GET",null);
-            if(r.code==401||r.code==403){runOnUiThread(()->{busy=false;showLogin("Incorrect or expired admin token.");});return;}
+            Reply r=request("GET",null,entered);
+            if(r.code==401||r.code==403){runOnUiThread(()->{if(current!=session)return;busy=false;FeedbackAlerts.disable(this);showLogin("Incorrect or expired admin token.");});return;}
             JSONObject obj=new JSONObject(r.body);if(r.code!=200||!obj.optBoolean("ok"))throw new IllegalStateException("HTTP "+r.code+" — server unavailable");
             JSONArray next=obj.optJSONArray("items");if(next==null)next=new JSONArray();final JSONArray result=next;
-            runOnUiThread(()->{busy=false;records=result;state.setText("Live feedback · "+records.length()+" reports");render();});
-        }catch(Exception e){fail("Could not load feedback: "+e.getMessage());}});
+            runOnUiThread(()->{if(current!=session)return;busy=false;boolean changed=!records.toString().equals(result.toString());records=result;state.setText("Live feedback · "+records.length()+" reports");if(changed)render();});
+        }catch(Exception e){fail(current,"Could not load feedback: "+e.getMessage());}});
     }
     private void save(String id,String status,String note){
-        if(busy||id.isEmpty())return;busy=true;state.setText("Saving...");
+        if(busy||id.isEmpty()||token.isEmpty())return;busy=true;final int current=session;final String entered=token;state.setText("Saving...");
         io.execute(()->{try{
             JSONObject body=new JSONObject();body.put("id",id);body.put("status",status);body.put("admin_note",note);
-            Reply r=request("PATCH",body.toString());JSONObject j=new JSONObject(r.body);
-            if(r.code==401||r.code==403){runOnUiThread(()->{busy=false;showLogin("Session expired.");});return;}
+            Reply r=request("PATCH",body.toString(),entered);JSONObject j=new JSONObject(r.body);
+            if(r.code==401||r.code==403){runOnUiThread(()->{if(current!=session)return;busy=false;FeedbackAlerts.disable(this);showLogin("Session expired.");});return;}
             if(r.code<200||r.code>299||!j.optBoolean("ok"))throw new IllegalStateException("Server rejected update: "+r.code);
-            runOnUiThread(()->{busy=false;Toast.makeText(this,"Saved",Toast.LENGTH_SHORT).show();load();});
-        }catch(Exception e){fail("Could not save: "+e.getMessage());}});
+            runOnUiThread(()->{if(current!=session)return;busy=false;Toast.makeText(this,"Saved",Toast.LENGTH_SHORT).show();load();});
+        }catch(Exception e){fail(current,"Could not save: "+e.getMessage());}});
     }
-    private void fail(String message){runOnUiThread(()->{busy=false;if(state!=null)state.setText(message);});}
+    private void fail(int current,String message){runOnUiThread(()->{if(current!=session)return;busy=false;if(state!=null)state.setText(message);});}
     private static final class Reply{final int code;final String body;Reply(int c,String b){code=c;body=b;}}
-    private Reply request(String method,String payload)throws Exception{
+    private Reply request(String method,String payload,String entered)throws Exception{
         HttpURLConnection c=(HttpURLConnection)new URL(API).openConnection();
         try{
             c.setInstanceFollowRedirects(false);c.setConnectTimeout(12000);c.setReadTimeout(15000);c.setRequestMethod(method);
-            c.setRequestProperty("Accept","application/json");c.setRequestProperty("x-admin-token",token);
+            c.setRequestProperty("Accept","application/json");c.setRequestProperty("x-admin-token",entered);
             if(payload!=null){byte[] bytes=payload.getBytes(StandardCharsets.UTF_8);c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");c.setFixedLengthStreamingMode(bytes.length);try(OutputStream out=c.getOutputStream()){out.write(bytes);}}
             int status=c.getResponseCode();InputStream in=status>=400?c.getErrorStream():c.getInputStream();
             if(in==null)return new Reply(status,"{}");

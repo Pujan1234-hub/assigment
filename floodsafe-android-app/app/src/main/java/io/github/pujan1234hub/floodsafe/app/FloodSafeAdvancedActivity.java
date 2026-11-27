@@ -122,7 +122,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
    final int seq=++requestSeq;String url=urlFor(mode);
    if(url==null){summary.setText(tr("GPS अनुमति लिएपछि स्थानीय पूर्वानुमान देखिन्छ।","Enable GPS to see your local forecast."));return;}
    pool.execute(()->{
-     try{JSONObject j=get(url);if("events".equals(newMode))j=nepalEarthquakes(j);final JSONObject response=j;runOnUiThread(()->{
+     try{JSONObject j=get(url);if("events".equals(newMode))j=nepalEarthquakes(j);if("river".equals(newMode)||"rain".equals(newMode))resolveStationDistricts(j,newMode);final JSONObject response=j;runOnUiThread(()->{
        if(seq!=requestSeq||isFinishing()||isDestroyed())return;
        if(mode.equals("river")||mode.equals("rain")){
          activeSource=response.optString("source","Official source unavailable");
@@ -198,6 +198,11 @@ public final class FloodSafeAdvancedActivity extends Activity {
      String r=a==null?"—":number(a,"value")+" mm",f=b==null?"—":number(b,"value")+" m³/s";
      card(day,tr("अनुमानित वर्षा: ","Rain: ")+r+"\n"+tr("अनुमानित नदी बहाव: ","Discharge: ")+f);
    }
+ }
+ private void resolveStationDistricts(JSONObject j,String kind){
+   try{if(earthquakeBoundary==null){try(java.io.InputStream in=getAssets().open("floodsafe-nepal/v24/nepal-districts.geojson");BufferedReader r=new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8))){StringBuilder b=new StringBuilder();String line;while((line=r.readLine())!=null)b.append(line);earthquakeBoundary=new NepalRiverBoundary(b.toString());}}
+   JSONArray rows=j.optJSONArray("river".equals(kind)?"stations":"items");if(rows!=null)for(int i=0;i<rows.length();i++){JSONObject s=rows.optJSONObject(i);if(s==null)continue;String name=earthquakeBoundary.districtAt(s.optDouble("lon",Double.NaN),s.optDouble("lat",Double.NaN));if(!name.isEmpty())s.put("district",name);}
+   }catch(Exception ignored){}
  }
  private JSONObject nepalEarthquakes(JSONObject j)throws Exception{
    if(earthquakeBoundary==null){

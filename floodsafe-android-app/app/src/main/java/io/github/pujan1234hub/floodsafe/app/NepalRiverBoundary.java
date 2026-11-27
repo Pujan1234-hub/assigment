@@ -73,7 +73,7 @@ final class NepalRiverBoundary {
             JSONArray data=geometry.optJSONArray("coordinates");
             if(data==null)continue;
             JSONObject props=f.optJSONObject("properties");String district="";
-            if(props!=null)for(String k:new String[]{"DISTRICT","district","District","DISTRICT_N","district_name","name","NAME_2","DISTRICT_NAME"}){String candidate=props.optString(k,"").trim();if(!candidate.isEmpty()&&!candidate.equals("null")){district=candidate;break;}}
+            if(props!=null)for(String k:new String[]{"nameEn","DISTRICT","district","District","DISTRICT_N","district_name","name","NAME_2","DISTRICT_NAME"}){String candidate=props.optString(k,"").trim();if(!candidate.isEmpty()&&!candidate.equals("null")){district=candidate;break;}}
             if("Polygon".equals(type))add(data,district);
             if("MultiPolygon".equals(type))for(int p=0;p<data.length();p++)add(data.optJSONArray(p),district);
         }

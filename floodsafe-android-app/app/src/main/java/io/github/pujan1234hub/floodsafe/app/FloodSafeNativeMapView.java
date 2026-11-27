@@ -743,7 +743,7 @@ final class FloodSafeNativeMapView extends FrameLayout {
         try {
             JSONArray f = new JSONArray();
             for (StationDot s : list) {
-                String g = normalizeStage(s.stage);
+                String g = s.stage==null||"unknown".equals(s.stage)||"stale".equals(s.stage)?"stale":normalizeStage(s.stage);
                 if (!group.equals(g)) continue;
                 f.put(pointFeature(s.lon, s.lat, s.name));
             }

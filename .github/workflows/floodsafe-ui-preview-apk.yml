@@ -156,7 +156,14 @@ jobs:
           set -euo pipefail
           APK=floodsafe-android-app/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
-          unzip -l "$APK" | grep -q "floodsafe_soft_chime.wav"
+          python3 - "$APK" <<'PY'
+          import sys, zipfile, pathlib, hashlib
+          expected=pathlib.Path("floodsafe-android-app/app/src/main/res/raw/floodsafe_soft_chime.wav").read_bytes()
+          with zipfile.ZipFile(sys.argv[1]) as apk:
+              matches=[i.filename for i in apk.infolist() if i.file_size==len(expected) and apk.read(i)==expected]
+          assert matches, "Soft chime audio bytes missing from APK"
+          print("Verified soft chime:", matches, hashlib.sha256(expected).hexdigest())
+          PY
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > preview-badging.txt
           grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview16'" preview-badging.txt

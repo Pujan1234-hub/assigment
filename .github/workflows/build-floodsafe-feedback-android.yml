@@ -1,0 +1,78 @@
+name: Build FloodSafe Feedback Android APK
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'floodsafe-feedback-android/**'
+      - '.github/workflows/build-floodsafe-feedback-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Android SDK
+        run: |
+          set -euo pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+      - name: Verify isolated APK and no embedded token
+        run: |
+          set -euo pipefail
+          ! grep -R -nE 'ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9]{20,}|BEGIN PRIVATE KEY|service_role' floodsafe-feedback-android/app/src
+          grep -q 'com.pjbuilts.floodsafefeedback' floodsafe-feedback-android/app/build.gradle
+          grep -q 'android:allowBackup="false"' floodsafe-feedback-android/app/src/main/AndroidManifest.xml
+      - name: Compile, lint and assemble
+        run: gradle -p floodsafe-feedback-android :app:lintRelease :app:assembleRelease --no-daemon --stacktrace
+      - name: Sign installable APK
+        run: |
+          set -euo pipefail
+          KEY=/tmp/floodsafe-feedback.p12
+          PASS="$(openssl rand -hex 24)"
+          keytool -genkeypair -v -storetype PKCS12 -keystore "$KEY" -alias fs_feedback -keyalg RSA -keysize 3072 -validity 3650 \
+            -dname 'CN=FloodSafe Feedback,OU=PJBUILTS,O=PJBUILTS,C=GB' -storepass "$PASS" -keypass "$PASS" >/dev/null 2>&1
+          mkdir -p dist
+          SRC=floodsafe-feedback-android/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s "$SRC"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -p -f 4 "$SRC" dist/aligned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$KEY" --ks-key-alias fs_feedback --ks-pass "pass:$PASS" \
+            --key-pass "pass:$PASS" --out dist/FloodSafe-Feedback-v1.0.0.apk dist/aligned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/FloodSafe-Feedback-v1.0.0.apk
+          sha256sum dist/FloodSafe-Feedback-v1.0.0.apk > dist/FloodSafe-Feedback-v1.0.0.sha256
+          rm -f "$KEY" dist/aligned.apk
+      - name: Archive APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloodSafe-Feedback-v1.0.0-APK
+          path: |
+            dist/FloodSafe-Feedback-v1.0.0.apk
+            dist/FloodSafe-Feedback-v1.0.0.sha256
+          retention-days: 30
+          if-no-files-found: error
+      - name: Publish APK release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if gh release view floodsafe-feedback-v1.0.0 >/dev/null 2>&1; then
+            echo 'Release already exists; retaining original APK signature'
+            exit 0
+          fi
+          gh release create floodsafe-feedback-v1.0.0 dist/FloodSafe-Feedback-v1.0.0.apk dist/FloodSafe-Feedback-v1.0.0.sha256 \
+            --target "$GITHUB_SHA" --title 'FloodSafe Feedback v1.0.0 — Android Admin' \
+            --notes 'Standalone native PJBUILTS feedback inbox, live existing API, private admin token, search, status change and notes. Original FloodSafe Nepal v0.9.23 is not touched.' --prerelease

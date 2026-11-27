@@ -129,7 +129,7 @@ public final class FloodSafeMapActivity extends Activity {
             try{
                 JSONObject feeds=OfficialStationFeeds.rivers(getApplicationContext());
                 String source=feeds.optString("activeObservationSource","none");
-                final int watchCount=feeds.optInt("watchCount",-1);
+                final int portalWatchCount=feeds.optInt("watchCount",-1);
                 JSONArray arr=feeds.optJSONArray("results");
                 if(arr==null)arr=feeds.optJSONArray("data");
                 List<MapStation> points=new ArrayList<>();
@@ -186,7 +186,7 @@ public final class FloodSafeMapActivity extends Activity {
                     String feed="dhm".equals(currentObservationSource)?(english?"DHM fallback":"DHM वैकल्पिक स्रोत"):
                         "bipad".equals(currentObservationSource)?(english?"BIPAD primary":"BIPAD मुख्य स्रोत"):
                         (english?"No current official reading":"सरकारी ताजा मापन छैन");
-                    status.setText(feed+(watchCount>=0?" · BIPAD River Watch "+watchCount:"")+"\n"+points.size()+(english?" stations loaded":" स्टेशन लोड")+" · 📍 "+nativeMap.stationCount()+
+                    status.setText(feed+(portalWatchCount>=0?" · BIPAD River Watch "+portalWatchCount:"")+"\n"+points.size()+(english?" stations loaded":" स्टेशन लोड")+" · 📍 "+nativeMap.stationCount()+
                         (english?" on map":" नक्सामा")+" · 🔴 "+dangerCount+" 🟠 "+warningCount+" 🟡 "+watchCount);
                 });
             }catch(Exception e){

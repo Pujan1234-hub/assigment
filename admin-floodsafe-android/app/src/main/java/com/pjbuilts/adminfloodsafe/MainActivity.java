@@ -478,7 +478,7 @@ public final class MainActivity extends Activity {
                     if(removeButton!=null)removeButton.setEnabled(true);
                     if(pushBetaButton!=null)pushBetaButton.setEnabled(true);
                     if(pushPreviewButton!=null)pushPreviewButton.setEnabled(true);
-                if(pushDeviceButton!=null)pushDeviceButton.setEnabled(true);
+                    if(pushDeviceButton!=null){pushDeviceButton.setEnabled(true);}
                     if(error!=null)error.setText("⚠ "+text);
                 });
             }

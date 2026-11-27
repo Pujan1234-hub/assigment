@@ -318,7 +318,7 @@ public final class SathiWakeService extends Service implements LocationListener 
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         String shown = query.length() > 100 ? query.substring(0, 100) + "…" : query;
         android.app.Notification.Builder builder = Build.VERSION.SDK_INT >= 26
-                ? new android.app.Notification.Builder(this, WAKE_CHANNEL_ID)
+                ? new android.app.Notification.Builder(this, FloodSafeSounds.channel(this,false,false))
                 : new android.app.Notification.Builder(this);
         android.app.Notification n = builder
                 .setSmallIcon(R.drawable.ic_floodsafe)

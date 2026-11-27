@@ -43,11 +43,31 @@ public final class FloodSafeMessagingService extends FirebaseMessagingService {
         if(data.containsKey("title"))title=data.get("title");if(data.containsKey("body"))body=data.get("body");
         if(riverAlert&&Double.isFinite(acceptedRiverDistanceKm)){String stage=safe(data.get("stage")),river=safe(data.get("river_name")),level=safe(data.get("water_level"));title="danger".equals(stage)?"🚨 नजिकको नदी खतरा चेतावनी":"⚠️ नजिकको नदी चेतावनी";body=(river.isEmpty()?"Official river station":river)+" • "+String.format(Locale.US,"%.1f km",acceptedRiverDistanceKm)+(acceptedByRiverGeometry?" नदी किनारबाट":"")+(level.isEmpty()?"":" • "+level+" m")+" • BIPAD/DHM official";}
         NotificationManager manager=getSystemService(NotificationManager.class);if(manager==null)return;
-        boolean dangerAlarm=riverAlert&&"danger".equals(safe(data.get("stage")))&&acceptedByRiverGeometry&&Double.isFinite(acceptedRiverDistanceKm)&&acceptedRiverDistanceKm<=2d;
+        boolean dangerAlarm=riverAlert&&"danger".equals(safe(data.get("stage")))&&acceptedByRiverGeometry&&Double.isFinite(acceptedRiverDistanceKm)&&acceptedRiverDistanceKm<=2d&&confirmCurrentDanger(data);
         String alertChannel=FloodSafeSounds.channel(this,dangerAlarm,riverAlert);
         Intent launch=new Intent(this, NativeFullActivity.class).putExtra(NativeFullActivity.EXTRA_OPEN_HOME,true).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);PendingIntent open=PendingIntent.getActivity(this,0,launch,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);android.app.Notification.Builder builder=Build.VERSION.SDK_INT>=26?new android.app.Notification.Builder(this,alertChannel):new android.app.Notification.Builder(this);android.app.Notification notification=builder.setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(title).setContentText(body).setStyle(new android.app.Notification.BigTextStyle().bigText(body)).setAutoCancel(true).setContentIntent(open).build();manager.notify((int)(System.currentTimeMillis()&0x7fffffff),notification);
     }
 
+    // A pushed stage may lag behind the official portal. Only play the
+    // emergency tone when the same station still reports recent DANGER.
+    private boolean confirmCurrentDanger(Map<String,String> data){
+        try{
+            org.json.JSONObject feed=OfficialStationFeeds.rivers();
+            String source=feed.optString("activeObservationSource");
+            if(!"bipad".equals(source)&&!"dhm".equals(source))return false;
+            org.json.JSONArray rows=feed.optJSONArray("results");
+            String station=safe(data.get("station_id"));
+            long now=System.currentTimeMillis();
+            if(rows==null||station.isEmpty())return false;
+            for(int i=0;i<rows.length();i++){
+                org.json.JSONObject row=rows.optJSONObject(i);
+                if(row==null||!station.equals(row.optString("stationSeriesId")))continue;
+                long at=parseTime(row.optString("waterLevelOn"));
+                return at>0&&now-at<=MAX_RIVER_AGE_MS&&at-now<=FUTURE_TOLERANCE_MS&&Double.isFinite(row.optDouble("waterLevel",Double.NaN))&&"danger".equals(OfficialStationFeeds.officialStage(row.optString("_officialStatus")));
+            }
+        }catch(Exception ignored){}
+        return false;
+    }
     private boolean acceptNearbyRiver(Map<String,String> data){
         double stationLat=number(data.get("lat")),stationLon=number(data.get("lon"));if(!Double.isFinite(stationLat)||!Double.isFinite(stationLon)||!insideNepal(stationLat,stationLon))return false;
         SharedPreferences monitor=getSharedPreferences(RainAlertWorker.PREFS,Context.MODE_PRIVATE);if(!monitor.getBoolean("enabled",false)||!monitor.getBoolean("follow_device",false))return false;

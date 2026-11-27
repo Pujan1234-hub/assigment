@@ -82,10 +82,12 @@ public final class FeedbackAlerts extends JobService {
   }
  }
  static synchronized void onForeground(Context c,JSONArray items){
-  if(!enabled(c))return;
+  notifyAt(c,Instant.parse(latest(items)));
+ }
+ static synchronized void notifyAt(Context c,Instant now){
+  if(!enabled(c)||TokenStore.read(c).isEmpty())return;
   try{
    Instant prev=Instant.parse(prefs(c).getString("watermark",Instant.EPOCH.toString()));
-   Instant now=Instant.parse(latest(items));
    if(!now.isAfter(prev))return;
    if(Build.VERSION.SDK_INT>=33&&c.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)return;
    NotificationManager nm=c.getSystemService(NotificationManager.class);

@@ -50,7 +50,7 @@ public final class MainActivity extends Activity {
     @Override protected void onDestroy(){session++;timer.removeCallbacks(tick);io.shutdownNow();token="";super.onDestroy();}
     @Override public void onRequestPermissionsResult(int code,String[] perms,int[] results){super.onRequestPermissionsResult(code,perms,results);if(code==41&&results.length>0&&results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED&&!token.isEmpty())enableAlerts();}
     private TextView alertState;
-    private void showAlertState(){if(alertState!=null)alertState.setText(FeedbackAlerts.enabled(this)?"Background checks: enabled · about 15 min or later":"Background checks: disabled");}
+    private void showAlertState(){if(alertState!=null)alertState.setText(FeedbackAlerts.enabled(this)?"Push: "+FeedbackPushService.status()+" · 15 min fallback":"Background checks: disabled");}
     private void enableAlerts(){try{FeedbackAlerts.enable(this,token,records);FeedbackPushService.sync(this,token,true);showAlertState();Toast.makeText(this,"Background checks enabled (Android schedules them approximately every 15 minutes or later).",Toast.LENGTH_LONG).show();}catch(Exception e){showAlertState();Toast.makeText(this,"Background checks failed: "+e.getClass().getSimpleName(),Toast.LENGTH_LONG).show();}}
     private int dp(int n){return (int)(getResources().getDisplayMetrics().density*n+.5f);}
     private GradientDrawable bg(int color,int border){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(17));if(border!=0)d.setStroke(dp(1),border);return d;}
@@ -175,7 +175,7 @@ public final class MainActivity extends Activity {
             if(r.code==401||r.code==403){runOnUiThread(()->{if(current!=session)return;busy=false;TokenStore.clear(this);FeedbackAlerts.disable(this);showLogin("Incorrect or expired admin token.");});return;}
             JSONObject obj=new JSONObject(r.body);if(r.code!=200||!obj.optBoolean("ok"))throw new IllegalStateException("HTTP "+r.code+" — server unavailable");
             JSONArray next=obj.optJSONArray("items");if(next==null)next=new JSONArray();final JSONArray result=next;
-            runOnUiThread(()->{if(current!=session)return;busy=false;boolean remembered=TokenStore.save(this,entered);boolean changed=!records.toString().equals(result.toString());records=result;if(visible){FeedbackAlerts.onForeground(this,result);if(FeedbackAlerts.enabled(this))FeedbackPushService.sync(this,entered,false);}state.setText("Live feedback · "+records.length()+" reports"+(remembered?"":" · Token could not be saved"));if(changed)render();});
+            runOnUiThread(()->{if(current!=session)return;busy=false;boolean remembered=TokenStore.save(this,entered);boolean changed=!records.toString().equals(result.toString());records=result;if(visible){FeedbackAlerts.onForeground(this,result);if(FeedbackAlerts.enabled(this))FeedbackPushService.sync(this,entered,false);showAlertState();}state.setText("Live feedback · "+records.length()+" reports"+(remembered?"":" · Token could not be saved"));if(changed)render();});
         }catch(Exception e){fail(current,"Could not load feedback: "+e.getMessage());}});
     }
     private void save(String id,String status,String note){

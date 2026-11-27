@@ -46,7 +46,7 @@ async function pushFeedback(id:string){
  const auth=await fetch('https://oauth2.googleapis.com/token',{method:'POST',body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion}),signal:AbortSignal.timeout(8000)});
  if(!auth.ok)throw Error('FCM OAuth failed');
  const access=(await auth.json()).access_token;
- const response=await fetch('https://fcm.googleapis.com/v1/projects/floodsafe-nepal/messages:send',{method:'POST',headers:{Authorization:'Bearer '+access,'Content-Type':'application/json'},body:JSON.stringify({message:{token:rows[0].fcm_token,data:{kind:'website_feedback',id,created_at:reports[0].created_at},android:{priority:'high',ttl:'3600s'}}}),signal:AbortSignal.timeout(8000)});
+ const response=await fetch('https://fcm.googleapis.com/v1/projects/floodsafe-nepal/messages:send',{method:'POST',headers:{Authorization:'Bearer '+access,'Content-Type':'application/json'},body:JSON.stringify({message:{token:rows[0].fcm_token,data:{kind:'website_feedback',id,created_at:reports[0].created_at},android:{priority:'HIGH',ttl:'3600s',restricted_package_name:'com.pjbuilts.floodsafefeedback'}}}),signal:AbortSignal.timeout(8000)});
  if(!response.ok)throw Error('FCM send HTTP '+response.status);
 }
 async function limitedBody(req:Request){
@@ -83,7 +83,7 @@ Deno.serve(async(req)=>{
     if(device.length<20||device.length>4096||!(/^[A-Za-z0-9_:\-]+$/).test(device))return reply(400,{ok:false,error:'Invalid device token'});
     const resp=await fetch(base+'/rest/v1/fs_feedback_push_device?on_conflict=slot',{method:'POST',headers:{apikey:key,...(key.startsWith('sb_secret_')?{}:{Authorization:'Bearer '+key}),'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},body:JSON.stringify({slot:true,fcm_token:device,admin_hash:authHash}),signal:AbortSignal.timeout(8000)});
     if(!resp.ok)throw Error('Registration failed');
-    return reply(200,{ok:true});
+    return reply(200,{ok:true,push_configured:Boolean(Deno.env.get('FEEDBACK_FCM_SERVICE_ACCOUNT'))});
    }
    if(typeof b.id!=='string'||!(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i).test(b.id)||!statuses.has(b.status))return reply(400,{ok:false,error:'Invalid ID or status'});
    const items=await db(table+'?id=eq.'+b.id+'&select='+fields,'PATCH',{status:b.status,admin_note:str(b.admin_note,4000)});

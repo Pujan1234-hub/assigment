@@ -37,7 +37,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
  private EditText search;
  private TextView summary;
  private JSONArray entries;
- private String mode="river";
+ private String mode="river", activeSource="";
  private boolean english;
  private double lat=Double.NaN,lon=Double.NaN;
  private int requestSeq=0;
@@ -49,7 +49,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
   lat=getIntent().getDoubleExtra("lat",Double.NaN);
   lon=getIntent().getDoubleExtra("lon",Double.NaN);
   getWindow().setStatusBarColor(Color.rgb(224,243,252));
-  LinearLayout page=new LinearLayout(this);page.setOrientation(LinearLayout.VERTICAL);page.setPadding(dp(12),dp(12),dp(12),0);page.setBackgroundColor(Color.rgb(232,246,253));
+  LinearLayout page=new LinearLayout(this);page.setOrientation(LinearLayout.VERTICAL);page.setPadding(dp(12),dp(12),dp(12),0);page.setBackgroundColor(Color.rgb(245,242,233));
   Button back=button("← "+tr("गृह","Home"));back.setOnClickListener(v->finish());page.addView(back,new LinearLayout.LayoutParams(-1,dp(45)));
   TextView title=label(tr("FloodSafe Nepal · उन्नत जानकारी","FloodSafe Nepal · Advanced"),22,true);page.addView(title);
   TextView desc=label(tr("नदी, वर्षा र पूर्वानुमानको आधिकारिक/मोडेल विवरण","River, rainfall, forecasts and verified source details"),11,false);page.addView(desc);
@@ -86,7 +86,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
  }
  private TextView label(String val,int sp,boolean bold){
    TextView t=new TextView(this);t.setText(val);t.setTextColor(bold?ink:muted);t.setTextSize(sp);
-   t.setPadding(dp(12),dp(10),dp(8),dp(10));
+   t.setPadding(dp(10),dp(6),dp(8),dp(6));
    if(bold)t.setTypeface(null,android.graphics.Typeface.BOLD);
    return t;
  }
@@ -105,8 +105,8 @@ public final class FloodSafeAdvancedActivity extends Activity {
    boolean filtered=mode.equals("river")||mode.equals("rain");search.setVisibility(filtered?View.VISIBLE:View.GONE);search.setText("");
  }
  private String urlFor(String k){
-   if(k.equals("river"))return API+"floodsafe-station-details?kind=stations";
-   if(k.equals("rain"))return API+"floodsafe-dhm-stations?kind=rain";
+   if(k.equals("river"))return API+"floodsafe-live-preview?kind=stations";
+   if(k.equals("rain"))return API+"floodsafe-live-preview?kind=rain";
    if(k.equals("warning"))return API+"floodsafe-official-weather";
    if(k.equals("events"))return API+"floodsafe-live-feeds?kind=quake";
    if(Double.isFinite(lat)&&Double.isFinite(lon))
@@ -121,6 +121,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
      try{JSONObject j=get(url);runOnUiThread(()->{
        if(seq!=requestSeq||isFinishing()||isDestroyed())return;
        if(mode.equals("river")||mode.equals("rain")){
+         activeSource=j.optString("source","Official source unavailable");
          entries=j.optJSONArray(mode.equals("river")?"stations":"items");
          if(entries==null)entries=new JSONArray();renderEntries();
        }else if(mode.equals("forecast"))renderForecast(j);
@@ -149,7 +150,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
      box.setPadding(dp(5),dp(4),dp(5),dp(4));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,dp(5),0,dp(5));holder.addView(box,p);
      box.setOnClickListener(v->showStation(station));
    }
-   summary.setText(tr("जम्मा "+found+" स्टेशन · एउटा छानेर विवरण हेर्नुहोस्","Found "+found+" stations · Tap one for details"));
+   summary.setText(activeSource+" · "+tr("जम्मा "+found+" स्टेशन · विवरण हेर्नुहोस्","Found "+found+" stations · Tap for details"));
    if(found>8)card(tr("स्टेशन खोज्नुहोस्","Search stations"),tr("माथि जिल्ला वा स्टेशनको नाम लेख्दा सूची छोटिन्छ।","Type a district or station name above to narrow results."));
  }
  private static String number(JSONObject j,String key){
@@ -171,7 +172,7 @@ public final class FloodSafeAdvancedActivity extends Activity {
      StringBuilder sb=new StringBuilder(tr("जिल्ला: ","District: ")+district+"\n");
      JSONObject hours=r.optJSONObject("rainfallHours");
      if(hours!=null)for(int n:new int[]{1,3,6,12,24})sb.append(n).append("h: ").append(number(hours,String.valueOf(n))).append(" mm\n");
-     sb.append(tr("मापन समय: ","Observed: ")).append(r.optString("observedAt","—"));
+     sb.append(tr("मापन समय: ","Observed: ")).append(r.optString("observedAt","—")).append("\n").append(tr("स्रोत: ","Source: ")).append(r.optString("source",activeSource));
      text=sb.toString();
    }
    card(name,text);

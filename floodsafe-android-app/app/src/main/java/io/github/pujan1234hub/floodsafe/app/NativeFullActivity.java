@@ -258,7 +258,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
 
     private View buildScreen(){
         root=new FrameLayout(this);root.setBackgroundColor(Color.rgb(8,32,57));
-        scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setClipToPadding(false);scroll.setPadding(0,0,0,dp(78));scroll.setBackgroundColor(Color.rgb(239,237,229));
+        scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setClipToPadding(false);scroll.setPadding(0,0,0,dp(78));scroll.setBackgroundColor(Color.rgb(245,242,233));
         content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(dp(10),dp(6),dp(10),dp(10));
         scroll.addView(content,new ScrollView.LayoutParams(-1,-2));root.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
         scroll.setOnScrollChangeListener((v,x,y,oldX,oldY)->{main.removeCallbacks(mapVisibilityTick);main.postDelayed(mapVisibilityTick,160L);});
@@ -270,13 +270,13 @@ public final class NativeFullActivity extends Activity implements LocationListen
         alarmTitle=text(t("⚠️ नदी चेतावनी","⚠️ River warning"),18,true,Color.rgb(146,34,56));alarmText=text("",12,true,Color.rgb(146,34,56));alarmBanner.addView(alarmTitle);alarmBanner.addView(alarmText);alarmBanner.setVisibility(View.GONE);homePanel.addView(alarmBanner,lp(-1,-2,0,0,0,6));
         homePanel.addView(riskCard());
         TextView outside=text("",11,true,Color.rgb(40,85,111));outside.setId(android.R.id.hint);outside.setPadding(dp(10),dp(6),dp(10),dp(6));outside.setBackground(round(Color.rgb(239,249,255),12,Color.rgb(159,205,232),1));outside.setMaxLines(2);outside.setEllipsize(android.text.TextUtils.TruncateAt.END);outside.setOnClickListener(v->new AlertDialog.Builder(this).setTitle(t("निगरानी जानकारी","Monitoring information")).setMessage(outside.getText()).setPositiveButton("OK",null).show());homePanel.addView(outside,lp(-1,-2,0,0,0,6));
-        homePanel.addView(quickActions(),lp(-1,dp(64),0,0,0,7));
+        homePanel.addView(quickActions(),lp(-1,dp(58),0,0,0,6));
         mapAnchor=mapCard();homePanel.addView(mapAnchor);
         governmentAnchor=governmentCard();homePanel.addView(governmentAnchor);
         newsAnchor=newsCard();homePanel.addView(newsAnchor);
         detailPanel=new LinearLayout(this);detailPanel.setOrientation(LinearLayout.VERTICAL);content.addView(detailPanel);detailPanel.setVisibility(View.GONE);
         Button back=button(t("← गृहपृष्ठ","← Home"));back.setOnClickListener(v->showHomeDashboard());detailBack=back;detailPanel.addView(back,lp(-1,dp(44),0,0,0,8));
-        Button advanced=button(t("✨ उन्नत जानकारी · नदी, वर्षा, बाढी, NASA र चेतावनी","✨ Advanced · Rivers, Rain, Flood, NASA & Alerts"));advanced.setOnClickListener(v->openAdvancedPreview());advancedAnchor=advanced;detailPanel.addView(advanced,lp(-1,dp(56),0,0,0,8));
+        Button advanced=button(t("✨ उन्नत जानकारी · नदी, वर्षा, बाढी, NASA र चेतावनी","✨ Advanced · Rivers, Rain, Flood, NASA & Alerts"));advanced.setOnClickListener(v->openAdvancedPreview());advancedAnchor=advanced;detailPanel.addView(advanced,lp(-1,dp(48),0,0,0,6));
         rainAnchor=rainGaugeCard();detailPanel.addView(rainAnchor);
         LinearLayout forecast=card();forecast.addView(text(t("७ दिनको वर्षा पूर्वानुमान","7-day rainfall forecast"),17,true,Color.rgb(16,39,70)));miniForecast.setBackground(round(Color.rgb(19,53,77),15,Color.TRANSPARENT,0));forecast.addView(miniForecast,lp(-1,dp(134),0,6,0,0));forecastAnchor=forecast;detailPanel.addView(forecast);
         nearSection=nearCard();LinearLayout riverGroup=new LinearLayout(this);riverGroup.setOrientation(LinearLayout.VERTICAL);riverGroup.addView(nearSection);nationalAnchor=nationalCard();riverGroup.addView(nationalAnchor);detailPanel.addView(riverGroup);humanCard=humanCard();detailPanel.addView(humanCard);privacyAnchor=privacyCard();detailPanel.addView(privacyAnchor);
@@ -340,7 +340,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         Button open=smallButton(t("पूरा नक्सा ↗","Full map ↗"));open.setOnClickListener(v->openMapScreen());bar.addView(open,new LinearLayout.LayoutParams(dp(104),dp(42)));c.addView(bar);
         homeStationPreview=new HomeStationPreview();homeStationPreview.setContentDescription(t("आधिकारिक नदी स्टेशनको नक्सा खोल्नुहोस्","Open official river station map"));homeStationPreview.setOnClickListener(v->openMapScreen());c.addView(homeStationPreview,lp(-1,-2,0,3,0,3));
         mapSub=text("",10,false,Color.rgb(204,225,233));c.addView(mapSub);
-        TextView legend=text(t("🔴 खतरा   🟠 चेतावनी   🟡 निगरानी   🟢 सामान्य   ⚪ अज्ञात","🔴 Danger   🟠 Warning   🟡 Alert   🟢 Normal   ⚪ Unknown"),10,true,Color.WHITE);c.addView(legend,lp(-1,-2,0,dp(4),0,0));
+        TextView legend=text(t("🔴 खतरा   🟠 चेतावनी   🟡 निगरानी   🔵 सामान्य   ⚪ अज्ञात","🔴 Danger   🟠 Warning   🟡 Alert   🔵 Normal   ⚪ Unknown"),10,true,Color.WHITE);c.addView(legend,lp(-1,-2,0,dp(4),0,0));
         mapHint=text("",10,false,Color.rgb(188,211,223));c.addView(mapHint,lp(-1,-2,0,2,0,0));
         return c;
     }
@@ -355,7 +355,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);LinearLayout heading=card();heading.addView(text(t("अन्य सुविधाहरू","More features"),23,true,Color.rgb(16,39,70)));heading.addView(text(t("आवश्यक जानकारी छानेर हेर्नुहोस्","Choose the information you need"),12,false,Color.rgb(70,101,122)));panel.addView(heading);
         String[] labels={t("🌧 वर्षा स्टेशन","🌧 Rain gauge"),t("☁ ७ दिनको पूर्वानुमान","☁ 7-day forecast"),t("🌊 जिल्ला नदी स्टेशन","🌊 District rivers"),t("⚠ सरकारी सूचना","⚠ Government notices"),t("📚 समाचार / ज्ञान","📚 News / knowledge"),t("✚ विपद् विवरण","✚ Disaster status"),t("🛰 उन्नत / NASA","🛰 Advanced / NASA"),"🤖 SATHI",t("🔒 गोपनीयता","🔒 Privacy")};
         Runnable[] actions={()->smoothTo(rainAnchor),()->smoothTo(forecastAnchor),()->smoothTo(nationalAnchor),()->smoothTo(governmentAnchor),()->smoothTo(newsAnchor),()->smoothTo(humanCard),()->openAdvancedPreview(),()->showSathiDialog(null),()->smoothTo(privacyAnchor)};
-        for(int i=0;i<labels.length;i+=2){LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);for(int j=i;j<Math.min(i+2,labels.length);j++){Button b=button(labels[j]);b.setTextSize(14);b.setBackground(round(Color.rgb(249,244,232),16,Color.rgb(214,218,206),1));Runnable action=actions[j];b.setOnClickListener(v->action.run());row.addView(b,weight());}if(i+1==labels.length){View space=new View(this);row.addView(space,weight());}panel.addView(row,lp(-1,dp(66),0,0,0,7));}
+        for(int i=0;i<labels.length;i+=2){LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);for(int j=i;j<Math.min(i+2,labels.length);j++){Button b=button(labels[j]);b.setTextSize(14);b.setBackground(round(Color.rgb(249,244,232),16,Color.rgb(214,218,206),1));Runnable action=actions[j];b.setOnClickListener(v->action.run());row.addView(b,weight());}if(i+1==labels.length){View space=new View(this);row.addView(space,weight());}panel.addView(row,lp(-1,dp(57),0,0,0,6));}
         return panel;
     }
     private void showPreviewMore(){homePanel.setVisibility(View.GONE);detailPanel.setVisibility(View.GONE);morePanel.setVisibility(View.VISIBLE);selectDashboardNav(4);scroll.scrollTo(0,0);}
@@ -370,11 +370,11 @@ public final class NativeFullActivity extends Activity implements LocationListen
     }
     private View rainGaugeCard(){
         LinearLayout c=card();
-        rainGaugeTitle=text(t("🌧️ GPS नजिकको DHM वर्षामापक","🌧️ Nearest DHM rain gauge"),19,true,Color.rgb(17,50,77));
+        rainGaugeTitle=text(t("🌧️ GPS नजिकको वर्षामापक","🌧️ Nearest official rain gauge"),19,true,Color.rgb(17,50,77));
         rainGaugeInfo=text(t("नेपालको location लिएपछि नजिकको आधिकारिक स्टेशन जाँचिन्छ।",
                             "The closest official rain gauge is checked when Nepal GPS is available."),13,true,Color.rgb(47,80,104));
-        rainGaugeHint=text(t("यो Open-Meteo अनुमान होइन; उपलब्ध भए DHM को मापन र मिति देखिन्छ।",
-                            "Actual DHM observation, when available; separate from Open-Meteo model."),11,false,Color.rgb(102,132,151));
+        rainGaugeHint=text(t("यो Open-Meteo अनुमान होइन; उपलब्ध भए आधिकारिक मापन र मिति देखिन्छ।",
+                            "Actual official observation, when available; separate from Open-Meteo model."),11,false,Color.rgb(102,132,151));
         c.addView(rainGaugeTitle);
         c.addView(rainGaugeInfo,lp(-1,-2,0,dp(12),0,0));
         c.addView(rainGaugeHint,lp(-1,-2,0,dp(8),0,0));
@@ -383,8 +383,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private void refreshNearbyRainGauge(){
         if(rainGaugeInfo==null)return;
         if(!isNepal(lat,lon)){
-            rainGaugeInfo.setText(t("नेपालभित्र GPS हुँदा मात्र DHM वर्षामापकसँग दूरी तुलना गर्न सकिन्छ।",
-                                    "Nearest DHM rain gauge applies only to a GPS location within Nepal."));
+            rainGaugeInfo.setText(t("नेपालभित्र GPS हुँदा मात्र आधिकारिक वर्षामापकसँग दूरी तुलना गर्न सकिन्छ।",
+                                    "Nearest official rain gauge applies only to a GPS location within Nepal."));
             rainGaugeHint.setText(t("यहाँको मौसम भने Open-Meteo बाट हेर्न सकिन्छ।",
                                    "Your local weather forecast is available separately from Open-Meteo."));
             return;
@@ -394,8 +394,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
         if(now-lastRainGaugeRequestAt<10L*60L*1000L&&
            Double.isFinite(lastRainGaugeLat)&&distanceBetweenKm(targetLat,targetLon,lastRainGaugeLat,lastRainGaugeLon)<3d)return;
         lastRainGaugeRequestAt=now;lastRainGaugeLat=targetLat;lastRainGaugeLon=targetLon;
-        rainGaugeInfo.setText(t("DHM को नजिकको वास्तविक वर्षामापक जाँच हुँदैछ…",
-                                "Checking the nearest real DHM rain gauge…"));
+        rainGaugeInfo.setText(t("नजिकको वास्तविक वर्षामापक जाँच हुँदैछ…",
+                                "Checking the nearest official rain gauge…"));
         io.execute(()->{
             try{
                 JSONObject root=OfficialStationFeeds.rainfall();
@@ -414,8 +414,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
                     // Ignore a reply for an older GPS location.
                     if(distanceBetweenKm(lat,lon,targetLat,targetLon)>3d)return;
                     if(station==null){
-                        rainGaugeInfo.setText(t("अहिले पुष्टि भएको DHM वर्षा मापन उपलब्ध छैन।",
-                                            "No currently verified DHM rainfall observation available."));
+                        rainGaugeInfo.setText(t("अहिले पुष्टि भएको आधिकारिक वर्षा मापन उपलब्ध छैन।",
+                                            "No currently verified official rainfall observation available."));
                         rainGaugeHint.setText(t("API उपलब्ध नभए अनुमानलाई मापन भनेर देखाइँदैन।",
                                              "A forecast is not substituted for a missing gauge reading."));
                         return;
@@ -424,7 +424,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
                     double amount=station.optDouble("rainfall",Double.NaN);
                     String amt=Double.isFinite(amount)?String.format(Locale.US,"%.1f mm",amount):"—";
                     rainGaugeInfo.setText("📍 "+name+" · "+String.format(Locale.US,"%.1f km",km)+"\n🌧 "+amt);
-                    rainGaugeHint.setText((english?"DHM actual rain station · Observed: ":"DHM वास्तविक वर्षामापक · मापन: ")+station.optString("observedAt","—")+
+                    rainGaugeHint.setText(station.optString("source","Official")+" · "+(english?"Observed: ":"मापन: ")+station.optString("observedAt","—")+
                        (km>50d?t("\n⚠️ यो स्टेशन ५० किमिभन्दा टाढा छ; यहाँको सटीक वर्षा होइन।",
                                   "\n⚠️ This gauge is over 50 km away; not your exact local rainfall."):
                                   t("\nOpen-Meteo को GPS वर्षा अनुमानबाट छुट्टै वास्तविक मापन।",
@@ -433,8 +433,8 @@ public final class NativeFullActivity extends Activity implements LocationListen
             }catch(Exception e){
                 runOnUiThread(()->{
                     if(isFinishing()||isDestroyed()||rainGaugeInfo==null)return;
-                    rainGaugeInfo.setText(t("DHM वर्षा स्टेशनको ताजा मापन अहिले उपलब्ध छैन।",
-                                            "Current official DHM rainfall feed unavailable."));
+                    rainGaugeInfo.setText(t("आधिकारिक वर्षा स्टेशनको ताजा मापन अहिले उपलब्ध छैन।",
+                                            "Current official rainfall feed unavailable."));
                     rainGaugeHint.setText(t("मौसमको अनुमानलाई सरकारी मापन मानिएको छैन।",
                                            "Model weather is not presented as an official observation."));
                 });
@@ -520,11 +520,11 @@ public final class NativeFullActivity extends Activity implements LocationListen
         LinearLayout h=new LinearLayout(this);h.setOrientation(LinearLayout.HORIZONTAL);h.setGravity(Gravity.CENTER_VERTICAL);
         TextView shield=text("◈",30,true,Color.rgb(22,89,106));shield.setGravity(Gravity.CENTER);shield.setBackground(round(Color.rgb(215,231,234),50,Color.rgb(178,207,214),1));h.addView(shield,new LinearLayout.LayoutParams(dp(46),dp(46)));
         LinearLayout left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);left.setPadding(dp(8),0,dp(4),0);
-        left.addView(text(t("बाढी जोखिम स्थिति","Flood risk status"),13,true,Color.rgb(16,39,70)));riskValue=text("—",25,true,Color.rgb(85,117,139));left.addView(riskValue);
+        left.addView(text(t("बाढी जोखिम स्थिति","Flood risk status"),13,true,Color.rgb(16,39,70)));riskValue=text("—",22,true,Color.rgb(85,117,139));left.addView(riskValue);
         h.addView(left,new LinearLayout.LayoutParams(0,-2,1));riskBadge=badge("—",Color.rgb(237,247,252),Color.rgb(23,116,174));h.addView(riskBadge);c.addView(h);
         riskText=text("",11,false,Color.rgb(56,79,97));c.addView(riskText,lp(-1,-2,0,3,0,0));
-        feedFresh=text("",10,true,Color.rgb(75,101,119));c.addView(feedFresh,lp(-1,-2,0,3,0,0));
-        LinearLayout stats=new LinearLayout(this);stats.setOrientation(LinearLayout.HORIZONTAL);stationCount=stat(stats,"—",t("स्टेशन","Stations"));warningCount=stat(stats,"—",t("चेतावनी","Warning"));dangerCount=stat(stats,"—",t("खतरा","Danger"));c.addView(stats,lp(-1,-2,0,4,0,0));return c;
+        feedFresh=text("",12,true,Color.rgb(75,101,119));c.addView(feedFresh,lp(-1,-2,0,3,0,0));
+        LinearLayout stats=new LinearLayout(this);stats.setOrientation(LinearLayout.HORIZONTAL);stationCount=stat(stats,"—",t("कुल स्टेशन","Total gauges"));warningCount=stat(stats,"—",t("चेतावनी","Warning"));dangerCount=stat(stats,"—",t("खतरा","Danger"));c.addView(stats,lp(-1,-2,0,4,0,0));return c;
     }
 
     private TextView stat(LinearLayout p,String n,String l){LinearLayout b=new LinearLayout(this);b.setOrientation(LinearLayout.VERTICAL);b.setGravity(Gravity.CENTER);b.setPadding(dp(4),dp(3),dp(4),dp(3));b.setBackground(round(Color.rgb(239,242,231),16,Color.rgb(213,222,205),1));TextView v=text(n,16,true,Color.rgb(16,39,70));v.setGravity(Gravity.CENTER);TextView s=text(l,9,true,Color.rgb(103,132,154));s.setGravity(Gravity.CENTER);b.addView(v);b.addView(s);LinearLayout.LayoutParams q=new LinearLayout.LayoutParams(0,-2,1);q.setMargins(dp(3),0,dp(3),0);p.addView(b,q);return v;}
@@ -937,7 +937,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
             }
         });
     }
-    private RiverStation parseStation(JSONObject r,long now){if(r==null)return null;double a=num(r,"latitude","lat","stationLatitude","station_latitude"),o=num(r,"longitude","lon","lng","stationLongitude","station_longitude");if(!Double.isFinite(a)||!Double.isFinite(o)||!isNepal(a,o))return null;NepalRiverBoundary polygon=nepalDistrictBorder();if(polygon==null||!polygon.contains(o,a))return null;double level=num(r,"waterLevel","water_level","currentWaterLevel","current_water_level","currentLevel","current_level","_lastWaterLevel"),warning=num(r,"warningLevel","warning_level","warningThreshold","warning_threshold","_lastWarningLevel"),danger=num(r,"dangerLevel","danger_level","dangerThreshold","danger_threshold","_lastDangerLevel");long at=parseTime(str(r,"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime"));boolean fresh=at>0&&now-at<=RIVER_FRESH_MS&&at-now<=5*60_000L;String raw=str(r,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT);String stage="unknown";int rank=4;if(fresh){if((Double.isFinite(level)&&Double.isFinite(danger)&&danger>0&&level>=danger)||(raw.contains("DANGER")&&!raw.contains("BELOW DANGER"))||raw.contains("RED")){stage="danger";rank=0;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning)||(raw.contains("WARNING")&&!raw.contains("BELOW WARNING"))||raw.contains("ORANGE")){stage="warning";rank=1;}else if(raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW")){stage="alert";rank=2;}else if(Double.isFinite(level)||raw.contains("NORMAL")||raw.contains("BLUE")){stage="normal";rank=3;}}String name=str(r,"river_name","riverName","station_name","stationName","title","name");if(name.isEmpty())name="Official river station";String district=str(r,"districtName","district_name","district");return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank);}
+    private RiverStation parseStation(JSONObject r,long now){if(r==null)return null;double a=num(r,"latitude","lat","stationLatitude","station_latitude"),o=num(r,"longitude","lon","lng","stationLongitude","station_longitude");if(!Double.isFinite(a)||!Double.isFinite(o)||!isNepal(a,o))return null;NepalRiverBoundary polygon=nepalDistrictBorder();if(polygon==null||!polygon.contains(o,a))return null;double level=num(r,"waterLevel","water_level","currentWaterLevel","current_water_level","currentLevel","current_level","_lastWaterLevel"),warning=num(r,"warningLevel","warning_level","warningThreshold","warning_threshold","_lastWarningLevel"),danger=num(r,"dangerLevel","danger_level","dangerThreshold","danger_threshold","_lastDangerLevel");long at=parseTime(str(r,"waterLevelOn","water_level_on","measuredOn","measured_on","measurementTime","measurement_time","observationTime","observation_time","observedAt","observed_at","datetime","timestamp","_measurementTime"));boolean fresh=at>0&&now-at<=RIVER_FRESH_MS&&at-now<=5*60_000L;String raw=str(r,"_officialStatus","status","status_name","alertStatus","alert_status","riskLevel","risk_level").toUpperCase(Locale.ROOT);String stage="unknown";int rank=4;if(fresh){if((Double.isFinite(level)&&Double.isFinite(danger)&&danger>0&&level>=danger)||(raw.contains("DANGER")&&!raw.contains("BELOW DANGER"))||raw.contains("RED")){stage="danger";rank=0;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level>=warning)||(raw.contains("WARNING")&&!raw.contains("BELOW WARNING"))||raw.contains("ORANGE")){stage="warning";rank=1;}else if(raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW")){stage="alert";rank=2;}else if((Double.isFinite(level)&&Double.isFinite(warning)&&warning>0&&level<warning)||raw.contains("NORMAL")||raw.contains("BLUE")){stage="normal";rank=3;}}String name=str(r,"river_name","riverName","station_name","stationName","title","name");if(name.isEmpty())name="Official river station";String district=str(r,"districtName","district_name","district");return new RiverStation(name,district,a,o,level,warning,danger,at,fresh,stage,rank);}
     private void refreshRiverUi(){if(nearList==null||isFinishing()||isDestroyed())return;
       List<RiverStation> copy;
       long checkedAt=System.currentTimeMillis();
@@ -946,7 +946,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
           // must immediately become UNKNOWN, not a misleading live alert/normal.
           for(int i=0;i<stations.size();i++){
               RiverStation old=stations.get(i);
-              boolean stillFresh=old.at>0 && checkedAt-old.at<=RIVER_FRESH_MS
+              boolean stillFresh=!"none".equals(riverObservationSource) && old.at>0 && checkedAt-old.at<=RIVER_FRESH_MS
                       && old.at-checkedAt<=5L*60L*1000L;
               if(!stillFresh && (old.fresh || !"unknown".equals(old.stage))){
                   stations.set(i,new RiverStation(old.name,old.district,old.lat,old.lon,
@@ -962,7 +962,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
        fingerprint=31*fingerprint+Double.hashCode(q.level);
        fingerprint=31*fingerprint+q.stage.hashCode();}
       if(fingerprint!=lastStationMapHash){lastStationMapHash=fingerprint;if(map!=null)map.setStations(copy,lat,lon);}
-      else if(map!=null)map.updateUserLocation(lat,lon);int d=0,w=0,a=0,n=0,stale=0;for(RiverStation s:copy){switch(s.stage){case"danger":d++;break;case"warning":w++;break;case"alert":a++;break;case"normal":n++;break;default:stale++;}}stationCount.setText(String.valueOf(copy.size()));warningCount.setText(String.valueOf(w));dangerCount.setText(String.valueOf(d));String sourceName="dhm".equals(riverObservationSource)?"DHM":("bipad".equals(riverObservationSource)?t("BIPAD वैकल्पिक स्रोत","BIPAD fallback"):t("सरकारी ताजा मापन छैन","No current official measurement"));feedFresh.setText(sourceName+" · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · "+t("मापन नभएका ","unavailable ")+stale);nationalFresh.setText(feedFresh.getText());updateRisk(copy);nearList.removeAllViews();
+      else if(map!=null)map.updateUserLocation(lat,lon);int d=0,w=0,a=0,n=0,stale=0;for(RiverStation s:copy){switch(s.stage){case"danger":d++;break;case"warning":w++;break;case"alert":a++;break;case"normal":n++;break;default:stale++;}}stationCount.setText(String.valueOf(copy.size()));warningCount.setText(String.valueOf(w));dangerCount.setText(String.valueOf(d));String sourceName="dhm".equals(riverObservationSource)?t("DHM वैकल्पिक स्रोत","DHM fallback"):("bipad".equals(riverObservationSource)?t("BIPAD मुख्य स्रोत","BIPAD primary"):t("सरकारी ताजा मापन छैन","No current official measurement"));feedFresh.setText(sourceName+" · "+(d+w+a+n)+"/"+copy.size()+" "+t("वर्गीकृत","classified")+" · 🔴 "+d+" 🟠 "+w+" 🟡 "+a+" 🔵 "+n+" · "+t("मापन नभएका ","unavailable ")+stale);nationalFresh.setText(feedFresh.getText());updateRisk(copy);nearList.removeAllViews();
         boolean inNepal=isNepal(lat,lon)&&locAt>0&&System.currentTimeMillis()-locAt<24L*60*60*1000;
         if(nearSection!=null)nearSection.setVisibility(inNepal?View.VISIBLE:View.GONE);
         if(inNepal){
@@ -1235,7 +1235,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
     private static long parseTime(String s){if(s==null||s.trim().isEmpty())return-1;String v=s.trim();try{long n=Long.parseLong(v);return n<10_000_000_000L?n*1000:n;}catch(Exception ignored){}try{return Instant.parse(v).toEpochMilli();}catch(Exception ignored){}try{return OffsetDateTime.parse(v).toInstant().toEpochMilli();}catch(Exception ignored){}try{return ZonedDateTime.parse(v).toInstant().toEpochMilli();}catch(Exception ignored){}try{return LocalDateTime.parse(v.replace(' ','T'),DateTimeFormatter.ISO_LOCAL_DATE_TIME).atZone(ZoneId.of("Asia/Kathmandu")).toInstant().toEpochMilli();}catch(Exception ignored){return-1;}}
     private static boolean isDisaster(String s){return s.matches(".*(flood|flash flood|landslide|earthquake|avalanche|glacial|glof|fire|wildfire|lightning|storm|windstorm|heavy rain|inundation|बाढी|पहिरो|भूकम्प|हिमपहिरो|डढेलो|आगलागी|चट्याङ|डुबान|अविरल वर्षा).*" )&&!s.matches(".*(road accident|vehicle accident|traffic accident|दुर्घटना|राजनीति|खेलकुद|निर्वाचन).*" );}
     private static int stageColor(String s){switch(s){case"danger":return Color.rgb(214,47,67);case"warning":return Color.rgb(239,125,36);case"alert":return Color.rgb(224,165,42);case"normal":return Color.rgb(31,164,116);default:return Color.rgb(113,139,155);}}private static int stageBg(String s){switch(s){case"danger":return Color.rgb(255,240,242);case"warning":return Color.rgb(255,247,235);case"alert":return Color.rgb(255,248,233);case"normal":return Color.rgb(233,255,245);default:return Color.rgb(243,249,252);}}private static String stageDot(String s){switch(s){case"danger":return"🔴";case"warning":return"🟠";case"alert":return"🟡";case"normal":return"🟢";default:return"⚪";}}private String stageName(String s){switch(s){case"danger":return t("खतरा","DANGER");case"warning":return t("चेतावनी","WARNING");case"alert":return t("निगरानी","ALERT");case"normal":return t("सामान्य","NORMAL");default:return t("पुरानो/अज्ञात","STALE/UNKNOWN");}}
-    private LinearLayout card(){LinearLayout c=new LinearLayout(this);c.setOrientation(LinearLayout.VERTICAL);c.setPadding(dp(12),dp(8),dp(12),dp(8));c.setBackground(round(Color.rgb(250,248,241),18,Color.rgb(219,222,208),1));c.setElevation(dp(1));c.setLayoutParams(lp(-1,-2,0,0,0,7));return c;}
+    private LinearLayout card(){LinearLayout c=new LinearLayout(this);c.setOrientation(LinearLayout.VERTICAL);c.setPadding(dp(12),dp(7),dp(12),dp(7));c.setBackground(round(Color.rgb(255,253,247),14,Color.rgb(225,223,211),1));c.setElevation(dp(1));c.setLayoutParams(lp(-1,-2,0,0,0,7));return c;}
     private TextView text(String s,float sp,boolean bold,int color){TextView v=new TextView(this);v.setText(s);v.setTextSize(sp);v.setTextColor(color);v.setGravity(Gravity.START);v.setLineSpacing(0,1.08f);if(bold)v.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));return v;}
     private TextView badge(String s,int bg,int fg){TextView v=text(s,10,true,fg);v.setPadding(dp(9),dp(6),dp(9),dp(6));v.setGravity(Gravity.CENTER);v.setBackground(round(bg,99,Color.TRANSPARENT,0));return v;}
     private Button button(String s){Button b=new Button(this);b.setText(s);b.setAllCaps(false);b.setTextColor(Color.rgb(18,48,75));b.setTextSize(15);b.setTypeface(Typeface.DEFAULT_BOLD);b.setBackground(round(Color.rgb(247,245,235),18,Color.rgb(207,216,199),1));return b;}

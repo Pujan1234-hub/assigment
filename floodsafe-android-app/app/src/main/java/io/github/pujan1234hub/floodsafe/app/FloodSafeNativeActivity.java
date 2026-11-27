@@ -226,7 +226,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
                 }
                 runOnUiThread(this::renderRainData);
             } catch (Exception e) {
-                runOnUiThread(() -> rainDetail.setText("BIPAD rainfall station detail अहिले fetch हुन सकेन। GPS weather rainfall भने live छ।"));
+                runOnUiThread(() -> rainDetail.setText("Official rainfall station detail अहिले fetch हुन सकेन। GPS weather rainfall भने live छ।"));
             }
         });
     }

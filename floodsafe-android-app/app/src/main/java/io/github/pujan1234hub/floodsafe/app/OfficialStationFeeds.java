@@ -17,12 +17,12 @@ import java.nio.charset.StandardCharsets;
  */
 final class OfficialStationFeeds {
     private static final String ROOT = "https://pjbuilts.com/api/";
-    private static final long MAX_AGE_MS = 2L * 60L * 60L * 1000L; // DHM rainfall remains strict.
+    private static final long MAX_AGE_MS = 30L * 60L * 1000L; // Preview source freshness.
     private static final long RIVER_DISPLAY_MAX_AGE_MS = 30L * 60L * 1000L; // Display only, emergency alerts still require <=10 min.
     private OfficialStationFeeds() {}
 
     static JSONObject rivers() throws Exception {
-        JSONObject src = get(ROOT + "floodsafe-station-details?kind=stations");
+        JSONObject src = get(ROOT + "floodsafe-live-preview?kind=stations");
         if (!"catalog_available".equals(src.optString("status"))) {
             throw new IllegalStateException("Official river observations unavailable");
         }
@@ -58,9 +58,10 @@ final class OfficialStationFeeds {
                 // DHM/BIPAD status is based on current reading and validated thresholds.
                 String official=s.optString("reportedStatus","").toUpperCase(java.util.Locale.ROOT);
                 // Guard against misreading "BELOW WARNING LEVEL" as a warning.
-                if(official.contains("BELOW")||official.contains("NORMAL")) out.put("_officialStatus","normal");
-                else if(official.contains("DANGER"))out.put("_officialStatus","danger");
-                else if(official.contains("WARNING"))out.put("_officialStatus","warning");
+                if(official.contains("BELOW WARNING")||official.contains("NORMAL")) out.put("_officialStatus","normal");
+                else if(official.contains("DANGER")&&!official.contains("BELOW"))out.put("_officialStatus","danger");
+                else if(official.contains("WARNING")&&!official.contains("BELOW"))out.put("_officialStatus","warning");
+                else if(official.contains("WATCH")||official.contains("ALERT")||official.contains("YELLOW"))out.put("_officialStatus","alert");
             }
             results.put(out);
         }
@@ -199,10 +200,10 @@ final class OfficialStationFeeds {
     }
 
     static JSONObject rainfall() throws Exception {
-        JSONObject src = get(ROOT + "floodsafe-dhm-stations?kind=rain");
+        JSONObject src = get(ROOT + "floodsafe-live-preview?kind=rain");
         JSONArray items=src.optJSONArray("items"),results=new JSONArray();
         if(!"live".equals(src.optString("status"))||items==null)
-            throw new IllegalStateException("DHM rainfall temporarily unavailable");
+            throw new IllegalStateException("Official rainfall temporarily unavailable");
         long now=System.currentTimeMillis();
         for(int i=0;i<items.length();i++){
             JSONObject s=items.optJSONObject(i);if(s==null)continue;
@@ -213,6 +214,7 @@ final class OfficialStationFeeds {
                 now-observed>MAX_AGE_MS||observed-now>5L*60L*1000L)continue;
             JSONObject out=new JSONObject();
             out.put("stationName",s.optString("name","Rainfall station"));
+            out.put("source",s.optString("source",src.optString("source","Official rainfall")));
             out.put("latitude",lat);out.put("longitude",lon);
             out.put("rainfall",rain);out.put("observedAt",s.optString("observedAt"));
             out.put("rainfallHours",s.optJSONObject("rainfallHours"));
@@ -220,7 +222,7 @@ final class OfficialStationFeeds {
             results.put(out);
         }
         JSONObject result=new JSONObject();
-        result.put("results",results);result.put("source","DHM official rainfall");
+        result.put("results",results);result.put("source",src.optString("source","Official rainfall"));result.put("activeObservationSource",src.optString("activeObservationSource","none"));
         return result;
     }
 

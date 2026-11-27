@@ -91,9 +91,9 @@ final class FloodLiveGaugeMonitor {
     }
 
     private void pollHydrologyOnce() throws Exception{
-        // Unified DHM-first source handles the active river feed. The legacy
+        // Unified BIPAD-first source handles the active river feed. The legacy
         // BIPAD hydrology extras are queried only when BIPAD is the active
-        // verified fallback, never while DHM is live or both sources are down.
+        // verified primary, never while DHM is active or both sources are down.
         if(!"bipad".equals(lastRiverObservationSource))return;
         long now=System.currentTimeMillis();
         if(now-lastBipadHydrologyAttempt<5L*60L*1000L)return;

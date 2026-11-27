@@ -137,7 +137,7 @@ public final class FloodSafeMapActivity extends Activity {
                     JSONObject o=arr.optJSONObject(i);if(o==null)continue;
                     double lat=number(o,"latitude","lat","stationLatitude","station_latitude");
                     double lon=number(o,"longitude","lon","lng","stationLongitude","station_longitude");
-                    if(!Double.isFinite(lat)||!Double.isFinite(lon)||lat<26.2||lat>30.5||lon<80||lon>88.35)continue;
+                    if(!Double.isFinite(lat)||!Double.isFinite(lon)||lat<26.1||lat>30.8||lon<79.8||lon>88.5)continue;
                     // Current data is used for live colors. Historic data is used only
                     // inside a grey station's clearly labelled detail card.
                     double level=number(o,"waterLevel","water_level","currentWaterLevel","current_level","_lastWaterLevel");
@@ -163,7 +163,7 @@ public final class FloodSafeMapActivity extends Activity {
                             stage="warning";
                         else if(!raw.contains("BELOW")&&(raw.contains("ALERT")||raw.contains("WATCH")||raw.contains("YELLOW")))
                             stage="alert";
-                        else if(Double.isFinite(level)||raw.contains("NORMAL")||raw.contains("BLUE"))
+                        else if((Double.isFinite(level)&&Double.isFinite(warn)&&warn>0&&level<warn)||raw.contains("NORMAL")||raw.contains("BLUE"))
                             stage="normal";
                     }
                     String name=text(o,"river_name","riverName","station_name","stationName","title","name");
@@ -182,8 +182,8 @@ public final class FloodSafeMapActivity extends Activity {
                         else if("warning".equals(p.stage))warningCount++;
                         else if("alert".equals(p.stage))watchCount++;
                     }
-                    String feed="dhm".equals(currentObservationSource)?"DHM":
-                        "bipad".equals(currentObservationSource)?(english?"BIPAD fallback":"BIPAD वैकल्पिक स्रोत"):
+                    String feed="dhm".equals(currentObservationSource)?(english?"DHM fallback":"DHM वैकल्पिक स्रोत"):
+                        "bipad".equals(currentObservationSource)?(english?"BIPAD primary":"BIPAD मुख्य स्रोत"):
                         (english?"No current official reading":"सरकारी ताजा मापन छैन");
                     status.setText(feed+" · "+points.size()+(english?" stations loaded":" स्टेशन लोड")+" · 📍 "+nativeMap.stationCount()+
                         (english?" on map":" नक्सामा")+" · 🔴 "+dangerCount+" 🟠 "+warningCount+" 🟡 "+watchCount);

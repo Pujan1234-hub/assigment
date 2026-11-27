@@ -1,4 +1,4 @@
-name: FloodSafe Nepal UI Preview 4 - separate install APK
+name: FloodSafe Nepal UI Preview 5 - separate install APK
 on:
   push:
     branches:
@@ -7,7 +7,7 @@ on:
       - '.github/workflows/floodsafe-ui-preview-apk.yml'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,22 +27,22 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
       - name: Set next release version without changing stable source
         run: |
-          sed -i "s/versionCode 121/versionCode 125/" floodsafe-android-app/app/build.gradle
-          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-ui-preview4'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionCode 121/versionCode 126/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '0.9.23-ui-preview5'/" floodsafe-android-app/app/build.gradle
       - name: Prepare isolated preview package and approved launcher icon
         shell: bash
         run: |
           set -euo pipefail
-          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.uipreview4'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.uipreview5'/" floodsafe-android-app/app/build.gradle
           sed -i '/if (hasReleaseSigning) signingConfig signingConfigs.release/c\            signingConfig signingConfigs.debug' floodsafe-android-app/app/build.gradle
-          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal UI TEST 4</' floodsafe-android-app/app/src/main/res/values/strings.xml
+          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal UI TEST 5</' floodsafe-android-app/app/src/main/res/values/strings.xml
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=Path('floodsafe-android-app/app/google-services.json')
           j=json.loads(p.read_text())
           for client in j['client']:
-              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.uipreview4'
+              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.uipreview5'
           p.write_text(json.dumps(j,indent=2))
           PY
           mkdir -p floodsafe-android-app/app/src/main/res/drawable-nodpi
@@ -130,6 +130,10 @@ jobs:
           grep -q 'implements StationMapItem' "$ROOT/NativeFullActivity.java"
           grep -q 'implements StationMapItem' "$ROOT/FloodSafeNativeActivity.java"
 
+      - name: Verify preview telemetry routes
+        run: |
+          grep -q 'floodsafe-live-preview?kind=stations' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/OfficialStationFeeds.java
+          grep -q 'floodsafe-live-preview?kind=rain' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/OfficialStationFeeds.java
       - name: Run native Android unit tests before release compilation
         run: gradle -p floodsafe-android-app :app:testReleaseUnitTest --no-daemon --stacktrace
       - name: Run release lint checks
@@ -153,15 +157,24 @@ jobs:
           test -s "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > preview-badging.txt
-          grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview4'" preview-badging.txt
-          grep -F "application-label:'FloodSafe Nepal UI TEST 4'" preview-badging.txt
+          grep -F "package: name='com.pjbuilts.floodsafenepal.uipreview5'" preview-badging.txt
+          grep -F "application-label:'FloodSafe Nepal UI TEST 5'" preview-badging.txt
           mkdir -p preview-output
-          cp "$APK" preview-output/FloodSafe-Nepal-v0.9.23-UI-TEST-4.apk
+          cp "$APK" preview-output/FloodSafe-Nepal-v0.9.23-UI-TEST-5.apk
           sha256sum preview-output/*.apk
       - name: Upload isolated preview APK only
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v0.9.23-UI-TEST-4
+          name: FloodSafe-Nepal-v0.9.23-UI-TEST-5
           path: preview-output/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish isolated test APK on GitHub only
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG=floodsafe-v0923-ui-test5-source-preview
+          if gh release view "$TAG" >/dev/null 2>&1; then echo 'Existing release retained'; exit 0; fi
+          gh release create "$TAG" preview-output/*.apk --target "$GITHUB_SHA" --title 'FloodSafe Nepal UI TEST 5 — BIPAD-first preview' --notes 'Separate test APK. Existing Play beta untouched. Source selection, compact cream UI, verified source labels. Not a production release; live source and device acceptance tests required.' --prerelease

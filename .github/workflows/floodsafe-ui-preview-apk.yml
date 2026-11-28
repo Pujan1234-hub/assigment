@@ -1,8 +1,8 @@
-name: FloodSafe Nepal v1.0.1 - original Play package
+name: FloodSafe Nepal v1.0.1 - signed separate test APK
 on:
   push:
     branches:
-      - release/floodsafe-ui19-original-signing
+      - test/floodsafe-v101-signed-apk
     paths:
       - '.github/workflows/floodsafe-ui-preview-apk.yml'
       - 'floodsafe-android-app/app/src/main/java/**'
@@ -30,18 +30,20 @@ jobs:
         run: |
           sed -i "s/versionCode 121/versionCode 141/" floodsafe-android-app/app/build.gradle
           sed -i "s/versionName '0.9.21-repair-preview'/versionName '1.0.1'/" floodsafe-android-app/app/build.gradle
-      - name: Prepare original Play package and approved launcher icon
+      - name: Prepare isolated preview package and approved launcher icon
         shell: bash
         run: |
           set -euo pipefail
-          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.hotfix101'/" floodsafe-android-app/app/build.gradle
+          sed -i '/if (hasReleaseSigning) signingConfig signingConfigs.release/c\            signingConfig signingConfigs.debug' floodsafe-android-app/app/build.gradle
+          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal TEST 1.0.1</' floodsafe-android-app/app/src/main/res/values/strings.xml
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=Path('floodsafe-android-app/app/google-services.json')
           j=json.loads(p.read_text())
           for client in j['client']:
-              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal'
+              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.hotfix101'
           p.write_text(json.dumps(j,indent=2))
           PY
           mkdir -p floodsafe-android-app/app/src/main/res/drawable-nodpi
@@ -146,35 +148,34 @@ jobs:
             floodsafe-android-app/app/build/reports/lint-results-release.txt
             floodsafe-android-app/app/build/reports/lint-results-release.html
           if-no-files-found: warn
-      - name: Compile original-package release APK and AAB for private local signing
-        run: gradle -p floodsafe-android-app :app:assembleRelease :app:bundleRelease --no-daemon --stacktrace
-      - name: Verify original package and archive unsigned release
+      - name: Compile isolated, debug-signed release APK
+        run: gradle -p floodsafe-android-app :app:assembleRelease --no-daemon --stacktrace
+      - name: Verify isolated package and signed APK
         shell: bash
         run: |
           set -euo pipefail
-          APK=floodsafe-android-app/app/build/outputs/apk/release/app-release-unsigned.apk
-          if [ ! -f "$APK" ]; then APK=floodsafe-android-app/app/build/outputs/apk/release/app-release.apk; fi
-          AAB=floodsafe-android-app/app/build/outputs/bundle/release/app-release.aab
+          APK=floodsafe-android-app/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
-          test -s "$AAB"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > badging.txt
-          grep -F "package: name='com.pjbuilts.floodsafenepal' versionCode='141'" badging.txt
-          grep -F "versionName='1.0.1'" badging.txt
-          grep -F "application-label:'FloodSafe Nepal'" badging.txt
           python3 - "$APK" <<'PY'
-          import sys, zipfile, pathlib
+          import sys, zipfile, pathlib, hashlib
           expected=pathlib.Path("floodsafe-android-app/app/src/main/res/raw/floodsafe_soft_chime.wav").read_bytes()
           with zipfile.ZipFile(sys.argv[1]) as apk:
-              assert any(i.file_size==len(expected) and apk.read(i)==expected for i in apk.infolist())
+              matches=[i.filename for i in apk.infolist() if i.file_size==len(expected) and apk.read(i)==expected]
+          assert matches, "Soft chime audio bytes missing from APK"
+          print("Verified soft chime:", matches, hashlib.sha256(expected).hexdigest())
           PY
-          mkdir -p signing-output
-          cp "$APK" signing-output/FloodSafe-Nepal-v1.0.1-Code141-UNSIGNED.apk
-          cp "$AAB" signing-output/FloodSafe-Nepal-v1.0.1-Code141-UNSIGNED.aab
-          sha256sum signing-output/* > signing-output/SHA256SUMS.txt
-      - name: Archive unsigned files for secure local signing only
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > preview-badging.txt
+          grep -F "package: name='com.pjbuilts.floodsafenepal.hotfix101'" preview-badging.txt
+          grep -F "application-label:'FloodSafe Nepal TEST 1.0.1'" preview-badging.txt
+          mkdir -p preview-output
+          cp "$APK" preview-output/FloodSafe-Nepal-v1.0.1-SIGNED-TEST.apk
+          sha256sum preview-output/*.apk
+      - name: Upload isolated preview APK only
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v1.0.1-Code141-UNSIGNED
-          path: signing-output/
+          name: FloodSafe-Nepal-v1.0.1-SIGNED-TEST
+          path: preview-output/*.apk
           if-no-files-found: error
           retention-days: 14
+

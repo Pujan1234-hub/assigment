@@ -30,6 +30,9 @@ final class StationDetailSheet {
     static void show(Context context,String name,String stage,double level,
                      boolean fresh,long observedAt,String details,boolean english,boolean riverSegment,
                      double warningLevel,double dangerLevel){
+        show(context,name,stage,level,fresh,observedAt,details,english,riverSegment,warningLevel,dangerLevel,false,false);
+    }
+    static void show(Context context,String name,String stage,double level,boolean fresh,long observedAt,String details,boolean english,boolean riverSegment,double warningLevel,double dangerLevel,boolean historicalLimits,boolean conflictingLimits){
         if(context==null)return;
         final int ink=Color.rgb(28,49,72),muted=Color.rgb(95,111,126),gold=Color.rgb(176,126,54);
         final int pad=dp(context,18);
@@ -116,7 +119,11 @@ final class StationDetailSheet {
             thresholds.addView(dangerBox,dangerParams);
             panel.addView(thresholds,params(context,0,0,0,12));
 
-            if(measured && (Double.isFinite(warn)||Double.isFinite(danger))){
+            if(conflictingLimits){
+                panel.addView(text(context,english?"Conflicting official limits; neither is reliable. Check DHM/BIPAD.":"आधिकारिक सीमाहरू बाझिएका छन्। DHM/BIPAD मा जाँच्नुहोस्।",12,true,muted),params(context,0,0,0,12));
+            } else if(historicalLimits){
+                panel.addView(text(context,english?"Last available BIPAD station catalogue (not live). Reference only; confirm current thresholds with DHM/BIPAD.":"पछिल्लो उपलब्ध BIPAD स्टेशन सूची (लाइभ होइन)। सन्दर्भका लागि मात्र; हालको सीमा DHM/BIPAD मा जाँच्नुहोस्।",12,true,muted),params(context,0,0,0,12));
+            } else if(measured && (Double.isFinite(warn)||Double.isFinite(danger))){
                 // Exact difference only for this SAME official gauge; no model or borrowed threshold.
                 boolean overDanger=Double.isFinite(danger)&&level>=danger;
                 double target=overDanger?danger:Double.isFinite(warn)?warn:danger;

@@ -133,6 +133,7 @@ public final class FloodSafeMapActivity extends Activity {
                 JSONArray arr=feeds.optJSONArray("results");
                 if(arr==null)arr=feeds.optJSONArray("data");
                 List<MapStation> points=new ArrayList<>();
+                RiverThresholdCatalogue limits=RiverThresholdCatalogue.load(getApplicationContext());
                 long now=System.currentTimeMillis();
                 if(arr!=null)for(int i=0;i<arr.length();i++){
                     JSONObject o=arr.optJSONObject(i);if(o==null)continue;
@@ -172,7 +173,13 @@ public final class FloodSafeMapActivity extends Activity {
                     }
                     String name=text(o,"river_name","riverName","station_name","stationName","title","name");
                     if(name.isEmpty())name="Official station";
-                    points.add(new MapStation(name,lat,lon,level,positiveThreshold(warn),positiveThreshold(danger),fresh,stage,at));
+                    boolean conflicting=o.optBoolean("thresholdConflict");
+                    RiverThresholdCatalogue.Match reference=null;
+                    if(!conflicting&&("bipad".equals(source)||"none".equals(source))&&(!RiverThresholdCatalogue.positive(warn)||!RiverThresholdCatalogue.positive(danger)))
+                        reference=limits.find(name,lat,lon,warn,danger);
+                    boolean historicalLimits=reference!=null;
+                    if(historicalLimits){warn=reference.warning;danger=reference.danger;}
+                    points.add(new MapStation(name,lat,lon,level,positiveThreshold(warn),positiveThreshold(danger),fresh,stage,at,historicalLimits,conflicting));
                 }
                 runOnUiThread(()->{
                     if(isFinishing()||isDestroyed()||nativeMap==null)return;
@@ -201,7 +208,7 @@ public final class FloodSafeMapActivity extends Activity {
                     if(nativeMap!=null&&!lastMapStations.isEmpty()&&lastMapStations.stream().anyMatch(q->q.fresh||!"unknown".equals(q.stage))){
                         List<MapStation> unknown=new ArrayList<>();
                         for(MapStation p:lastMapStations)
-                            unknown.add(new MapStation(p.name,p.lat,p.lon,p.level,p.warning,p.danger,false,"unknown",p.at));
+                            unknown.add(new MapStation(p.name,p.lat,p.lon,p.level,p.warning,p.danger,false,"unknown",p.at,p.historicalLimits,p.conflictingLimits));
                         lastMapStations.clear();lastMapStations.addAll(unknown);
                         nativeMap.setStations(unknown,deviceLat,deviceLon);
                     }
@@ -215,7 +222,7 @@ public final class FloodSafeMapActivity extends Activity {
         });
     }
 
-    private static boolean sameStations(List<MapStation> a,List<MapStation> b){if(a.size()!=b.size())return false;for(int i=0;i<a.size();i++){MapStation x=a.get(i),y=b.get(i);if(!java.util.Objects.equals(x.name,y.name)||!java.util.Objects.equals(x.stage,y.stage)||x.at!=y.at||x.fresh!=y.fresh||Double.compare(x.lat,y.lat)!=0||Double.compare(x.lon,y.lon)!=0||Double.compare(x.level,y.level)!=0||Double.compare(x.warning,y.warning)!=0||Double.compare(x.danger,y.danger)!=0)return false;}return true;}
+    private static boolean sameStations(List<MapStation> a,List<MapStation> b){if(a.size()!=b.size())return false;for(int i=0;i<a.size();i++){MapStation x=a.get(i),y=b.get(i);if(!java.util.Objects.equals(x.name,y.name)||!java.util.Objects.equals(x.stage,y.stage)||x.at!=y.at||x.fresh!=y.fresh||Double.compare(x.lat,y.lat)!=0||Double.compare(x.lon,y.lon)!=0||Double.compare(x.level,y.level)!=0||Double.compare(x.warning,y.warning)!=0||Double.compare(x.danger,y.danger)!=0||x.historicalLimits!=y.historicalLimits||x.conflictingLimits!=y.conflictingLimits)return false;}return true;}
     private void expireMapMarkers(){
         if(lastMapStations.isEmpty()||nativeMap==null)return;
         long now=System.currentTimeMillis();
@@ -224,7 +231,7 @@ public final class FloodSafeMapActivity extends Activity {
         for(MapStation p:lastMapStations){
             boolean fresh=p.fresh&&p.at>0&&p.at<=now+300000L&&now-p.at<=MAP_READING_FRESH_MS;
             if(p.fresh&&!fresh)changed=true;
-            updated.add(fresh?p:new MapStation(p.name,p.lat,p.lon,p.level,p.warning,p.danger,false,"bipad".equals(currentObservationSource)?p.stage:"unknown",p.at));
+            updated.add(fresh?p:new MapStation(p.name,p.lat,p.lon,p.level,p.warning,p.danger,false,"bipad".equals(currentObservationSource)?p.stage:"unknown",p.at,p.historicalLimits,p.conflictingLimits));
         }
         if(changed){
             lastMapStations.clear();lastMapStations.addAll(updated);
@@ -236,7 +243,7 @@ public final class FloodSafeMapActivity extends Activity {
         StationDetailSheet.show(this,s.name,s.stage,s.level,s.fresh,s.at,
             english?"Reported source status. Check observation time; an old reading is not a current safety assessment.":
                     "DHM/BIPAD स्टेशनको उपलब्ध मापन। अर्को स्टेशन हेर्न नक्साको बिन्दु थिच्नुहोस्।",
-            english,false,s.warning,s.danger);
+            english,false,s.warning,s.danger,s.historicalLimits,s.conflictingLimits);
     }
     private Button button(String s){
         Button b=new Button(this);b.setAllCaps(false);b.setText(s);b.setTextSize(13);
@@ -258,10 +265,10 @@ public final class FloodSafeMapActivity extends Activity {
     private static final class MapStation implements StationMapItem {
         final String name,stage;
         final double lat,lon,level,rainfallMm,warning,danger;
-        final boolean fresh;final long at;
-        MapStation(String n,double a,double o,double l,double w,double d,boolean f,String st,long t){
+        final boolean fresh,historicalLimits,conflictingLimits;final long at;
+        MapStation(String n,double a,double o,double l,double w,double d,boolean f,String st,long t,boolean historical,boolean conflicting){
             name=n;lat=a;lon=o;level=l;rainfallMm=Double.NaN;
-            warning=w;danger=d;fresh=f;stage=st;at=t;
+            warning=w;danger=d;fresh=f;stage=st;at=t;historicalLimits=historical;conflictingLimits=conflicting;
         }
 
         @Override public String mapName() { return name; }

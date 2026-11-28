@@ -55,8 +55,8 @@ final class OfficialStationFeeds {
             out.put("stationName", s.optString("name","River station"));
             out.put("districtName", s.optString("district",""));
             out.put("latitude",lat);out.put("longitude",lon);
-            putFinite(out,"warningLevel",s,"warning");
-            putFinite(out,"dangerLevel",s,"danger");
+            putThreshold(out,"warningLevel",s,"warning","warningLevel","warning_level","warningThreshold","warning_threshold");
+            putThreshold(out,"dangerLevel",s,"danger","dangerLevel","danger_level","dangerThreshold","danger_threshold");
             // Conflicting source limits are not authoritative; never silently swap them.
             if (RiverThresholdPolicy.conflicts(out.optDouble("warningLevel",Double.NaN),out.optDouble("dangerLevel",Double.NaN))) {
                 out.remove("warningLevel"); out.remove("dangerLevel");
@@ -251,6 +251,11 @@ final class OfficialStationFeeds {
         return result;
     }
 
+    private static void putThreshold(JSONObject dest,String target,JSONObject src,String... keys)throws Exception {
+        double value=Double.NaN;
+        for(String key:keys){double n=src.optDouble(key,Double.NaN);if(!RiverThresholdCatalogue.positive(n))continue;if(Double.isFinite(value)&&Double.compare(value,n)!=0)return;value=n;}
+        if(Double.isFinite(value))dest.put(target,value);
+    }
     private static void putFinite(JSONObject dest,String target,JSONObject src,String source)throws Exception{
         double n=src.optDouble(source,Double.NaN);
         if(Double.isFinite(n)&&n>0)dest.put(target,n);

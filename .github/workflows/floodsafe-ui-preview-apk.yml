@@ -1,4 +1,4 @@
-name: FloodSafe Nepal v1.0.0 - original Play package
+name: FloodSafe Nepal v1.0.1 - original Play package
 on:
   push:
     branches:
@@ -28,8 +28,8 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
       - name: Set next release version without changing stable source
         run: |
-          sed -i "s/versionCode 121/versionCode 140/" floodsafe-android-app/app/build.gradle
-          sed -i "s/versionName '0.9.21-repair-preview'/versionName '1.0.0'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionCode 121/versionCode 141/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '1.0.1'/" floodsafe-android-app/app/build.gradle
       - name: Prepare original Play package and approved launcher icon
         shell: bash
         run: |
@@ -158,8 +158,8 @@ jobs:
           test -s "$APK"
           test -s "$AAB"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > badging.txt
-          grep -F "package: name='com.pjbuilts.floodsafenepal' versionCode='140'" badging.txt
-          grep -F "versionName='1.0.0'" badging.txt
+          grep -F "package: name='com.pjbuilts.floodsafenepal' versionCode='141'" badging.txt
+          grep -F "versionName='1.0.1'" badging.txt
           grep -F "application-label:'FloodSafe Nepal'" badging.txt
           python3 - "$APK" <<'PY'
           import sys, zipfile, pathlib
@@ -168,13 +168,13 @@ jobs:
               assert any(i.file_size==len(expected) and apk.read(i)==expected for i in apk.infolist())
           PY
           mkdir -p signing-output
-          cp "$APK" signing-output/FloodSafe-Nepal-v1.0.0-Code140-UNSIGNED.apk
-          cp "$AAB" signing-output/FloodSafe-Nepal-v1.0.0-Code140-UNSIGNED.aab
+          cp "$APK" signing-output/FloodSafe-Nepal-v1.0.1-Code141-UNSIGNED.apk
+          cp "$AAB" signing-output/FloodSafe-Nepal-v1.0.1-Code141-UNSIGNED.aab
           sha256sum signing-output/* > signing-output/SHA256SUMS.txt
       - name: Archive unsigned files for secure local signing only
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-v1.0.0-Code140-UNSIGNED
+          name: FloodSafe-v1.0.1-Code141-UNSIGNED
           path: signing-output/
           if-no-files-found: error
           retention-days: 14

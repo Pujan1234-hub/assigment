@@ -57,6 +57,11 @@ final class OfficialStationFeeds {
             out.put("latitude",lat);out.put("longitude",lon);
             putFinite(out,"warningLevel",s,"warning");
             putFinite(out,"dangerLevel",s,"danger");
+            // Conflicting source limits are not authoritative; never silently swap them.
+            if (RiverThresholdPolicy.conflicts(out.optDouble("warningLevel",Double.NaN),out.optDouble("dangerLevel",Double.NaN))) {
+                out.remove("warningLevel"); out.remove("dangerLevel");
+                out.put("thresholdConflict",true);
+            }
             long when=timestamp(s.optString("observed",""));
             // Preserve only an explicitly verified, timestamped original gauge
             // observation for the stale-detail box. Never classify it as live.

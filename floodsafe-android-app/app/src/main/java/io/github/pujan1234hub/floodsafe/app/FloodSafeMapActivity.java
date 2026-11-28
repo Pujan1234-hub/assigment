@@ -146,6 +146,7 @@ public final class FloodSafeMapActivity extends Activity {
                         level=number(o,"lastVerifiedWaterLevel");
                     double warn=number(o,"warningLevel","warning_level","warningThreshold","_lastWarningLevel");
                     double danger=number(o,"dangerLevel","danger_level","dangerThreshold","_lastDangerLevel");
+                    if(RiverThresholdPolicy.conflicts(warn,danger)){warn=Double.NaN;danger=Double.NaN;}
                     long at=timestamp(text(o,"waterLevelOn","water_level_on","measuredOn","observedAt","observationTime","_measurementTime"));
                     if(at<=0)
                         at=timestamp(text(o,"lastVerifiedWaterLevelOn"));

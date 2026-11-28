@@ -145,6 +145,7 @@ public final class RiverAlertWorker extends Worker {
                 "warning_threshold", "_lastWarningLevel");
         double danger = firstNumber(row, "dangerLevel", "danger_level", "dangerThreshold",
                 "danger_threshold", "_lastDangerLevel");
+        if (RiverThresholdPolicy.conflicts(warning,danger)) { warning=Double.NaN; danger=Double.NaN; }
         String official = firstString(row, "status", "status_name", "alertStatus", "alert_status",
                 "riskLevel", "risk_level", "_officialStatus").toUpperCase(Locale.ROOT);
 

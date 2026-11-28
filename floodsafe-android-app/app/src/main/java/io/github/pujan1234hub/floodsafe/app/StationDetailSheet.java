@@ -101,6 +101,7 @@ final class StationDetailSheet {
             // Two compact fields right below the existing current-water-level card.
             // 0/negative/NaN from official source are missing, not actual warning levels.
             double warn=validThreshold(warningLevel),danger=validThreshold(dangerLevel);
+            if(RiverThresholdPolicy.conflicts(warn,danger)){warn=Double.NaN;danger=Double.NaN;}
             LinearLayout thresholds=new LinearLayout(context);
             thresholds.setOrientation(LinearLayout.HORIZONTAL);
             LinearLayout warnBox=thresholdCard(context,
@@ -128,8 +129,8 @@ final class StationDetailSheet {
                 panel.addView(delta,params(context,0,0,0,12));
             } else if(!Double.isFinite(warn)&&!Double.isFinite(danger)){
                 panel.addView(text(context,
-                    english?"Official warning/danger thresholds are unavailable for this station.":
-                    "यस स्टेशनको आधिकारिक चेतावनी/खतरा सीमा उपलब्ध छैन।",11,false,muted),
+                    english?"Verified official warning/danger thresholds are unavailable for this station.":
+                    "यस स्टेशनको प्रमाणित आधिकारिक चेतावनी/खतरा सीमा उपलब्ध छैन।",11,false,muted),
                     params(context,0,0,0,12));
             }
         }

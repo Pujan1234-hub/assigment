@@ -327,6 +327,7 @@ public final class FloodSafeNativeActivity extends Activity implements LocationL
         double level = num(r, "waterLevel", "water_level", "currentWaterLevel", "current_water_level", "currentLevel", "current_level", "level", "_lastWaterLevel");
         double warning = num(r, "warningLevel", "warning_level", "warningThreshold", "warning_threshold", "_lastWarningLevel");
         double danger = num(r, "dangerLevel", "danger_level", "dangerThreshold", "danger_threshold", "_lastDangerLevel");
+        if(RiverThresholdPolicy.conflicts(warning,danger)){warning=Double.NaN;danger=Double.NaN;}
         long at = parseTime(str(r, "waterLevelOn", "water_level_on", "measuredOn", "measured_on", "measurementTime", "measurement_time", "observationTime", "observation_time", "observedAt", "observed_at", "datetime", "timestamp", "_measurementTime"));
         boolean fresh = at > 0L && now - at <= FRESH_MS && at - now <= 5L * 60L * 1000L;
         String raw = str(r, "status", "status_name", "alertStatus", "alert_status", "riskLevel", "risk_level", "_officialStatus").toUpperCase(Locale.ROOT);

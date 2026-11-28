@@ -667,7 +667,7 @@ public final class NativeFullActivity extends Activity implements LocationListen
         // Foreground feed polling and lifecycle refresh are automatic; no manual button.
         newsList=new LinearLayout(this);newsList.setOrientation(LinearLayout.VERTICAL);
         c.addView(newsList,lp(-1,-2,0,dp(8),0,0));return c;}
-    private View privacyCard(){LinearLayout c=card();privacyTitle=text("",20,true,Color.rgb(16,39,70));privacySub=text("",12,true,Color.rgb(100,130,151));c.addView(privacyTitle);c.addView(privacySub);Button b=smallButton(t("गोपनीयता नीति हेर्नुहोस् →","View privacy policy →"));b.setOnClickListener(v->showPrivacy());c.addView(b,lp(-1,dp(48),0,dp(10),0,0));return c;}
+    private View privacyCard(){LinearLayout c=card();privacyTitle=text("",20,true,Color.rgb(16,39,70));privacySub=text("",12,true,Color.rgb(100,130,151));c.addView(privacyTitle);c.addView(privacySub);Button b=smallButton(t("गोपनीयता नीति हेर्नुहोस् →","View privacy policy →"));b.setOnClickListener(v->showPrivacy());c.addView(b,lp(-1,dp(48),0,dp(10),0,0));Button sound=smallButton(t("🔔 सूचना आवाज परीक्षण","🔔 Test notification sound"));sound.setOnClickListener(v->testNoticeSound());c.addView(sound,lp(-1,dp(48),0,dp(8),0,0));return c;}
 
     private View bottomNav(){
         LinearLayout nav=new LinearLayout(this);nav.setOrientation(LinearLayout.HORIZONTAL);nav.setPadding(dp(5),dp(5),dp(5),dp(5));nav.setBackground(round(Color.rgb(8,32,57),21,Color.rgb(37,79,104),1));
@@ -1181,6 +1181,17 @@ public final class NativeFullActivity extends Activity implements LocationListen
         newsKnowledgeText.setText(entry.body(english));
     }
 
+    private void testNoticeSound(){
+        if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},REQ_NOTIFY);return;}
+        android.app.NotificationManager manager=getSystemService(android.app.NotificationManager.class);if(manager==null)return;
+        String channel=FloodSafeSounds.channel(this,false,false);
+        android.app.NotificationChannel current=manager.getNotificationChannel(channel);
+        if(!manager.areNotificationsEnabled()||current==null||current.getImportance()<android.app.NotificationManager.IMPORTANCE_DEFAULT||current.getSound()==null){
+            new AlertDialog.Builder(this).setTitle(t("सूचना आवाज बन्द छ","Notification sound is off")).setMessage(t("Android सेटिङमा सूचना र आवाज अनुमति दिनुहोस्।","Enable notifications and choose a sound in Android settings.")).setNegativeButton("OK",null).setPositiveButton(t("सेटिङ","Settings"),(d,k)->startActivity(new Intent(android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE,getPackageName()).putExtra(android.provider.Settings.EXTRA_CHANNEL_ID,channel))).show();return;
+        }
+        android.app.Notification notice=new android.app.Notification.Builder(this,channel).setSmallIcon(R.drawable.ic_floodsafe).setContentTitle(t("FloodSafe आवाज परीक्षण","FloodSafe sound test")).setContentText(t("यो परीक्षण मात्र हो। वास्तविक चेतावनी होइन।","Test only. Not a real alert.")).setAutoCancel(true).build();
+        manager.notify(19301,notice);
+    }
     private void showPrivacy(){new AlertDialog.Builder(this).setTitle(t("🔒 गोपनीयता र सुरक्षा","🔒 Privacy and safety")).setMessage(t("FloodSafe ले स्थानीय मौसम र नजिकको नदीको चेतावनीका लागि स्थान प्रयोग गर्छ। पृष्ठभूमिमा स्थान तपाईंको अनुमति भएमा मात्र प्रयोग हुन्छ। माइक्रोफोन FloodSafe Sathi AI सँग बोल्न मात्र प्रयोग हुन्छ। सूचना पठाउन उपकरणको सूचना पहिचान प्रयोग हुन सक्छ। एपलाई जबरजस्ती बन्द गर्दा पृष्ठभूमिका सूचना रोकिन सक्छन्।","FloodSafe uses location for local weather and verified river warnings within 2 km. Background location is used only for user-enabled monitoring. Microphone is used for FloodSafe Sathi AI voice. A device notification identifier may be used to deliver alerts. Android can stop background work after an explicit Force stop.")).setPositiveButton("OK",null).show();}
 
     private void showSathiDialog(String initial){

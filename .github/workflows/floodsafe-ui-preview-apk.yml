@@ -1,4 +1,4 @@
-name: FloodSafe Nepal v1.0.2 - signed separate test APK
+name: FloodSafe Nepal v1.0.3 - signed separate test APK
 on:
   push:
     branches:
@@ -28,22 +28,22 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
       - name: Set next release version without changing stable source
         run: |
-          sed -i "s/versionCode 121/versionCode 142/" floodsafe-android-app/app/build.gradle
-          sed -i "s/versionName '0.9.21-repair-preview'/versionName '1.0.2'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionCode 121/versionCode 143/" floodsafe-android-app/app/build.gradle
+          sed -i "s/versionName '0.9.21-repair-preview'/versionName '1.0.3'/" floodsafe-android-app/app/build.gradle
       - name: Prepare isolated preview package and approved launcher icon
         shell: bash
         run: |
           set -euo pipefail
-          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.hotfix102'/" floodsafe-android-app/app/build.gradle
+          sed -i "s/applicationId 'io.github.pujan1234hub.floodsafe.app'/applicationId 'com.pjbuilts.floodsafenepal.hotfix103'/" floodsafe-android-app/app/build.gradle
           sed -i '/if (hasReleaseSigning) signingConfig signingConfigs.release/c\            signingConfig signingConfigs.debug' floodsafe-android-app/app/build.gradle
-          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal TEST 1.0.2</' floodsafe-android-app/app/src/main/res/values/strings.xml
+          sed -i 's/>FloodSafe Nepal</>FloodSafe Nepal TEST 1.0.3</' floodsafe-android-app/app/src/main/res/values/strings.xml
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=Path('floodsafe-android-app/app/google-services.json')
           j=json.loads(p.read_text())
           for client in j['client']:
-              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.hotfix102'
+              client['client_info']['android_client_info']['package_name']='com.pjbuilts.floodsafenepal.hotfix103'
           p.write_text(json.dumps(j,indent=2))
           PY
           mkdir -p floodsafe-android-app/app/src/main/res/drawable-nodpi
@@ -135,6 +135,24 @@ jobs:
         run: |
           grep -q 'floodsafe-live-preview?kind=stations' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/OfficialStationFeeds.java
           grep -q 'floodsafe-live-preview?kind=rain' floodsafe-android-app/app/src/main/java/io/github/pujan1234hub/floodsafe/app/OfficialStationFeeds.java
+      - name: Make the original soft chime audible without clipping
+        run: |
+          python3 - <<'PY'
+          import wave, array, sys, pathlib
+          p=pathlib.Path("floodsafe-android-app/app/src/main/res/raw/floodsafe_soft_chime.wav")
+          with wave.open(str(p),"rb") as f:
+              params=f.getparams(); data=f.readframes(f.getnframes())
+          assert params.sampwidth==2 and params.comptype=="NONE"
+          samples=array.array("h",data)
+          if sys.byteorder!="little": samples.byteswap()
+          peak=max(abs(s) for s in samples); assert peak>0
+          gain=max(1.0,min(3.0,16400/peak))
+          samples=array.array("h",(round(s*gain) for s in samples))
+          if sys.byteorder!="little": samples.byteswap()
+          with wave.open(str(p),"wb") as f:
+              f.setparams(params);f.writeframes(samples.tobytes())
+          print("Original chime gain:",gain)
+          PY
       - name: Run native Android unit tests before release compilation
         run: gradle -p floodsafe-android-app :app:testReleaseUnitTest --no-daemon --stacktrace
       - name: Run release lint checks
@@ -166,15 +184,15 @@ jobs:
           PY
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > preview-badging.txt
-          grep -F "package: name='com.pjbuilts.floodsafenepal.hotfix102'" preview-badging.txt
-          grep -F "application-label:'FloodSafe Nepal TEST 1.0.2'" preview-badging.txt
+          grep -F "package: name='com.pjbuilts.floodsafenepal.hotfix103'" preview-badging.txt
+          grep -F "application-label:'FloodSafe Nepal TEST 1.0.3'" preview-badging.txt
           mkdir -p preview-output
-          cp "$APK" preview-output/FloodSafe-Nepal-v1.0.2-SIGNED-TEST.apk
+          cp "$APK" preview-output/FloodSafe-Nepal-v1.0.3-SIGNED-TEST.apk
           sha256sum preview-output/*.apk
       - name: Upload isolated preview APK only
         uses: actions/upload-artifact@v4
         with:
-          name: FloodSafe-Nepal-v1.0.2-SIGNED-TEST
+          name: FloodSafe-Nepal-v1.0.3-SIGNED-TEST
           path: preview-output/*.apk
           if-no-files-found: error
           retention-days: 14

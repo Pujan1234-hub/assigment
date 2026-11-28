@@ -15,6 +15,7 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
     <application android:allowBackup="false" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:label="@string/app_name" android:supportsRtl="true" android:theme="@style/AppTheme" android:hardwareAccelerated="true" android:usesCleartextTraffic="false">
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="floodsafe_soft_notice_v1" />
         <provider android:name=".MonitoringSafetyProvider" android:authorities="${applicationId}.monitoring-safety" android:exported="false" android:initOrder="100" />
         <receiver android:name=".WeatherWakeReceiver" android:enabled="true" android:exported="false" />
         <receiver android:name=".BootReceiver" android:enabled="true" android:exported="false"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED" /><action android:name="android.intent.action.MY_PACKAGE_REPLACED" /></intent-filter></receiver>

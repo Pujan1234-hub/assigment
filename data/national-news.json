@@ -1,70 +1,56 @@
 {
-  "generated_at": "2026-11-28T09:15:19.388347+05:45",
-  "updated_at_npt": "28 Nov 09:15 NPT",
+  "generated_at": "2026-11-28T17:59:34.092221+05:45",
+  "updated_at_npt": "28 Nov 17:59 NPT",
   "flash_window_minutes": 60,
   "recent_window_minutes": 360,
   "items": [
     {
-      "title": "अमेरिकी वायुसेनाको मुख्य क्लाउड कम्प्युटिङ प्रणाली ह्याक",
+      "title": "एल निनोको प्रभाव : बाढीले इक्वेडरमा ३४ जनाको मृत्यु र ४७ हजार प्रभावित",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608103/us-air-forces-main-cloud-computing-system-hacked",
-      "published_at": "2026-11-28T09:00:56+05:45",
+      "url": "https://www.ratopati.com/story/608207/el-nino-impact-floods-kill-34-in-ecuador-affect-47000",
+      "published_at": "2026-11-28T17:39:57+05:45",
       "flash": true
     },
     {
-      "title": "सेवाग्राहीसँग रकम असुलेको भिडियो सार्वजनिक भएपछि दुई ट्राफिक प्रहरी निलम्बित",
+      "title": "यस्ता छन् कांग्रेस केन्द्रीय कार्यसमिति बैठकका निर्णय (पूर्णपाठ)",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608097/two-traffic-police-officers-suspended-after-video-of-extorting-money-from-service-recipients-goes-public",
-      "published_at": "2026-11-28T08:22:18+05:45",
-      "flash": true
-    },
-    {
-      "title": "राप्ती गाउँपालिकाले खुलायो स्वास्थ्यकर्मीका लागि रोजगारीको अवसर",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608095/rapti-rural-municipality-opens-employment-opportunities-for-health-workers",
-      "published_at": "2026-11-28T08:10:32+05:45",
+      "url": "https://www.ratopati.com/story/608189/these-are-the-decisions-of-the-congress-central-working-committee-meeting-full-text",
+      "published_at": "2026-11-28T16:36:41+05:45",
       "flash": false
     },
     {
-      "title": "३. गृह मन्त्रालयद्वारा ९ सहसचिवको सरुवा, ८ जिल्लाका प्रमुख जिल्ला अधिकारी फेरिए",
+      "title": "१२ वर्षे देवीनाच अवलोकन गर्न पुगे राष्ट्रपति पौडेल",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608090/ministry-of-home-affairs-transfers-9-joint-secretaries-changes-chief-district-officers-of-8-districts",
-      "published_at": "2026-11-28T07:41:21+05:45",
+      "url": "https://www.ratopati.com/story/608185/president-poudel-visits-12-year-old-devinach",
+      "published_at": "2026-11-28T16:28:33+05:45",
       "flash": false
     },
     {
-      "title": "बाजुरामा ट्याक्टर दुर्घटना : थप एक घाइतेको मृत्यु, मृतकको संख्या तीन पुग्यो",
+      "title": "भारतीय सहयोग र हवाई मार्गको स्वागत गर्दै कांग्रेसले सोध्यो– ‘सीमाको विषय किन उठेन ?’",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608086/tractor-accident-in-bajura-one-more-injured-dies-death-toll-reaches-three",
-      "published_at": "2026-11-28T06:34:04+05:45",
+      "url": "https://www.ratopati.com/story/608173/welcoming-indian-cooperation-and-airspace-the-congress-asked-why-wasnt-the-border-issue-raised",
+      "published_at": "2026-11-28T15:42:45+05:45",
       "flash": false
     },
     {
-      "title": "कर्णालीमा आँखा तथा कान स्वास्थ्य सेवाको आवश्यकता उच्च",
+      "title": "नेता, कार्यकर्तालाई रविको निर्देशन—अनुशासित बन्नुहोस्",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608085/need-for-eye-and-ear-health-services-high-in-karnali",
-      "published_at": "2026-11-28T06:22:18+05:45",
+      "url": "https://www.ratopati.com/story/608139/ravis-instructions-to-leaders-and-workers-be-disciplined",
+      "published_at": "2026-11-28T12:56:01+05:45",
       "flash": false
     },
     {
-      "title": "रानी नाकालाई व्यवस्थित बनाउन महानगर र सुरक्षा निकायको संयुक्त अनुगमन",
+      "title": "झापाको रतुवा खोलामा ल्यान्डमार्क पुल निर्माणको प्रगति ६० प्रतिशत पुग्यो",
       "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608083/joint-monitoring-by-the-metropolitan-municipality-and-security-agencies-to-keep-the-rani-checkpoint-organized",
-      "published_at": "2026-11-28T05:36:24+05:45",
-      "flash": false
-    },
-    {
-      "title": "झापाको ८६ प्रतिशत जनसङ्ख्या स्वास्थ्य बिमामा आबद्ध",
-      "source": "Ratopati",
-      "url": "https://www.ratopati.com/story/608079/86-percent-of-jhapas-population-is-covered-by-health-insurance",
-      "published_at": "2026-11-28T05:19:53+05:45",
+      "url": "https://www.ratopati.com/story/608133/progress-of-construction-of-landmark-bridge-on-ratuwa-river-in-jhapa-reaches-60-percent",
+      "published_at": "2026-11-28T12:33:30+05:45",
       "flash": false
     }
   ],
   "sources": {
     "OnlineKhabar": {
       "ok": true,
-      "candidates": 10,
+      "candidates": 8,
       "flash": 0,
       "recent": 0
     },
@@ -77,8 +63,8 @@
     "Ratopati": {
       "ok": true,
       "candidates": 16,
-      "flash": 2,
-      "recent": 8
+      "flash": 1,
+      "recent": 6
     },
     "Kathmandu Post": {
       "ok": true,
@@ -88,7 +74,7 @@
     },
     "The Rising Nepal": {
       "ok": true,
-      "candidates": 11,
+      "candidates": 7,
       "flash": 0,
       "recent": 0
     }
